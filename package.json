@@ -1,0 +1,26 @@
+{
+  "name": "live2d-cyrene",
+  "version": "0.1.0",
+  "description": "Live2D desktop pet — Cyrene",
+  "main": "dist/main/main/index.js",
+  "scripts": {
+    "build:main": "tsc -p tsconfig.main.json",
+    "build:preload": "tsc -p tsconfig.preload.json",
+    "build:renderer": "vite build",
+    "build": "npm run build:main && npm run build:preload && npm run build:renderer",
+    "dev": "npm run build:main && npm run build:preload && concurrently \"vite\" \"cross-env VITE_DEV=1 electron .\"",
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "cross-env": "^7.0.3",
+    "electron": "^33.0.0",
+    "typescript": "^5.6.0",
+    "vite": "^5.0.0"
+  },
+  "dependencies": {
+    "pixi-live2d-display": "0.5.0-beta",
+    "pixi.js": "^7.3.0",
+    "playwright": "^1.60.0"
+  }
+}

@@ -1,0 +1,4 @@
+﻿node_modules/
+dist/main/
+dist/preload/
+*.js.map
