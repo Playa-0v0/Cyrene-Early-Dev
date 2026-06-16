@@ -1,0 +1,137 @@
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: transparent;
+}
+
+.sticker-shell {
+  box-sizing: border-box;
+  width: 100vw;
+  height: 100vh;
+  padding: 14px;
+  border-radius: 28px;
+  background: radial-gradient(circle at 12% 0%, rgba(255, 110, 199, 0.20), transparent 38%), linear-gradient(145deg, rgba(43, 30, 68, 0.94), rgba(22, 18, 38, 0.92));
+  border: 1px solid rgba(255, 182, 220, 0.18);
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.10);
+}
+
+.sticker-titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 42px;
+  padding: 0 4px 10px 8px;
+  -webkit-app-region: drag;
+}
+
+.sticker-title {
+  color: var(--rb-text-strong);
+  font: var(--rb-text-small-em);
+  letter-spacing: 0.03em;
+}
+
+.sticker-actions {
+  display: flex;
+  gap: 8px;
+  -webkit-app-region: no-drag;
+}
+
+.win-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  color: rgba(254, 247, 255, 0.84);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 182, 220, 0.16);
+}
+
+.win-btn:hover { background: rgba(255, 255, 255, 0.14); }
+.win-btn--close:hover { background: rgba(236, 72, 153, 0.38); }
+
+.sticker-grid {
+  height: calc(100% - 52px);
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 12px;
+  padding: 4px 6px 8px;
+}
+
+.sticker-grid::-webkit-scrollbar { width: 6px; }
+.sticker-grid::-webkit-scrollbar-track { background: transparent; }
+.sticker-grid::-webkit-scrollbar-thumb { background: rgba(236, 72, 153, 0.40); border-radius: 4px; }
+
+.sticker-card {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border-radius: 20px;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 182, 220, 0.14);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+.sticker-card img {
+  max-width: 88%;
+  max-height: 88%;
+  object-fit: contain;
+  transition: opacity 160ms ease, filter 160ms ease, transform 160ms ease;
+  -webkit-user-drag: none;
+}
+
+.sticker-card.is-disabled img {
+  opacity: 0.34;
+  filter: grayscale(0.65);
+  transform: scale(0.94);
+}
+
+.mini-switch {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 38px;
+  height: 22px;
+  cursor: pointer;
+}
+
+.mini-switch input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.mini-switch__track {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: rgba(15, 13, 28, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.28);
+}
+
+.mini-switch__thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: rgba(254, 247, 255, 0.88);
+  transition: transform 160ms ease, background 160ms ease;
+}
+
+.mini-switch input:checked + .mini-switch__track {
+  background: linear-gradient(135deg, rgba(255, 110, 199, 0.88), rgba(168, 85, 247, 0.82));
+}
+
+.mini-switch input:checked + .mini-switch__track .mini-switch__thumb {
+  transform: translateX(16px);
+  background: #fff7fd;
+}

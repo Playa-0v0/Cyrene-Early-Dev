@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>昔涟 · 状态</title>
+  <script type="module" crossorigin src="../assets/sidebar-Dy-IGHd4.js"></script>
+  <link rel="modulepreload" crossorigin href="../assets/base-CVzNOcnc.js">
+  <link rel="stylesheet" crossorigin href="../assets/base-BTHABN_A.css">
+  <link rel="stylesheet" crossorigin href="../assets/sidebar-DUwFh4hu.css">
+</head>
+<body>
+  <div class="sidebar">
+    <header class="sidebar__titlebar">
+      <button type="button" class="sidebar__icon-btn" id="collapse-btn" aria-label="收起" title="收起">‹</button>
+      <div class="sidebar__title">
+        <span class="sidebar__name">昔涟</span>
+        <span class="sidebar__hint">状态面板</span>
+      </div>
+      <div class="sidebar__titlebar-actions">
+        <button type="button" class="sidebar__winbtn" id="min-btn" aria-label="最小化" title="最小化">
+          <svg width="9" height="2" viewBox="0 0 9 2" aria-hidden="true"><rect width="9" height="2" rx="1" fill="currentColor"/></svg>
+        </button>
+        <button type="button" class="sidebar__winbtn sidebar__winbtn--close" id="close-btn" aria-label="关闭" title="关闭">
+          <svg width="9" height="9" viewBox="0 0 9 9" aria-hidden="true">
+            <line x1="2" y1="2" x2="7" y2="7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            <line x1="7" y1="2" x2="2" y2="7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="sidebar__body">
+      <section class="profile">
+        <img class="profile__avatar" src="../avatars/cyrene-avatar.png" alt="昔涟" draggable="false" />
+        <div class="profile__name">昔涟</div>
+        <div class="profile__online">
+          <span class="profile__dot" aria-hidden="true"></span>
+          <span id="online-status-label">在线</span>
+        </div>
+      </section>
+
+      <hr class="sidebar__divider" />
+
+      <section class="panel-card panel-card--status">
+        <div class="indicator">
+          <div class="indicator__emoji" id="status-emoji">✨</div>
+          <div class="indicator__text">
+            <span class="indicator__prefix">状态：</span>
+            <span class="indicator__label" id="status-label">元气</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel-card panel-card--feeling">
+        <div class="indicator">
+          <div class="indicator__emoji" id="feeling-emoji">🥰</div>
+          <div class="indicator__text">
+            <span class="indicator__prefix">心情：</span>
+            <span class="indicator__label" id="feeling-label">开心</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel-card model-card">
+        <div class="model-row">
+          <span class="model-row__key">模式：</span>
+          <span class="model-row__value" id="model-mode">Auto</span>
+        </div>
+        <div class="model-feed">
+          <span class="model-feed__emoji" aria-hidden="true">🍰</span>
+          <span>正在喂养：</span>
+          <span class="model-feed__name" id="feeding-model">DeepSeek Chat</span>
+        </div>
+        <button type="button" class="model-switch-btn" id="model-switch-btn" title="切换模型">
+          <span aria-hidden="true">⇄</span>
+          <span>切换模型</span>
+        </button>
+      </section>
+
+      <section class="panel-card action-card">
+        <button type="button" class="settings-btn" id="settings-btn" title="打开设置">
+          <span class="settings-btn__icon" aria-hidden="true">⚙</span>
+          <span class="settings-btn__text">设置</span>
+        </button>
+      </section>
+
+      <hr class="sidebar__divider" />
+
+      <div class="sidebar__version">昔涟 v0.1.1</div>
+    </main>
+  </div>
+</body>
+</html>

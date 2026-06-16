@@ -2,3 +2,8 @@
 dist/main/
 dist/preload/
 *.js.map
+
+# local debug/verification artifacts
+verify-*.js
+verify-*.png
+

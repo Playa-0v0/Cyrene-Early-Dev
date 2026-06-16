@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>昔涟 · 今日日程</title>
+  <script type="module" crossorigin src="../assets/tasks-eyftkaqV.js"></script>
+  <link rel="modulepreload" crossorigin href="../assets/base-CVzNOcnc.js">
+  <link rel="stylesheet" crossorigin href="../assets/base-BTHABN_A.css">
+  <link rel="stylesheet" crossorigin href="../assets/tasks-CA8N8PIm.css">
+</head>
+<body>
+  <div class="tasks">
+    <header class="tasks__titlebar">
+      <div class="tasks__title">
+        <span class="tasks__icon" aria-hidden="true">📋</span>
+        <span class="tasks__name">今日日程</span>
+        <span class="tasks__hint">展示中 · 只读</span>
+      </div>
+      <div class="tasks__titlebar-actions">
+        <button type="button" class="tasks__winbtn" id="min-btn" aria-label="最小化" title="最小化">
+          <svg width="9" height="2" viewBox="0 0 9 2" aria-hidden="true"><rect width="9" height="2" rx="1" fill="currentColor"/></svg>
+        </button>
+        <button type="button" class="tasks__winbtn tasks__winbtn--close" id="close-btn" aria-label="关闭" title="关闭">
+          <svg width="9" height="9" viewBox="0 0 9 9" aria-hidden="true">
+            <line x1="2" y1="2" x2="7" y2="7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            <line x1="7" y1="2" x2="2" y2="7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="tasks__body">
+      <section class="schedule-panel" aria-label="今日日程概览">
+
+        <div class="schedule-count">
+          <span class="schedule-count__value">6</span>
+          <span class="schedule-count__unit">个待办日程</span>
+        </div>
+
+        <div class="schedule-date">📅 2026年6月12日 · 周四</div>
+
+        <div class="schedule-usage">
+          <div class="usage-info">
+            <span class="usage-label">⚡ Token 用量</span>
+            <span class="usage-number">2,470</span>
+            <span class="usage-total">/ 5,000</span>
+          </div>
+          <div class="usage-bar" aria-hidden="true">
+            <div class="usage-bar__fill" style="width: 49.4%;"></div>
+          </div>
+        </div>
+
+        <div class="mini-chart" aria-hidden="true">
+          <div class="mini-chart__avg"><span>日均 2.8K</span></div>
+          <div class="mini-chart__bars">
+            <div class="chart-bar chart-bar--mo"><span>Mo</span></div>
+            <div class="chart-bar chart-bar--tu chart-bar--peak"><span>Tu</span></div>
+            <div class="chart-bar chart-bar--we"><span>We</span></div>
+            <div class="chart-bar chart-bar--th"><span>Th</span></div>
+            <div class="chart-bar chart-bar--fr"><span>Fr</span></div>
+            <div class="chart-bar chart-bar--sa"><span>Sa</span></div>
+            <div class="chart-bar chart-bar--su"><span>Su</span></div>
+          </div>
+        </div>
+
+        <div class="schedule-note">📊 本周 Token 消耗趋势 ｜ 峰值 4.8K（周二）</div>
+
+        <section class="task-section" aria-label="定时任务列表">
+          <div class="task-section__header">⏰ 定时任务</div>
+          <div class="task-list">
+            <div class="task-item">
+              <div class="task-time">09:30 - 10:15</div>
+              <div class="task-desc">✨ 团队站会 + 同步本周里程碑</div>
+            </div>
+            <div class="task-item">
+              <div class="task-time">14:00 - 15:30</div>
+              <div class="task-desc">⚙️ 后端 API 联调 & Token 优化方案讨论</div>
+            </div>
+            <div class="task-item">
+              <div class="task-time">17:00 - 17:45</div>
+              <div class="task-desc">📝 撰写周报 & 复盘今日 Token 消耗</div>
+            </div>
+          </div>
+        </section>
+        <footer class="schedule-footer">
+          <button type="button" class="schedule-settings-btn" aria-label="任务设置">
+            <span class="schedule-settings-btn__icon" aria-hidden="true">⚙️</span>
+            <span>任务设置</span>
+          </button>
+          <hr class="schedule-footer__divider" />
+          <div class="schedule-footer__version">昔涟 v0.1.1</div>
+        </footer>      </section>
+    </main>
+  </div>
+</body>
+</html>

@@ -1,0 +1,1 @@
+import"./base-CVzNOcnc.js";window.tasks||(window.tasks={minimize:()=>{},close:()=>{}});const t=document.getElementById("min-btn"),e=document.getElementById("close-btn");t.addEventListener("click",()=>{var n;(n=window.tasks)==null||n.minimize()});e.addEventListener("click",()=>{var n;(n=window.tasks)==null||n.close()});

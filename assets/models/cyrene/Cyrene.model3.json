@@ -147,7 +147,7 @@
       "Tick3": [
         {
           "Name": "Wink（待机）",
-          "File": "FileReferences_Motions_动作#6_1_File_0.json",
+          "File": "motions/动作#6_1.motion3.json",
           "WrapMode": 2,
           "VarFloats": [
             {
@@ -159,7 +159,7 @@
         },
         {
           "Name": "可爱（待机）",
-          "File": "FileReferences_Motions_动作#6_2_File_0.json",
+          "File": "motions/动作#6_2.motion3.json",
           "WrapMode": 2,
           "VarFloats": [
             {
@@ -171,7 +171,7 @@
         },
         {
           "Name": "微笑（待机）",
-          "File": "FileReferences_Motions_动作#6_3_File_0.json",
+          "File": "motions/动作#6_3.motion3.json",
           "WrapMode": 2,
           "VarFloats": [
             {
@@ -329,15 +329,15 @@
       "Items": [
         {
           "Id": "ParamEyeLOpen",
-          "Min": 0.0,
-          "Max": 1.0,
+          "Min": 0,
+          "Max": 1,
           "BlendMode": 2,
           "Input": 0
         },
         {
           "Id": "ParamEyeROpen",
-          "Min": 0.0,
-          "Max": 1.0,
+          "Min": 0,
+          "Max": 1,
           "BlendMode": 2,
           "Input": 0
         }
@@ -345,7 +345,7 @@
       "Enabled": true
     },
     "LipSync": {
-      "Gain": 5.0
+      "Gain": 5
     },
     "MouseTracking": {
       "SmoothTime": 0.15,
