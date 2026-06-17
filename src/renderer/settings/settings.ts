@@ -1248,4 +1248,5 @@ memoryImportedList?.addEventListener("click", async (event) => {
 });
 
 
+void loadMemoryPanel();
 void loadUserProfile();
