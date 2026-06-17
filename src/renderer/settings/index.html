@@ -369,13 +369,15 @@
                   <p>后续用于控制昔涟读取、检索或修改本地文件的权限边界。</p>
                 </div>
               </div>
-              <div class="option-blocks option-blocks--permission" aria-label="文件权限模式">
-                <button type="button" class="option-block is-active" disabled>只读</button>
-                <button type="button" class="option-block" disabled>指定目录</button>
-                <button type="button" class="option-block" disabled>每次审批</button>
-                <button type="button" class="option-block" disabled>完全访问</button>
+              <div class="option-blocks option-blocks--permission" id="agent-permission-blocks" aria-label="文件权限模式">
+                <button type="button" class="option-block is-active" data-level="read-only">只读</button>
+                <button type="button" class="option-block" data-level="scoped">指定目录</button>
+                <button type="button" class="option-block" data-level="per-action">每次审批</button>
+                <button type="button" class="option-block" data-level="full">完全访问</button>
               </div>
-              <p class="agent-setting-card__note">完全访问未来会额外弹出风险提示，并延迟确认。</p>
+              <p class="agent-setting-card__note" id="agent-permission-note">
+                只读：昔涟不会修改本地任何文件。
+              </p>
             </article>
           </div>
 
@@ -523,7 +525,7 @@
                 <p>检索用户导入的小说、资料和知识库片段。</p>
               </div>
               <label class="plugin-switch" aria-label="启用文档检索">
-                <input type="checkbox" checked />
+                <input type="checkbox" id="plugin-docs-enabled" checked />
                 <span></span>
               </label>
             </article>
@@ -535,7 +537,7 @@
                 <p>让昔涟按需调用与你有关的长期画像和阶段记忆。</p>
               </div>
               <label class="plugin-switch" aria-label="启用用户记忆">
-                <input type="checkbox" checked />
+                <input type="checkbox" id="plugin-memory-enabled" checked />
                 <span></span>
               </label>
             </article>
@@ -547,7 +549,7 @@
                 <p>按需召回昔涟的背景设定、经历和关键词内容。</p>
               </div>
               <label class="plugin-switch" aria-label="启用世界书">
-                <input type="checkbox" checked />
+                <input type="checkbox" id="plugin-worldbook-enabled" checked />
                 <span></span>
               </label>
             </article>
@@ -559,7 +561,7 @@
                 <p>联网检索实时资料和网页内容，后续接入。</p>
               </div>
               <label class="plugin-switch" aria-label="启用网页搜索">
-                <input type="checkbox" />
+                <input type="checkbox" id="plugin-websearch-enabled" />
                 <span></span>
               </label>
             </article>
@@ -571,7 +573,7 @@
                 <p>读取用户授权目录中的文件，后续接入权限管理。</p>
               </div>
               <label class="plugin-switch" aria-label="启用本地文件">
-                <input type="checkbox" />
+                <input type="checkbox" id="plugin-file-enabled" />
                 <span></span>
               </label>
             </article>
@@ -658,3 +660,5 @@
   <script type="module" src="./settings.ts"></script>
 </body>
 </html>
+
+

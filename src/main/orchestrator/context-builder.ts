@@ -1,11 +1,10 @@
-﻿// Orchestrator Context Builder — executes retrieval per OrchestratorPlan
-import { OrchestratorPlan, RuleContext } from "./types";
+// Orchestrator Context Builder — executes retrieval per tool call results
+import { RuleContext, ToolCallResult } from "./types";
 import { searchWorldbook, getPermanentWorldbookEntries, getAllWorldbookTriggerWords } from "../rag";
 import { getReranker } from "../rag/reranker";
 import { memoryStore } from "../memory/memory-store";
 import { memoryJudge } from "../memory/memory-judge";
 import { memoryManager } from "../memory/memory-manager";
-import { searchMemory } from "../rag/index";
 
 // ── Topic state (module-level, not persisted) ──────────
 // key: recentInput that triggered a match
@@ -22,27 +21,15 @@ let topicState: TopicState = {
 
 const TOPIC_CLEAR_WORDS = ["换个话题", "算了", "好了不说了", "先不聊"];
 
-async function rerankResults(query: string, results: string[], topK: number): Promise<string[]> {
-  const reranker = getReranker();
-  if (!reranker || results.length <= 1) return results;
-
-  const reranked = await reranker.rerank(query, results);
-  return reranked.slice(0, topK).map((r) => r.text);
-}
-
-function formatMemoryResult(result: unknown): string {
-  if (typeof result === "string") return result;
-  if (!result || typeof result !== "object") return "";
-
-  const record = result as { text?: unknown; entry?: { text?: unknown } };
-  if (typeof record.entry?.text === "string") return record.entry.text;
-  if (typeof record.text === "string") return record.text;
-  return "";
-}
+// ── 工具结果标签映射 ──────────────────────────────────────
+const TOOL_LABELS: Record<string, string> = {
+  imported_docs: "相关文件片段",
+  user_memory: "相关记忆",
+};
 
 export async function buildOrchestratedContext(
   userInput: string,
-  plan: OrchestratorPlan,
+  toolResults: ToolCallResult[],
   ctx: RuleContext
 ): Promise<string> {
   const parts: string[] = [];
@@ -53,7 +40,7 @@ export async function buildOrchestratedContext(
     parts.push("【常驻背景】\n" + permanentWb.join("\n\n"));
   }
 
-  // 1. Worldbook — always runs every round (keyword-triggered, not controlled by Plan)
+  // 1. Worldbook — always runs every round (keyword-triggered, not controlled by tools)
   try {
     // Build expanded matching window (last 3 user messages)
     const recentUserMessages = ctx.recentMessages
@@ -141,26 +128,9 @@ export async function buildOrchestratedContext(
     console.warn("[ContextBuilder] worldbook search failed:", err);
   }
 
-  // 2. Three-layer memory
+  // 2. Three-layer memory (L0/L1 always included)
   const l0 = await memoryStore.getL0();
   const l1 = await memoryStore.getL1();
-
-  let l2Context = "";
-  if (plan.useUserMemory) {
-    try {
-      const l2Results = await searchMemory(userInput, "user_memory", 5);
-      if (l2Results && l2Results.length > 0) {
-        l2Context = l2Results
-          .map((result: unknown) => formatMemoryResult(result))
-          .filter(Boolean)
-          .map((text) => "- " + text)
-          .join("\n");
-        console.log(`[Memory] L2 召回 ${l2Results.length} 条记忆`);
-      }
-    } catch (e) {
-      console.error("[Memory] L2 检索失败，跳过", e);
-    }
-  }
 
   let memoryContext = "";
 
@@ -186,24 +156,15 @@ export async function buildOrchestratedContext(
     memoryContext += `[近期状态]\n${l1Lines.join("\n")}\n\n`;
   }
 
-  if (l2Context) {
-    memoryContext += `[相关记忆]\n${l2Context}\n\n`;
-  }
-
   if (memoryContext.trim()) {
     parts.push(memoryContext.trim());
   }
 
-  // 3. Imported Docs — only if plan says so
-  if (plan.useImportedDocs && ctx.hasImportedDocs) {
-    try {
-      const docResults = await searchMemory(userInput, "imported_doc", 5);
-      if (docResults.length > 0) {
-        parts.push("【相关文件片段】\n" + docResults.map((m) => "- " + m).join("\n"));
-      }
-    } catch (err) {
-      console.warn("[ContextBuilder] imported docs search failed:", err);
-    }
+  // 3. Tool results — 遍历注入，不再用 if/else 判断
+  for (const tr of toolResults) {
+    if (!tr.output) continue;
+    const label = TOOL_LABELS[tr.toolId] || tr.toolId;
+    parts.push(`【${label}】\n${tr.output}`);
   }
 
   return parts.join("\n\n");

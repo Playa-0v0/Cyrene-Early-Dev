@@ -1,5 +1,5 @@
-﻿// Orchestrator Rule Router — Rule-first, registered rules, priority-sorted
-import { OrchestratorPlan, Rule, RuleContext, createDefaultPlan } from "./types";
+// Orchestrator Rule Router — Rule-first, registered rules, priority-sorted
+import { Rule, RuleContext } from "./types";
 
 const rules: Rule[] = [];
 
@@ -16,12 +16,11 @@ export function clearRules(): void {
 registerRule({
   name: "daily_chat",
   priority: 10,
-  match(ctx: RuleContext): boolean {
+  match(_ctx: RuleContext): boolean {
     return true; // always matches as fallback
   },
-  apply(plan: OrchestratorPlan, _ctx: RuleContext): void {
-    plan.useImportedDocs = false;
-    plan.reasons.push("日常闲聊：不检索导入文档");
+  apply(_ctx: RuleContext) {
+    return []; // 日常闲聊，不调用任何工具
   },
 });
 
@@ -34,9 +33,8 @@ registerRule({
     const patterns = /文件|文档|小说|总结|分析|内容|里面|上传|导入|读了|看了/;
     return patterns.test(ctx.userInput);
   },
-  apply(plan: OrchestratorPlan, _ctx: RuleContext): void {
-    plan.useImportedDocs = true;
-    plan.reasons.push("明确提到文档/文件/小说内容");
+  apply(ctx: RuleContext) {
+    return [{ toolId: 'imported_docs', args: { query: ctx.userInput, topK: 5 } }];
   },
 });
 
@@ -49,9 +47,8 @@ registerRule({
     const entityPattern = /[A-Z\u4e00-\u9fff]{2,4}(?:怎么|为什么|是谁|结局|死了|活着|关系|喜欢|爱)/;
     return entityPattern.test(ctx.userInput);
   },
-  apply(plan: OrchestratorPlan, _ctx: RuleContext): void {
-    plan.useImportedDocs = true;
-    plan.reasons.push("专有名词+情节/因果问题：检索导入文档");
+  apply(ctx: RuleContext) {
+    return [{ toolId: 'imported_docs', args: { query: ctx.userInput, topK: 5 } }];
   },
 });
 
@@ -64,67 +61,36 @@ registerRule({
     const patterns = /你还记得|我之前说|你记不记得|以前|上次|之前|告诉过你|跟你说过|我的|我喜欢|我讨厌|我是/;
     return patterns.test(ctx.userInput);
   },
-  apply(plan: OrchestratorPlan, _ctx: RuleContext): void {
-    plan.useUserMemory = true;
-    plan.reasons.push("命中用户记忆规则");
-  },
-});
-
-// ─── Rule: worldbook_trigger (p=75) — 询问昔涟自身背景 ───
-registerRule({
-  name: "worldbook_trigger",
-  priority: 75,
-  match(ctx: RuleContext): boolean {
-    if (!ctx.hasWorldbook) return false;
-    const patterns = /昔涟|星灵|背景|经历|你是谁|你的故事|你的过去|你的设定|Cyrene/;
-    return patterns.test(ctx.userInput);
-  },
-  apply(plan: OrchestratorPlan, _ctx: RuleContext): void {
-    plan.useWorldbook = true;
-    plan.reasons.push("命中世界书规则");
-  },
-});
-
-// ─── Rule: web_search_trigger (p=70) — 预留，v1 不启用 ───
-registerRule({
-  name: "web_search_trigger",
-  priority: 70,
-  match(_ctx: RuleContext): boolean {
-    return false; // v1 not enabled
-  },
-  apply(plan: OrchestratorPlan, _ctx: RuleContext): void {
-    plan.useWebSearch = true;
-    plan.reasons.push("命中网络搜索规则（预留）");
+  apply(ctx: RuleContext) {
+    return [{ toolId: 'user_memory', args: { query: ctx.userInput, topK: 5 } }];
   },
 });
 
 // ─── Route ───
-export function route(ctx: RuleContext): OrchestratorPlan {
-  const plan = createDefaultPlan();
+export function route(ctx: RuleContext): Array<{ toolId: string; args: Record<string, unknown> }> {
+  const toolCalls: Array<{ toolId: string; args: Record<string, unknown> }> = [];
 
   for (const rule of rules) {
     if (rule.match(ctx)) {
-      rule.apply(plan, ctx);
+      const calls = rule.apply(ctx);
+      for (const call of calls) {
+        // 去重：同一个 toolId 只加一次
+        if (!toolCalls.some(tc => tc.toolId === call.toolId)) {
+          toolCalls.push(call);
+        }
+      }
     }
   }
 
-  return plan;
+  return toolCalls;
 }
 
-// ─── Debug logger ───
-export function logPlan(plan: OrchestratorPlan, input: string): void {
-  console.log("[Orchestrator]");
+// ── Debug logger ──
+export function logToolCalls(toolCalls: Array<{ toolId: string; args: Record<string, unknown> }>, input: string): void {
+  console.log("[Rule Router]");
   console.log("Input:", JSON.stringify(input.slice(0, 80)));
-  console.log("");
-  console.log("Plan:");
-  console.log(plan.useImportedDocs ? "\u2713 useImportedDocs" : "\u2717 useImportedDocs");
-  console.log(plan.useWorldbook ? "\u2713 useWorldbook" : "\u2717 useWorldbook");
-  console.log(plan.useWebSearch ? "\u2713 useWebSearch" : "\u2717 useWebSearch");
-  console.log(plan.useUserMemory ? "\u2713 useUserMemory" : "\u2717 useUserMemory");
-  console.log("");
-  console.log("Reason:");
-  for (const r of plan.reasons) {
-    console.log("- " + r);
+  console.log("Tool calls:", toolCalls.length > 0 ? toolCalls.map(tc => tc.toolId).join(", ") : "none");
+  for (const tc of toolCalls) {
+    console.log("  - " + tc.toolId + ": " + JSON.stringify(tc.args));
   }
-  console.log("");
 }

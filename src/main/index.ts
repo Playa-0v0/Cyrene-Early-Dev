@@ -5,7 +5,10 @@ import * as os from "os";
 import { IPC } from "../shared/ipc-channels";
 import { STATUS_KEYWORDS, STICKER_EXPLICIT_TRIGGERS, STICKER_CONTENT_TRIGGERS, STICKER_MAP } from "./status-keywords";
 import { initRAG, buildMemoryContext, addMemory, importDocument, switchEmbeddingModel, deleteImportedDoc } from "./rag";
-import { buildOrchestratedMemoryContext, scheduleMemoryWrite } from "./orchestrator";
+import { buildAlwaysOnContext, runFunctionCallingLoop, scheduleMemoryWrite } from "./orchestrator";
+import { toolRegistry } from "./orchestrator/tool-registry";
+import { initMcpManager, addMcpServer, removeMcpServer, listMcpServers } from "./orchestrator/mcp-manager";
+import { initPermissionFromDisk, registerPermissionIpc, getCurrentLevel } from "./permission";
 import { getEmbeddingStatus, downloadEmbeddingModel, deleteEmbeddingModel } from "./embedding-manager";
 import { initReranker } from "./rag/reranker";
 import { memoryStore } from "./memory/memory-store"
@@ -822,39 +825,60 @@ async function requestModelReply(inputMessages: unknown, styleFile = "01_default
   if (messages.length === 0) {
     throw new Error("没有可发送的聊天内容。");
   }
-
   const latestUserText = messages.filter((message) => message.role === "user").at(-1)?.content ?? "";
-  let memoryContext = "";
+
+  // 1. 构建 always-on 上下文（世界书 + L0/L1 画像）
+  let alwaysOnContext = "";
   try {
-    memoryContext = await buildOrchestratedMemoryContext(
-      latestUserText,
-      messages,
-      settings,
-      (s, msgs, temp, timeout, label) =>
-        callChatCompletions(s as ModelSettings, msgs as Array<{role: 'system'|'user'|'assistant'; content: string}>, temp, timeout, label),
-    );
+    alwaysOnContext = await buildAlwaysOnContext(latestUserText, messages);
   } catch (err) {
-    console.warn("[Cyrene] memory context build failed:", err);
+    console.warn("[Cyrene] always-on context build failed:", err);
   }
 
   const systemContent = buildSystemPrompt(styleFile)
-    + (memoryContext ? "\n\n" + memoryContext : "");
+    + (alwaysOnContext ? "\n\n" + alwaysOnContext : "");
 
-  const chatContent = await callChatCompletionsStream(settings, [
-    {
-      role: "system",
-      content: systemContent,
-    },
+  // 2. Function Calling 循环：模型自己决定调不调工具、调哪个
+  const fcMessages: Array<{ role: "system" | "user" | "assistant" | "tool"; content: string }> = [
+    { role: "system", content: systemContent },
     ...messages,
-  ], 0.8, CHAT_REQUEST_TIMEOUT_MS, "主聊天", (chunk: string) => {
-    if (chatWindow && !chatWindow.isDestroyed()) {
-      chatWindow.webContents.send("chat:stream-chunk", chunk);
+  ];
+
+  let chatContent = "";
+  try {
+    const fcResult = await runFunctionCallingLoop(
+      settings,
+      fcMessages,
+      CHAT_REQUEST_TIMEOUT_MS,
+    );
+    chatContent = fcResult.reply;
+
+    // 工具执行日志
+    if (fcResult.toolResults.length > 0) {
+      console.log("[Cyrene] Function Calling 使用了 " + fcResult.toolResults.length + " 个工具:",
+        fcResult.toolResults.map(tr => tr.toolId).join(", "));
     }
-  });
+  } catch (err) {
+    console.error("[Cyrene] Function Calling 失败，降级为普通对话", err);
+    // 降级：不带 tools 的普通 LLM 调用
+    chatContent = await callChatCompletions(
+      settings,
+      fcMessages as Array<{ role: "system" | "user" | "assistant"; content: string }>,
+      0.8,
+      CHAT_REQUEST_TIMEOUT_MS,
+      "主聊天（降级）",
+    );
+  }
 
   if (!chatContent) {
     throw new Error("模型没有返回有效回复。");
   }
+
+  // 发送流式事件（非流式模式下一次性发送）
+  if (chatWindow && !chatWindow.isDestroyed()) {
+    chatWindow.webContents.send("chat:stream-chunk", chatContent);
+  }
+
 
   scheduleMemoryWrite(latestUserText, chatContent);
 
@@ -1627,6 +1651,43 @@ ipcMain.handle(IPC.USER_UPLOAD_AVATAR, async () => {
   return { avatarPath, profile };
 });
 
+ipcMain.handle(IPC.MCP_ADD_SERVER, async (_event, config: unknown) => {
+  console.log('[MCP IPC] add-server:', JSON.stringify(config).slice(0, 200));
+  const result = await addMcpServer(config as Parameters<typeof addMcpServer>[0]);
+  console.log('[MCP IPC] add-server result:', JSON.stringify(result));
+  return result;
+});
+
+ipcMain.handle(IPC.MCP_REMOVE_SERVER, async (_event, serverId: string) => {
+  console.log('[MCP IPC] remove-server:', serverId);
+  const result = await removeMcpServer(serverId);
+  console.log('[MCP IPC] remove-server result:', JSON.stringify(result));
+  return result;
+});
+
+ipcMain.handle(IPC.MCP_LIST_SERVERS, () => {
+  const servers = listMcpServers();
+  console.log('[MCP IPC] list-servers:', servers.length + ' servers');
+  return servers;
+});
+
+ipcMain.handle(IPC.TOOL_SET_ENABLED, (_event, payload: unknown) => {
+  const p = payload as { id?: string; enabled?: boolean };
+  if (!p.id) return { ok: false, error: 'missing tool id' };
+  toolRegistry.setEnabled(p.id, p.enabled !== false);
+  console.log('[Tool] ' + p.id + ' enabled=' + (p.enabled !== false));
+  return { ok: true };
+});
+
+ipcMain.handle(IPC.TOOL_GET_ENABLED, () => {
+  const tools = toolRegistry.getAllTools();
+  const result: Record<string, boolean> = {};
+  for (const t of tools) {
+    result[t.id] = t.enabled;
+  }
+  return result;
+});
+
 ipcMain.handle(IPC.EMBEDDING_DELETE, async (_event, payload: unknown) => {
   const p = payload as { model?: string };
   const model = p.model || "minilm";
@@ -1645,9 +1706,17 @@ app.whenReady().then(async () => {
   createSidebarWindow();
   createTasksWindow();
   createTray();
+  // 权限模块初始化：必须在 createWindow 之后但任意工具调用之前
+  initPermissionFromDisk();
+  registerPermissionIpc();
+  console.log("[Cyrene] 当前 agent 权限档位:", getCurrentLevel());
   try {
     const modelSettings = loadModelSettings();
     await initRAG("auto", undefined, undefined, modelSettings.embeddingModel);
+    // 初始化 MCP Manager（异步，不阻塞启动）
+    initMcpManager().catch(err => {
+      console.error('[Cyrene] MCP Manager init failed:', err);
+    });
     console.log("[Cyrene] RAG initialized OK");
 
     await initReranker(modelSettings.rerankerMode);
@@ -1663,3 +1732,10 @@ app.on("activate", () => {
     createWindow();
   }
 });
+
+
+
+
+
+
+

@@ -68,6 +68,14 @@ const settingsApi = {
   deleteEmbeddingModel: (model: string) => ipcRenderer.invoke(IPC.EMBEDDING_DELETE, { model }),
   embeddingSetModel: (model: string) => ipcRenderer.invoke(IPC.EMBEDDING_SET_MODEL, model),
   rerankerSetMode: (mode: string) => ipcRenderer.invoke(IPC.RERANKER_SET_MODE, mode),
+  setToolEnabled: (id: string, enabled: boolean) => ipcRenderer.invoke(IPC.TOOL_SET_ENABLED, { id, enabled }),
+  getToolEnabled: () => ipcRenderer.invoke(IPC.TOOL_GET_ENABLED),
+  addMcpServer: (config: unknown) => ipcRenderer.invoke(IPC.MCP_ADD_SERVER, config),
+  removeMcpServer: (serverId: string) => ipcRenderer.invoke(IPC.MCP_REMOVE_SERVER, serverId),
+  listMcpServers: () => ipcRenderer.invoke(IPC.MCP_LIST_SERVERS),
+  // 权限档位
+  getPermissionLevel: () => ipcRenderer.invoke(IPC.PERMISSION_GET_LEVEL),
+  setPermissionLevel: (level: string) => ipcRenderer.invoke(IPC.PERMISSION_SET_LEVEL, level),
 };
 
 contextBridge.exposeInMainWorld("settings", settingsApi);
@@ -117,3 +125,4 @@ const memoryPanelApi = {
 contextBridge.exposeInMainWorld("user", userApi);
 contextBridge.exposeInMainWorld("memoryPanel", memoryPanelApi);
 contextBridge.exposeInMainWorld("runtimeState", runtimeStateApi);
+

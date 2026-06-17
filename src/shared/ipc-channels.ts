@@ -81,4 +81,22 @@ export const IPC = {
   MEMORY_PANEL_DELETE_IMPORTED_DOC: "memory-panel:delete-imported-doc",
   MEMORY_PANEL_SAVE_L0: "memory-panel:save-l0",
   MEMORY_PANEL_SAVE_L1: "memory-panel:save-l1",
+
+  // MCP server management
+  MCP_ADD_SERVER: "mcp:add-server",
+  MCP_REMOVE_SERVER: "mcp:remove-server",
+  MCP_LIST_SERVERS: "mcp:list-servers",
+
+  // tool (plugin) toggle
+  TOOL_SET_ENABLED: "tool:set-enabled",
+  TOOL_GET_ENABLED: "tool:get-enabled",
+
+  // agent permission level (file/shell access)
+  PERMISSION_GET_LEVEL: "permission:get-level",
+  PERMISSION_SET_LEVEL: "permission:set-level",
+  // main → renderer：要求审批
+  PERMISSION_APPROVAL_REQUEST: "permission:approval-request",
+  // renderer → main：审批结果回传
+  PERMISSION_APPROVAL_RESOLVE: "permission:approval-resolve",
 } as const;
+

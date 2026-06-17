@@ -53,6 +53,78 @@ function showModal (options: { title: string; message: string; icon?: string; co
   });
 }
 
+// Inline input modal (Electron 禁用了 window.prompt，所以自己实现)
+let _cyInputOverlay: HTMLElement | null = null;
+function _initInputOverlay(): void {
+  if (_cyInputOverlay) return;
+  _cyInputOverlay = document.createElement("div");
+  _cyInputOverlay.id = "cy-input-overlay";
+  _cyInputOverlay.className = "cy-modal-overlay is-hidden";
+  _cyInputOverlay.innerHTML = [
+    '<div class="cy-modal" role="dialog" aria-modal="true" style="width:min(420px,90vw);">',
+    '  <div class="cy-modal__head">',
+    '    <span class="cy-modal__icon" id="cy-input-icon">✏️</span>',
+    '    <h3 class="cy-modal__title" id="cy-input-title">请输入</h3>',
+    '  </div>',
+    '  <hr class="cy-modal__divider">',
+    '  <p class="cy-modal__body" id="cy-input-message"></p>',
+    '  <input type="text" id="cy-input-field" autocomplete="off" spellcheck="false"',
+    '    style="width:100%;box-sizing:border-box;padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.18);background:rgba(0,0,0,0.32);color:var(--rb-text-strong,#fff);font-family:inherit;font-size:13px;outline:none;margin-bottom:12px;" />',
+    '  <div class="cy-modal__actions">',
+    '    <button type="button" class="ghost-btn" id="cy-input-cancel">取消</button>',
+    '    <button type="button" class="btn-primary" id="cy-input-confirm">确定</button>',
+    '  </div>',
+    '</div>',
+  ].join("\n");
+  document.body.appendChild(_cyInputOverlay);
+}
+
+function showInputModal(options: {
+  title: string;
+  message: string;
+  placeholder?: string;
+  defaultValue?: string;
+  icon?: string;
+  confirmText?: string;
+  cancelText?: string;
+}): Promise<string | null> {
+  _initInputOverlay();
+  if (!_cyInputOverlay) return Promise.resolve(null);
+  const iconEl = _cyInputOverlay.querySelector("#cy-input-icon") as HTMLElement;
+  const titleEl = _cyInputOverlay.querySelector("#cy-input-title") as HTMLElement;
+  const msgEl = _cyInputOverlay.querySelector("#cy-input-message") as HTMLElement;
+  const inputEl = _cyInputOverlay.querySelector("#cy-input-field") as HTMLInputElement;
+  const cancelBtn = _cyInputOverlay.querySelector("#cy-input-cancel") as HTMLButtonElement;
+  const confirmBtn = _cyInputOverlay.querySelector("#cy-input-confirm") as HTMLButtonElement;
+  iconEl.textContent = options.icon || "✏️";
+  titleEl.textContent = options.title;
+  msgEl.textContent = options.message;
+  inputEl.value = options.defaultValue || "";
+  inputEl.placeholder = options.placeholder || "";
+  cancelBtn.textContent = options.cancelText || "取消";
+  confirmBtn.textContent = options.confirmText || "确定";
+  _cyInputOverlay.classList.remove("is-hidden");
+  setTimeout(() => inputEl.focus(), 30);
+  return new Promise((resolve) => {
+    const cleanup = (result: string | null) => {
+      _cyInputOverlay?.classList.add("is-hidden");
+      cancelBtn.removeEventListener("click", onCancel);
+      confirmBtn.removeEventListener("click", onConfirm);
+      inputEl.removeEventListener("keydown", onKey);
+      resolve(result);
+    };
+    const onCancel = () => cleanup(null);
+    const onConfirm = () => cleanup(inputEl.value);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Enter") { e.preventDefault(); onConfirm(); }
+      else if (e.key === "Escape") { e.preventDefault(); onCancel(); }
+    };
+    cancelBtn.addEventListener("click", onCancel);
+    confirmBtn.addEventListener("click", onConfirm);
+    inputEl.addEventListener("keydown", onKey);
+  });
+}
+
 
 interface ModelSettings {
   mode: "auto" | "manual";
@@ -152,6 +224,13 @@ interface SettingsApi {
   deleteEmbeddingModel?: (model: string) => Promise<{ ok: boolean; error?: string }>;
   embeddingSetModel?: (model: string) => Promise<{ ok: boolean; clearedEntries?: number; error?: string }>;
   rerankerSetMode?: (mode: string) => Promise<boolean>;
+  setToolEnabled?: (id: string, enabled: boolean) => Promise<{ ok: boolean; error?: string }>;
+  getToolEnabled?: () => Promise<Record<string, boolean>>;
+  addMcpServer?: (config: unknown) => Promise<{ ok: boolean; toolIds?: string[]; error?: string }>;
+  removeMcpServer?: (serverId: string) => Promise<{ ok: boolean; error?: string }>;
+  listMcpServers?: () => Promise<Array<{ id: string; name: string; connected: boolean; toolCount: number; toolIds: string[] }>>;
+  getPermissionLevel?: () => Promise<{ level: "read-only" | "scoped" | "per-action" | "full" }>;
+  setPermissionLevel?: (level: string) => Promise<{ ok: boolean; level?: string; error?: string }>;
 }
 
 declare global {
@@ -261,6 +340,11 @@ if (!window.settings) {
     setPetAlwaysOnTop: () => {},
     setPetVisible: () => {},
     openStickerManager: async () => ({ ok: false, error: "settings api unavailable" }),
+    setToolEnabled: async () => ({ ok: false, error: "settings api unavailable" }),
+    getToolEnabled: async () => ({}),
+    addMcpServer: async () => ({ ok: false, error: "settings api unavailable" }),
+    removeMcpServer: async () => ({ ok: false, error: "settings api unavailable" }),
+    listMcpServers: async () => [],
   };
 }
 
@@ -540,6 +624,154 @@ openStickerManagerBtn.addEventListener("click", async () => {
   } catch (error) {
     console.error("[settings] open sticker manager error", error);
     window.alert("表情包管理窗口打开失败，请查看终端日志。");
+  }
+});
+
+// ── 插件开关事件 ──────────────────────────────────────────
+const pluginDocsCheckbox = document.getElementById("plugin-docs-enabled") as HTMLInputElement | null;
+const pluginMemoryCheckbox = document.getElementById("plugin-memory-enabled") as HTMLInputElement | null;
+const pluginWorldbookCheckbox = document.getElementById("plugin-worldbook-enabled") as HTMLInputElement | null;
+
+function syncPluginSwitch(toolId: string, enabled: boolean): void {
+  window.settings?.setToolEnabled?.(toolId, enabled).then((result) => {
+    if (!result?.ok) {
+      console.warn("[settings] 工具开关同步失败: " + toolId, result?.error);
+    }
+  }).catch((err) => {
+    console.error("[settings] 工具开关同步异常: " + toolId, err);
+  });
+}
+
+pluginDocsCheckbox?.addEventListener("change", () => {
+  syncPluginSwitch("imported_docs", pluginDocsCheckbox.checked);
+});
+
+pluginMemoryCheckbox?.addEventListener("change", () => {
+  syncPluginSwitch("user_memory", pluginMemoryCheckbox.checked);
+});
+
+pluginWorldbookCheckbox?.addEventListener("change", () => {
+  // 世界书不走 ToolRegistry，这里仅做 UI 状态记录
+  localStorage.setItem("cyrene.plugin.worldbook", String(pluginWorldbookCheckbox.checked));
+});
+
+// 初始化：从后端同步开关状态
+async function loadPluginStates(): Promise<void> {
+  try {
+    const states = await window.settings?.getToolEnabled?.();
+    if (states) {
+      if (pluginDocsCheckbox && "imported_docs" in states) {
+        pluginDocsCheckbox.checked = states["imported_docs"];
+      }
+      if (pluginMemoryCheckbox && "user_memory" in states) {
+        pluginMemoryCheckbox.checked = states["user_memory"];
+      }
+    }
+    // 世界书从 localStorage 恢复
+    const wbState = localStorage.getItem("cyrene.plugin.worldbook");
+    if (pluginWorldbookCheckbox && wbState !== null) {
+      pluginWorldbookCheckbox.checked = wbState === "true";
+    }
+  } catch (err) {
+    console.warn("[settings] 加载插件状态失败", err);
+  }
+}
+void loadPluginStates();
+// ── MCP Server 管理 UI ──────────────────────────────────────
+const pluginAddBtn = document.querySelector(".plugin-add-btn") as HTMLButtonElement | null;
+console.log("[settings] plugin-add-btn 查询结果:", pluginAddBtn ? "找到" : "未找到");
+
+
+// 简易命令行解析：支持引号包裹的参数
+function parseCommandLine(input: string): { command: string; args: string[] } {
+  const trimmed = input.trim();
+  if (!trimmed) return { command: "", args: [] };
+  const parts: string[] = [];
+  let current = "";
+  let inQuote = false;
+  let quoteChar = "";
+  for (const ch of trimmed) {
+    if (inQuote) {
+      if (ch === quoteChar) {
+        inQuote = false;
+      } else {
+        current += ch;
+      }
+    } else if (ch === '"' || ch === "'") {
+      inQuote = true;
+      quoteChar = ch;
+    } else if (ch === " ") {
+      if (current) {
+        parts.push(current);
+        current = "";
+      }
+    } else {
+      current += ch;
+    }
+  }
+  if (current) parts.push(current);
+  return { command: parts[0] || "", args: parts.slice(1) };
+}
+pluginAddBtn?.addEventListener("click", async () => {
+  console.log("[settings] ＋ 按钮被点击，弹出输入框…");
+  const command = await showInputModal({
+    title: "添加 MCP Server",
+    message: "输入启动命令，例如：node C:\\my-mcp-server\\index.js",
+    placeholder: "node path\\to\\server.js --flag",
+    icon: "🧩",
+  });
+  if (!command || !command.trim()) {
+    console.log("[settings] 用户取消或命令为空");
+    return;
+  }
+
+  const nameInput = await showInputModal({
+    title: "MCP Server 名称",
+    message: "给这个 MCP server 起个名字（仅用于展示）",
+    placeholder: "例如：天气工具",
+    icon: "🏷️",
+  });
+  const name = (nameInput && nameInput.trim()) || "未命名 MCP";
+  const serverId = "mcp-" + Date.now();
+  const parsed = parseCommandLine(command.trim());
+  if (!parsed.command) {
+    await showModal({ title: "添加失败", message: "请输入有效的启动命令", icon: "⚠️" });
+    return;
+  }
+
+  console.log("[settings] 添加 MCP server:", name, serverId, command.trim());
+
+  try {
+    const result = await window.settings?.addMcpServer?.({
+      id: serverId,
+      name: name,
+      transport: "stdio",
+      command: parsed.command,
+      args: parsed.args,
+    });
+
+    if (result?.ok) {
+      console.log("[settings] MCP server 添加成功，工具数:", result.toolIds?.length);
+      await showModal({
+        title: "添加成功",
+        message: '"' + name + '" 已连接，发现 ' + (result.toolIds?.length || 0) + " 个工具。详情见终端日志。",
+        icon: "✅",
+      });
+    } else {
+      console.error("[settings] MCP server 添加失败:", result?.error);
+      await showModal({
+        title: "添加失败",
+        message: (result?.error || "未知错误") + "（详情见终端日志）",
+        icon: "⚠️",
+      });
+    }
+  } catch (err) {
+    console.error("[settings] MCP server 添加异常:", err);
+    await showModal({
+      title: "添加异常",
+      message: "调用过程中发生错误，详情见终端日志。",
+      icon: "⚠️",
+    });
   }
 });
 
@@ -1250,3 +1482,128 @@ memoryImportedList?.addEventListener("click", async (event) => {
 
 void loadMemoryPanel();
 void loadUserProfile();
+
+// ── 权限档位 UI ───────────────────────────────────────────
+type PermissionLevel = "read-only" | "scoped" | "per-action" | "full";
+
+const permissionBlocksWrap = document.getElementById("agent-permission-blocks") as HTMLElement | null;
+const permissionNote = document.getElementById("agent-permission-note") as HTMLElement | null;
+
+const PERMISSION_NOTES: Record<PermissionLevel, string> = {
+  "read-only": "只读：昔涟不会修改本地任何文件，也不能为你安装新工具。",
+  "scoped": "指定目录：昔涟只能在你授权的目录里读写文件（白名单后续在此面板配置）。",
+  "per-action": "每次审批：每次涉及文件或安装的操作，昔涟都会在聊天里弹卡片让你确认。",
+  "full": "完全访问：昔涟可以自由调用本地命令（含 git/npm/pip）。请只在你完全信任的情况下使用。",
+};
+
+function paintPermissionUI(level: PermissionLevel): void {
+  if (!permissionBlocksWrap) return;
+  const blocks = permissionBlocksWrap.querySelectorAll<HTMLButtonElement>("button[data-level]");
+  blocks.forEach((b) => {
+    const isActive = b.dataset.level === level;
+    b.classList.toggle("is-active", isActive);
+    b.setAttribute("aria-pressed", String(isActive));
+  });
+  if (permissionNote) {
+    permissionNote.textContent = PERMISSION_NOTES[level];
+  }
+}
+
+async function confirmFullAccess(): Promise<boolean> {
+  // 完全访问需要延迟确认 + 风险提示
+  _initModalOverlay();
+  if (!_cyModalOverlay) return false;
+  const iconEl = _cyModalOverlay.querySelector("#cy-modal-icon") as HTMLElement;
+  const titleEl = _cyModalOverlay.querySelector("#cy-modal-title") as HTMLElement;
+  const msgEl = _cyModalOverlay.querySelector("#cy-modal-message") as HTMLElement;
+  const cancelBtn = _cyModalOverlay.querySelector("#cy-modal-cancel") as HTMLButtonElement;
+  const confirmBtn = _cyModalOverlay.querySelector("#cy-modal-confirm") as HTMLButtonElement;
+  iconEl.textContent = "⚠️";
+  titleEl.textContent = "切换到完全访问？";
+  msgEl.textContent = "这意味着昔涟可以在你的电脑上自由执行命令，包括 git clone、npm install、删除文件等。请只在你完全信任她的判断时启用。";
+  cancelBtn.textContent = "再想想";
+  _cyModalOverlay.classList.remove("is-hidden");
+
+  // 倒计时 5 秒强制等待
+  let remain = 5;
+  confirmBtn.disabled = true;
+  confirmBtn.textContent = "我了解风险（" + remain + "）";
+  const tick = setInterval(() => {
+    remain -= 1;
+    if (remain <= 0) {
+      confirmBtn.disabled = false;
+      confirmBtn.textContent = "我了解风险，启用";
+      clearInterval(tick);
+    } else {
+      confirmBtn.textContent = "我了解风险（" + remain + "）";
+    }
+  }, 1000);
+
+  return new Promise((resolve) => {
+    const cleanup = (result: boolean) => {
+      clearInterval(tick);
+      confirmBtn.disabled = false;
+      _cyModalOverlay?.classList.add("is-hidden");
+      cancelBtn.removeEventListener("click", onCancel);
+      confirmBtn.removeEventListener("click", onConfirm);
+      resolve(result);
+    };
+    const onCancel = () => cleanup(false);
+    const onConfirm = () => cleanup(true);
+    cancelBtn.addEventListener("click", onCancel);
+    confirmBtn.addEventListener("click", onConfirm);
+  });
+}
+
+if (permissionBlocksWrap) {
+  permissionBlocksWrap.addEventListener("click", async (event) => {
+    const btn = (event.target as HTMLElement)?.closest("button[data-level]") as HTMLButtonElement | null;
+    if (!btn) return;
+    const target = (btn.dataset.level || "") as PermissionLevel;
+    if (!target) return;
+    if (btn.classList.contains("is-active")) {
+      console.log("[settings] 档位未变，不动作");
+      return;
+    }
+
+    if (target === "full") {
+      const ok = await confirmFullAccess();
+      if (!ok) {
+        console.log("[settings] 用户取消了完全访问");
+        return;
+      }
+    }
+
+    console.log("[settings] 切换权限档位 →", target);
+    try {
+      const result = await window.settings?.setPermissionLevel?.(target);
+      if (result?.ok) {
+        paintPermissionUI((result.level || target) as PermissionLevel);
+      } else {
+        console.warn("[settings] 切换档位失败:", result?.error);
+      }
+    } catch (err) {
+      console.error("[settings] 切换档位异常:", err);
+    }
+  });
+
+  // 初始化：从后端拿当前档位
+  void (async () => {
+    try {
+      const result = await window.settings?.getPermissionLevel?.();
+      const level = (result?.level || "read-only") as PermissionLevel;
+      console.log("[settings] 当前权限档位:", level);
+      paintPermissionUI(level);
+    } catch (err) {
+      console.warn("[settings] 加载权限档位失败:", err);
+      paintPermissionUI("read-only");
+    }
+  })();
+}
+
+
+
+
+
+
+

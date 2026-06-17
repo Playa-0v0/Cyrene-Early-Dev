@@ -1,14 +1,10 @@
 // Orchestrator types
-export interface OrchestratorPlan {
-  useUserMemory: boolean;
-  useWorldbook: boolean;
-  useImportedDocs: boolean;
-  useFileParser: boolean;
-  useWebSearch: boolean;
-  shouldWriteMemory: boolean;
-  shouldReflect: boolean;
-  reasons: string[];
-  confidence: number;
+
+// ToolCallResult: 单次工具调用的结果
+export interface ToolCallResult {
+  toolId: string;
+  args: Record<string, unknown>;
+  output: string;
 }
 
 export interface RuleContext {
@@ -19,23 +15,10 @@ export interface RuleContext {
   hasUserMemory: boolean;
 }
 
+// Rule 的 apply 不再接收 OrchestratorPlan，改为直接返回工具调用列表
 export interface Rule {
   name: string;
   priority: number;
   match(ctx: RuleContext): boolean;
-  apply(plan: OrchestratorPlan, ctx: RuleContext): void;
-}
-
-export function createDefaultPlan(): OrchestratorPlan {
-  return {
-    useUserMemory: false,
-    useWorldbook: false,
-    useImportedDocs: false,
-    useFileParser: false,
-    useWebSearch: false,
-    shouldWriteMemory: false,
-    shouldReflect: false,
-    reasons: [],
-    confidence: 1,
-  };
+  apply(ctx: RuleContext): Array<{ toolId: string; args: Record<string, unknown> }>;
 }
