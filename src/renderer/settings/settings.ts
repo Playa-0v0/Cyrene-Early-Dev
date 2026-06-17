@@ -90,6 +90,44 @@ interface UserApi {
   getAvatar: () => Promise<string | null>;
 }
 
+interface MemoryPanelPayload {
+  l0: {
+    preferredName: string;
+    occupation: string;
+    longTermInterests: string;
+    language: string;
+    permanentNote: string;
+  };
+  l1: {
+    recentGoals: string;
+    recentPreferences: string;
+    currentProject: string;
+  };
+  l2: Array<{
+    id: string;
+    content: string;
+    triggerText: string;
+    status: "active" | "aging" | "archived";
+    weight: number;
+    createdAt: number;
+  }>;
+  importedDocs: Array<{
+    fileName: string;
+    chunkCount: number;
+    lastImportedAt: number;
+  }>;
+  reflections: Array<{
+    id: string;
+    title: string;
+    body: string;
+    meta: string;
+  }>;
+}
+
+interface MemoryPanelApi {
+  getData: () => Promise<MemoryPanelPayload>;
+}
+
 interface SettingsApi {
   minimize: () => void;
   close: () => void;
@@ -116,6 +154,7 @@ declare global {
   interface Window {
     settings?: SettingsApi;
     user?: UserApi;
+    memoryPanel?: MemoryPanelApi;
   }
 }
 
@@ -823,6 +862,20 @@ const callPrefInput = document.getElementById("user-call-pref") as HTMLInputElem
 const birthdayInput = document.getElementById("user-birthday") as HTMLInputElement | null;
 const timezoneInput = document.getElementById("user-timezone") as HTMLInputElement | null;
 const userSaveBtn = document.getElementById("user-save-btn") as HTMLButtonElement | null;
+const memoryL0NameInput = document.getElementById("memory-l0-name") as HTMLInputElement | null;
+const memoryL0OccupationInput = document.getElementById("memory-l0-occupation") as HTMLInputElement | null;
+const memoryL0InterestsInput = document.getElementById("memory-l0-interests") as HTMLInputElement | null;
+const memoryL0LanguageInput = document.getElementById("memory-l0-language") as HTMLInputElement | null;
+const memoryL0NoteInput = document.getElementById("memory-l0-note") as HTMLTextAreaElement | null;
+const memoryL1GoalsInput = document.getElementById("memory-l1-goals") as HTMLTextAreaElement | null;
+const memoryL1PreferencesInput = document.getElementById("memory-l1-preferences") as HTMLTextAreaElement | null;
+const memoryL1ProjectInput = document.getElementById("memory-l1-project") as HTMLTextAreaElement | null;
+const memoryL2SearchInput = document.getElementById("memory-l2-search") as HTMLInputElement | null;
+const memoryL2List = document.getElementById("memory-l2-list") as HTMLElement | null;
+const memoryImportedList = document.getElementById("memory-imported-list") as HTMLElement | null;
+const memoryReflectionList = document.getElementById("memory-reflection-list") as HTMLElement | null;
+
+let memoryPanelCache: MemoryPanelPayload | null = null;
 
 function showAvatar(dataUrl: string | null): void {
   if (!dataUrl || !avatarEl) return;
@@ -838,6 +891,130 @@ function showAvatar(dataUrl: string | null): void {
   }
   img.src = dataUrl;
   if (avatarPlaceholder) avatarPlaceholder.style.display = "none";
+}
+
+function formatDateTime(timestamp: number): string {
+  if (!timestamp) return "暂无时间";
+  const date = new Date(timestamp);
+  if (Number.isNaN(date.getTime())) return "暂无时间";
+  return date.toLocaleString("zh-CN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function renderEmptyState(container: HTMLElement | null, title: string, hint: string): void {
+  if (!container) return;
+  container.innerHTML = [
+    '<div class="memory-list__empty">',
+    '  <span>📭</span>',
+    `  <p>${escapeHtml(title)}</p>`,
+    `  <p class="memory-list__hint">${escapeHtml(hint)}</p>`,
+    '</div>',
+  ].join("\n");
+}
+
+function renderInfoList(
+  container: HTMLElement | null,
+  items: Array<{ title: string; body: string; meta?: string }>,
+  emptyTitle: string,
+  emptyHint: string,
+): void {
+  if (!container) return;
+  if (items.length === 0) {
+    renderEmptyState(container, emptyTitle, emptyHint);
+    return;
+  }
+
+  container.innerHTML = items
+    .map((item) => {
+      const meta = item.meta ? `<p class="memory-record__meta">${escapeHtml(item.meta)}</p>` : "";
+      return [
+        '<article class="memory-record">',
+        `  <h3 class="memory-record__title">${escapeHtml(item.title)}</h3>`,
+        `  <p class="memory-record__body">${escapeHtml(item.body)}</p>`,
+        `  ${meta}`,
+        '</article>',
+      ].join("\n");
+    })
+    .join("\n");
+}
+
+function renderL2List(query = ""): void {
+  const list = memoryPanelCache?.l2 ?? [];
+  const normalized = query.trim().toLowerCase();
+  const filtered = normalized
+    ? list.filter((item) => {
+        const haystack = [item.content, item.triggerText, item.status].join(" ").toLowerCase();
+        return haystack.includes(normalized);
+      })
+    : list;
+
+  renderInfoList(
+    memoryL2List,
+    filtered.map((item) => ({
+      title: item.content,
+      body: item.triggerText ? `触发片段：${item.triggerText}` : "无触发片段",
+      meta: `状态：${item.status} · 权重：${item.weight.toFixed(1)} · 创建于：${formatDateTime(item.createdAt)}`,
+    })),
+    normalized ? "没有匹配的事件记忆" : "暂无事件记忆",
+    normalized ? "换个关键词试试" : "聊天后昔涟会自动提炼重要信息",
+  );
+}
+
+async function loadMemoryPanel(): Promise<void> {
+  try {
+    const payload = await window.memoryPanel?.getData();
+    if (!payload) return;
+    memoryPanelCache = payload;
+
+    if (memoryL0NameInput) memoryL0NameInput.value = payload.l0.preferredName || "";
+    if (memoryL0OccupationInput) memoryL0OccupationInput.value = payload.l0.occupation || "";
+    if (memoryL0InterestsInput) memoryL0InterestsInput.value = payload.l0.longTermInterests || "";
+    if (memoryL0LanguageInput) memoryL0LanguageInput.value = payload.l0.language || "";
+    if (memoryL0NoteInput) memoryL0NoteInput.value = payload.l0.permanentNote || "";
+
+    if (memoryL1GoalsInput) memoryL1GoalsInput.value = payload.l1.recentGoals || "";
+    if (memoryL1PreferencesInput) memoryL1PreferencesInput.value = payload.l1.recentPreferences || "";
+    if (memoryL1ProjectInput) memoryL1ProjectInput.value = payload.l1.currentProject || "";
+
+    renderL2List(memoryL2SearchInput?.value || "");
+
+    renderInfoList(
+      memoryImportedList,
+      payload.importedDocs.map((item) => ({
+        title: item.fileName,
+        body: `已索引 ${item.chunkCount} 个片段`,
+        meta: `最近导入：${formatDateTime(item.lastImportedAt)}`,
+      })),
+      "暂无导入文档",
+      "在聊天窗口上传文件后会自动索引",
+    );
+
+    renderInfoList(
+      memoryReflectionList,
+      payload.reflections,
+      "暂无阶段总结",
+      "当前项目里 Reflection 还没真正生成落地",
+    );
+  } catch (err) {
+    console.error("[settings] load memory panel failed", err);
+    renderEmptyState(memoryL2List, "记忆读取失败", "请查看终端日志");
+    renderEmptyState(memoryImportedList, "导入知识读取失败", "请查看终端日志");
+    renderEmptyState(memoryReflectionList, "阶段总结读取失败", "请查看终端日志");
+  }
 }
 
 async function loadUserProfile(): Promise<void> {
@@ -892,4 +1069,9 @@ if (userSaveBtn) {
   });
 }
 
+memoryL2SearchInput?.addEventListener("input", () => {
+  renderL2List(memoryL2SearchInput.value);
+});
+
+void loadMemoryPanel();
 void loadUserProfile();

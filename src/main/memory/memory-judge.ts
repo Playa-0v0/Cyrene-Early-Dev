@@ -46,26 +46,63 @@ function stripThinkBlocks(text: string): string {
     .trim()
 }
 
-function extractJsonArray(text: string): unknown[] | null {
-  const cleaned = stripThinkBlocks(text)
-    .replace(/^```(?:json)?\s*/i, "")
-    .replace(/```$/i, "")
+function extractJsonArray(raw: string): unknown[] | null {
+  // 第一步：去掉 markdown 代码块包裹
+  let text = raw
+    .replace(/```json\s*/gi, '')
+    .replace(/```\s*/gi, '')
     .trim()
 
+  // 第二步：截取第一个 [ 到最后一个 ] 之间的内容
+  const start = text.indexOf('[')
+  const end = text.lastIndexOf(']')
+  if (start === -1 || end === -1 || end <= start) return null
+  text = text.slice(start, end + 1)
+
+  // 第三步：直接尝试解析
   try {
-    const parsed = JSON.parse(cleaned) as unknown
-    return Array.isArray(parsed) ? parsed : null
-  } catch {
-    const start = cleaned.indexOf("[")
-    const end = cleaned.lastIndexOf("]")
-    if (start < 0 || end <= start) return null
-    try {
-      const parsed = JSON.parse(cleaned.slice(start, end + 1)) as unknown
-      return Array.isArray(parsed) ? parsed : null
-    } catch {
-      return null
+    return JSON.parse(text) as unknown[]
+  } catch (_) {}
+
+  // 第四步：修复嵌套英文引号问题
+  try {
+    const fixed = text.replace(
+      /("content"|"triggerText"):\s*"([\s\S]*?)(?<!\\)"/g,
+      (match: string, key: string, value: string) => {
+        let i = 0
+        const cleaned = value.replace(/"/g, () => i++ % 2 === 0 ? '「' : '」')
+        return key + ': "' + cleaned + '"'
+      }
+    )
+    return JSON.parse(fixed) as unknown[]
+  } catch (_) {}
+
+  // 第五步：最后兜底，用正则逐字段提取
+  try {
+    const results: unknown[] = []
+    const itemRegex = /\{[\s\S]*?\}/g
+    const items = text.match(itemRegex) || []
+    for (const item of items) {
+      const layer = item.match(/"layer"\s*:\s*"([^"]+)"/)
+      const content = item.match(/"content"\s*:\s*"([\s\S]+?)"(?:\s*,|\s*\})/)
+      const confidence = item.match(/"confidence"\s*:\s*([\d.]+)/)
+      const triggerText = item.match(/"triggerText"\s*:\s*"([\s\S]+?)"(?:\s*,|\s*\})/)
+      if (layer && content && confidence) {
+        results.push({
+          layer: layer[1],
+          content: content[1],
+          confidence: parseFloat(confidence[1]),
+          triggerText: triggerText ? triggerText[1] : content[1].slice(0, 30)
+        })
+      }
     }
-  }
+    if (results.length > 0) {
+      console.log('[MemoryJudge] 使用兜底正则提取成功，条数:', results.length)
+      return results
+    }
+  } catch (_) {}
+
+  return null
 }
 
 function normalizeCandidate(input: unknown): MemoryCandidate | null {
@@ -157,6 +194,12 @@ export class MemoryJudge {
         "- 必须是用户主动表达的信息，不是 AI 说的",
         "- 提炼信息，不要复制原文",
         "",
+        "重要格式规则：",
+        "- content 和 triggerText 字段的值里，禁止出现英文双引号 \"",
+        "- 如果内容里有引号，统一用中文引号「」替代，例如：用户希望被称为「宝宝」",
+        "- 不要用 markdown 代码块包裹 JSON，直接输出裸 JSON",
+        "- 数组第一个字符必须是 [，最后一个字符必须是 ]",
+        "",
         "只返回 JSON 数组，禁止输出任何其他文字：",
         "[",
         "  {",
@@ -187,7 +230,7 @@ export class MemoryJudge {
 
       const parsed = extractJsonArray(raw)
       if (!parsed) {
-        console.error("[MemoryJudge] JSON 解析失败:", raw)
+        console.error("[MemoryJudge] JSON 解析失败，原始内容：\n", raw.slice(0, 200))
         console.log("[MemoryJudge] 本轮无值得记录的信息")
         return []
       }

@@ -8,6 +8,7 @@ import { initRAG, buildMemoryContext, addMemory, importDocument, switchEmbedding
 import { buildOrchestratedMemoryContext, scheduleMemoryWrite } from "./orchestrator";
 import { getEmbeddingStatus, downloadEmbeddingModel, deleteEmbeddingModel } from "./embedding-manager";
 import { initReranker } from "./rag/reranker";
+import { memoryStore } from "./memory/memory-store";
 
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
@@ -143,6 +144,10 @@ function getAvatarPath(): string {
   return path.join(app.getPath("userData"), "avatar.png");
 }
 
+function getRagStorePath(): string {
+  return path.join(app.getPath("userData"), "rag-data", "memory-store.json");
+}
+
 const DEFAULT_USER_PROFILE: UserProfile = {
   nickname: "",
   callPreference: "",
@@ -168,6 +173,70 @@ function saveUserProfile(profile: Partial<UserProfile>): UserProfile {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, JSON.stringify(merged, null, 2), "utf8");
   return merged;
+}
+
+interface MemoryPanelItem {
+  id: string;
+  title: string;
+  body: string;
+  meta: string;
+}
+
+interface ImportedDocItem {
+  fileName: string;
+  chunkCount: number;
+  lastImportedAt: number;
+}
+
+async function loadMemoryPanelData() {
+  const [l0, l1, l2] = await Promise.all([
+    memoryStore.getL0(),
+    memoryStore.getL1(),
+    memoryStore.getAllL2(),
+  ]);
+
+  let importedDocs: ImportedDocItem[] = [];
+  const ragStorePath = getRagStorePath();
+
+  try {
+    if (fs.existsSync(ragStorePath)) {
+      const raw = fs.readFileSync(ragStorePath, "utf8");
+      const entries = JSON.parse(raw) as Array<{
+        source?: string;
+        createdAt?: number;
+        metadata?: { fileName?: string };
+      }>;
+
+      const docsMap = new Map<string, ImportedDocItem>();
+      for (const entry of entries) {
+        if (entry.source !== "imported_doc") continue;
+        const fileName = entry.metadata?.fileName || "未命名文档";
+        const existing = docsMap.get(fileName);
+        if (existing) {
+          existing.chunkCount += 1;
+          existing.lastImportedAt = Math.max(existing.lastImportedAt, entry.createdAt || 0);
+        } else {
+          docsMap.set(fileName, {
+            fileName,
+            chunkCount: 1,
+            lastImportedAt: entry.createdAt || 0,
+          });
+        }
+      }
+
+      importedDocs = [...docsMap.values()].sort((a, b) => b.lastImportedAt - a.lastImportedAt);
+    }
+  } catch (error) {
+    console.warn("[settings] load imported docs failed:", error);
+  }
+
+  return {
+    l0,
+    l1,
+    l2: l2.sort((a, b) => b.createdAt - a.createdAt),
+    importedDocs,
+    reflections: [] as MemoryPanelItem[],
+  };
 }
 
 function getStickerSettingsPath(): string {
@@ -1505,6 +1574,7 @@ ipcMain.handle(IPC.USER_GET_AVATAR, () => {
   return "data:" + mime + ";base64," + buf.toString("base64");
 });
 
+ipcMain.handle(IPC.MEMORY_PANEL_GET_DATA, () => loadMemoryPanelData());
 ipcMain.handle(IPC.USER_GET_PROFILE, () => loadUserProfile());
 ipcMain.handle(IPC.USER_SAVE_PROFILE, (_event, profile: Partial<UserProfile>) => saveUserProfile(profile));
 ipcMain.handle(IPC.USER_UPLOAD_AVATAR, async () => {

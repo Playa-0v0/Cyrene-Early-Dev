@@ -107,5 +107,10 @@ const userApi = {
   getAvatar: () => ipcRenderer.invoke(IPC.USER_GET_AVATAR),
 };
 
+const memoryPanelApi = {
+  getData: () => ipcRenderer.invoke(IPC.MEMORY_PANEL_GET_DATA),
+};
+
 contextBridge.exposeInMainWorld("user", userApi);
+contextBridge.exposeInMainWorld("memoryPanel", memoryPanelApi);
 contextBridge.exposeInMainWorld("runtimeState", runtimeStateApi);

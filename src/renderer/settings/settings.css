@@ -1125,6 +1125,33 @@ body {
 .memory-list {
   min-height: 80px;
 }
+.memory-record {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+.memory-record + .memory-record {
+  margin-top: 10px;
+}
+.memory-record__title {
+  margin: 0;
+  color: var(--rb-text-strong);
+  font: var(--rb-text-small);
+  font-weight: 600;
+}
+.memory-record__body {
+  margin: 6px 0 0;
+  color: rgba(235, 229, 245, 0.72);
+  font: var(--rb-text-small);
+  white-space: pre-wrap;
+}
+.memory-record__meta {
+  margin: 8px 0 0;
+  color: rgba(235, 229, 245, 0.38);
+  font: var(--rb-text-small);
+  font-size: 11px;
+}
 .memory-list__empty {
   display: flex;
   flex-direction: column;

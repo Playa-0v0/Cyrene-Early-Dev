@@ -4,10 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>昔涟 · 设置</title>
-  <script type="module" crossorigin src="../assets/settings-D1dw172Z.js"></script>
+  <script type="module" crossorigin src="../assets/settings-CYvXckAk.js"></script>
   <link rel="modulepreload" crossorigin href="../assets/base-CVzNOcnc.js">
   <link rel="stylesheet" crossorigin href="../assets/base-BTHABN_A.css">
-  <link rel="stylesheet" crossorigin href="../assets/settings-DemaLy5b.css">
+  <link rel="stylesheet" crossorigin href="../assets/settings-D3-y-Wln.css">
 </head>
 <body>
   <div class="settings-shell">
@@ -406,11 +406,11 @@
                 <span class="memory-card__badge">L0</span>
               </div>
               <div class="memory-fields">
-                <div class="memory-field"><label>称呼</label><input type="text" placeholder="未设置" disabled /></div>
-                <div class="memory-field"><label>职业 / 身份</label><input type="text" placeholder="未设置" disabled /></div>
-                <div class="memory-field"><label>长期兴趣</label><input type="text" placeholder="未设置" disabled /></div>
-                <div class="memory-field"><label>常用语言</label><input type="text" placeholder="未设置" disabled /></div>
-                <div class="memory-field memory-field--full"><label>永久备注</label><textarea placeholder="未设置" rows="2" disabled></textarea></div>
+                <div class="memory-field"><label>称呼</label><input id="memory-l0-name" type="text" placeholder="未设置" disabled /></div>
+                <div class="memory-field"><label>职业 / 身份</label><input id="memory-l0-occupation" type="text" placeholder="未设置" disabled /></div>
+                <div class="memory-field"><label>长期兴趣</label><input id="memory-l0-interests" type="text" placeholder="未设置" disabled /></div>
+                <div class="memory-field"><label>常用语言</label><input id="memory-l0-language" type="text" placeholder="未设置" disabled /></div>
+                <div class="memory-field memory-field--full"><label>永久备注</label><textarea id="memory-l0-note" placeholder="未设置" rows="2" disabled></textarea></div>
               </div>
               <button type="button" class="ghost-btn" disabled>✏️ 编辑</button>
             </div>
@@ -425,8 +425,9 @@
                 <span class="memory-card__badge">L1</span>
               </div>
               <div class="memory-fields">
-                <div class="memory-field memory-field--full"><label>最近目标</label><textarea placeholder="未设置" rows="2" disabled></textarea></div>
-                <div class="memory-field memory-field--full"><label>近期偏好</label><textarea placeholder="未设置" rows="2" disabled></textarea></div>
+                <div class="memory-field memory-field--full"><label>最近目标</label><textarea id="memory-l1-goals" placeholder="未设置" rows="2" disabled></textarea></div>
+                <div class="memory-field memory-field--full"><label>近期偏好</label><textarea id="memory-l1-preferences" placeholder="未设置" rows="2" disabled></textarea></div>
+                <div class="memory-field memory-field--full"><label>当前项目</label><textarea id="memory-l1-project" placeholder="未设置" rows="2" disabled></textarea></div>
               </div>
               <button type="button" class="ghost-btn" disabled>✏️ 编辑</button>
             </div>
@@ -440,8 +441,8 @@
                 </div>
                 <span class="memory-card__badge">L2</span>
               </div>
-              <div class="memory-search"><input type="text" placeholder="搜索记忆..." disabled /></div>
-              <div class="memory-list"><div class="memory-list__empty"><span>📭</span><p>暂无事件记忆</p><p class="memory-list__hint">聊天后昔涟会自动提炼重要信息</p></div></div>
+              <div class="memory-search"><input id="memory-l2-search" type="text" placeholder="搜索记忆..." /></div>
+              <div class="memory-list" id="memory-l2-list"><div class="memory-list__empty"><span>📭</span><p>暂无事件记忆</p><p class="memory-list__hint">聊天后昔涟会自动提炼重要信息</p></div></div>
             </div>
             <!-- import -->
             <div class="memory-card">
@@ -452,7 +453,7 @@
                   <p>用户上传的文档和知识库</p>
                 </div>
               </div>
-              <div class="memory-list"><div class="memory-list__empty"><span>📭</span><p>暂无导入文档</p><p class="memory-list__hint">在聊天窗口上传文件后会自动索引</p></div></div>
+              <div class="memory-list" id="memory-imported-list"><div class="memory-list__empty"><span>📭</span><p>暂无导入文档</p><p class="memory-list__hint">在聊天窗口上传文件后会自动索引</p></div></div>
             </div>
             <!-- reflection -->
             <div class="memory-card">
@@ -463,7 +464,7 @@
                   <p>AI 自动生成的阶段性回顾</p>
                 </div>
               </div>
-              <div class="memory-list"><div class="memory-list__empty"><span>📭</span><p>暂无阶段总结</p><p class="memory-list__hint">持续聊天后会自动生成</p></div></div>
+              <div class="memory-list" id="memory-reflection-list"><div class="memory-list__empty"><span>📭</span><p>暂无阶段总结</p><p class="memory-list__hint">持续聊天后会自动生成</p></div></div>
             </div>
           </div>
         </section>

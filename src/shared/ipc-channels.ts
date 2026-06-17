@@ -75,4 +75,7 @@ export const IPC = {
   USER_SAVE_PROFILE: "user:save-profile",
   USER_UPLOAD_AVATAR: "user:upload-avatar",
   USER_GET_AVATAR: "user:get-avatar",
+
+  // memory panel (read-only)
+  MEMORY_PANEL_GET_DATA: "memory-panel:get-data",
 } as const;
