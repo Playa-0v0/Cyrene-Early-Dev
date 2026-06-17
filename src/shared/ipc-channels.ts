@@ -76,7 +76,9 @@ export const IPC = {
   USER_UPLOAD_AVATAR: "user:upload-avatar",
   USER_GET_AVATAR: "user:get-avatar",
 
-  // memory panel (read-only)
+  // memory panel
   MEMORY_PANEL_GET_DATA: "memory-panel:get-data",
   MEMORY_PANEL_DELETE_IMPORTED_DOC: "memory-panel:delete-imported-doc",
+  MEMORY_PANEL_SAVE_L0: "memory-panel:save-l0",
+  MEMORY_PANEL_SAVE_L1: "memory-panel:save-l1",
 } as const;

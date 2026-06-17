@@ -401,7 +401,7 @@
                 <span>📌</span>
                 <div>
                   <h2>长期画像</h2>
-                  <p>昔涟一直记得、基本不会变化的信息</p>
+                  <p>昔涟一直记得、基本不会变化的信息</p><p class="memory-card__hint">手动修改的内容优先级高于自动推断</p>
                 </div>
                 <span class="memory-card__badge">L0</span>
               </div>
@@ -412,7 +412,7 @@
                 <div class="memory-field"><label>常用语言</label><input id="memory-l0-language" type="text" placeholder="未设置" disabled /></div>
                 <div class="memory-field memory-field--full"><label>永久备注</label><textarea id="memory-l0-note" placeholder="未设置" rows="2" disabled></textarea></div>
               </div>
-              <button type="button" class="ghost-btn" disabled>✏️ 编辑</button>
+              <button type="button" class="ghost-btn" id="memory-l0-edit-btn" disabled>✏️ 编辑</button> <button type="button" class="ghost-btn is-hidden" id="memory-l0-cancel-btn">取消</button>
             </div>
             <!-- L1 -->
             <div class="memory-card">
@@ -420,7 +420,7 @@
                 <span>🌱</span>
                 <div>
                   <h2>当前阶段</h2>
-                  <p>最近的目标、偏好和状态，会随时间变化</p>
+                  <p>最近的目标、偏好和状态，会随时间变化</p><p class="memory-card__hint">手动修改的内容优先级高于自动推断</p>
                 </div>
                 <span class="memory-card__badge">L1</span>
               </div>
@@ -429,7 +429,7 @@
                 <div class="memory-field memory-field--full"><label>近期偏好</label><textarea id="memory-l1-preferences" placeholder="未设置" rows="2" disabled></textarea></div>
                 <div class="memory-field memory-field--full"><label>当前项目</label><textarea id="memory-l1-project" placeholder="未设置" rows="2" disabled></textarea></div>
               </div>
-              <button type="button" class="ghost-btn" disabled>✏️ 编辑</button>
+              <button type="button" class="ghost-btn" id="memory-l1-edit-btn" disabled>✏️ 编辑</button> <button type="button" class="ghost-btn is-hidden" id="memory-l1-cancel-btn">取消</button>
             </div>
             <!-- L2 -->
             <div class="memory-card">

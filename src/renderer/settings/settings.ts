@@ -128,6 +128,8 @@ interface MemoryPanelPayload {
 interface MemoryPanelApi {
   getData: () => Promise<MemoryPanelPayload>;
   deleteImportedDoc: (importId: string, fileName?: string) => Promise<{ ok: boolean; deleted: number }>;
+  saveL0: (patch: Record<string, unknown>) => Promise<{ ok: boolean }>;
+  saveL1: (patch: Record<string, unknown>) => Promise<{ ok: boolean }>;
 }
 
 interface SettingsApi {
@@ -876,8 +878,16 @@ const memoryL2SearchInput = document.getElementById("memory-l2-search") as HTMLI
 const memoryL2List = document.getElementById("memory-l2-list") as HTMLElement | null;
 const memoryImportedList = document.getElementById("memory-imported-list") as HTMLElement | null;
 const memoryReflectionList = document.getElementById("memory-reflection-list") as HTMLElement | null;
+const memoryL0EditBtn = document.getElementById("memory-l0-edit-btn") as HTMLButtonElement | null;
+const memoryL0CancelBtn = document.getElementById("memory-l0-cancel-btn") as HTMLButtonElement | null;
+const memoryL1EditBtn = document.getElementById("memory-l1-edit-btn") as HTMLButtonElement | null;
+const memoryL1CancelBtn = document.getElementById("memory-l1-cancel-btn") as HTMLButtonElement | null;
 
 let memoryPanelCache: MemoryPanelPayload | null = null;
+let l0Editing = false;
+let l1Editing = false;
+let l0Snapshot: Record<string, string> | null = null;
+let l1Snapshot: Record<string, string> | null = null;
 
 function showAvatar(dataUrl: string | null): void {
   if (!dataUrl || !avatarEl) return;
@@ -1002,6 +1012,9 @@ async function loadMemoryPanel(): Promise<void> {
       "暂无阶段总结",
       "当前项目里 Reflection 还没真正生成落地",
     );
+
+    if (memoryL0EditBtn) memoryL0EditBtn.disabled = false;
+    if (memoryL1EditBtn) memoryL1EditBtn.disabled = false;
   } catch (err) {
     console.error("[settings] load memory panel failed", err);
     renderEmptyState(memoryL2List, "记忆读取失败", "请查看终端日志");
@@ -1067,6 +1080,154 @@ memoryL2SearchInput?.addEventListener("input", () => {
 });
 
 void loadMemoryPanel();
+// --- L0/L1 editable logic ---
+
+function takeL0Snapshot(): Record<string, string> {
+  return {
+    preferredName: memoryL0NameInput?.value ?? "",
+    occupation: memoryL0OccupationInput?.value ?? "",
+    longTermInterests: memoryL0InterestsInput?.value ?? "",
+    language: memoryL0LanguageInput?.value ?? "",
+    permanentNote: memoryL0NoteInput?.value ?? "",
+  };
+}
+
+function takeL1Snapshot(): Record<string, string> {
+  return {
+    recentGoals: memoryL1GoalsInput?.value ?? "",
+    recentPreferences: memoryL1PreferencesInput?.value ?? "",
+    currentProject: memoryL1ProjectInput?.value ?? "",
+  };
+}
+
+function shallowEqual(a: Record<string, string>, b: Record<string, string>): boolean {
+  const keys = Object.keys(a);
+  if (keys.length !== Object.keys(b).length) return false;
+  for (const key of keys) {
+    if (a[key] !== b[key]) return false;
+  }
+  return true;
+}
+
+function setL0FieldsDisabled(disabled: boolean): void {
+  if (memoryL0NameInput) disabled ? memoryL0NameInput.setAttribute("disabled", "") : memoryL0NameInput.removeAttribute("disabled");
+  if (memoryL0OccupationInput) disabled ? memoryL0OccupationInput.setAttribute("disabled", "") : memoryL0OccupationInput.removeAttribute("disabled");
+  if (memoryL0InterestsInput) disabled ? memoryL0InterestsInput.setAttribute("disabled", "") : memoryL0InterestsInput.removeAttribute("disabled");
+  if (memoryL0LanguageInput) disabled ? memoryL0LanguageInput.setAttribute("disabled", "") : memoryL0LanguageInput.removeAttribute("disabled");
+  if (memoryL0NoteInput) disabled ? memoryL0NoteInput.setAttribute("disabled", "") : memoryL0NoteInput.removeAttribute("disabled");
+}
+
+function setL1FieldsDisabled(disabled: boolean): void {
+  if (memoryL1GoalsInput) disabled ? memoryL1GoalsInput.setAttribute("disabled", "") : memoryL1GoalsInput.removeAttribute("disabled");
+  if (memoryL1PreferencesInput) disabled ? memoryL1PreferencesInput.setAttribute("disabled", "") : memoryL1PreferencesInput.removeAttribute("disabled");
+  if (memoryL1ProjectInput) disabled ? memoryL1ProjectInput.setAttribute("disabled", "") : memoryL1ProjectInput.removeAttribute("disabled");
+}
+
+function enterL0EditMode(): void {
+  if (l0Editing) return;
+  l0Editing = true;
+  l0Snapshot = takeL0Snapshot();
+  setL0FieldsDisabled(false);
+  if (memoryL0EditBtn) memoryL0EditBtn.textContent = "💾 保存";
+  if (memoryL0CancelBtn) memoryL0CancelBtn.classList.remove("is-hidden");
+}
+
+function exitL0EditMode(): void {
+  l0Editing = false;
+  l0Snapshot = null;
+  setL0FieldsDisabled(true);
+  if (memoryL0EditBtn) memoryL0EditBtn.textContent = "✏️ 编辑";
+  if (memoryL0CancelBtn) memoryL0CancelBtn.classList.add("is-hidden");
+}
+
+async function saveL0(): Promise<void> {
+  const current = takeL0Snapshot();
+  if (l0Snapshot && shallowEqual(current, l0Snapshot)) {
+    exitL0EditMode();
+    return;
+  }
+  try {
+    await window.memoryPanel?.saveL0(current);
+    await loadMemoryPanel();
+    exitL0EditMode();
+    if (memoryL0EditBtn) {
+      memoryL0EditBtn.textContent = "✅ 已保存";
+      setTimeout(() => { if (memoryL0EditBtn && !l0Editing) memoryL0EditBtn.textContent = "✏️ 编辑"; }, 2000);
+    }
+  } catch (err) {
+    console.error("[settings] save L0 failed", err);
+    alert("保存失败，请重试");
+  }
+}
+
+function cancelL0Edit(): void {
+  if (l0Snapshot) {
+    if (memoryL0NameInput) memoryL0NameInput.value = l0Snapshot.preferredName;
+    if (memoryL0OccupationInput) memoryL0OccupationInput.value = l0Snapshot.occupation;
+    if (memoryL0InterestsInput) memoryL0InterestsInput.value = l0Snapshot.longTermInterests;
+    if (memoryL0LanguageInput) memoryL0LanguageInput.value = l0Snapshot.language;
+    if (memoryL0NoteInput) memoryL0NoteInput.value = l0Snapshot.permanentNote;
+  }
+  exitL0EditMode();
+}
+
+function enterL1EditMode(): void {
+  if (l1Editing) return;
+  l1Editing = true;
+  l1Snapshot = takeL1Snapshot();
+  setL1FieldsDisabled(false);
+  if (memoryL1EditBtn) memoryL1EditBtn.textContent = "💾 保存";
+  if (memoryL1CancelBtn) memoryL1CancelBtn.classList.remove("is-hidden");
+}
+
+function exitL1EditMode(): void {
+  l1Editing = false;
+  l1Snapshot = null;
+  setL1FieldsDisabled(true);
+  if (memoryL1EditBtn) memoryL1EditBtn.textContent = "✏️ 编辑";
+  if (memoryL1CancelBtn) memoryL1CancelBtn.classList.add("is-hidden");
+}
+
+async function saveL1(): Promise<void> {
+  const current = takeL1Snapshot();
+  if (l1Snapshot && shallowEqual(current, l1Snapshot)) {
+    exitL1EditMode();
+    return;
+  }
+  try {
+    await window.memoryPanel?.saveL1(current);
+    await loadMemoryPanel();
+    exitL1EditMode();
+    if (memoryL1EditBtn) {
+      memoryL1EditBtn.textContent = "✅ 已保存";
+      setTimeout(() => { if (memoryL1EditBtn && !l1Editing) memoryL1EditBtn.textContent = "✏️ 编辑"; }, 2000);
+    }
+  } catch (err) {
+    console.error("[settings] save L1 failed", err);
+    alert("保存失败，请重试");
+  }
+}
+
+function cancelL1Edit(): void {
+  if (l1Snapshot) {
+    if (memoryL1GoalsInput) memoryL1GoalsInput.value = l1Snapshot.recentGoals;
+    if (memoryL1PreferencesInput) memoryL1PreferencesInput.value = l1Snapshot.recentPreferences;
+    if (memoryL1ProjectInput) memoryL1ProjectInput.value = l1Snapshot.currentProject;
+  }
+  exitL1EditMode();
+}
+
+// Bind edit button events
+memoryL0EditBtn?.addEventListener("click", () => {
+  if (l0Editing) { saveL0(); } else { enterL0EditMode(); }
+});
+memoryL0CancelBtn?.addEventListener("click", cancelL0Edit);
+
+memoryL1EditBtn?.addEventListener("click", () => {
+  if (l1Editing) { saveL1(); } else { enterL1EditMode(); }
+});
+memoryL1CancelBtn?.addEventListener("click", cancelL1Edit);
+
 
 function renderImportedDocs(): void {
   const list = memoryPanelCache?.importedDocs ?? [];

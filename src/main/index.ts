@@ -8,7 +8,8 @@ import { initRAG, buildMemoryContext, addMemory, importDocument, switchEmbedding
 import { buildOrchestratedMemoryContext, scheduleMemoryWrite } from "./orchestrator";
 import { getEmbeddingStatus, downloadEmbeddingModel, deleteEmbeddingModel } from "./embedding-manager";
 import { initReranker } from "./rag/reranker";
-import { memoryStore } from "./memory/memory-store";
+import { memoryStore } from "./memory/memory-store"
+import type { L0Profile, L1Profile } from "./memory/memory-types";
 
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
@@ -1583,6 +1584,31 @@ ipcMain.handle(IPC.MEMORY_PANEL_GET_DATA, () => loadMemoryPanelData());
 ipcMain.handle(IPC.MEMORY_PANEL_DELETE_IMPORTED_DOC, (_event, payload: { importId: string; fileName?: string }) => {
   const deleted = deleteImportedDoc(payload.importId, payload.fileName);
   return { ok: true, deleted };
+});
+// L0/L1 editable fields whitelist
+const L0_EDITABLE_KEYS = ["preferredName", "occupation", "longTermInterests", "language", "permanentNote"];
+const L1_EDITABLE_KEYS = ["recentGoals", "recentPreferences", "currentProject"];
+
+ipcMain.handle(IPC.MEMORY_PANEL_SAVE_L0, async (_event, raw: Record<string, unknown>) => {
+  const patch: Partial<L0Profile> = {};
+  for (const key of L0_EDITABLE_KEYS) {
+    if (key in raw && typeof raw[key] === "string") {
+      (patch as Record<string, unknown>)[key] = (raw[key] as string).trim();
+    }
+  }
+  await memoryStore.updateL0(patch);
+  return { ok: true };
+});
+
+ipcMain.handle(IPC.MEMORY_PANEL_SAVE_L1, async (_event, raw: Record<string, unknown>) => {
+  const patch: Partial<L1Profile> = {};
+  for (const key of L1_EDITABLE_KEYS) {
+    if (key in raw && typeof raw[key] === "string") {
+      (patch as Record<string, unknown>)[key] = (raw[key] as string).trim();
+    }
+  }
+  await memoryStore.updateL1(patch);
+  return { ok: true };
 });
 ipcMain.handle(IPC.USER_GET_PROFILE, () => loadUserProfile());
 ipcMain.handle(IPC.USER_SAVE_PROFILE, (_event, profile: Partial<UserProfile>) => saveUserProfile(profile));
