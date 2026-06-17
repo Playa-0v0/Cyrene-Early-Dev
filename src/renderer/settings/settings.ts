@@ -857,15 +857,10 @@ switchSection("general");
   });
 })();
 // ── 用户信息面板 ──
-const avatarEl = document.querySelector(".user-avatar") as HTMLElement | null;
+const avatarEl = document.getElementById("user-avatar-el") as HTMLElement | null;
 const avatarImg = avatarEl?.querySelector("img") as HTMLImageElement | null;
 const avatarPlaceholder = avatarEl?.querySelector("span") as HTMLElement | null;
 const uploadAvatarBtn = document.getElementById("upload-avatar-btn") as HTMLButtonElement | null;
-const nicknameInput = document.getElementById("user-nickname") as HTMLInputElement | null;
-const callPrefInput = document.getElementById("user-call-pref") as HTMLInputElement | null;
-const birthdayInput = document.getElementById("user-birthday") as HTMLInputElement | null;
-const timezoneInput = document.getElementById("user-timezone") as HTMLInputElement | null;
-const userSaveBtn = document.getElementById("user-save-btn") as HTMLButtonElement | null;
 const memoryL0NameInput = document.getElementById("memory-l0-name") as HTMLInputElement | null;
 const memoryL0OccupationInput = document.getElementById("memory-l0-occupation") as HTMLInputElement | null;
 const memoryL0InterestsInput = document.getElementById("memory-l0-interests") as HTMLInputElement | null;
@@ -1025,20 +1020,9 @@ async function loadMemoryPanel(): Promise<void> {
 
 async function loadUserProfile(): Promise<void> {
   try {
-    const profile = await window.user?.getProfile();
-    if (!profile) return;
-    if (nicknameInput) nicknameInput.value = profile.nickname || "";
-    if (callPrefInput) callPrefInput.value = profile.callPreference || "";
-    if (birthdayInput) birthdayInput.value = profile.birthday || "";
-    if (timezoneInput) timezoneInput.value = profile.timezone || "Asia/Shanghai";
     const avatarDataUrl = await window.user?.getAvatar();
     if (avatarDataUrl) showAvatar(avatarDataUrl);
-    if (nicknameInput) nicknameInput.disabled = false;
-    if (callPrefInput) callPrefInput.disabled = false;
-    if (birthdayInput) birthdayInput.disabled = false;
-    if (timezoneInput) timezoneInput.disabled = false;
     if (uploadAvatarBtn) uploadAvatarBtn.disabled = false;
-    if (userSaveBtn) userSaveBtn.disabled = false;
   } catch {
     console.warn("[settings] load user profile failed");
   }
@@ -1057,29 +1041,6 @@ if (uploadAvatarBtn) {
     }
   });
 }
-
-if (userSaveBtn) {
-  userSaveBtn.addEventListener("click", async () => {
-    try {
-      await window.user?.saveProfile({
-        nickname: nicknameInput?.value || "",
-        callPreference: callPrefInput?.value || "",
-        birthday: birthdayInput?.value || "",
-        timezone: timezoneInput?.value || "Asia/Shanghai",
-      });
-      alert("保存成功");
-    } catch (err) {
-      console.error("[settings] save profile failed", err);
-      alert("保存失败");
-    }
-  });
-}
-
-memoryL2SearchInput?.addEventListener("input", () => {
-  renderL2List(memoryL2SearchInput.value);
-});
-
-void loadMemoryPanel();
 // --- L0/L1 editable logic ---
 
 function takeL0Snapshot(): Record<string, string> {
