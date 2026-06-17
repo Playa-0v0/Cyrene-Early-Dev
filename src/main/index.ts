@@ -4,7 +4,7 @@ import * as fs from "fs";
 import * as os from "os";
 import { IPC } from "../shared/ipc-channels";
 import { STATUS_KEYWORDS, STICKER_EXPLICIT_TRIGGERS, STICKER_CONTENT_TRIGGERS, STICKER_MAP } from "./status-keywords";
-import { initRAG, buildMemoryContext, addMemory, importDocument, switchEmbeddingModel } from "./rag";
+import { initRAG, buildMemoryContext, addMemory, importDocument, switchEmbeddingModel, deleteImportedDoc } from "./rag";
 import { buildOrchestratedMemoryContext, scheduleMemoryWrite } from "./orchestrator";
 import { getEmbeddingStatus, downloadEmbeddingModel, deleteEmbeddingModel } from "./embedding-manager";
 import { initReranker } from "./rag/reranker";
@@ -183,6 +183,7 @@ interface MemoryPanelItem {
 }
 
 interface ImportedDocItem {
+  importId: string | null;
   fileName: string;
   chunkCount: number;
   lastImportedAt: number;
@@ -204,19 +205,23 @@ async function loadMemoryPanelData() {
       const entries = JSON.parse(raw) as Array<{
         source?: string;
         createdAt?: number;
-        metadata?: { fileName?: string };
+        metadata?: { fileName?: string; importId?: string };
       }>;
 
       const docsMap = new Map<string, ImportedDocItem>();
       for (const entry of entries) {
         if (entry.source !== "imported_doc") continue;
         const fileName = entry.metadata?.fileName || "未命名文档";
-        const existing = docsMap.get(fileName);
+        const importId = entry.metadata?.importId as string | undefined;
+        // 新数据按 importId 分组，旧数据按 fileName 分组
+        const key = importId || "legacy:" + fileName;
+        const existing = docsMap.get(key);
         if (existing) {
           existing.chunkCount += 1;
           existing.lastImportedAt = Math.max(existing.lastImportedAt, entry.createdAt || 0);
         } else {
-          docsMap.set(fileName, {
+          docsMap.set(key, {
+            importId: importId || null,
             fileName,
             chunkCount: 1,
             lastImportedAt: entry.createdAt || 0,
@@ -1575,6 +1580,10 @@ ipcMain.handle(IPC.USER_GET_AVATAR, () => {
 });
 
 ipcMain.handle(IPC.MEMORY_PANEL_GET_DATA, () => loadMemoryPanelData());
+ipcMain.handle(IPC.MEMORY_PANEL_DELETE_IMPORTED_DOC, (_event, payload: { importId: string; fileName?: string }) => {
+  const deleted = deleteImportedDoc(payload.importId, payload.fileName);
+  return { ok: true, deleted };
+});
 ipcMain.handle(IPC.USER_GET_PROFILE, () => loadUserProfile());
 ipcMain.handle(IPC.USER_SAVE_PROFILE, (_event, profile: Partial<UserProfile>) => saveUserProfile(profile));
 ipcMain.handle(IPC.USER_UPLOAD_AVATAR, async () => {

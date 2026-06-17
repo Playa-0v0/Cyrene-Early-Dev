@@ -78,4 +78,5 @@ export const IPC = {
 
   // memory panel (read-only)
   MEMORY_PANEL_GET_DATA: "memory-panel:get-data",
+  MEMORY_PANEL_DELETE_IMPORTED_DOC: "memory-panel:delete-imported-doc",
 } as const;

@@ -1152,6 +1152,34 @@ body {
   font: var(--rb-text-small);
   font-size: 11px;
 }
+.memory-record--doc {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.memory-record__main {
+  flex: 1;
+  min-width: 0;
+}
+.memory-record__delete {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(235, 229, 245, 0.55);
+  font-size: 14px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.memory-record__delete:hover {
+  background: rgba(239, 68, 68, 0.18);
+  color: rgba(252, 165, 165, 0.9);
+  border-color: rgba(239, 68, 68, 0.35);
+}
 .memory-list__empty {
   display: flex;
   flex-direction: column;

@@ -112,6 +112,7 @@ interface MemoryPanelPayload {
     createdAt: number;
   }>;
   importedDocs: Array<{
+    importId: string | null;
     fileName: string;
     chunkCount: number;
     lastImportedAt: number;
@@ -126,6 +127,7 @@ interface MemoryPanelPayload {
 
 interface MemoryPanelApi {
   getData: () => Promise<MemoryPanelPayload>;
+  deleteImportedDoc: (importId: string, fileName?: string) => Promise<{ ok: boolean; deleted: number }>;
 }
 
 interface SettingsApi {
@@ -992,16 +994,7 @@ async function loadMemoryPanel(): Promise<void> {
 
     renderL2List(memoryL2SearchInput?.value || "");
 
-    renderInfoList(
-      memoryImportedList,
-      payload.importedDocs.map((item) => ({
-        title: item.fileName,
-        body: `已索引 ${item.chunkCount} 个片段`,
-        meta: `最近导入：${formatDateTime(item.lastImportedAt)}`,
-      })),
-      "暂无导入文档",
-      "在聊天窗口上传文件后会自动索引",
-    );
+        renderImportedDocs();;
 
     renderInfoList(
       memoryReflectionList,
@@ -1074,4 +1067,63 @@ memoryL2SearchInput?.addEventListener("input", () => {
 });
 
 void loadMemoryPanel();
+
+function renderImportedDocs(): void {
+  const list = memoryPanelCache?.importedDocs ?? [];
+  if (!memoryImportedList) return;
+
+  if (list.length === 0) {
+    renderEmptyState(memoryImportedList, "暂无导入文档", "在聊天窗口上传文件后会自动索引");
+    return;
+  }
+
+  memoryImportedList.innerHTML = list
+    .map((item) => {
+      const importId = item.importId || "";
+      const fileName = escapeHtml(item.fileName);
+      const chunkInfo = "已索引 " + item.chunkCount + " 个片段";
+      const timeInfo = "最近导入：" + formatDateTime(item.lastImportedAt);
+      return [
+        '<article class="memory-record memory-record--doc">',
+        '  <div class="memory-record__main">',
+        '    <h3 class="memory-record__title">' + fileName + '</h3>',
+        '    <p class="memory-record__body">' + escapeHtml(chunkInfo) + '</p>',
+        '    <p class="memory-record__meta">' + escapeHtml(timeInfo) + '</p>',
+        '  </div>',
+        '  <button type="button" class="memory-record__delete" data-import-id="' + escapeHtml(importId) + '" data-file-name="' + fileName + '" title="删除此导入文档">🗑️</button>',
+        '</article>',
+      ].join("\n");
+    })
+    .join("\n");
+}
+
+memoryImportedList?.addEventListener("click", async (event) => {
+  const target = event.target as HTMLElement | null;
+  const deleteBtn = target?.closest(".memory-record__delete") as HTMLElement | null;
+  if (!deleteBtn) return;
+
+  const importId = deleteBtn.dataset.importId || "";
+  const fileName = deleteBtn.dataset.fileName || "未命名文档";
+
+  const confirmed = await showModal({
+    title: "删除导入知识",
+    message: "确定删除导入知识？\n\n文件：\n《" + fileName + "》\n\n删除后不可恢复，如需使用请重新导入。",
+    icon: "⚠️",
+    confirmText: "删除",
+    cancelText: "取消",
+  });
+
+  if (!confirmed) return;
+
+  try {
+    const result = await window.memoryPanel?.deleteImportedDoc(importId, fileName);
+    if (result?.ok) {
+      await loadMemoryPanel();
+    }
+  } catch (err) {
+    console.error("[settings] delete imported doc failed", err);
+  }
+});
+
+
 void loadUserProfile();

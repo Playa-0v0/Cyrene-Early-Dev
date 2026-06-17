@@ -124,8 +124,11 @@ export async function importDocument(
 ): Promise<number> {
   if (!store || !provider) throw new Error("RAG not initialized");
   const chunks = chunkText(text, "doc_" + fileName);
+  const importId = typeof crypto !== "undefined" && crypto.randomUUID
+    ? crypto.randomUUID()
+    : "import_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
   await store.addBatch(
-    chunks.map((c) => ({ text: c.text, source: "imported_doc", metadata: { fileName, chunkIndex: c.index } })),
+    chunks.map((c) => ({ text: c.text, source: "imported_doc", metadata: { fileName, chunkIndex: c.index, importId } })),
     provider
   );
   return chunks.length;
@@ -167,4 +170,9 @@ export function resetRAG(): void {
 
 export function getRAGStats() {
   return store?.stats ?? { total: 0, sources: {} };
+}
+
+export function deleteImportedDoc(importId: string, fileName?: string): number {
+  if (!store) throw new Error("RAG not initialized");
+  return store.deleteImportedDoc(importId, fileName);
 }

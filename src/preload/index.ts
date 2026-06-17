@@ -109,6 +109,7 @@ const userApi = {
 
 const memoryPanelApi = {
   getData: () => ipcRenderer.invoke(IPC.MEMORY_PANEL_GET_DATA),
+  deleteImportedDoc: (importId: string, fileName?: string) => ipcRenderer.invoke(IPC.MEMORY_PANEL_DELETE_IMPORTED_DOC, { importId, fileName }),
 };
 
 contextBridge.exposeInMainWorld("user", userApi);

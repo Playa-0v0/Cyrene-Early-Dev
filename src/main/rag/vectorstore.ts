@@ -187,6 +187,31 @@ export class JsonVectorStore {
     return before - this.entries.length;
   }
 
+  // 删除导入文档
+  // importId: 新数据的唯一标识
+  // fileName: 旧数据兼容（无 importId 时按 fileName 删除）
+  deleteImportedDoc(importId: string, fileName?: string): number {
+    const before = this.entries.length;
+    this.entries = this.entries.filter((e) => {
+      if (e.source !== "imported_doc") return true;
+      // 新数据：按 importId 精确匹配
+      if (e.metadata?.importId) {
+        return e.metadata.importId !== importId;
+      }
+      // 旧数据：按 fileName 匹配
+      if (fileName && e.metadata?.fileName === fileName) {
+        return false;
+      }
+      return true;
+    });
+    const deleted = before - this.entries.length;
+    if (deleted > 0) {
+      this.dirty = true;
+      this.save();
+    }
+    return deleted;
+  }
+
   // 统计
   get stats() {
     const sources: Record<string, number> = {};
