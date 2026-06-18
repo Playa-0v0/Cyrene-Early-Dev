@@ -1728,6 +1728,34 @@ ipcMain.handle(IPC.SETTINGS_TEST_CONNECTION, async (_event, cfg: { provider: str
   return result;
 });
 
+/**
+ * 测试视觉模型连通性。
+ * 验连通性（HTTP 2xx + 有内容返回）而非对答案——视觉模型可能看不清 SVG 或猜错 A1B2C3，
+ * 但只要返回了内容就算连通成功。返回含 A1B2C3 是加分项，不是 fail 条件。
+ */
+const VISION_TEST_IMAGE_BASE64 = "PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iNjAiPjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iNjAiIGZpbGw9IndoaXRlIi8+PHRleHQgeD0iMTAwIiB5PSIzOCIgZm9udC1mYW1pbHk9Im1vbm9zcGFjZSIgZm9udC1zaXplPSIyOCIgZmlsbD0iYmxhY2siIHRleHQtYW5jaG9yPSJtaWRkbGUiPkExQjJDMzwvdGV4dD48L3N2Zz4=";
+
+ipcMain.handle(IPC.SETTINGS_TEST_VISION, async (_event, cfg: { baseUrl: string; apiKey: string; model: string }) => {
+  const start = Date.now();
+  console.log("[Cyrene] test vision: model=" + cfg.model + " url=" + cfg.baseUrl);
+  try {
+    const { captionImage } = await import("./orchestrator/vision-captioner");
+    const result = await captionImage(
+      { base64: VISION_TEST_IMAGE_BASE64, mime: "image/svg+xml" },
+      "这张图里写了什么文字？直接回答。",
+      { baseUrl: cfg.baseUrl, apiKey: cfg.apiKey, model: cfg.model },
+    );
+    const latency = Date.now() - start;
+    // 验连通性：返回不含 [错误 即成功（视觉模型返回了内容）
+    if (result.startsWith("[错误")) {
+      return { ok: false, latency, error: result };
+    }
+    return { ok: true, latency, sample: result.slice(0, 80) };
+  } catch (e) {
+    return { ok: false, latency: Date.now() - start, error: e instanceof Error ? e.message : String(e) };
+  }
+});
+
 
 ipcMain.handle(IPC.EMBEDDING_SET_MODEL, async (_event, modelKey: string) => {
   console.log("[Cyrene] embedding model switch requested:", modelKey);
