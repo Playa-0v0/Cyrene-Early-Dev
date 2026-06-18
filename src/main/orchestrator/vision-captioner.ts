@@ -67,8 +67,9 @@ export async function captionImage(
         ],
       },
     ],
-    // 确定性任务，不暴露给用户（避免维护者误改）
-    temperature: 0.1,
+    // 不传 temperature：不同模型约束不同（如 Kimi k2.6 只允许 1），
+    // 传固定值会在某些模型上报错。让各家用自己的默认值，可用性优先于确定性。
+    // 确定性由 buildInstruction 里的"简洁/直接"指令约束保证。
     // 视觉描述用不到 4096 默认值，512 够用且防回灌撑爆主模型上下文
     max_tokens: 512,
     stream: false,

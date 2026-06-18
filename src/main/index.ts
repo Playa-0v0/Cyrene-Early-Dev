@@ -1730,10 +1730,11 @@ ipcMain.handle(IPC.SETTINGS_TEST_CONNECTION, async (_event, cfg: { provider: str
 
 /**
  * 测试视觉模型连通性。
- * 验连通性（HTTP 2xx + 有内容返回）而非对答案——视觉模型可能看不清 SVG 或猜错 A1B2C3，
- * 但只要返回了内容就算连通成功。返回含 A1B2C3 是加分项，不是 fail 条件。
+ * 用一张 4x4 纯红 PNG（100 字节 base64）做测试图——纯色位图所有视觉模型都能识别，
+ * 比 SVG 兼容性好（SVG 是矢量，部分模型不支持）。
+ * 验连通性（HTTP 2xx + 有内容返回）而非对答案——模型可能只说"一张红色图片"也算成功。
  */
-const VISION_TEST_IMAGE_BASE64 = "PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iNjAiPjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iNjAiIGZpbGw9IndoaXRlIi8+PHRleHQgeD0iMTAwIiB5PSIzOCIgZm9udC1mYW1pbHk9Im1vbm9zcGFjZSIgZm9udC1zaXplPSIyOCIgZmlsbD0iYmxhY2siIHRleHQtYW5jaG9yPSJtaWRkbGUiPkExQjJDMzwvdGV4dD48L3N2Zz4=";
+const VISION_TEST_IMAGE_BASE64 = "iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAEklEQVR4nGP4z8DwHxkzkC4AADxAH+HggXe0AAAAAElFTkSuQmCC";
 
 ipcMain.handle(IPC.SETTINGS_TEST_VISION, async (_event, cfg: { baseUrl: string; apiKey: string; model: string }) => {
   const start = Date.now();
@@ -1741,8 +1742,8 @@ ipcMain.handle(IPC.SETTINGS_TEST_VISION, async (_event, cfg: { baseUrl: string; 
   try {
     const { captionImage } = await import("./orchestrator/vision-captioner");
     const result = await captionImage(
-      { base64: VISION_TEST_IMAGE_BASE64, mime: "image/svg+xml" },
-      "这张图里写了什么文字？直接回答。",
+      { base64: VISION_TEST_IMAGE_BASE64, mime: "image/png" },
+      "这张图是什么颜色？用一个词回答。",
       { baseUrl: cfg.baseUrl, apiKey: cfg.apiKey, model: cfg.model },
     );
     const latency = Date.now() - start;
