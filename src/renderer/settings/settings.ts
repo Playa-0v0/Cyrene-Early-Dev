@@ -130,11 +130,14 @@ interface ProviderProfile {
   baseUrl: string;
   model: string;
   apiKey: string;
+  displayName?: string;
 }
 
 interface ModelSettings {
   mode: "auto" | "manual";
   provider: string;
+  // 用户给模型起的自定义昵称，留空时用厂商 shortName。状态栏"正在喂养"显示它。
+  displayName?: string;
   baseUrl: string;
   model: string;
   apiKey: string;
@@ -153,6 +156,9 @@ interface ModelSettings {
 
 interface ModelPreset {
   providerName: string;
+  // 厂商短名（去括号后缀），用于状态栏"正在喂养"显示和昵称默认值。
+  // 如 "MiniMax（稀宇科技）" → shortName "MiniMax"。
+  shortName: string;
   baseUrl: string;
   mainModels: string[];
   iconUrl: string;
@@ -256,6 +262,8 @@ interface SettingsApi {
   setPermissionLevel?: (level: string) => Promise<{ ok: boolean; level?: string; error?: string }>;
   testConnection?: (config: { provider: string; baseUrl: string; model: string; apiKey: string }) => Promise<{ ok: boolean; latency: number; sample?: string; error?: string }>;
   testVision?: (config: { baseUrl: string; apiKey: string; model: string }) => Promise<{ ok: boolean; latency: number; sample?: string; error?: string }>;
+  // main → settings：要求切到指定标签（窗口已打开时由 main 发这个事件）
+  onSwitchSection?: (callback: (section: string) => void) => (() => void) | void;
 }
 
 declare global {
@@ -271,6 +279,7 @@ const MODEL_PRESETS: ModelPreset[] = [
   // 顺序按使用频率 + 适配优先级；未在此清单内的厂商已硬删，需要时再补回。
   {
     providerName: "MiniMax（稀宇科技）",
+    shortName: "MiniMax",
     baseUrl: "https://api.minimaxi.com/anthropic",
     mainModels: ["MiniMax-M3", "MiniMax-M2.7", "MiniMax-M2.5"],
     iconUrl: "https://unpkg.com/@lobehub/icons-static-svg@latest/icons/minimax.svg",
@@ -283,12 +292,14 @@ const MODEL_PRESETS: ModelPreset[] = [
     // 已确认（来自官方定价文档）：支持 Tool Calls / JSON Output；后端原生缓存（命中后输入价跌至 1/50~1/120）。
     // 缓存能力等 v2 vendor adapter 接入时再利用，v1 不动。
     providerName: "DeepSeek（深度求索）",
+    shortName: "DeepSeek",
     baseUrl: "https://api.deepseek.com",
     mainModels: ["deepseek-v4-pro", "deepseek-v4-flash"],
     iconUrl: "https://unpkg.com/@lobehub/icons-static-svg@latest/icons/deepseek.svg",
   },
   {
     providerName: "火山 AgentPlan（火山引擎）",
+    shortName: "火山",
     baseUrl: "https://ark.cn-beijing.volces.com/api/plan/v3",
     mainModels: ["ark-code-latest"],
     iconUrl: "https://unpkg.com/@lobehub/icons-static-svg@latest/icons/doubao.svg",
@@ -297,12 +308,14 @@ const MODEL_PRESETS: ModelPreset[] = [
   },
   {
     providerName: "GLM（智谱）",
+    shortName: "GLM",
     baseUrl: "https://open.bigmodel.cn/api/paas/v4",
     mainModels: ["glm-5.1", "glm-5-turbo", "glm-4.7"],
     iconUrl: "https://unpkg.com/@lobehub/icons-static-svg@latest/icons/zhipu.svg",
   },
   {
     providerName: "Kimi（月之暗面）",
+    shortName: "Kimi",
     baseUrl: "https://api.moonshot.cn/v1",
     mainModels: ["kimi-k2.6", "kimi-k2.5", "kimi-k2-thinking"],
     iconUrl: "https://unpkg.com/@lobehub/icons-static-svg@latest/icons/moonshot.svg",
@@ -311,12 +324,14 @@ const MODEL_PRESETS: ModelPreset[] = [
   },
   {
     providerName: "Qwen（通义千问）",
+    shortName: "Qwen",
     baseUrl: "https://dashscope.aliyuncs.com/compatible-mode/v1",
     mainModels: ["qwen-max", "qwen-plus", "qwen-turbo"],
     iconUrl: "https://unpkg.com/@lobehub/icons-static-svg@latest/icons/qwen.svg",
   },
   {
     providerName: "ChatGPT（OpenAI）",
+    shortName: "ChatGPT",
     baseUrl: "https://api.openai.com/v1",
     // 国内多数用户走中转站，型号命名各家不一；预设留空，由用户在型号输入框里自行填写。
     mainModels: [],
@@ -324,6 +339,7 @@ const MODEL_PRESETS: ModelPreset[] = [
   },
   {
     providerName: "Claude（Anthropic）",
+    shortName: "Claude",
     baseUrl: "https://api.anthropic.com/v1",
     // 同上，且 Anthropic 协议尚未接入，暂禁选。
     mainModels: [],
@@ -392,7 +408,9 @@ const cyreneSaveStatus = document.getElementById("cyrene-save-status") as HTMLEl
 
 const presetSelect = document.getElementById("preset-select") as HTMLSelectElement;
 // 模式按钮已删除——baseUrl 永远可改、模型名永远可手填（datalist 出预设建议）
-const providerInput = document.getElementById("provider") as HTMLInputElement;
+// provider 不再暴露给用户（从预设内部拿，保证 capabilities 匹配不出错）。
+// 用户看到的是"昵称"框——给模型起自定义名字，状态栏"正在喂养"显示它。
+const displayNameInput = document.getElementById("display-name") as HTMLInputElement;
 const baseUrlInput = document.getElementById("base-url") as HTMLInputElement;
 const baseUrlResetBtn = document.getElementById("base-url-reset-btn") as HTMLButtonElement;
 const modelInput = document.getElementById("model-input") as HTMLInputElement;
@@ -585,6 +603,7 @@ function captureActiveProviderProfile(): void {
     baseUrl: baseUrlInput.value.trim(),
     model: getCurrentModelValue().trim(),
     apiKey: apiKeyInput.value.trim(),
+    displayName: displayNameInput.value.trim(),
   };
 }
 
@@ -605,7 +624,7 @@ function applyVisionSyncUI(): void {
   if (synced) {
     visionFieldsWrap.classList.add("is-locked");
     // 找当前厂商 preset，看有没有 visionBaseUrl
-    const preset = findPreset(providerInput.value);
+    const preset = findPreset(activeProvider);
     const visionBaseUrl = preset?.visionBaseUrl || baseUrlInput.value;
     visionBaseUrlInput.value = visionBaseUrl;
     visionApiKeyInput.value = apiKeyInput.value;
@@ -623,14 +642,17 @@ function setVisionSyncState(synced: boolean): void {
   visionSyncIndepBtn.setAttribute("aria-pressed", String(!synced));
 }
 
-function applyPreset(providerName: string, preferredModel?: string, preferredApiKey?: string, preferredBaseUrl?: string): void {
+function applyPreset(providerName: string, preferredModel?: string, preferredApiKey?: string, preferredBaseUrl?: string, preferredDisplayName?: string): void {
   const preset = findPreset(providerName);
 
   // 模式按钮已删除——ChatGPT / Claude 这种没预设型号的厂商，input 框空着让用户手填，
   // datalist 没建议也不影响（用户知道自己型号）。
 
   presetSelect.value = preset.providerName;
-  providerInput.value = preset.providerName;
+
+  // 昵称：优先用传入的（用户自定义过）；否则用厂商 shortName 作默认。
+  // 留空显示厂商短名——但这里主动填 shortName 让用户看到默认值，可改可清。
+  displayNameInput.value = preferredDisplayName ?? preset.shortName;
 
   // baseUrl：优先用缓存（用户自定义过），其次用 preset 默认
   baseUrlInput.value = preferredBaseUrl ?? preset.baseUrl;
@@ -657,11 +679,14 @@ async function loadConfig(): Promise<void> {
             baseUrl: typeof value.baseUrl === "string" ? value.baseUrl : "",
             model: typeof value.model === "string" ? value.model : "",
             apiKey: typeof value.apiKey === "string" ? value.apiKey : "",
+            displayName: typeof (value as { displayName?: unknown }).displayName === "string"
+              ? (value as { displayName: string }).displayName
+              : undefined,
           };
         }
       }
     }
-    applyPreset(cfg.provider, cfg.model, cfg.apiKey, cfg.baseUrl);
+    applyPreset(cfg.provider, cfg.model, cfg.apiKey, cfg.baseUrl, cfg.displayName);
     applyRuntimeSyncSelection(cfg.runtimeSync);
     stickerEnabledInput.checked = cfg.stickerEnabled !== false;
     applyStickerSizeSelection(cfg.stickerSize);
@@ -939,6 +964,7 @@ presetSelect.addEventListener("change", () => {
     cached?.model,
     cached?.apiKey,
     cached?.baseUrl,
+    cached?.displayName,
   );
   setSaveStatus(cached ? "已切回上次配置" : "已应用预设，填写 API Key 后保存");
 });
@@ -946,7 +972,7 @@ presetSelect.addEventListener("change", () => {
 // 测试连接按钮：调用厂商 adapter 的真实连接测试
 if (testConnectionBtn) {
   testConnectionBtn.addEventListener("click", async () => {
-    const provider = providerInput.value;
+    const provider = activeProvider;
     const baseUrl = baseUrlInput.value;
     const model = getCurrentModelValue().trim();
     const apiKey = apiKeyInput.value;
@@ -1065,7 +1091,8 @@ apiForm.addEventListener("submit", async (e) => {
     // 默认 "manual"（baseUrl 永远可改、模型名永远可填，行为等同原 Manual）。
     await window.settings!.saveConfig({
       mode: "manual",
-      provider: providerInput.value.trim(),
+      provider: activeProvider,
+      displayName: displayNameInput.value.trim(),
       baseUrl: baseUrlInput.value.trim(),
       model: getCurrentModelValue().trim(),
       apiKey: apiKeyInput.value.trim(),
@@ -1128,7 +1155,14 @@ document.querySelectorAll(".nav-item").forEach((el) => {
 });
 
 void loadConfig();
-switchSection("general");
+// 启动时读 URL hash 决定初始标签（main 通过 loadURL 带 #api 实现"切换模型按钮跳 API"）。
+// 无 hash 默认 general。
+const initialSection = (window.location.hash || "#general").slice(1);
+switchSection(initialSection);
+// 监听 main 发来的切标签事件（窗口已打开时，main 不重新 loadURL，改发事件）
+window.settings?.onSwitchSection?.((section) => {
+  switchSection(section);
+});
 /* ===== RAG model card toggle (embedding only) ===== */
 (function () {
   const cards = document.querySelectorAll<HTMLButtonElement>(".rag-model-card:not([data-reranker])");

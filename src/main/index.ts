@@ -38,6 +38,7 @@ interface ProviderProfile {
   baseUrl: string;
   model: string;
   apiKey: string;
+  displayName?: string;
 }
 
 /**
@@ -88,6 +89,8 @@ function migrateProviderRenames(
 interface ModelSettings {
   mode: "auto" | "manual";
   provider: string;
+  // 用户给模型起的自定义昵称，留空时状态栏用厂商 shortName。
+  displayName?: string;
   baseUrl: string;
   model: string;
   apiKey: string;
@@ -136,6 +139,10 @@ interface GeneralSettings {
 interface PublicModelConfig {
   mode: "auto" | "manual";
   provider: string;
+  // 用户自定义昵称；留空时状态栏用 shortName
+  displayName?: string;
+  // 厂商短名（去括号后缀），状态栏"正在喂养"的兜底显示
+  shortName: string;
   model: string;
   connected: boolean;
   runtimeSync: "off" | "local" | "llm";
@@ -343,6 +350,7 @@ function normalizeProviderProfile(input: Partial<ProviderProfile> | null | undef
     baseUrl: typeof input?.baseUrl === "string" ? input.baseUrl.trim() : "",
     model: typeof input?.model === "string" ? input.model.trim() : "",
     apiKey: typeof input?.apiKey === "string" ? input.apiKey.trim() : "",
+    displayName: typeof input?.displayName === "string" && input.displayName.trim() ? input.displayName.trim() : undefined,
   };
 }
 
@@ -401,6 +409,7 @@ function normalizeModelSettings(input: Partial<ModelSettings> | null | undefined
   return {
     mode,
     provider,
+    displayName: profile.displayName,
     baseUrl: profile.baseUrl,
     model: profile.model,
     apiKey: profile.apiKey,
@@ -487,6 +496,9 @@ function saveModelSettings(settings: Partial<ModelSettings>): ModelSettings {
     baseUrl: typeof settings.baseUrl === "string" ? settings.baseUrl.trim() : incomingProfile.baseUrl,
     model: typeof settings.model === "string" ? settings.model.trim() : incomingProfile.model,
     apiKey: typeof settings.apiKey === "string" ? settings.apiKey.trim() : incomingProfile.apiKey,
+    displayName: typeof settings.displayName === "string" && settings.displayName.trim()
+      ? settings.displayName.trim()
+      : incomingProfile.displayName,
   };
 
   merged.provider = currentProvider;
@@ -1134,10 +1146,25 @@ async function requestModelReply(inputMessages: unknown, styleFile = "01_default
   return { reply: chatContent, sticker };
 }
 
+// 厂商短名映射（与 settings.ts 的 MODEL_PRESETS.shortName 镜像，需手动同步）。
+// 状态栏"正在喂养"在用户没填昵称时用这个兜底。
+const PROVIDER_SHORT_NAMES: Record<string, string> = {
+  "MiniMax（稀宇科技）": "MiniMax",
+  "DeepSeek（深度求索）": "DeepSeek",
+  "火山 AgentPlan（火山引擎）": "火山",
+  "GLM（智谱）": "GLM",
+  "Kimi（月之暗面）": "Kimi",
+  "Qwen（通义千问）": "Qwen",
+  "ChatGPT（OpenAI）": "ChatGPT",
+  "Claude（Anthropic）": "Claude",
+};
+
 function getPublicModelConfig(settings = loadModelSettings()): PublicModelConfig {
   return {
     mode: settings.mode,
     provider: settings.provider,
+    displayName: settings.displayName,
+    shortName: PROVIDER_SHORT_NAMES[settings.provider] ?? settings.provider,
     model: settings.model,
     connected: Boolean(settings.apiKey),
     runtimeSync: settings.runtimeSync,
@@ -1356,10 +1383,14 @@ function createTasksWindow(): void {
   });
 }
 
-function createSettingsWindow(): void {
+function createSettingsWindow(section?: string): void {
   if (settingsWindow && !settingsWindow.isDestroyed()) {
     settingsWindow.show();
     settingsWindow.focus();
+    // 窗口已存在：发事件让 settings 页切标签（loadURL 不会重新触发）
+    if (section) {
+      settingsWindow.webContents.send(IPC.SETTINGS_SWITCH_SECTION, section);
+    }
     return;
   }
 
@@ -1391,11 +1422,13 @@ function createSettingsWindow(): void {
 
   attachExternalLinkHandler(settingsWindow);
 
+  const hash = section ? `#${section}` : "";
   if (isDev) {
-    settingsWindow.loadURL("http://localhost:5173/settings/");
+    settingsWindow.loadURL("http://localhost:5173/settings/" + hash);
   } else {
     settingsWindow.loadFile(
-      path.join(__dirname, "..", "..", "renderer", "settings", "index.html")
+      path.join(__dirname, "..", "..", "renderer", "settings", "index.html"),
+      { hash: section || "" }
     );
   }
 
@@ -1659,8 +1692,8 @@ ipcMain.on(IPC.SIDEBAR_OPEN_TASKS, () => {
   createTasksWindow();
 });
 
-ipcMain.on(IPC.SIDEBAR_OPEN_SETTINGS, () => {
-  createSettingsWindow();
+ipcMain.on(IPC.SIDEBAR_OPEN_SETTINGS, (_event, section?: string) => {
+  createSettingsWindow(section);
 });
 
 ipcMain.on(IPC.TASKS_MINIMIZE, () => {

@@ -38,7 +38,7 @@ const sidebarApi = {
   toggleCollapse: () => ipcRenderer.send(IPC.SIDEBAR_TOGGLE_COLLAPSE),
   isCollapsed: () => ipcRenderer.invoke(IPC.SIDEBAR_IS_COLLAPSED),
   openTasks: () => ipcRenderer.send(IPC.SIDEBAR_OPEN_TASKS),
-  openSettings: () => ipcRenderer.send(IPC.SIDEBAR_OPEN_SETTINGS),
+  openSettings: (section?: string) => ipcRenderer.send(IPC.SIDEBAR_OPEN_SETTINGS, section),
 };
 
 const tasksApi = {
@@ -55,6 +55,12 @@ const settingsApi = {
   saveConfig: (config: unknown) => ipcRenderer.invoke(IPC.SETTINGS_SAVE_CONFIG, config),
   testConnection: (config: { provider: string; baseUrl: string; model: string; apiKey: string }) => ipcRenderer.invoke(IPC.SETTINGS_TEST_CONNECTION, config),
   testVision: (config: { baseUrl: string; apiKey: string; model: string }) => ipcRenderer.invoke(IPC.SETTINGS_TEST_VISION, config),
+  // main → settings：要求切到指定标签（窗口已打开时由 main 发这个事件）
+  onSwitchSection: (callback: (section: string) => void) => {
+    const listener = (_e: unknown, section: string) => callback(section);
+    ipcRenderer.on(IPC.SETTINGS_SWITCH_SECTION, listener);
+    return () => ipcRenderer.off(IPC.SETTINGS_SWITCH_SECTION, listener);
+  },
   getGeneral: () => ipcRenderer.invoke(IPC.SETTINGS_GET_GENERAL),
   saveGeneral: (config: unknown) => ipcRenderer.invoke(IPC.SETTINGS_SAVE_GENERAL, config),
   openSidebar: () => ipcRenderer.send(IPC.SETTINGS_OPEN_SIDEBAR),

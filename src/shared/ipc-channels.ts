@@ -37,6 +37,8 @@ export const IPC = {
   // settings window
   SETTINGS_MINIMIZE: "settings:minimize",
   SETTINGS_CLOSE: "settings:close",
+  // main → settings 窗口：要求切到指定标签（已打开时用）
+  SETTINGS_SWITCH_SECTION: "settings:switch-section",
   SETTINGS_GET_CONFIG: "settings:get-config",
   SETTINGS_SAVE_CONFIG: "settings:save-config",
   SETTINGS_TEST_CONNECTION: "settings:test-connection",

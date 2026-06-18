@@ -4,6 +4,8 @@ import "./sidebar.css";
 interface ModelConfig {
   mode: "auto" | "manual";
   provider: string;
+  displayName?: string;
+  shortName: string;
   model: string;
   connected: boolean;
   runtimeSync: "off" | "local" | "llm";
@@ -34,7 +36,7 @@ interface SidebarApi {
   toggleCollapse: () => void;
   isCollapsed: () => Promise<boolean>;
   openTasks: () => void;
-  openSettings: () => void;
+  openSettings: (section?: string) => void;
 }
 
 declare global {
@@ -53,7 +55,7 @@ if (!window.sidebar) {
     toggleCollapse: () => {},
     isCollapsed: () => Promise.resolve(false),
     openTasks: () => {},
-    openSettings: () => {},
+    openSettings: (_section?: string) => {},
   };
 }
 
@@ -68,7 +70,6 @@ const statusEmojiEl = document.getElementById("status-emoji") as HTMLElement;
 const statusLabelEl = document.getElementById("status-label") as HTMLElement;
 const feelingEmojiEl = document.getElementById("feeling-emoji") as HTMLElement;
 const feelingLabelEl = document.getElementById("feeling-label") as HTMLElement;
-const modelModeEl = document.getElementById("model-mode") as HTMLElement;
 const feedingModelEl = document.getElementById("feeding-model") as HTMLElement;
 const onlineBadge = onlineStatusLabel.closest(".profile__online") as HTMLElement | null;
 let runtimeSyncEnabled = false;
@@ -132,8 +133,8 @@ function applyModelConfig(config: ModelConfig | null): void {
   runtimeSyncEnabled = config?.runtimeSync === "local" || config?.runtimeSync === "llm";
   onlineStatusLabel.textContent = connected ? "在线" : "离线";
   onlineBadge?.classList.toggle("is-offline", !connected);
-  modelModeEl.textContent = config?.mode === "manual" ? "Manual" : "Auto";
-  feedingModelEl.textContent = config?.model || "未选择模型";
+  // "正在喂养"显示优先级：用户昵称 > 厂商短名 > model id > 兜底
+  feedingModelEl.textContent = config?.displayName || config?.shortName || config?.model || "未选择模型";
   if (!runtimeSyncEnabled) applyRuntimeDisabled();
   else if (!wasRuntimeSyncEnabled) applyRuntimeState(latestRuntimeState);
 }
@@ -173,7 +174,8 @@ settingsBtn.addEventListener("click", () => {
 });
 
 modelSwitchBtn.addEventListener("click", () => {
-  window.sidebar?.openSettings();
+  // "切换模型"直奔 API 配置标签，而不是默认的通用标签
+  window.sidebar?.openSettings("api");
 });
 
 void syncCollapseUI();
