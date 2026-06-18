@@ -159,6 +159,9 @@ interface ModelPreset {
   // 视觉模型的 OpenAI 兼容 baseUrl。仅当主配走 Anthropic 入口、视觉要走 OpenAI 入口时才标
   // （如 MiniMax 主配 /anthropic，视觉走 /v1）。勾选"同步主模型"时 UI 用它填视觉框。
   visionBaseUrl?: string;
+  // 该厂商默认主模型是否支持视觉。true 时设置页加载默认勾选"同步主模型"，
+  // 多模态用户开箱即用。与 capabilities.ts 的 supportsVision 镜像，需手动同步。
+  supportsVision?: boolean;
   // 标记为 true 时，该项在 <select> 里显示但不可选；
   // 用于"已列出但 vendor adapter 还没接好"的情况，避免用户选到后调用直接报错。
   disabled?: boolean;
@@ -273,6 +276,7 @@ const MODEL_PRESETS: ModelPreset[] = [
     iconUrl: "https://unpkg.com/@lobehub/icons-static-svg@latest/icons/minimax.svg",
     // 主配走 /anthropic，但视觉要走 OpenAI 入口 /v1。勾"同步"时 UI 自动用这个，用户不用手改。
     visionBaseUrl: "https://api.minimaxi.com/v1",
+    supportsVision: true,
   },
   {
     // DeepSeek：v1 vendor adapter 不为它做协议层强制，仅作为 OpenAI 兼容厂商列出。
@@ -288,6 +292,8 @@ const MODEL_PRESETS: ModelPreset[] = [
     baseUrl: "https://ark.cn-beijing.volces.com/api/plan/v3",
     mainModels: ["ark-code-latest"],
     iconUrl: "https://unpkg.com/@lobehub/icons-static-svg@latest/icons/doubao.svg",
+    // 火山方舟是聚合平台，路由到 doubao-seed 等多模态子模型时支持视觉
+    supportsVision: true,
   },
   {
     providerName: "GLM（智谱）",
@@ -300,6 +306,8 @@ const MODEL_PRESETS: ModelPreset[] = [
     baseUrl: "https://api.moonshot.cn/v1",
     mainModels: ["kimi-k2.6", "kimi-k2.5", "kimi-k2-thinking"],
     iconUrl: "https://unpkg.com/@lobehub/icons-static-svg@latest/icons/moonshot.svg",
+    // k2.6 / k2.7-code 支持 image_url 多模态
+    supportsVision: true,
   },
   {
     providerName: "Qwen（通义千问）",
@@ -698,7 +706,10 @@ async function loadConfig(): Promise<void> {
       visionApiKeyInput.value = vision.apiKey || "";
       visionModelInput.value = vision.model || "";
     } else {
-      visionSyncCheckbox.checked = false;
+      // 用户从未配过视觉。按当前主模型 supportsVision 决定默认勾选——
+      // 多模态主模型用户开箱即用，不用手动勾；非视觉主模型则保持不勾。
+      const preset = findPreset(cfg.provider);
+      visionSyncCheckbox.checked = preset?.supportsVision === true;
       visionBaseUrlInput.value = "";
       visionApiKeyInput.value = "";
       visionModelInput.value = "";

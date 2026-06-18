@@ -51,8 +51,8 @@ export const PROVIDER_CAPABILITIES: ProviderCapability[] = [
     thinkingField: "reasoning_content",
     cacheStrategy: "none",
     testStrategy: "text",
-    // 聚合多模型，ark-code-latest 视觉能力未核实，保守 false
-    supportsVision: false,
+    // 火山方舟是聚合平台，可路由到 doubao-seed 等多模态子模型；支持视觉
+    supportsVision: true,
   },
   {
     id: "glm",
