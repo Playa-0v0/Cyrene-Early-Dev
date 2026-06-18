@@ -92,7 +92,9 @@ export async function connectMcpServer(config: McpServerConfig): Promise<string[
   // 注册到 ToolRegistry
   const registeredIds: string[] = [];
   for (const mt of mcpTools) {
-    const toolId = config.id + ":" + mt.name;
+    // 用短横线拼接，不用冒号——Kimi 等厂商 function.name 正则不允许冒号
+    // （Kimi: ^[a-zA-Z_][a-zA-Z0-9-_]$）。短横线所有厂商都接受。
+    const toolId = config.id + "-" + mt.name;
 
     // 如果已存在同名工具，跳过
     if (toolRegistry.getById(toolId)) {
