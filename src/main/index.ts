@@ -7,6 +7,8 @@ import { STATUS_KEYWORDS, STICKER_EXPLICIT_TRIGGERS, STICKER_CONTENT_TRIGGERS, S
 import { initRAG, buildMemoryContext, addMemory, importDocument, switchEmbeddingModel, deleteImportedDoc } from "./rag";
 import { buildAlwaysOnContext, runFunctionCallingLoop, scheduleMemoryWrite } from "./orchestrator";
 import { getAdapter, buildVendorUrl } from "./orchestrator/vendors";
+import { getCapability } from "./orchestrator/vendors/capabilities";
+import type { VisionConfig } from "./orchestrator/vision-captioner";
 import { toolRegistry } from "./orchestrator/tool-registry";
 // 触发 built-in-tools 的副作用注册（fetch_url / run_shell / install_mcp_server）
 import "./orchestrator/built-in-tools";
@@ -97,6 +99,16 @@ interface ModelSettings {
   stickerSize: StickerSize;
   rerankerMode: "light" | "standard" | "none";
   embeddingModel: "minilm" | "bgem3";
+  // 视觉模型配置（可选）。undefined 或未启用 = 不支持看图，read_image 诚实拒绝。
+  vision?: VisionModelConfig;
+}
+
+/** 视觉模型配置。syncWithMain=true 时三字段不落盘，运行时强制从主配置读。 */
+interface VisionModelConfig {
+  syncWithMain: boolean;
+  baseUrl: string;
+  apiKey: string;
+  model: string;
 }
 
 
@@ -333,6 +345,22 @@ function normalizeProviderProfile(input: Partial<ProviderProfile> | null | undef
   };
 }
 
+/** 清洗视觉模型配置。syncWithMain=true 时三字段不保留（运行时从主配置读）。 */
+function normalizeVisionConfig(input: Partial<VisionModelConfig> | undefined): VisionModelConfig | undefined {
+  if (!input || typeof input !== "object") return undefined;
+  const syncWithMain = input.syncWithMain === true;
+  if (syncWithMain) {
+    // syncWithMain=true：强制忽略三字段（即便手动编辑配置文件写了也忽略），运行时从主配置读
+    return { syncWithMain: true, baseUrl: "", apiKey: "", model: "" };
+  }
+  const baseUrl = typeof input.baseUrl === "string" ? input.baseUrl.trim() : "";
+  const apiKey = typeof input.apiKey === "string" ? input.apiKey.trim() : "";
+  const model = typeof input.model === "string" ? input.model.trim() : "";
+  // 三项全空 = 未启用
+  if (!baseUrl && !apiKey && !model) return undefined;
+  return { syncWithMain: false, baseUrl, apiKey, model };
+}
+
 function normalizeModelSettings(input: Partial<ModelSettings> | null | undefined): ModelSettings {
   const mode: "auto" | "manual" = input?.mode === "manual" ? "manual" : "auto";
   let provider = typeof input?.provider === "string" && input.provider.trim()
@@ -381,6 +409,7 @@ function normalizeModelSettings(input: Partial<ModelSettings> | null | undefined
     stickerSize: input?.stickerSize === "small" || input?.stickerSize === "large" ? input.stickerSize : "standard",
     rerankerMode: input?.rerankerMode === "standard" || input?.rerankerMode === "none" ? input.rerankerMode : "light",
     embeddingModel: input?.embeddingModel === "bgem3" ? "bgem3" : "minilm",
+    vision: normalizeVisionConfig(input?.vision),
   };
 }
 
@@ -394,6 +423,34 @@ function loadModelSettings(): ModelSettings {
     console.error("[Cyrene] load settings failed:", err);
     return DEFAULT_MODEL_SETTINGS;
   }
+}
+
+/**
+ * 加载视觉模型配置，解析 syncWithMain 并做 supportsVision 检查。
+ * 返回 null = 未启用视觉（read_image 据此诚实拒绝）。
+ *
+ * syncWithMain=true 时：从主配置读 baseUrl/key/model，并检查主模型 supportsVision——
+ * 若主模型非视觉，返回 null（避免把非视觉模型当视觉模型硬调导致运行时错误让用户困惑）。
+ */
+export function loadVisionConfig(): VisionConfig | null {
+  const settings = loadModelSettings();
+  const v = settings.vision;
+  if (!v) return null;
+
+  if (v.syncWithMain) {
+    // 从主配置读
+    const cap = getCapability(settings.provider);
+    if (!cap?.supportsVision) {
+      console.warn("[Vision] syncWithMain=true 但主模型不支持视觉，视为未启用");
+      return null;
+    }
+    if (!settings.baseUrl || !settings.apiKey || !settings.model) return null;
+    return { baseUrl: settings.baseUrl, apiKey: settings.apiKey, model: settings.model };
+  }
+
+  // 独立配置
+  if (!v.baseUrl || !v.apiKey || !v.model) return null;
+  return { baseUrl: v.baseUrl, apiKey: v.apiKey, model: v.model };
 }
 
 /**
