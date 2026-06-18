@@ -126,12 +126,20 @@ function showInputModal(options: {
 }
 
 
+interface ProviderProfile {
+  baseUrl: string;
+  model: string;
+  apiKey: string;
+}
+
 interface ModelSettings {
   mode: "auto" | "manual";
   provider: string;
   baseUrl: string;
   model: string;
   apiKey: string;
+  // 按厂商缓存：切回该厂商时，从这里恢复 baseUrl / model / apiKey
+  perProvider?: Record<string, ProviderProfile>;
   runtimeSync: "off" | "local" | "llm";
   stickerEnabled: boolean;
   stickerSize: "small" | "standard" | "large";
@@ -142,6 +150,9 @@ interface ModelPreset {
   baseUrl: string;
   mainModels: string[];
   iconUrl: string;
+  // 标记为 true 时，该项在 <select> 里显示但不可选；
+  // 用于"已列出但 vendor adapter 还没接好"的情况，避免用户选到后调用直接报错。
+  disabled?: boolean;
 }
 
 interface GeneralSettings {
@@ -242,34 +253,34 @@ declare global {
 }
 
 const MODEL_PRESETS: ModelPreset[] = [
+  // 当前 v1 计划适配的 7 家：MiniMax / 火山 Agent-Plan / 智谱 GLM / Kimi / Qwen / ChatGPT / Claude
+  // 顺序按使用频率 + 适配优先级；未在此清单内的厂商已硬删，需要时再补回。
   {
-    providerName: "豆包（火山方舟）",
-    baseUrl: "https://ark.cn-beijing.volces.com/api/coding/v3",
-    mainModels: ["doubao-seed-2.0-pro", "doubao-seed-2.0-lite", "doubao-seed-2.0-code"],
-    iconUrl: "https://unpkg.com/@lobehub/icons-static-svg@latest/icons/doubao.svg",
-  },  {
-    providerName: "火山 Agent-Plan",
+    providerName: "MiniMax（稀宇科技）",
+    baseUrl: "https://api.minimaxi.com/v1",
+    mainModels: ["MiniMax-M3", "MiniMax-M2.7", "MiniMax-M2.5"],
+    iconUrl: "https://unpkg.com/@lobehub/icons-static-svg@latest/icons/minimax.svg",
+  },
+  {
+    // DeepSeek：v1 vendor adapter 不为它做协议层强制，仅作为 OpenAI 兼容厂商列出。
+    // 已确认（来自官方定价文档）：支持 Tool Calls / JSON Output；后端原生缓存（命中后输入价跌至 1/50~1/120）。
+    // 缓存能力等 v2 vendor adapter 接入时再利用，v1 不动。
+    providerName: "DeepSeek（深度求索）",
+    baseUrl: "https://api.deepseek.com",
+    mainModels: ["deepseek-v4-pro", "deepseek-v4-flash"],
+    iconUrl: "https://unpkg.com/@lobehub/icons-static-svg@latest/icons/deepseek.svg",
+  },
+  {
+    providerName: "火山 AgentPlan（火山引擎）",
     baseUrl: "https://ark.cn-beijing.volces.com/api/plan/v3",
     mainModels: ["ark-code-latest"],
     iconUrl: "https://unpkg.com/@lobehub/icons-static-svg@latest/icons/doubao.svg",
   },
   {
-    providerName: "通义千问（DashScope）",
-    baseUrl: "https://dashscope.aliyuncs.com/compatible-mode/v1",
-    mainModels: ["qwen-max", "qwen-plus", "qwen-turbo"],
-    iconUrl: "https://unpkg.com/@lobehub/icons-static-svg@latest/icons/qwen.svg",
-  },
-  {
-    providerName: "文心 ERNIE（百度千帆）",
-    baseUrl: "https://qianfan.baiducbce.com/v2",
-    mainModels: ["ERNIE-5.1", "ERNIE-5.0", "ERNIE-4.5-Turbo-128K"],
-    iconUrl: "https://unpkg.com/@lobehub/icons-static-svg@latest/icons/wenxin.svg",
-  },
-  {
-    providerName: "腾讯混元",
-    baseUrl: "https://api.hunyuan.cloud.tencent.com/v1",
-    mainModels: ["hunyuan-turbos-latest", "hunyuan-pro"],
-    iconUrl: "https://unpkg.com/@lobehub/icons-static-svg@latest/icons/hunyuan.svg",
+    providerName: "GLM（智谱）",
+    baseUrl: "https://open.bigmodel.cn/api/paas/v4",
+    mainModels: ["glm-5.1", "glm-5-turbo", "glm-4.7"],
+    iconUrl: "https://unpkg.com/@lobehub/icons-static-svg@latest/icons/zhipu.svg",
   },
   {
     providerName: "Kimi（月之暗面）",
@@ -278,40 +289,27 @@ const MODEL_PRESETS: ModelPreset[] = [
     iconUrl: "https://unpkg.com/@lobehub/icons-static-svg@latest/icons/moonshot.svg",
   },
   {
-    providerName: "DeepSeek",
-    baseUrl: "https://api.deepseek.com",
-    mainModels: ["deepseek-v4-pro", "deepseek-v4-flash"],
-    iconUrl: "https://unpkg.com/@lobehub/icons-static-svg@latest/icons/deepseek.svg",
+    providerName: "Qwen（通义千问）",
+    baseUrl: "https://dashscope.aliyuncs.com/compatible-mode/v1",
+    mainModels: ["qwen-max", "qwen-plus", "qwen-turbo"],
+    iconUrl: "https://unpkg.com/@lobehub/icons-static-svg@latest/icons/qwen.svg",
   },
   {
-    providerName: "智谱 GLM",
-    baseUrl: "https://open.bigmodel.cn/api/paas/v4",
-    mainModels: ["glm-5.1", "glm-5-turbo", "glm-4.7"],
-    iconUrl: "https://unpkg.com/@lobehub/icons-static-svg@latest/icons/zhipu.svg",
+    providerName: "ChatGPT（OpenAI）",
+    baseUrl: "https://api.openai.com/v1",
+    // 国内多数用户走中转站，型号命名各家不一；预设留空，由用户在型号输入框里自行填写。
+    mainModels: [],
+    iconUrl: "https://unpkg.com/@lobehub/icons-static-svg@latest/icons/openai.svg",
   },
   {
-    providerName: "科大讯飞星火",
-    baseUrl: "https://spark-api-open.xf-yun.com/v1",
-    mainModels: ["Spark4.0 Ultra", "Spark Max", "Spark Pro-128K"],
-    iconUrl: "https://unpkg.com/@lobehub/icons-static-svg@latest/icons/xinghuo.svg",
-  },
-  {
-    providerName: "百川智能",
-    baseUrl: "https://api.baichuan-ai.com/v1",
-    mainModels: ["Baichuan4-Turbo", "Baichuan4-Air", "Baichuan4"],
-    iconUrl: "https://unpkg.com/@lobehub/icons-static-svg@latest/icons/baichuan.svg",
-  },
-  {
-    providerName: "MiniMax",
-    baseUrl: "https://api.minimaxi.com/v1",
-    mainModels: ["MiniMax-M3", "MiniMax-M2.7", "MiniMax-M2.5"],
-    iconUrl: "https://unpkg.com/@lobehub/icons-static-svg@latest/icons/minimax.svg",
-  },
-  {
-    providerName: "小米 MiMo",
-    baseUrl: "https://api.xiaomimimo.com/v1",
-    mainModels: ["mimo-v2.5-pro", "mimo-v2-pro", "mimo-v2-omni"],
-    iconUrl: "https://unpkg.com/@lobehub/icons-static-svg@latest/icons/xiaomi.svg",
+    providerName: "Claude（Anthropic）",
+    baseUrl: "https://api.anthropic.com/v1",
+    // 同上，且 Anthropic 协议尚未接入，暂禁选。
+    mainModels: [],
+    iconUrl: "https://unpkg.com/@lobehub/icons-static-svg@latest/icons/claude.svg",
+    // Anthropic 的请求体不是 OpenAI 兼容格式（messages / system / 流式都不一样），
+    // 在专属 vendor adapter 接好之前先 disabled，避免用户选到后调用直接报 4xx。
+    disabled: true,
   },
 ];
 
@@ -375,8 +373,19 @@ const presetSelect = document.getElementById("preset-select") as HTMLSelectEleme
 const modeSelect = document.getElementById("mode") as HTMLSelectElement;
 const providerInput = document.getElementById("provider") as HTMLInputElement;
 const baseUrlInput = document.getElementById("base-url") as HTMLInputElement;
-const modelSelect = document.getElementById("model") as HTMLSelectElement;
+// 模型名两套控件：Auto 模式显示 modelSelect（预设下拉），Manual 模式显示 modelInput（自由输入 + datalist 联想）
+const modelSelect = document.getElementById("model-select") as HTMLSelectElement;
+const modelInput = document.getElementById("model-input") as HTMLInputElement;
+const modelInputSuggestions = document.getElementById("model-input-suggestions") as HTMLDataListElement;
 const apiKeyInput = document.getElementById("api-key") as HTMLInputElement;
+const testConnectionBtn = document.getElementById("test-connection-btn") as HTMLButtonElement | null;
+
+// 渲染端内存缓存：保存每个厂商上一次填写的 baseUrl / model / apiKey
+// 切厂商时从这里读，保存时同步进去；持久化由 main 进程的 saveModelSettings 负责（perProvider 字段）。
+const providerProfileCache: Record<string, ProviderProfile> = {};
+
+// 当前激活的厂商：每次 applyPreset 后更新；用于"切到下一家厂商前先把当前那家的输入框值缓存住"
+let activeProvider: string = "";
 const runtimeSyncSelect = document.getElementById("runtime-sync") as HTMLElement;
 const runtimeSyncNote = document.getElementById("runtime-sync-note") as HTMLElement;
 const stickerEnabledInput = document.getElementById("sticker-enabled") as HTMLInputElement;
@@ -498,16 +507,30 @@ function fillPresetOptions(): void {
   for (const preset of MODEL_PRESETS) {
     const option = document.createElement("option");
     option.value = preset.providerName;
-    option.textContent = preset.providerName;
+    if (preset.disabled) {
+      option.textContent = preset.providerName + "（暂未适配）";
+      option.disabled = true;
+    } else {
+      option.textContent = preset.providerName;
+    }
     presetSelect.appendChild(option);
   }
 }
 
 function findPreset(providerName: string): ModelPreset {
-  return MODEL_PRESETS.find((preset) => preset.providerName === providerName) ?? MODEL_PRESETS[5];
+  // fallback：找不到匹配的预设时，回退到列表第一个可用项（当前是 MiniMax）。
+  // 不直接返回 MODEL_PRESETS[0] 是为了未来若把首项改成 disabled 也仍然合法。
+  const fallback = MODEL_PRESETS.find((preset) => !preset.disabled) ?? MODEL_PRESETS[0];
+  return MODEL_PRESETS.find((preset) => preset.providerName === providerName) ?? fallback;
 }
 
+/**
+ * Auto 模式：modelSelect 渲染 preset.mainModels；
+ * Manual 模式：modelInput 配套的 datalist 也用相同清单做联想。
+ * 两个控件 value 同时设置，模式切换时不需要重算。
+ */
 function fillModelOptions(preset: ModelPreset, preferredModel?: string): void {
+  // 1) Auto 下拉
   modelSelect.replaceChildren();
   for (const model of preset.mainModels) {
     const option = document.createElement("option");
@@ -515,17 +538,90 @@ function fillModelOptions(preset: ModelPreset, preferredModel?: string): void {
     option.textContent = model;
     modelSelect.appendChild(option);
   }
-  modelSelect.value = preset.mainModels.includes(preferredModel ?? "")
+  // 2) Manual 输入联想（datalist）
+  modelInputSuggestions.replaceChildren();
+  for (const model of preset.mainModels) {
+    const option = document.createElement("option");
+    option.value = model;
+    modelInputSuggestions.appendChild(option);
+  }
+
+  // 选中值：preferredModel 命中则用之；否则 select 退到首项 / input 退到空串
+  const valueForSelect = preset.mainModels.includes(preferredModel ?? "")
     ? preferredModel!
-    : preset.mainModels[0];
+    : (preset.mainModels[0] ?? "");
+  modelSelect.value = valueForSelect;
+  // input 比 select 更宽容：如果 preferredModel 存在但不在 mainModels 里（厂商更新过型号 / 用户自填型号），
+  // 也保留显示，不强行清空。
+  modelInput.value = preferredModel ?? valueForSelect;
 }
 
-function applyPreset(providerName: string, preferredModel?: string): void {
+/**
+ * 把"当前输入框里的值"快照到内存缓存里（perProvider）。
+ * 切厂商前调用一次，避免覆盖丢失。
+ */
+function captureActiveProviderProfile(): void {
+  if (!activeProvider) return;
+  providerProfileCache[activeProvider] = {
+    baseUrl: baseUrlInput.value.trim(),
+    model: getCurrentModelValue().trim(),
+    apiKey: apiKeyInput.value.trim(),
+  };
+}
+
+/**
+ * 根据当前 mode，从对应控件读取模型名。
+ * - auto: modelSelect.value
+ * - manual: modelInput.value
+ */
+function getCurrentModelValue(): string {
+  return modeSelect.value === "manual" ? modelInput.value : modelSelect.value;
+}
+
+/**
+ * 应用 mode 的视觉切换：
+ * - auto   → 显示 modelSelect，隐藏 modelInput；baseUrl 锁定（厂商默认）
+ * - manual → 显示 modelInput，隐藏 modelSelect；baseUrl 可改（中转站等）
+ */
+function applyModeUI(): void {
+  const isManual = modeSelect.value === "manual";
+  modelSelect.hidden = isManual;
+  modelInput.hidden = !isManual;
+  // Auto 模式：baseUrl 锁死为厂商默认（用户自由切厂商即可），避免误触；
+  // Manual 模式：baseUrl 可改（用户填中转站 URL）。
+  baseUrlInput.readOnly = !isManual;
+  // 切到 manual 时把 select 当前值同步给 input（避免 mode 切换后值消失）
+  if (isManual && !modelInput.value) modelInput.value = modelSelect.value;
+  // 切到 auto 时如果 input 值在 select 选项里，回填 select；否则保留为首项
+  if (!isManual && modelInput.value) {
+    const exists = Array.from(modelSelect.options).some((opt) => opt.value === modelInput.value);
+    if (exists) modelSelect.value = modelInput.value;
+  }
+}
+
+function applyPreset(providerName: string, preferredModel?: string, preferredApiKey?: string, preferredBaseUrl?: string): void {
   const preset = findPreset(providerName);
+
+  // ChatGPT / Claude 这类没有 mainModels 预设的厂商（国内大多走中转站），强制切到 Manual 模式。
+  // 用户在 Manual 下自由填型号名 + baseUrl，比 Auto 模式空下拉更合适。
+  if (preset.mainModels.length === 0 && modeSelect.value !== "manual") {
+    modeSelect.value = "manual";
+    applyModeUI();
+  }
+
   presetSelect.value = preset.providerName;
   providerInput.value = preset.providerName;
-  baseUrlInput.value = preset.baseUrl;
+
+  // baseUrl：优先用缓存（用户自定义过），其次用 preset 默认
+  baseUrlInput.value = preferredBaseUrl ?? preset.baseUrl;
+
   fillModelOptions(preset, preferredModel);
+
+  // apiKey：优先用缓存；否则**显式清空**——避免上一家厂商的 key 残留在输入框里被用户误点保存。
+  // 这是 v1 切厂商行为里的关键不变量：apiKey 永远只跟当前厂商绑定。
+  apiKeyInput.value = preferredApiKey ?? "";
+
+  activeProvider = preset.providerName;
 }
 
 async function loadConfig(): Promise<void> {
@@ -533,8 +629,20 @@ async function loadConfig(): Promise<void> {
     fillPresetOptions();
     const cfg = await window.settings!.getConfig();
     modeSelect.value = cfg.mode;
-    applyPreset(cfg.provider, cfg.model);
-    apiKeyInput.value = cfg.apiKey;
+    // 把 main 进程返回的 perProvider 灌进渲染端内存缓存，切厂商时用到
+    if (cfg.perProvider && typeof cfg.perProvider === "object") {
+      for (const [key, value] of Object.entries(cfg.perProvider)) {
+        if (value && typeof value === "object") {
+          providerProfileCache[key] = {
+            baseUrl: typeof value.baseUrl === "string" ? value.baseUrl : "",
+            model: typeof value.model === "string" ? value.model : "",
+            apiKey: typeof value.apiKey === "string" ? value.apiKey : "",
+          };
+        }
+      }
+    }
+    applyModeUI();
+    applyPreset(cfg.provider, cfg.model, cfg.apiKey, cfg.baseUrl);
     applyRuntimeSyncSelection(cfg.runtimeSync);
     stickerEnabledInput.checked = cfg.stickerEnabled !== false;
     applyStickerSizeSelection(cfg.stickerSize);
@@ -542,7 +650,9 @@ async function loadConfig(): Promise<void> {
     setCyreneSaveStatus("等待保存");
   } catch {
     fillPresetOptions();
-    applyPreset("DeepSeek");
+    // 默认厂商已从 DeepSeek 改为 MiniMax（v1 vendor adapter 第一家落地的）
+    applyModeUI();
+    applyPreset("MiniMax（稀宇科技）");
     setSaveStatus("读取配置失败", "is-error");
     setCyreneSaveStatus("读取配置失败", "is-error");
   }
@@ -782,9 +892,33 @@ clearChatHistoryBtn.addEventListener("click", () => {
 });
 
 presetSelect.addEventListener("change", () => {
-  applyPreset(presetSelect.value);
-  setSaveStatus("已应用预设，填写 API Key 后保存");
+  // 切厂商前先把当前厂商的输入值快照进缓存，避免覆盖丢失
+  captureActiveProviderProfile();
+
+  // 从缓存里取目标厂商的旧配置；没有缓存就用 preset 默认值
+  const cached = providerProfileCache[presetSelect.value];
+  applyPreset(
+    presetSelect.value,
+    cached?.model,
+    cached?.apiKey,
+    cached?.baseUrl,
+  );
+  setSaveStatus(cached ? "已切回上次配置" : "已应用预设，填写 API Key 后保存");
 });
+
+// mode 切换：联动模型名控件与 baseUrl 锁定
+modeSelect.addEventListener("change", () => {
+  applyModeUI();
+  setSaveStatus("已切换模式");
+});
+
+// 测试连接按钮：UI 占位，等 vendor adapter 接好后接实测
+if (testConnectionBtn) {
+  testConnectionBtn.addEventListener("click", () => {
+    // TODO: 接入 vendor adapter 后改成真实连接测试
+    setSaveStatus("测试连接：vendor adapter 接入后可用", "is-error");
+  });
+}
 
 generalForm.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -821,11 +955,15 @@ apiForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   setSaveStatus("保存中…");
   try {
+    // 保存前把当前输入快照进 perProvider 缓存（main 进程也会做一次，但渲染端先做一遍，
+    // 是为了下一次切厂商再切回来不依赖磁盘往返）
+    captureActiveProviderProfile();
     await window.settings!.saveConfig({
       mode: modeSelect.value as "auto" | "manual",
       provider: providerInput.value.trim(),
       baseUrl: baseUrlInput.value.trim(),
-      model: modelSelect.value.trim(),
+      // mode 决定从哪个控件读模型名
+      model: getCurrentModelValue().trim(),
       apiKey: apiKeyInput.value.trim(),
     });
     setSaveStatus("已保存", "is-ok");

@@ -96,7 +96,14 @@
 
             <label class="field">
               <span>模型名</span>
-              <select id="model"></select>
+              <!--
+                Auto 模式：显示 #model-select（从厂商预设挑选）
+                Manual 模式：显示 #model-input（用户自行输入，配合 datalist 联想）
+                两者切换时 settings.ts 会同步它们的 value
+              -->
+              <select id="model-select"></select>
+              <input id="model-input" type="text" placeholder="自行填写模型名" autocomplete="off" list="model-input-suggestions" hidden />
+              <datalist id="model-input-suggestions"></datalist>
             </label>
 
             <label class="field">
@@ -113,6 +120,11 @@
 
           <div class="form-actions">
             <div class="save-status" id="save-status">等待保存</div>
+            <!--
+              测试连接按钮：当前为 UI 占位，点击后只弹一行临时提示。
+              等到 vendor adapter 接好后再接真实测试逻辑（替换 onclick 即可）。
+            -->
+            <button type="button" class="save-btn save-btn--ghost" id="test-connection-btn">测试连接</button>
             <button type="submit" class="save-btn">保存 API 设置</button>
           </div>
         </form>

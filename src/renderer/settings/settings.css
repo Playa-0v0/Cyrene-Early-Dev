@@ -372,6 +372,18 @@ body {
   cursor: not-allowed;
 }
 
+/* 次要按钮变体：用于"测试连接"等非主操作，避免和"保存"按钮抢视觉权重 */
+.save-btn--ghost {
+  background: transparent;
+  color: rgba(255, 182, 220, 0.85);
+  box-shadow: none;
+  border: 1px solid rgba(255, 182, 220, 0.32);
+}
+.save-btn--ghost:hover:not(:disabled) {
+  background: rgba(255, 110, 199, 0.10);
+  box-shadow: 0 0 12px rgba(236, 72, 153, 0.18);
+}
+
 
 /* ── 模型参数 ── */
 .api-section-divider {

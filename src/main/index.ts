@@ -28,12 +28,69 @@ let settingsWindow: BrowserWindow | null = null;
 let stickerManagerWindow: BrowserWindow | null = null;
 
 const isDev = process.env.VITE_DEV === "1";
+
+// 单个厂商的可缓存配置：用户切到别的厂商再切回来，这三个字段从这里恢复。
+interface ProviderProfile {
+  baseUrl: string;
+  model: string;
+  apiKey: string;
+}
+
+/**
+ * 厂商名变更映射：旧 providerName → 新 providerName。
+ *
+ * 触发时机：UI 上为了对齐"英文名（中文公司名）"格式重命名了 preset 后，
+ * 已存盘的 model-settings.json 里 provider 字段（以及 perProvider 字典的键）
+ * 仍是旧名；normalize 阶段做一次性迁移，把旧名的 perProvider 数据搬到新名下，
+ * provider 字段也改写为新名。迁移后写盘一次即清除痕迹。
+ *
+ * 后续如果再次重命名，**只追加键值对**，不要删除老条目，避免回归。
+ */
+const PROVIDER_RENAMES: Record<string, string> = {
+  "MiniMax": "MiniMax（稀宇科技）",
+  "DeepSeek": "DeepSeek（深度求索）",
+  "智谱 GLM": "GLM（智谱）",
+  "通义千问（DashScope）": "Qwen（通义千问）",
+  "火山 Agent-Plan": "火山 AgentPlan（火山引擎）",
+};
+
+/**
+ * 把 perProvider 字典 + currentProvider 字段一起套用 PROVIDER_RENAMES。
+ * - 旧名 → 新名：直接搬数据；如果新名已存在数据，旧名的不覆盖（保护"已用新名存过"的情况）。
+ * - 不在映射表里的键：原样保留。
+ */
+function migrateProviderRenames(
+  currentProvider: string,
+  perProvider: Record<string, ProviderProfile>,
+): { provider: string; perProvider: Record<string, ProviderProfile> } {
+  const next: Record<string, ProviderProfile> = {};
+  for (const [key, value] of Object.entries(perProvider)) {
+    const newKey = PROVIDER_RENAMES[key] ?? key;
+    if (next[newKey]) {
+      // 新名已经有数据（说明用户已经在新名下存过），旧名的本地副本保留为最近一次更新优先：
+      // 这里取保守路线 → 不覆盖 next[newKey]，旧名直接丢弃。
+      console.log("[Cyrene] provider rename: drop legacy", key, "→ kept", newKey);
+      continue;
+    }
+    if (newKey !== key) {
+      console.log("[Cyrene] provider rename:", key, "→", newKey);
+    }
+    next[newKey] = value;
+  }
+  const newProvider = PROVIDER_RENAMES[currentProvider] ?? currentProvider;
+  return { provider: newProvider, perProvider: next };
+}
+
 interface ModelSettings {
   mode: "auto" | "manual";
   provider: string;
   baseUrl: string;
   model: string;
   apiKey: string;
+  // 按厂商缓存：currentProvider 之外的厂商配置也保留在这里，切回来时回填。
+  // 真值（source of truth）是 perProvider；顶层 baseUrl/model/apiKey 是当前厂商那一份的展开镜像，
+  // 仅为兼容现有 main 进程里大量直接读 settings.baseUrl 等代码而保留。
+  perProvider: Record<string, ProviderProfile>;
   runtimeSync: "off" | "local" | "llm";
   stickerEnabled: boolean;
   stickerSize: StickerSize;
@@ -114,10 +171,12 @@ let runtimeState: RuntimeState = {
   };
 const DEFAULT_MODEL_SETTINGS: ModelSettings = {
   mode: "auto",
-  provider: "DeepSeek",
-  baseUrl: "https://api.deepseek.com",
-  model: "deepseek-v4-pro",
+  // 默认厂商改为 MiniMax（v1 vendor adapter 第一个落地的），DeepSeek 已从 v1 清单移除。
+  provider: "MiniMax（稀宇科技）",
+  baseUrl: "https://api.minimaxi.com/v1",
+  model: "MiniMax-M3",
   apiKey: "",
+  perProvider: {},
   runtimeSync: "off",
   stickerEnabled: true,
   stickerSize: "standard",
@@ -257,13 +316,65 @@ function getStickerSettingsPath(): string {
   return path.join(app.getPath("userData"), "sticker-settings.json");
 }
 
-function normalizeModelSettings(input: Partial<ModelSettings> | null | undefined): ModelSettings {
+/**
+ * normalize 流程：
+ *   1. 先清洗顶层基础字段（mode/provider/runtimeSync/...）
+ *   2. 再清洗 perProvider 字典：忽略非法键、缺失字段补默认值、apiKey 不在这里强制 trim 留作下一步
+ *   3. 旧 schema 兼容：若 perProvider 中没有 currentProvider 那一份，把顶层 baseUrl/model/apiKey 当作首次迁移塞进去
+ *   4. 用 perProvider[currentProvider] 反向展开成顶层 baseUrl/model/apiKey 镜像
+ *      → 真值（source of truth）是 perProvider；顶层只是当前厂商配置的视图
+ */
+function normalizeProviderProfile(input: Partial<ProviderProfile> | null | undefined): ProviderProfile {
   return {
-    mode: input?.mode === "manual" ? "manual" : "auto",
-    provider: typeof input?.provider === "string" && input.provider.trim() ? input.provider.trim() : DEFAULT_MODEL_SETTINGS.provider,
-    baseUrl: typeof input?.baseUrl === "string" ? input.baseUrl.trim() : DEFAULT_MODEL_SETTINGS.baseUrl,
-    model: typeof input?.model === "string" && input.model.trim() ? input.model.trim() : DEFAULT_MODEL_SETTINGS.model,
+    baseUrl: typeof input?.baseUrl === "string" ? input.baseUrl.trim() : "",
+    model: typeof input?.model === "string" ? input.model.trim() : "",
     apiKey: typeof input?.apiKey === "string" ? input.apiKey.trim() : "",
+  };
+}
+
+function normalizeModelSettings(input: Partial<ModelSettings> | null | undefined): ModelSettings {
+  const mode: "auto" | "manual" = input?.mode === "manual" ? "manual" : "auto";
+  let provider = typeof input?.provider === "string" && input.provider.trim()
+    ? input.provider.trim()
+    : DEFAULT_MODEL_SETTINGS.provider;
+
+  // perProvider 清洗：跳过非对象、非法键
+  const rawPerProvider = (input as ModelSettings | undefined)?.perProvider;
+  let perProvider: Record<string, ProviderProfile> = {};
+  if (rawPerProvider && typeof rawPerProvider === "object") {
+    for (const [key, value] of Object.entries(rawPerProvider)) {
+      if (typeof key !== "string" || !key.trim()) continue;
+      perProvider[key.trim()] = normalizeProviderProfile(value as Partial<ProviderProfile>);
+    }
+  }
+
+  // 厂商重命名迁移：把旧 provider 名在字典里和当前 provider 字段一并改成新名。
+  // 必须在"旧 schema 兼容回填"之前做，否则会用旧名先创建一份僵尸数据。
+  ({ provider, perProvider } = migrateProviderRenames(provider, perProvider));
+
+  // 旧 schema 兼容：v1 之前的 model-config.json 没有 perProvider 字段，
+  // 但有顶层 baseUrl/model/apiKey 三件套。首次升级时把它们当作 currentProvider 那一份回填。
+  if (!perProvider[provider]) {
+    perProvider[provider] = normalizeProviderProfile({
+      baseUrl: typeof input?.baseUrl === "string" ? input.baseUrl : "",
+      model: typeof input?.model === "string" ? input.model : "",
+      apiKey: typeof input?.apiKey === "string" ? input.apiKey : "",
+    });
+    // 如果迁移后这一份完全是空的（用户从来没配过），再给个默认 baseUrl/model（便于 UI 第一次显示）
+    if (!perProvider[provider].baseUrl) perProvider[provider].baseUrl = DEFAULT_MODEL_SETTINGS.baseUrl;
+    if (!perProvider[provider].model) perProvider[provider].model = DEFAULT_MODEL_SETTINGS.model;
+  }
+
+  // 顶层镜像：用 perProvider[provider] 展开
+  const profile = perProvider[provider];
+
+  return {
+    mode,
+    provider,
+    baseUrl: profile.baseUrl,
+    model: profile.model,
+    apiKey: profile.apiKey,
+    perProvider,
     runtimeSync: input?.runtimeSync === "llm" ? "llm" : input?.runtimeSync === "local" ? "local" : "off",
     stickerEnabled: input?.stickerEnabled !== false,
     stickerSize: input?.stickerSize === "small" || input?.stickerSize === "large" ? input.stickerSize : "standard",
@@ -284,13 +395,46 @@ function loadModelSettings(): ModelSettings {
   }
 }
 
+/**
+ * 保存逻辑：
+ *   - 渲染端发来的 settings 既可能带顶层 baseUrl/model/apiKey（旧调用方式），
+ *     也可能带 perProvider（新调用方式，未来可扩展）。
+ *   - 写盘前先把"顶层那三件套"折叠回 perProvider[provider]，保证真值落到字典里。
+ *   - normalizeModelSettings 再把 perProvider[provider] 展开成顶层镜像，写盘 = 双视图一致。
+ */
 function saveModelSettings(settings: Partial<ModelSettings>): ModelSettings {
   const existing = loadModelSettings();
-  const merged = normalizeModelSettings({ ...existing, ...settings });
+  const merged: Partial<ModelSettings> = { ...existing, ...settings };
+
+  // currentProvider 优先取传入的、再取已有的
+  const currentProvider = (typeof settings.provider === "string" && settings.provider.trim())
+    ? settings.provider.trim()
+    : existing.provider;
+
+  // 起点：复制现有 perProvider，再 merge 传入的 perProvider
+  const perProvider: Record<string, ProviderProfile> = { ...(existing.perProvider ?? {}) };
+  if (settings.perProvider && typeof settings.perProvider === "object") {
+    for (const [key, value] of Object.entries(settings.perProvider)) {
+      perProvider[key] = normalizeProviderProfile(value as Partial<ProviderProfile>);
+    }
+  }
+
+  // 把传入的顶层三件套折叠到 currentProvider 下（这是渲染端目前主要的写入路径）
+  const incomingProfile = perProvider[currentProvider] ?? normalizeProviderProfile(null);
+  perProvider[currentProvider] = {
+    baseUrl: typeof settings.baseUrl === "string" ? settings.baseUrl.trim() : incomingProfile.baseUrl,
+    model: typeof settings.model === "string" ? settings.model.trim() : incomingProfile.model,
+    apiKey: typeof settings.apiKey === "string" ? settings.apiKey.trim() : incomingProfile.apiKey,
+  };
+
+  merged.provider = currentProvider;
+  merged.perProvider = perProvider;
+
+  const final = normalizeModelSettings(merged);
   const filePath = getSettingsPath();
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
-  fs.writeFileSync(filePath, JSON.stringify(merged, null, 2), "utf8");
-  return merged;
+  fs.writeFileSync(filePath, JSON.stringify(final, null, 2), "utf8");
+  return final;
 }
 
 function normalizeGeneralSettings(input: Partial<GeneralSettings> | null | undefined): GeneralSettings {
