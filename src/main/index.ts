@@ -7,7 +7,12 @@ import { STATUS_KEYWORDS, STICKER_EXPLICIT_TRIGGERS, STICKER_CONTENT_TRIGGERS, S
 import { initRAG, buildMemoryContext, addMemory, importDocument, switchEmbeddingModel, deleteImportedDoc } from "./rag";
 import { buildAlwaysOnContext, runFunctionCallingLoop, scheduleMemoryWrite } from "./orchestrator";
 import { toolRegistry } from "./orchestrator/tool-registry";
+// 触发 built-in-tools 的副作用注册（fetch_url / run_shell / install_mcp_server）
+import "./orchestrator/built-in-tools";
+// 触发 fs-tools 的副作用注册（read_file / list_dir / write_file / read_image）
+import "./orchestrator/fs-tools";
 import { initMcpManager, addMcpServer, removeMcpServer, listMcpServers } from "./orchestrator/mcp-manager";
+import { buildEnvironmentContext } from "./orchestrator/environment";
 import { initPermissionFromDisk, registerPermissionIpc, getCurrentLevel } from "./permission";
 import { getEmbeddingStatus, downloadEmbeddingModel, deleteEmbeddingModel } from "./embedding-manager";
 import { initReranker } from "./rag/reranker";
@@ -835,8 +840,19 @@ async function requestModelReply(inputMessages: unknown, styleFile = "01_default
     console.warn("[Cyrene] always-on context build failed:", err);
   }
 
+  // 1.5 环境上下文（Step 1）：当前日期 / OS / 桌面真实路径 / 权限档位 / 工具可用情况
+  // 放在 always-on 之后、system prompt 末尾，让模型最近读到的就是机器事实，
+  // 降低"桌面在哪"这类低级幻觉。失败不影响主流程。
+  let environmentContext = "";
+  try {
+    environmentContext = buildEnvironmentContext();
+  } catch (err) {
+    console.warn("[Cyrene] environment context build failed:", err);
+  }
+
   const systemContent = buildSystemPrompt(styleFile)
-    + (alwaysOnContext ? "\n\n" + alwaysOnContext : "");
+    + (alwaysOnContext ? "\n\n" + alwaysOnContext : "")
+    + (environmentContext ? "\n\n" + environmentContext : "");
 
   // 2. Function Calling 循环：模型自己决定调不调工具、调哪个
   const fcMessages: Array<{ role: "system" | "user" | "assistant" | "tool"; content: string }> = [
@@ -845,6 +861,27 @@ async function requestModelReply(inputMessages: unknown, styleFile = "01_default
   ];
 
   let chatContent = "";
+  // 强提示：用户最新消息里包含本地路径/文件名特征 → 强制提醒模型必须先调工具
+  {
+    const t = latestUserText || "";
+    let looksLikeLocalPath = false;
+    if (t) {
+      if (/[A-Za-z]:[\\/]/.test(t)) looksLikeLocalPath = true;
+      else if (/(^|\s)~?[\\/]\S+/.test(t)) looksLikeLocalPath = true;
+      else if (/\.(txt|md|json|jsonl|csv|tsv|log|ya?ml|toml|ini|conf|py|js|ts|tsx|jsx|go|rs|java|cpp|c|h|sql|sh|bat|ps1|html|css|xml)\b/i.test(t)) looksLikeLocalPath = true;
+      else if (/(读|看|打开|展示|总结|分析).{0,8}(文件|文档|笔记|小说|日志|代码|配置)/.test(t)) looksLikeLocalPath = true;
+    }
+    if (looksLikeLocalPath) {
+      console.log("[Cyrene] 检测到本地文件意图，注入强制工具提醒");
+      fcMessages.push({
+        role: "system",
+        content:
+          "用户最新这条消息提到了本地文件或路径。在你回答之前必须先调用 read_file 或 list_dir 之类的工具拿到真实内容；" +
+          "如果工具返回错误，要把错误原因如实告诉用户；禁止凭文件名或上下文猜测、编造文件内容。",
+      });
+    }
+  }
+
   try {
     const fcResult = await runFunctionCallingLoop(
       settings,
