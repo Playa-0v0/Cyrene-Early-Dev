@@ -4,6 +4,8 @@
 import * as fs from "fs";
 import * as path from "path";
 import { toolRegistry } from "./tool-registry";
+import { captionImage } from "./vision-captioner";
+import type { ToolContext } from "./tool-context";
 
 const LOG_PREFIX = "[FsTools]";
 
@@ -259,9 +261,20 @@ toolRegistry.register({
 });
 
 // ── 工具 4：read_image ────────────────────────────────────
-// 读图片转 base64 data URL；多模态模型可以直接看
+// 资源访问层：读图片→base64→交 vision-captioner 看图→返回文字。
+// 不懂视觉，看图的活外包给 captioner。
 
-async function executeReadImage(args: Record<string, unknown>): Promise<string> {
+// loadVisionConfig 在 index.ts，但 index.ts 也 import 本文件（副作用注册），形成循环。
+// 用懒加载规避：运行时才 require，此时 index.ts 已初始化完。
+function loadVisionConfigLazy() {
+  const mod = require("../index") as { loadVisionConfig: () => import("./vision-captioner").VisionConfig | null };
+  return mod.loadVisionConfig();
+}
+
+async function executeReadImage(
+  args: Record<string, unknown>,
+  ctx?: ToolContext,
+): Promise<string> {
   const raw = String(args.path || "").trim();
   const filePath = ensureAbsolute(raw);
   if (!filePath) return "[错误] path 必须是绝对路径";
@@ -298,22 +311,33 @@ async function executeReadImage(args: Record<string, unknown>): Promise<string> 
     return "[错误] 读取失败: " + msg;
   }
 
-  const dataUrl = "data:" + mime + ";base64," + buf.toString("base64");
-  return "path: " + filePath + "\nmime: " + mime + "\nsize: " + humanBytes(stat.size) +
-    "\ndata_url_length: " + dataUrl.length + "\n" +
-    "data_url: " + dataUrl;
+  // 查视觉模型配置（统一判断入口，不再有调度层门控）
+  const visionConfig = loadVisionConfigLazy();
+  if (!visionConfig) {
+    return "[错误·配置] 未启用视觉能力。请在「设置 → API 设置 → 视觉模型」配置一个 OpenAI 兼容的视觉模型。";
+  }
+
+  // 调视觉模型看图，用户问题从 ToolContext 来
+  const userQuery = ctx?.userQuery ?? "";
+  const result = await captionImage(
+    { base64: buf.toString("base64"), mime },
+    userQuery,
+    visionConfig,
+  );
+  return result;
 }
 
 toolRegistry.register({
   id: "read_image",
   name: "读取图片",
   description:
-    "读取本地图片文件，返回 data URL（base64）。仅支持视觉的模型可用——" +
-    "运行环境会告诉你当前模型是否支持查看图片，不支持时不要调用本工具，直接如实告诉用户你看不了。" +
+    "读取本地图片文件，交给视觉模型分析后返回文字描述。用户提到图片、截图时调此工具。" +
+    "若未配置视觉模型会返回错误，届时如实告诉用户看不了。" +
     "支持 png/jpg/jpeg/gif/webp/bmp/svg。最大 5MB。" +
     "参数：path (必填，绝对路径)。",
   enabled: true,
   risk: "fs-read",
+  needsContext: true,
   inputSchema: {
     type: "object",
     properties: {
