@@ -6,40 +6,15 @@ import { ToolCallResult } from "./types";
 import { checkPermission, ToolRiskLevel } from "../permission";
 import {
   getAdapter,
-  getCapability,
   type ChatMessage,
   type ChatRequest,
   type ToolExecutionResult,
   type ToolSpec,
 } from "./vendors";
+import { extractLastUserQuery, type ToolContext } from "./tool-context";
 
 const LOG_PREFIX = "[FunctionCalling]";
 const MAX_TOOL_ROUNDS = 5; // 最多 5 轮工具调用，防止死循环
-
-/**
- * 工具能力门控：列出"需要当前模型具备某种能力才允许执行"的工具。
- * 模型能力不足时直接返回 [错误]，不真正执行——
- * 让它落进 system.md 已覆盖的"工具报错"分支，触发如实告知，杜绝编造。
- * 将来给别的工具加能力要求，只需在这里加一行映射。
- */
-const TOOL_CAPABILITY_GATE: Record<string, { capability: "vision"; reason: string }> = {
-  read_image: {
-    capability: "vision",
-    reason: "当前模型不支持查看图片，无法使用 read_image。遇到图片问题请如实告诉用户你看不了。",
-  },
-};
-
-/** 检查某工具在当前模型下是否被能力门控拦截。返回 null=放行，字符串=拒绝原因。 */
-function gateByCapability(toolId: string, provider: string): string | null {
-  const gate = TOOL_CAPABILITY_GATE[toolId];
-  if (!gate) return null;
-  const cap = getCapability(provider);
-  const supportsVision = cap?.supportsVision ?? false;
-  if (gate.capability === "vision" && !supportsVision) {
-    return gate.reason;
-  }
-  return null;
-}
 
 /** 调度层传入的厂商配置（结构兼容 main/index.ts 的 ModelSettings，避免循环依赖）。 */
 interface LoopSettings {
@@ -185,21 +160,18 @@ export async function runFunctionCallingLoop(
             output = "[已拒绝] " + (perm.reason || "权限不足");
             console.warn(LOG_PREFIX, "权限拒绝 [" + tc.name + "]:", perm.reason);
           } else {
-            // 能力门控：某些工具需要当前模型具备特定能力（如视觉）。
-            // 能力不足直接返回 [错误]，不执行——让 system.md 的"工具报错如实告知"规则接管。
-            const gateReason = gateByCapability(tc.name, settings.provider);
-            if (gateReason) {
-              output = "[错误] " + gateReason;
-              console.warn(LOG_PREFIX, "能力门控拦截 [" + tc.name + "]:", gateReason);
-            } else {
-              try {
-                output = await tool.execute(args);
-                console.log(LOG_PREFIX, "工具返回 [" + tc.name + "]:", output.slice(0, 200));
-              } catch (err) {
-                const errMsg = err instanceof Error ? err.message : String(err);
-                output = "[工具执行失败] " + errMsg;
-                console.error(LOG_PREFIX, "工具执行失败 [" + tc.name + "]:", errMsg);
-              }
+            // ToolContext 注入：声明 needsContext 的工具拿到用户当前问题。
+            // 能力判断交给工具内部（read_image 自己查视觉配置），调度层不再提前门控。
+            const ctx: ToolContext | undefined = tool.needsContext
+              ? { userQuery: extractLastUserQuery(conversation) }
+              : undefined;
+            try {
+              output = await tool.execute(args, ctx);
+              console.log(LOG_PREFIX, "工具返回 [" + tc.name + "]:", output.slice(0, 200));
+            } catch (err) {
+              const errMsg = err instanceof Error ? err.message : String(err);
+              output = "[工具执行失败] " + errMsg;
+              console.error(LOG_PREFIX, "工具执行失败 [" + tc.name + "]:", errMsg);
             }
           }
         }
