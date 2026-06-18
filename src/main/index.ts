@@ -986,12 +986,12 @@ async function requestModelReply(inputMessages: unknown, styleFile = "01_default
     console.warn("[Cyrene] always-on context build failed:", err);
   }
 
-  // 1.5 环境上下文（Step 1）：当前日期 / OS / 桌面真实路径 / 权限档位 / 工具可用情况
+  // 1.5 环境上下文（Step 1）：当前日期 / OS / 桌面真实路径 / 权限档位 / 工具可用情况 / 模型视觉能力
   // 放在 always-on 之后、system prompt 末尾，让模型最近读到的就是机器事实，
   // 降低"桌面在哪"这类低级幻觉。失败不影响主流程。
   let environmentContext = "";
   try {
-    environmentContext = buildEnvironmentContext();
+    environmentContext = buildEnvironmentContext({ provider: settings.provider, model: settings.model });
   } catch (err) {
     console.warn("[Cyrene] environment context build failed:", err);
   }

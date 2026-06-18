@@ -14,8 +14,15 @@ import { toolRegistry } from "./tool-registry";
 import { listMcpServers } from "./mcp-manager";
 import { ACCESS_LEVEL_LABEL, getCurrentLevel, policyFor } from "../permission";
 import type { ToolRiskLevel } from "../permission";
+import { getCapability } from "./vendors/capabilities";
 
 const LOG_PREFIX = "[Env]";
+
+/** 当前模型信息（用于查 capability 判断视觉等能力），可选。 */
+export interface ModelInfo {
+  provider: string;
+  model: string;
+}
 
 function safeGetPath(name: "desktop" | "documents" | "downloads" | "home"): string {
   try {
@@ -50,7 +57,7 @@ function platformLabel(): string {
  * 注意：这里只读取既有运行时状态，不做任何副作用；调用方负责 try/catch
  * 拼接失败的情况，避免环境注入炸掉聊天主流程。
  */
-export function buildEnvironmentContext(): string {
+export function buildEnvironmentContext(modelInfo?: ModelInfo): string {
   const level = getCurrentLevel();
   const levelLabel = ACCESS_LEVEL_LABEL[level];
 
@@ -109,6 +116,18 @@ export function buildEnvironmentContext(): string {
   }
   lines.push(`- MCP 服务：${mcpLine}`);
   lines.push("");
+
+  // 模型能力边界：把"你当前这个模型能不能看图"作为事实告诉模型，
+  // 让它遇到图片问题时敢于说"我看不了"，而不是硬编。
+  // 没传 modelInfo（比如降级路径）时保守地告诉它"看不了"。
+  let supportsVision = false;
+  if (modelInfo) {
+    const cap = getCapability(modelInfo.provider);
+    supportsVision = cap?.supportsVision ?? false;
+  }
+  lines.push(`- 当前模型是否支持查看图片：${supportsVision ? "支持（可调 read_image 看图）" : "不支持（看不了图片，遇到图片问题必须如实说明，不许编造图片内容）"}`);
+  lines.push("");
+
   lines.push(
     "当用户提到「桌面 / 文档 / 下载」却没给绝对路径时，使用上面这些真实路径拼接，再交给文件类工具；不要写 `~/Desktop` 或硬编码盘符。",
   );
@@ -123,6 +142,7 @@ export function buildEnvironmentContext(): string {
     `ask=${askTools.length}`,
     `deny=${deniedTools.length}`,
     `mcp=${mcpLine.startsWith("未连接") ? "none" : "active"}`,
+    `vision=${supportsVision}`,
   );
 
   return text;

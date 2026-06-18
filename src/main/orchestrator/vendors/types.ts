@@ -104,6 +104,8 @@ export interface ProviderCapability {
   thinkingField: ThinkingField;
   cacheStrategy: CacheStrategy;
   testStrategy: TestStrategy;
+  /** 是否支持视觉（图片）输入。非多模态模型禁止走 read_image。 */
+  supportsVision: boolean;
   /** UI 是否允许选择（Claude 等 Anthropic adapter 未就绪前先禁用）。 */
   disabled?: boolean;
 }

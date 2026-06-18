@@ -11,6 +11,9 @@ const READ_MAX_BYTES = 256 * 1024;       // 单文件最多读 256KB
 const LIST_MAX_ENTRIES = 200;            // 单次目录列举最多 200 项
 const IMAGE_MAX_BYTES = 5 * 1024 * 1024; // 图片最多 5MB
 
+// 图片扩展名集合，用于 list_dir 标注 [图片] 和汇总计数
+const IMAGE_EXTS = new Set([".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp", ".svg", ".ico"]);
+
 function ensureAbsolute(p: string): string | null {
   if (!p) return null;
   if (!path.isAbsolute(p)) return null;
@@ -116,6 +119,7 @@ async function executeListDir(args: Record<string, unknown>): Promise<string> {
   if (!stat.isDirectory()) return "[错误] 不是目录: " + dirPath;
 
   const showHidden = args.showHidden === true;
+  const filter = typeof args.filter === "string" ? args.filter.trim() : "";
   console.log(LOG_PREFIX, "list_dir:", dirPath, "showHidden=" + showHidden);
 
   let entries: fs.Dirent[];
@@ -141,9 +145,17 @@ async function executeListDir(args: Record<string, unknown>): Promise<string> {
   const truncated = entries.length > LIST_MAX_ENTRIES;
   const slice = truncated ? entries.slice(0, LIST_MAX_ENTRIES) : entries;
 
+  // 汇总图片数量，让模型不用逐个数就能回答"有几张图"
+  const imageCount = entries.filter(e => e.isFile() && IMAGE_EXTS.has(path.extname(e.name).toLowerCase())).length;
+
   const lines: string[] = [];
   lines.push("dir: " + dirPath);
-  lines.push("count: " + entries.length + (truncated ? " (仅显示前 " + LIST_MAX_ENTRIES + " 项)" : ""));
+  lines.push(
+    "count: " + entries.length +
+    (imageCount > 0 ? " (其中图片 " + imageCount + " 张)" : "") +
+    (filter ? " (filter: " + filter + ")" : "") +
+    (truncated ? " (仅显示前 " + LIST_MAX_ENTRIES + " 项)" : ""),
+  );
   lines.push("");
 
   for (const ent of slice) {
@@ -153,7 +165,10 @@ async function executeListDir(args: Record<string, unknown>): Promise<string> {
     } else if (ent.isFile()) {
       const st = safeStat(full);
       const size = st ? "  " + humanBytes(st.size) : "";
-      lines.push("[F] " + ent.name + size);
+      // 标注文件类型，重点让图片显式可见，模型才能数清"有几张图"
+      const ext = path.extname(ent.name).toLowerCase();
+      const tag = IMAGE_EXTS.has(ext) ? "  [图片]" : "";
+      lines.push("[F] " + ent.name + size + tag);
     } else if (ent.isSymbolicLink()) {
       lines.push("[L] " + ent.name);
     } else {
@@ -167,7 +182,8 @@ toolRegistry.register({
   id: "list_dir",
   name: "列出目录",
   description:
-    "列出某个目录下的子目录和文件。用户问'我那里有什么文件''看看 D:/小说 下面'时调此工具。" +
+    "列出某个目录下的子目录和文件。用户问'我那里有什么文件''看看 D:/小说 下面''有几张图片'时调此工具。" +
+    "输出会对图片文件标注 [图片]，并在 count 行汇总图片数量，可直接据此回答'几张图'类问题，不要靠猜。" +
     "参数：path (必填，绝对路径)，showHidden (可选，是否显示以 . 开头的隐藏项，默认 false)。",
   enabled: true,
   risk: "fs-read",
@@ -292,7 +308,8 @@ toolRegistry.register({
   id: "read_image",
   name: "读取图片",
   description:
-    "读取本地图片文件，返回 data URL（base64）。仅在多模态模型下有意义。" +
+    "读取本地图片文件，返回 data URL（base64）。仅支持视觉的模型可用——" +
+    "运行环境会告诉你当前模型是否支持查看图片，不支持时不要调用本工具，直接如实告诉用户你看不了。" +
     "支持 png/jpg/jpeg/gif/webp/bmp/svg。最大 5MB。" +
     "参数：path (必填，绝对路径)。",
   enabled: true,

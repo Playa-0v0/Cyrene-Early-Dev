@@ -17,6 +17,8 @@ export const PROVIDER_CAPABILITIES: ProviderCapability[] = [
     thinkingField: "thinking",
     cacheStrategy: "cache_control",
     testStrategy: "text",
+    // M3 原生多模态（image_url / video_url）
+    supportsVision: true,
   },
   {
     id: "deepseek",
@@ -30,6 +32,8 @@ export const PROVIDER_CAPABILITIES: ProviderCapability[] = [
     thinkingField: "reasoning_content",
     cacheStrategy: "auto",
     testStrategy: "text",
+    // 文档未明示视觉版，默认模型不支持
+    supportsVision: false,
   },
   {
     id: "volcengine",
@@ -44,6 +48,8 @@ export const PROVIDER_CAPABILITIES: ProviderCapability[] = [
     thinkingField: "reasoning_content",
     cacheStrategy: "none",
     testStrategy: "text",
+    // 聚合多模型，ark-code-latest 视觉能力未核实，保守 false
+    supportsVision: false,
   },
   {
     id: "glm",
@@ -57,6 +63,8 @@ export const PROVIDER_CAPABILITIES: ProviderCapability[] = [
     thinkingField: "reasoning_content",
     cacheStrategy: "auto",
     testStrategy: "text",
+    // 视觉版是 glm-5v-turbo，默认 glm-5.2 不支持
+    supportsVision: false,
   },
   {
     id: "kimi",
@@ -71,6 +79,8 @@ export const PROVIDER_CAPABILITIES: ProviderCapability[] = [
     thinkingField: "thinking",
     cacheStrategy: "prompt_cache_key",
     testStrategy: "text",
+    // k2.7-code 支持 image_url / video_url content block
+    supportsVision: true,
   },
   {
     id: "qwen",
@@ -84,6 +94,8 @@ export const PROVIDER_CAPABILITIES: ProviderCapability[] = [
     thinkingField: "reasoning_content",
     cacheStrategy: "auto",
     testStrategy: "text",
+    // 视觉版是 qwen-vl 系列，默认 qwen-max 不支持
+    supportsVision: false,
   },
   {
     id: "chatgpt",
@@ -97,6 +109,8 @@ export const PROVIDER_CAPABILITIES: ProviderCapability[] = [
     thinkingField: "reasoning_content",
     cacheStrategy: "auto",
     testStrategy: "text",
+    // model 由用户填，保守 false；门控会按 supportsVision 拦截
+    supportsVision: false,
   },
   {
     id: "claude",
@@ -110,6 +124,8 @@ export const PROVIDER_CAPABILITIES: ProviderCapability[] = [
     thinkingField: "thinking",
     cacheStrategy: "cache_control",
     testStrategy: "text",
+    // Claude 支持多模态 image content block，但 adapter 当前 disabled
+    supportsVision: true,
     disabled: true,
   },
 ];
@@ -134,5 +150,6 @@ export function getCapabilityOrOpenAI(provider: string): ProviderCapability {
     thinkingField: null,
     cacheStrategy: "none",
     testStrategy: "text",
+    supportsVision: false,
   };
 }
