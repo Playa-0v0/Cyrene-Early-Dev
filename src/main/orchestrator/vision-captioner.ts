@@ -70,8 +70,11 @@ export async function captionImage(
     // 不传 temperature：不同模型约束不同（如 Kimi k2.6 只允许 1），
     // 传固定值会在某些模型上报错。让各家用自己的默认值，可用性优先于确定性。
     // 确定性由 buildInstruction 里的"简洁/直接"指令约束保证。
-    // 视觉描述用不到 4096 默认值，512 够用且防回灌撑爆主模型上下文
+    // 视觉描述用不到 4096 默认值，512 够用且防回灌撑爆主模型上下文。
+    // 注意：MiniMax 的 max_tokens 已弃用，推荐 max_completion_tokens；
+    // 但多数厂商只认 max_tokens，两个都传兼容性最好。
     max_tokens: 512,
+    max_completion_tokens: 512,
     stream: false,
   };
 
