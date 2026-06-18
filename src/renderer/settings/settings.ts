@@ -143,6 +143,12 @@ interface ModelSettings {
   runtimeSync: "off" | "local" | "llm";
   stickerEnabled: boolean;
   stickerSize: "small" | "standard" | "large";
+  vision?: {
+    syncWithMain: boolean;
+    baseUrl: string;
+    apiKey: string;
+    model: string;
+  };
 }
 
 interface ModelPreset {
@@ -243,6 +249,7 @@ interface SettingsApi {
   getPermissionLevel?: () => Promise<{ level: "read-only" | "scoped" | "per-action" | "full" }>;
   setPermissionLevel?: (level: string) => Promise<{ ok: boolean; level?: string; error?: string }>;
   testConnection?: (config: { provider: string; baseUrl: string; model: string; apiKey: string }) => Promise<{ ok: boolean; latency: number; sample?: string; error?: string }>;
+  testVision?: (config: { baseUrl: string; apiKey: string; model: string }) => Promise<{ ok: boolean; latency: number; sample?: string; error?: string }>;
 }
 
 declare global {
@@ -380,6 +387,15 @@ const modelInput = document.getElementById("model-input") as HTMLInputElement;
 const modelInputSuggestions = document.getElementById("model-input-suggestions") as HTMLDataListElement;
 const apiKeyInput = document.getElementById("api-key") as HTMLInputElement;
 const testConnectionBtn = document.getElementById("test-connection-btn") as HTMLButtonElement | null;
+
+// 视觉模型配置区元素
+const visionSyncCheckbox = document.getElementById("vision-sync-main") as HTMLInputElement;
+const visionBaseUrlInput = document.getElementById("vision-base-url") as HTMLInputElement;
+const visionApiKeyInput = document.getElementById("vision-api-key") as HTMLInputElement;
+const visionModelInput = document.getElementById("vision-model") as HTMLInputElement;
+const visionFieldsWrap = document.querySelector(".vision-fields") as HTMLElement;
+const testVisionBtn = document.getElementById("test-vision-btn") as HTMLButtonElement;
+const visionTestStatus = document.getElementById("vision-test-status") as HTMLElement;
 
 // 渲染端内存缓存：保存每个厂商上一次填写的 baseUrl / model / apiKey
 // 切厂商时从这里读，保存时同步进去；持久化由 main 进程的 saveModelSettings 负责（perProvider 字段）。
@@ -600,6 +616,22 @@ function applyModeUI(): void {
   }
 }
 
+/**
+ * 视觉同步 UI：勾选"与主聊天模型相同"时，三框变只读 + 值随主配置。
+ * 主配置改了它跟着改（通过事件监听联动）。
+ */
+function applyVisionSyncUI(): void {
+  const synced = visionSyncCheckbox.checked;
+  if (synced) {
+    visionFieldsWrap.classList.add("is-locked");
+    visionBaseUrlInput.value = baseUrlInput.value;
+    visionApiKeyInput.value = apiKeyInput.value;
+    visionModelInput.value = getCurrentModelValue();
+  } else {
+    visionFieldsWrap.classList.remove("is-locked");
+  }
+}
+
 function applyPreset(providerName: string, preferredModel?: string, preferredApiKey?: string, preferredBaseUrl?: string): void {
   const preset = findPreset(providerName);
 
@@ -647,6 +679,22 @@ async function loadConfig(): Promise<void> {
     applyRuntimeSyncSelection(cfg.runtimeSync);
     stickerEnabledInput.checked = cfg.stickerEnabled !== false;
     applyStickerSizeSelection(cfg.stickerSize);
+
+    // 视觉模型配置
+    const vision = cfg.vision;
+    if (vision) {
+      visionSyncCheckbox.checked = vision.syncWithMain;
+      visionBaseUrlInput.value = vision.baseUrl || "";
+      visionApiKeyInput.value = vision.apiKey || "";
+      visionModelInput.value = vision.model || "";
+    } else {
+      visionSyncCheckbox.checked = false;
+      visionBaseUrlInput.value = "";
+      visionApiKeyInput.value = "";
+      visionModelInput.value = "";
+    }
+    applyVisionSyncUI();
+
     setSaveStatus("等待保存");
     setCyreneSaveStatus("等待保存");
   } catch {
@@ -936,6 +984,38 @@ if (testConnectionBtn) {
   });
 }
 
+// ── 视觉模型配置事件 ──────────────────────────────────────
+visionSyncCheckbox.addEventListener("change", () => {
+  applyVisionSyncUI();
+  setSaveStatus("有未保存的更改");
+});
+
+// 主配置变化时，若同步勾选，联动更新视觉三框
+baseUrlInput.addEventListener("input", () => { if (visionSyncCheckbox.checked) visionBaseUrlInput.value = baseUrlInput.value; });
+apiKeyInput.addEventListener("input", () => { if (visionSyncCheckbox.checked) visionApiKeyInput.value = apiKeyInput.value; });
+modelInput.addEventListener("input", () => { if (visionSyncCheckbox.checked) visionModelInput.value = modelInput.value; });
+modelSelect.addEventListener("change", () => { if (visionSyncCheckbox.checked) visionModelInput.value = modelSelect.value; });
+
+// 测试视觉模型按钮
+testVisionBtn.addEventListener("click", async () => {
+  const baseUrl = visionSyncCheckbox.checked ? baseUrlInput.value : visionBaseUrlInput.value;
+  const apiKey = visionSyncCheckbox.checked ? apiKeyInput.value : visionApiKeyInput.value;
+  const model = visionSyncCheckbox.checked ? getCurrentModelValue() : visionModelInput.value;
+  if (!apiKey) { visionTestStatus.textContent = "请先填写 API Key"; return; }
+  if (!model) { visionTestStatus.textContent = "请先填写视觉型号"; return; }
+  visionTestStatus.textContent = "测试中…";
+  testVisionBtn.disabled = true;
+  try {
+    const result = await window.settings!.testVision?.({ baseUrl, apiKey, model });
+    if (result?.ok) visionTestStatus.textContent = "✅ 连接成功 " + result.latency + "ms · " + (result.sample ?? "");
+    else visionTestStatus.textContent = "❌ " + (result?.error ?? "未知错误");
+  } catch (e) {
+    visionTestStatus.textContent = "❌ " + (e instanceof Error ? e.message : String(e));
+  } finally {
+    testVisionBtn.disabled = false;
+  }
+});
+
 generalForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   setGeneralSaveStatus("保存中…");
@@ -981,6 +1061,13 @@ apiForm.addEventListener("submit", async (e) => {
       // mode 决定从哪个控件读模型名
       model: getCurrentModelValue().trim(),
       apiKey: apiKeyInput.value.trim(),
+      vision: {
+        syncWithMain: visionSyncCheckbox.checked,
+        // syncWithMain=true 时三字段传空（main 进程不落盘，运行时从主配置读）
+        baseUrl: visionSyncCheckbox.checked ? "" : visionBaseUrlInput.value.trim(),
+        apiKey: visionSyncCheckbox.checked ? "" : visionApiKeyInput.value.trim(),
+        model: visionSyncCheckbox.checked ? "" : visionModelInput.value.trim(),
+      },
     });
     setSaveStatus("已保存", "is-ok");
   } catch {
