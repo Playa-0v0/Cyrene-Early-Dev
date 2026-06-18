@@ -17,6 +17,7 @@ import "./orchestrator/fs-tools";
 import { initMcpManager, addMcpServer, removeMcpServer, listMcpServers } from "./orchestrator/mcp-manager";
 import { buildEnvironmentContext } from "./orchestrator/environment";
 import { initPermissionFromDisk, registerPermissionIpc, getCurrentLevel } from "./permission";
+import { enqueueLLMTask } from "./llm-queue";
 import { getEmbeddingStatus, downloadEmbeddingModel, deleteEmbeddingModel } from "./embedding-manager";
 import { initReranker } from "./rag/reranker";
 import { memoryStore } from "./memory/memory-store"
@@ -993,13 +994,16 @@ async function observeRuntimeState(
   latestUserText: string,
   chatContent: string,
 ): Promise<void> {
-  const _obsStart = Date.now();
-  console.log(`[TIMING] 心情观察器 SENDING request`);
-  try {
-    const recentDialogue = [...recentMessages.slice(-8), { role: "assistant" as const, content: chatContent }]
-      .filter((message) => message.role !== "system")
-      .slice(-6)
-      .map((message) => ({ role: message.role, content: message.content }));
+  const recentDialogue = [...recentMessages.slice(-8), { role: "assistant" as const, content: chatContent }]
+    .filter((message) => message.role !== "system")
+    .slice(-6)
+    .map((message) => ({ role: message.role, content: message.content }));
+
+  // 入 LLM 后台队列：和 MemoryJudge 串行执行，避免并发触发限流；
+  // 限流自动退避 5s 重试 1 次。.catch 吞错误，不影响主流程。
+  enqueueLLMTask("心情观察器", async () => {
+    const _obsStart = Date.now();
+    console.log(`[TIMING] 心情观察器 SENDING request`);
     const observerContent = await callChatCompletions(settings, [
       {
         role: "system",
@@ -1021,10 +1025,11 @@ async function observeRuntimeState(
       runtimeState.updatedAt = Date.now();
       broadcastRuntimeStateChanged();
     }
-  } catch (err) {
-    console.warn(`[TIMING] 心情观察器 FAILED at ${Date.now() - _obsStart}ms`);
+  }).catch((err) => {
     console.warn("[Cyrene] observe runtime failed; keeping current feeling:", err);
-  }
+  });
+  // 标注未使用的参数，避免 lint 警告
+  void latestUserText;
 }
 
 async function requestModelReply(inputMessages: unknown, styleFile = "01_default.md"): Promise<ChatReplyPayload> {
