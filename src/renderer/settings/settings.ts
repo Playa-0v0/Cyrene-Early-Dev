@@ -455,7 +455,7 @@ const openStickerManagerBtn = document.getElementById("open-sticker-manager-btn"
 
 const NAV_LABELS: Record<string, { emoji: string; title: string; hint: string }> = {
   memory: { emoji: "🧠", title: "记忆", hint: "管理长期记忆与画像" },
-  gallery: { emoji: "🖼️", title: "图库", hint: "管理角色表情与素材" },
+  chat: { emoji: "💬", title: "聊天", hint: "管理聊天窗口与会话" },
   user: { emoji: "👤", title: "用户信息", hint: "编辑你的个人资料" },
   tasks: { emoji: "⏰", title: "定时任务", hint: "管理定时提醒与日程" },
   skills: { emoji: "✨", title: "技能 Skill", hint: "管理昔涟的能力插件" },
