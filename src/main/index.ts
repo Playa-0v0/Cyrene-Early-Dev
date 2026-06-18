@@ -837,7 +837,7 @@ function appendApiLog(
 async function callChatCompletionsStream(
   settings: ModelSettings,
   messages: Array<{ role: "system" | "user" | "assistant"; content: string }>,
-  temperature: number,
+  temperature: number | undefined,
   timeoutMs: number,
   label: string,
   onChunk: (text: string) => void,
@@ -858,7 +858,8 @@ async function callChatCompletionsStream(
       body: JSON.stringify({
         model: settings.model,
         messages,
-        temperature,
+        // temperature 只在显式传时才塞进 body，避免型号约束冲突（如 Kimi k2.6 只允许 1）
+        ...(temperature !== undefined ? { temperature } : {}),
         stream: true,
       }),
     });
@@ -935,7 +936,7 @@ async function callChatCompletionsStream(
 async function callChatCompletions(
   settings: ModelSettings,
   messages: Array<{ role: "system" | "user" | "assistant"; content: string }>,
-  temperature: number,
+  temperature: number | undefined,
   timeoutMs: number,
   label: string,
 ): Promise<string> {
@@ -1008,7 +1009,7 @@ async function observeRuntimeState(
           recentDialogue,
         }),
       },
-    ], 0.2, 30000, "心情观察器");
+    ], undefined, 30000, "心情观察器");
     console.log(`[TIMING] 心情观察器 OK in ${Date.now() - _obsStart}ms raw=${observerContent?.slice(0, 100)}`);
     const feeling = parseObserverFeeling(observerContent);
     if (feeling) {
@@ -1084,7 +1085,7 @@ async function requestModelReply(inputMessages: unknown, styleFile = "01_default
     chatContent = await callChatCompletions(
       settings,
       fcMessages as Array<{ role: "system" | "user" | "assistant"; content: string }>,
-      0.8,
+      undefined,
       CHAT_REQUEST_TIMEOUT_MS,
       "主聊天（降级）",
     );

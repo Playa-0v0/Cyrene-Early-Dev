@@ -147,7 +147,7 @@ async function callChatCompletions(
       body: JSON.stringify({
         model: settings.model,
         messages,
-        temperature: 0.2,
+        // 不传 temperature：不同型号约束不同（如 Kimi k2.6 只允许 1），传固定值会报错
         max_tokens: 300,
         stream: false,
       }),

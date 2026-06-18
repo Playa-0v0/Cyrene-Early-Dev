@@ -91,9 +91,10 @@ export class AnthropicAdapter implements ChatVendorAdapter {
       model: req.model,
       max_tokens: DEFAULT_MAX_TOKENS,
       messages,
-      temperature: req.temperature ?? 0.7,
       stream: req.stream ?? false,
     };
+    // temperature 只在调用方显式传时才塞进 body，让厂商用默认值避免型号约束冲突
+    if (req.temperature !== undefined) body.temperature = req.temperature;
     // system + 主动缓存（MiniMax/Claude：cache_control: ephemeral 打在 system block 上）
     if (system) {
       if (this.capability.cacheStrategy === "cache_control") {
@@ -194,7 +195,7 @@ export class AnthropicAdapter implements ChatVendorAdapter {
       const req: ChatRequest = {
         model: cfg.model,
         messages: [{ role: "user", content: "ping，请只回复两个字符：ok" }],
-        temperature: 0,
+        // 不传 temperature：某些模型只允许特定值，传 0 会报错
         stream: false,
       };
       const http = this.buildRequest(req, cfg);

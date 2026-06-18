@@ -55,9 +55,12 @@ export class OpenAICompatAdapter implements ChatVendorAdapter {
     const body: Record<string, unknown> = {
       model: req.model,
       messages: toWireMessages(req.messages),
-      temperature: req.temperature ?? 0.7,
       stream: req.stream ?? false,
     };
+    // temperature 只在调用方显式传时才塞进 body。
+    // 不传时让厂商用默认值——不同型号约束不同（如 Kimi k2.6 只允许 1），
+    // 硬编码兜底值会在某些模型上报错。
+    if (req.temperature !== undefined) body.temperature = req.temperature;
     const tools = toWireTools(req.tools);
     if (tools) {
       body.tools = tools;
@@ -145,7 +148,7 @@ export class OpenAICompatAdapter implements ChatVendorAdapter {
       const req: ChatRequest = {
         model: cfg.model,
         messages: [{ role: "user", content: "ping，请只回复两个字符：ok" }],
-        temperature: 0,
+        // 不传 temperature：某些模型（如 Kimi k2.6）只允许特定值，传 0 会报错
         stream: false,
       };
       const http = this.buildRequest(req, cfg);

@@ -80,7 +80,7 @@ export async function runFunctionCallingLoop(
       model: settings.model,
       messages: conversation,
       ...(tools.length > 0 ? { tools } : {}),
-      temperature: 0.7,
+      // 不传 temperature：不同型号约束不同（如 Kimi k2.6 只允许 1），让厂商用默认值
       stream: false,
     };
     if (adapter.applyCacheHints) req = adapter.applyCacheHints(req, settings);
@@ -202,7 +202,7 @@ export async function runFunctionCallingLoop(
   let finalReq: ChatRequest = {
     model: settings.model,
     messages: conversation,
-    temperature: 0.7,
+    // 不传 temperature：不同型号约束不同，让厂商用默认值
     stream: false,
   };
   if (adapter.applyCacheHints) finalReq = adapter.applyCacheHints(finalReq, settings);
