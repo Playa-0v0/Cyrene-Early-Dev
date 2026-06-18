@@ -1,19 +1,22 @@
 import * as fs from "fs"
 import * as path from "path"
+import { buildVendorUrl } from "../orchestrator/vendors"
 import { app } from "electron"
 import { MemoryCandidate, L0_FIELD_DESCRIPTIONS } from "./memory-types"
 
 interface ModelSettings {
+  provider: string
   baseUrl: string
   model: string
   apiKey: string
 }
 
 const DEFAULT_MODEL_SETTINGS: ModelSettings = {
+  provider: "DeepSeek（深度求索）",
   baseUrl: "https://api.deepseek.com",
   model: "deepseek-v4-pro",
   apiKey: "",
-}
+};
 
 function getSettingsPath(): string {
   return path.join(app.getPath("userData"), "model-settings.json")
@@ -26,18 +29,17 @@ function loadModelSettings(): ModelSettings {
     const raw = fs.readFileSync(filePath, "utf8")
     const parsed = JSON.parse(raw) as Partial<ModelSettings>
     return {
+      provider: typeof parsed.provider === "string" && parsed.provider.trim() ? parsed.provider.trim() : DEFAULT_MODEL_SETTINGS.provider,
       baseUrl: typeof parsed.baseUrl === "string" && parsed.baseUrl.trim() ? parsed.baseUrl.trim() : DEFAULT_MODEL_SETTINGS.baseUrl,
       model: typeof parsed.model === "string" && parsed.model.trim() ? parsed.model.trim() : DEFAULT_MODEL_SETTINGS.model,
       apiKey: typeof parsed.apiKey === "string" ? parsed.apiKey.trim() : "",
-    }
+    };
   } catch {
     return DEFAULT_MODEL_SETTINGS
   }
 }
 
-function buildChatCompletionsUrl(baseUrl: string): string {
-  return `${baseUrl.trim().replace(/\/+$/, "")}/chat/completions`
-}
+
 
 function stripThinkBlocks(text: string): string {
   return text
@@ -135,7 +137,7 @@ async function callChatCompletions(
   const timer = setTimeout(() => controller.abort(), timeoutMs)
 
   try {
-    const response = await fetch(buildChatCompletionsUrl(settings.baseUrl), {
+    const response = await fetch(buildVendorUrl(settings.provider, settings.baseUrl), {
       method: "POST",
       signal: controller.signal,
       headers: {

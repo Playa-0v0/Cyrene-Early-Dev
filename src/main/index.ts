@@ -6,6 +6,7 @@ import { IPC } from "../shared/ipc-channels";
 import { STATUS_KEYWORDS, STICKER_EXPLICIT_TRIGGERS, STICKER_CONTENT_TRIGGERS, STICKER_MAP } from "./status-keywords";
 import { initRAG, buildMemoryContext, addMemory, importDocument, switchEmbeddingModel, deleteImportedDoc } from "./rag";
 import { buildAlwaysOnContext, runFunctionCallingLoop, scheduleMemoryWrite } from "./orchestrator";
+import { getAdapter, buildVendorUrl } from "./orchestrator/vendors";
 import { toolRegistry } from "./orchestrator/tool-registry";
 // 触发 built-in-tools 的副作用注册（fetch_url / run_shell / install_mcp_server）
 import "./orchestrator/built-in-tools";
@@ -173,7 +174,7 @@ const DEFAULT_MODEL_SETTINGS: ModelSettings = {
   mode: "auto",
   // 默认厂商改为 MiniMax（v1 vendor adapter 第一个落地的），DeepSeek 已从 v1 清单移除。
   provider: "MiniMax（稀宇科技）",
-  baseUrl: "https://api.minimaxi.com/v1",
+  baseUrl: "https://api.minimaxi.com/anthropic",
   model: "MiniMax-M3",
   apiKey: "",
   perProvider: {},
@@ -728,6 +729,7 @@ function parseObserverFeeling(text: string): string | null {
 
 function buildChatCompletionsUrl(baseUrl: string): string {
   const trimmed = baseUrl.trim().replace(/\/+$/, "");
+  if (trimmed.endsWith("/chat/completions")) return trimmed;
   return `${trimmed}/chat/completions`;
 }
 
@@ -789,7 +791,7 @@ async function callChatCompletionsStream(
   console.log(`[TIMING] ${label} START timeout=${timeoutMs}ms msgLen=${messages.length} sysLen=${messages[0]?.content?.length ?? 0}`);
 
   try {
-    const response = await fetch(buildChatCompletionsUrl(settings.baseUrl), {
+    const response = await fetch(buildVendorUrl(settings.provider, settings.baseUrl), {
       method: "POST",
       signal: controller.signal,
       headers: {
@@ -1659,6 +1661,14 @@ ipcMain.handle(IPC.SETTINGS_SAVE_CONFIG, (_event, settings: Partial<ModelSetting
   const saved = saveModelSettings(settings);
   broadcastModelConfigChanged(saved);
   return saved;
+});
+
+ipcMain.handle(IPC.SETTINGS_TEST_CONNECTION, async (_event, cfg: { provider: string; baseUrl: string; model: string; apiKey: string }) => {
+  const adapter = getAdapter(cfg.provider);
+  console.log("[Cyrene] test connection: provider=" + cfg.provider + " transport=" + adapter.transport + " model=" + cfg.model);
+  const result = await adapter.testConnection(cfg);
+  console.log("[Cyrene] test connection result:", JSON.stringify(result));
+  return result;
 });
 
 

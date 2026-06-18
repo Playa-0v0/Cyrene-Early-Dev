@@ -242,6 +242,7 @@ interface SettingsApi {
   listMcpServers?: () => Promise<Array<{ id: string; name: string; connected: boolean; toolCount: number; toolIds: string[] }>>;
   getPermissionLevel?: () => Promise<{ level: "read-only" | "scoped" | "per-action" | "full" }>;
   setPermissionLevel?: (level: string) => Promise<{ ok: boolean; level?: string; error?: string }>;
+  testConnection?: (config: { provider: string; baseUrl: string; model: string; apiKey: string }) => Promise<{ ok: boolean; latency: number; sample?: string; error?: string }>;
 }
 
 declare global {
@@ -257,7 +258,7 @@ const MODEL_PRESETS: ModelPreset[] = [
   // 顺序按使用频率 + 适配优先级；未在此清单内的厂商已硬删，需要时再补回。
   {
     providerName: "MiniMax（稀宇科技）",
-    baseUrl: "https://api.minimaxi.com/v1",
+    baseUrl: "https://api.minimaxi.com/anthropic",
     mainModels: ["MiniMax-M3", "MiniMax-M2.7", "MiniMax-M2.5"],
     iconUrl: "https://unpkg.com/@lobehub/icons-static-svg@latest/icons/minimax.svg",
   },
@@ -284,7 +285,7 @@ const MODEL_PRESETS: ModelPreset[] = [
   },
   {
     providerName: "Kimi（月之暗面）",
-    baseUrl: "https://api.moonshot.ai/v1",
+    baseUrl: "https://api.moonshot.cn/v1",
     mainModels: ["kimi-k2.6", "kimi-k2.5", "kimi-k2-thinking"],
     iconUrl: "https://unpkg.com/@lobehub/icons-static-svg@latest/icons/moonshot.svg",
   },
@@ -912,11 +913,26 @@ modeSelect.addEventListener("change", () => {
   setSaveStatus("已切换模式");
 });
 
-// 测试连接按钮：UI 占位，等 vendor adapter 接好后接实测
+// 测试连接按钮：调用厂商 adapter 的真实连接测试
 if (testConnectionBtn) {
-  testConnectionBtn.addEventListener("click", () => {
-    // TODO: 接入 vendor adapter 后改成真实连接测试
-    setSaveStatus("测试连接：vendor adapter 接入后可用", "is-error");
+  testConnectionBtn.addEventListener("click", async () => {
+    const provider = providerInput.value;
+    const baseUrl = baseUrlInput.value;
+    const model = getCurrentModelValue().trim();
+    const apiKey = apiKeyInput.value;
+    if (!apiKey) { setSaveStatus("请先填写 API Key 再测试", "is-error"); return; }
+    if (!model) { setSaveStatus("请先选择/填写模型再测试", "is-error"); return; }
+    setSaveStatus("测试连接中…");
+    testConnectionBtn.disabled = true;
+    try {
+      const result = await window.settings!.testConnection({ provider, baseUrl, model, apiKey });
+      if (result.ok) setSaveStatus("连接成功 " + result.latency + "ms · " + (result.sample ?? ""), "is-ok");
+      else setSaveStatus("连接失败：" + (result.error ?? "未知错误"), "is-error");
+    } catch (e) {
+      setSaveStatus("连接失败：" + (e instanceof Error ? e.message : String(e)), "is-error");
+    } finally {
+      testConnectionBtn.disabled = false;
+    }
   });
 }
 

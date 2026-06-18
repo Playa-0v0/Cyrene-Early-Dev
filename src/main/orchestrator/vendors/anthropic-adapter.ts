@@ -1,0 +1,221 @@
+// Anthropic transport —— MiniMax（主推）/ Claude
+// 请求体协议：POST {baseUrl}/v1/messages（baseUrl 已含 /v1 时只加 /messages）
+// system 顶层 + messages[].content 为 content block 数组 + tools[].input_schema
+import {
+  ChatMessage, ChatRequest, ChatResponse, ChatVendorAdapter,
+  HttpRequest, ProviderCapability, TestConnectionResult, ToolCall,
+  ToolExecutionResult, VendorConfig,
+} from "./types";
+
+const ANTHROPIC_VERSION = "2023-06-01";
+const DEFAULT_MAX_TOKENS = 4096;
+
+function buildUrl(baseUrl: string): string {
+  const trimmed = baseUrl.trim().replace(/\/+$/, "");
+  if (trimmed.endsWith("/messages")) return trimmed;
+  if (trimmed.endsWith("/v1")) return `${trimmed}/messages`;
+  return `${trimmed}/v1/messages`;
+}
+
+interface ContentBlock {
+  type: string;
+  [k: string]: unknown;
+}
+
+/**
+ * 把统一消息翻译成 Anthropic wire messages。
+ * system 抽出来单独返回（Anthropic system 是顶层字段）。
+ * 关键：assistant 若带 rawAssistant（上一轮原始 content block 数组）则原样回传，
+ * 保证 thinking / tool_use block 完整回灌（MiniMax 多轮强制要求）。
+ * tool 结果：Anthropic 用 user 角色的 tool_result block，同轮多个合并到同一条 user message。
+ */
+function toWireMessages(messages: ChatMessage[]): {
+  system: string | undefined;
+  messages: Array<Record<string, unknown>>;
+} {
+  const systemText = messages
+    .filter(m => m.role === "system")
+    .map(m => m.content ?? "")
+    .join("\n\n")
+    .trim();
+  const system = systemText || undefined;
+
+  const wire: Array<Record<string, unknown>> = [];
+  for (const m of messages.filter(x => x.role !== "system")) {
+    if (m.role === "user") {
+      wire.push({ role: "user", content: m.content ?? "" });
+    } else if (m.role === "assistant") {
+      if (m.rawAssistant !== undefined) {
+        wire.push({ role: "assistant", content: m.rawAssistant });
+      } else {
+        const blocks: ContentBlock[] = [];
+        if (m.thinking) blocks.push({ type: "thinking", thinking: m.thinking });
+        if (m.content) blocks.push({ type: "text", text: m.content });
+        if (m.toolCalls) {
+          for (const tc of m.toolCalls) {
+            let input: unknown = {};
+            try {
+              input = JSON.parse(tc.arguments || "{}");
+            } catch {
+              input = {};
+            }
+            blocks.push({ type: "tool_use", id: tc.id, name: tc.name, input });
+          }
+        }
+        wire.push({ role: "assistant", content: blocks.length > 0 ? blocks : "" });
+      }
+    } else if (m.role === "tool") {
+      const block: ContentBlock = {
+        type: "tool_result",
+        tool_use_id: m.toolCallId,
+        content: m.content ?? "",
+      };
+      const last = wire[wire.length - 1];
+      if (last && last.role === "user" && Array.isArray(last.content)) {
+        (last.content as ContentBlock[]).push(block);
+      } else {
+        wire.push({ role: "user", content: [block] });
+      }
+    }
+  }
+  return { system, messages: wire };
+}
+
+export class AnthropicAdapter implements ChatVendorAdapter {
+  readonly transport = "anthropic" as const;
+  constructor(public readonly id: string, public capability: ProviderCapability) {}
+
+  buildRequest(req: ChatRequest, cfg: VendorConfig): HttpRequest {
+    const { system, messages } = toWireMessages(req.messages);
+    const body: Record<string, unknown> = {
+      model: req.model,
+      max_tokens: DEFAULT_MAX_TOKENS,
+      messages,
+      temperature: req.temperature ?? 0.7,
+      stream: req.stream ?? false,
+    };
+    // system + 主动缓存（MiniMax/Claude：cache_control: ephemeral 打在 system block 上）
+    if (system) {
+      if (this.capability.cacheStrategy === "cache_control") {
+        body.system = [{ type: "text", text: system, cache_control: { type: "ephemeral" } }];
+      } else {
+        body.system = system;
+      }
+    }
+    if (req.tools && req.tools.length > 0) {
+      body.tools = req.tools.map(t => ({
+        name: t.name,
+        description: t.description,
+        input_schema: t.parameters,
+      }));
+      body.tool_choice = { type: "auto" };
+    }
+    if (req.extraBody) Object.assign(body, req.extraBody);
+    return {
+      url: buildUrl(cfg.baseUrl),
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": cfg.apiKey,
+        "anthropic-version": ANTHROPIC_VERSION,
+      },
+      body: JSON.stringify(body),
+    };
+  }
+
+  parseResponse(raw: unknown): ChatResponse {
+    const data = raw as {
+      content?: ContentBlock[];
+      stop_reason?: string;
+      usage?: { input_tokens?: number; output_tokens?: number };
+    };
+    const blocks = data.content ?? [];
+    let text = "";
+    let thinking: string | undefined;
+    const toolCalls: ToolCall[] = [];
+
+    for (const b of blocks) {
+      if (b.type === "text" && typeof b.text === "string") {
+        text += b.text;
+      } else if (
+        (b.type === "thinking" || b.type === "reasoning" || b.type === "reasoning_details") &&
+        typeof (b.thinking ?? b.reasoning) === "string"
+      ) {
+        thinking = (thinking ?? "") + String(b.thinking ?? b.reasoning);
+      } else if (b.type === "tool_use") {
+        toolCalls.push({
+          id: String(b.id ?? ""),
+          name: String(b.name ?? ""),
+          arguments: JSON.stringify(b.input ?? {}),
+        });
+      }
+    }
+
+    const stopReason = data.stop_reason ?? "end_turn";
+    // 调度层用 toolCalls.length>0 判断是否继续；finishReason 也映射成 OpenAI 习惯便于日志统一
+    const finishReason =
+      stopReason === "tool_use" ? "tool_calls"
+      : stopReason === "end_turn" ? "stop"
+      : stopReason === "max_tokens" ? "length"
+      : stopReason;
+
+    const assistantMessage: ChatMessage = {
+      role: "assistant",
+      ...(text ? { content: text } : {}),
+      ...(thinking ? { thinking } : {}),
+      ...(toolCalls.length > 0 ? { toolCalls } : {}),
+      // 关键：原样保留 content block 数组，下一轮 buildRequest 直接回传给厂商
+      rawAssistant: blocks,
+    };
+
+    return { assistantMessage, text, thinking, toolCalls, finishReason, raw };
+  }
+
+  appendToolResults(messages: ChatMessage[], results: ToolExecutionResult[]): ChatMessage[] {
+    const next = messages.slice();
+    for (const r of results) {
+      // 统一层一律 push role:"tool"；Anthropic 的合并（同轮 tool_result 进同一条 user message）
+      // 由 buildRequest 的 toWireMessages 负责，这里保持 transport 无关。
+      next.push({
+        role: "tool",
+        toolCallId: r.toolCall.id,
+        name: r.toolCall.name,
+        content: r.output,
+      });
+    }
+    return next;
+  }
+
+  async testConnection(cfg: VendorConfig): Promise<TestConnectionResult> {
+    const start = Date.now();
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 15000);
+    try {
+      const req: ChatRequest = {
+        model: cfg.model,
+        messages: [{ role: "user", content: "ping，请只回复两个字符：ok" }],
+        temperature: 0,
+        stream: false,
+      };
+      const http = this.buildRequest(req, cfg);
+      const res = await fetch(http.url, {
+        method: "POST",
+        signal: controller.signal,
+        headers: http.headers,
+        body: http.body,
+      });
+      const latency = Date.now() - start;
+      if (!res.ok) {
+        const t = await res.text().catch(() => "");
+        return { ok: false, latency, error: `HTTP ${res.status} ${t.slice(0, 200)}` };
+      }
+      const data = await res.json();
+      const parsed = this.parseResponse(data);
+      return { ok: true, latency, sample: parsed.text.slice(0, 80) || "(空回复)" };
+    } catch (e) {
+      return { ok: false, latency: Date.now() - start, error: e instanceof Error ? e.message : String(e) };
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+}
