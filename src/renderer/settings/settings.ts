@@ -391,18 +391,20 @@ const generalSaveStatus = document.getElementById("general-save-status") as HTML
 const cyreneSaveStatus = document.getElementById("cyrene-save-status") as HTMLElement;
 
 const presetSelect = document.getElementById("preset-select") as HTMLSelectElement;
-const modeSelect = document.getElementById("mode") as HTMLSelectElement;
+// 模式按钮已删除——baseUrl 永远可改、模型名永远可手填（datalist 出预设建议）
 const providerInput = document.getElementById("provider") as HTMLInputElement;
 const baseUrlInput = document.getElementById("base-url") as HTMLInputElement;
-// 模型名两套控件：Auto 模式显示 modelSelect（预设下拉），Manual 模式显示 modelInput（自由输入 + datalist 联想）
-const modelSelect = document.getElementById("model-select") as HTMLSelectElement;
+const baseUrlResetBtn = document.getElementById("base-url-reset-btn") as HTMLButtonElement;
 const modelInput = document.getElementById("model-input") as HTMLInputElement;
 const modelInputSuggestions = document.getElementById("model-input-suggestions") as HTMLDataListElement;
 const apiKeyInput = document.getElementById("api-key") as HTMLInputElement;
 const testConnectionBtn = document.getElementById("test-connection-btn") as HTMLButtonElement | null;
 
 // 视觉模型配置区元素
-const visionSyncCheckbox = document.getElementById("vision-sync-main") as HTMLInputElement;
+// 同步主模型改为胶囊按钮组：[与主聊天模型相同] / [独立配置]
+const visionSyncBlocks = document.getElementById("vision-sync-blocks") as HTMLElement;
+const visionSyncMainBtn = visionSyncBlocks.querySelector('[data-vision-sync="main"]') as HTMLButtonElement;
+const visionSyncIndepBtn = visionSyncBlocks.querySelector('[data-vision-sync="independent"]') as HTMLButtonElement;
 const visionBaseUrlInput = document.getElementById("vision-base-url") as HTMLInputElement;
 const visionApiKeyInput = document.getElementById("vision-api-key") as HTMLInputElement;
 const visionModelInput = document.getElementById("vision-model") as HTMLInputElement;
@@ -555,20 +557,11 @@ function findPreset(providerName: string): ModelPreset {
 }
 
 /**
- * Auto 模式：modelSelect 渲染 preset.mainModels；
- * Manual 模式：modelInput 配套的 datalist 也用相同清单做联想。
- * 两个控件 value 同时设置，模式切换时不需要重算。
+ * 填充模型名输入框 + datalist 联想建议。
+ * 模式按钮已删除——只有一个输入框，可手填，按方向键也能从厂商预设里选。
  */
 function fillModelOptions(preset: ModelPreset, preferredModel?: string): void {
-  // 1) Auto 下拉
-  modelSelect.replaceChildren();
-  for (const model of preset.mainModels) {
-    const option = document.createElement("option");
-    option.value = model;
-    option.textContent = model;
-    modelSelect.appendChild(option);
-  }
-  // 2) Manual 输入联想（datalist）
+  // datalist 联想建议
   modelInputSuggestions.replaceChildren();
   for (const model of preset.mainModels) {
     const option = document.createElement("option");
@@ -576,14 +569,10 @@ function fillModelOptions(preset: ModelPreset, preferredModel?: string): void {
     modelInputSuggestions.appendChild(option);
   }
 
-  // 选中值：preferredModel 命中则用之；否则 select 退到首项 / input 退到空串
-  const valueForSelect = preset.mainModels.includes(preferredModel ?? "")
-    ? preferredModel!
-    : (preset.mainModels[0] ?? "");
-  modelSelect.value = valueForSelect;
-  // input 比 select 更宽容：如果 preferredModel 存在但不在 mainModels 里（厂商更新过型号 / 用户自填型号），
-  // 也保留显示，不强行清空。
-  modelInput.value = preferredModel ?? valueForSelect;
+  // 选中值：preferredModel 命中预设则用之；否则用预设首项；
+  // preferredModel 不在预设里（用户自填型号）也保留显示，不强行清空。
+  const fallback = preset.mainModels[0] ?? "";
+  modelInput.value = preferredModel ?? fallback;
 }
 
 /**
@@ -599,44 +588,20 @@ function captureActiveProviderProfile(): void {
   };
 }
 
-/**
- * 根据当前 mode，从对应控件读取模型名。
- * - auto: modelSelect.value
- * - manual: modelInput.value
- */
+/** 模式按钮已删除——模型名永远从 input 读取。保留函数名供旧调用点用，语义不变。 */
 function getCurrentModelValue(): string {
-  return modeSelect.value === "manual" ? modelInput.value : modelSelect.value;
+  return modelInput.value;
 }
 
 /**
- * 应用 mode 的视觉切换：
- * - auto   → 显示 modelSelect，隐藏 modelInput；baseUrl 锁定（厂商默认）
- * - manual → 显示 modelInput，隐藏 modelSelect；baseUrl 可改（中转站等）
- */
-function applyModeUI(): void {
-  const isManual = modeSelect.value === "manual";
-  modelSelect.hidden = isManual;
-  modelInput.hidden = !isManual;
-  // Auto 模式：baseUrl 锁死为厂商默认（用户自由切厂商即可），避免误触；
-  // Manual 模式：baseUrl 可改（用户填中转站 URL）。
-  baseUrlInput.readOnly = !isManual;
-  // 切到 manual 时把 select 当前值同步给 input（避免 mode 切换后值消失）
-  if (isManual && !modelInput.value) modelInput.value = modelSelect.value;
-  // 切到 auto 时如果 input 值在 select 选项里，回填 select；否则保留为首项
-  if (!isManual && modelInput.value) {
-    const exists = Array.from(modelSelect.options).some((opt) => opt.value === modelInput.value);
-    if (exists) modelSelect.value = modelInput.value;
-  }
-}
-
-/**
- * 视觉同步 UI：勾选"与主聊天模型相同"时，三框变只读 + 值随主配置。
- * 主配置改了它跟着改（通过事件监听联动）。
+ * 视觉同步 UI（胶囊按钮组）：
+ * - 选"与主聊天模型相同"：三框变只读 + 值随主配置
+ * - 选"独立配置"：三框可编辑
  * baseUrl 特殊处理：若当前厂商标了 visionBaseUrl（主配走 Anthropic 入口、视觉要走 OpenAI 入口），
  * 用 visionBaseUrl 填视觉框，让用户看到的就是正确的视觉入口，不用手动改。
  */
 function applyVisionSyncUI(): void {
-  const synced = visionSyncCheckbox.checked;
+  const synced = visionSyncMainBtn.classList.contains("is-active");
   if (synced) {
     visionFieldsWrap.classList.add("is-locked");
     // 找当前厂商 preset，看有没有 visionBaseUrl
@@ -650,15 +615,19 @@ function applyVisionSyncUI(): void {
   }
 }
 
+/** 切换视觉同步胶囊按钮的激活态。synced=true 激活"与主相同"，false 激活"独立配置"。 */
+function setVisionSyncState(synced: boolean): void {
+  visionSyncMainBtn.classList.toggle("is-active", synced);
+  visionSyncMainBtn.setAttribute("aria-pressed", String(synced));
+  visionSyncIndepBtn.classList.toggle("is-active", !synced);
+  visionSyncIndepBtn.setAttribute("aria-pressed", String(!synced));
+}
+
 function applyPreset(providerName: string, preferredModel?: string, preferredApiKey?: string, preferredBaseUrl?: string): void {
   const preset = findPreset(providerName);
 
-  // ChatGPT / Claude 这类没有 mainModels 预设的厂商（国内大多走中转站），强制切到 Manual 模式。
-  // 用户在 Manual 下自由填型号名 + baseUrl，比 Auto 模式空下拉更合适。
-  if (preset.mainModels.length === 0 && modeSelect.value !== "manual") {
-    modeSelect.value = "manual";
-    applyModeUI();
-  }
+  // 模式按钮已删除——ChatGPT / Claude 这种没预设型号的厂商，input 框空着让用户手填，
+  // datalist 没建议也不影响（用户知道自己型号）。
 
   presetSelect.value = preset.providerName;
   providerInput.value = preset.providerName;
@@ -679,7 +648,7 @@ async function loadConfig(): Promise<void> {
   try {
     fillPresetOptions();
     const cfg = await window.settings!.getConfig();
-    modeSelect.value = cfg.mode;
+    // 模式按钮已删除——mode 字段不再用 UI 控制，直接忽略 cfg.mode
     // 把 main 进程返回的 perProvider 灌进渲染端内存缓存，切厂商时用到
     if (cfg.perProvider && typeof cfg.perProvider === "object") {
       for (const [key, value] of Object.entries(cfg.perProvider)) {
@@ -692,7 +661,6 @@ async function loadConfig(): Promise<void> {
         }
       }
     }
-    applyModeUI();
     applyPreset(cfg.provider, cfg.model, cfg.apiKey, cfg.baseUrl);
     applyRuntimeSyncSelection(cfg.runtimeSync);
     stickerEnabledInput.checked = cfg.stickerEnabled !== false;
@@ -701,15 +669,15 @@ async function loadConfig(): Promise<void> {
     // 视觉模型配置
     const vision = cfg.vision;
     if (vision) {
-      visionSyncCheckbox.checked = vision.syncWithMain;
+      setVisionSyncState(vision.syncWithMain);
       visionBaseUrlInput.value = vision.baseUrl || "";
       visionApiKeyInput.value = vision.apiKey || "";
       visionModelInput.value = vision.model || "";
     } else {
-      // 用户从未配过视觉。按当前主模型 supportsVision 决定默认勾选——
-      // 多模态主模型用户开箱即用，不用手动勾；非视觉主模型则保持不勾。
+      // 用户从未配过视觉。按当前主模型 supportsVision 决定默认——
+      // 多模态主模型用户开箱即用（默认"与主相同"），非视觉主模型则默认"独立配置"。
       const preset = findPreset(cfg.provider);
-      visionSyncCheckbox.checked = preset?.supportsVision === true;
+      setVisionSyncState(preset?.supportsVision === true);
       visionBaseUrlInput.value = "";
       visionApiKeyInput.value = "";
       visionModelInput.value = "";
@@ -721,7 +689,6 @@ async function loadConfig(): Promise<void> {
   } catch {
     fillPresetOptions();
     // 默认厂商已从 DeepSeek 改为 MiniMax（v1 vendor adapter 第一家落地的）
-    applyModeUI();
     applyPreset("MiniMax（稀宇科技）");
     setSaveStatus("读取配置失败", "is-error");
     setCyreneSaveStatus("读取配置失败", "is-error");
@@ -976,12 +943,6 @@ presetSelect.addEventListener("change", () => {
   setSaveStatus(cached ? "已切回上次配置" : "已应用预设，填写 API Key 后保存");
 });
 
-// mode 切换：联动模型名控件与 baseUrl 锁定
-modeSelect.addEventListener("change", () => {
-  applyModeUI();
-  setSaveStatus("已切换模式");
-});
-
 // 测试连接按钮：调用厂商 adapter 的真实连接测试
 if (testConnectionBtn) {
   testConnectionBtn.addEventListener("click", async () => {
@@ -1006,27 +967,47 @@ if (testConnectionBtn) {
 }
 
 // ── 视觉模型配置事件 ──────────────────────────────────────
-visionSyncCheckbox.addEventListener("change", () => {
+// 胶囊按钮组：[与主聊天模型相同] / [独立配置]
+function isVisionSynced(): boolean {
+  return visionSyncMainBtn.classList.contains("is-active");
+}
+
+visionSyncMainBtn.addEventListener("click", () => {
+  setVisionSyncState(true);
+  applyVisionSyncUI();
+  setSaveStatus("有未保存的更改");
+});
+visionSyncIndepBtn.addEventListener("click", () => {
+  setVisionSyncState(false);
   applyVisionSyncUI();
   setSaveStatus("有未保存的更改");
 });
 
-// 主配置变化时，若同步勾选，联动更新视觉三框。
+// 主配置变化时，若处于"与主相同"，联动更新视觉三框。
 // baseUrl 用 visionBaseUrl（若有），其他直接复制。
 baseUrlInput.addEventListener("input", () => {
-  if (!visionSyncCheckbox.checked) return;
+  if (!isVisionSynced()) return;
   const preset = findPreset(providerInput.value);
   visionBaseUrlInput.value = preset?.visionBaseUrl || baseUrlInput.value;
 });
-apiKeyInput.addEventListener("input", () => { if (visionSyncCheckbox.checked) visionApiKeyInput.value = apiKeyInput.value; });
-modelInput.addEventListener("input", () => { if (visionSyncCheckbox.checked) visionModelInput.value = modelInput.value; });
-modelSelect.addEventListener("change", () => { if (visionSyncCheckbox.checked) visionModelInput.value = modelSelect.value; });
+apiKeyInput.addEventListener("input", () => { if (isVisionSynced()) visionApiKeyInput.value = apiKeyInput.value; });
+modelInput.addEventListener("input", () => { if (isVisionSynced()) visionModelInput.value = modelInput.value; });
+
+// Base URL 重置按钮：一键复原厂商默认 baseUrl
+baseUrlResetBtn.addEventListener("click", () => {
+  const preset = findPreset(providerInput.value);
+  if (preset) {
+    baseUrlInput.value = preset.baseUrl;
+    setSaveStatus("已重置为厂商默认 URL");
+  }
+});
 
 // 测试视觉模型按钮
 testVisionBtn.addEventListener("click", async () => {
-  const baseUrl = visionSyncCheckbox.checked ? baseUrlInput.value : visionBaseUrlInput.value;
-  const apiKey = visionSyncCheckbox.checked ? apiKeyInput.value : visionApiKeyInput.value;
-  const model = visionSyncCheckbox.checked ? getCurrentModelValue() : visionModelInput.value;
+  const synced = isVisionSynced();
+  const baseUrl = synced ? baseUrlInput.value : visionBaseUrlInput.value;
+  const apiKey = synced ? apiKeyInput.value : visionApiKeyInput.value;
+  const model = synced ? getCurrentModelValue() : visionModelInput.value;
   if (!apiKey) { visionTestStatus.textContent = "请先填写 API Key"; return; }
   if (!model) { visionTestStatus.textContent = "请先填写视觉型号"; return; }
   visionTestStatus.textContent = "测试中…";
@@ -1080,19 +1061,20 @@ apiForm.addEventListener("submit", async (e) => {
     // 保存前把当前输入快照进 perProvider 缓存（main 进程也会做一次，但渲染端先做一遍，
     // 是为了下一次切厂商再切回来不依赖磁盘往返）
     captureActiveProviderProfile();
+    // mode 字段在 UI 层已删除，但仍传给 main 进程保留向后兼容（旧配置文件可能有该字段）。
+    // 默认 "manual"（baseUrl 永远可改、模型名永远可填，行为等同原 Manual）。
     await window.settings!.saveConfig({
-      mode: modeSelect.value as "auto" | "manual",
+      mode: "manual",
       provider: providerInput.value.trim(),
       baseUrl: baseUrlInput.value.trim(),
-      // mode 决定从哪个控件读模型名
       model: getCurrentModelValue().trim(),
       apiKey: apiKeyInput.value.trim(),
       vision: {
-        syncWithMain: visionSyncCheckbox.checked,
+        syncWithMain: isVisionSynced(),
         // syncWithMain=true 时三字段传空（main 进程不落盘，运行时从主配置读）
-        baseUrl: visionSyncCheckbox.checked ? "" : visionBaseUrlInput.value.trim(),
-        apiKey: visionSyncCheckbox.checked ? "" : visionApiKeyInput.value.trim(),
-        model: visionSyncCheckbox.checked ? "" : visionModelInput.value.trim(),
+        baseUrl: isVisionSynced() ? "" : visionBaseUrlInput.value.trim(),
+        apiKey: isVisionSynced() ? "" : visionApiKeyInput.value.trim(),
+        model: isVisionSynced() ? "" : visionModelInput.value.trim(),
       },
     });
     setSaveStatus("已保存", "is-ok");

@@ -299,6 +299,7 @@ body {
 
 .field select option {
   color: #21162d;
+  background: #2b1e3d;
 }
 
 .field input::placeholder {
@@ -1389,14 +1390,22 @@ body {
 .vision-config-icon { font-size: 24px; }
 .vision-config-heading h2 { margin: 0 0 4px; font-size: 16px; }
 .vision-config-heading p { margin: 0; font-size: 12px; opacity: 0.7; }
-.vision-sync-field {
+.vision-sync-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 16px;
   margin-bottom: 16px;
-  cursor: pointer;
 }
-.vision-sync-field input { width: auto; }
+.vision-sync-row .field-label {
+  font: var(--rb-text-small-em);
+  color: rgba(235, 229, 245, 0.62);
+  white-space: nowrap;
+}
+.vision-sync-row .option-blocks {
+  flex: 1;
+  grid-template-columns: repeat(2, minmax(140px, 1fr));
+  min-width: 0;
+}
 .vision-hint {
   font-size: 11px;
   opacity: 0.5;
@@ -1405,4 +1414,33 @@ body {
 .vision-fields.is-locked input {
   opacity: 0.5;
   pointer-events: none;
+}
+
+/* Base URL 重置按钮 */
+.base-url-row {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+.base-url-row input {
+  flex: 1;
+  min-width: 0;
+}
+.base-url-reset {
+  flex-shrink: 0;
+  width: 36px;
+  padding: 0;
+  border-radius: 12px;
+  color: rgba(235, 229, 245, 0.72);
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(255, 182, 220, 0.14);
+  font-size: 16px;
+  cursor: pointer;
+  transition: transform 120ms ease, border-color 160ms ease, background 160ms ease;
+}
+.base-url-reset:hover {
+  transform: rotate(120deg);
+  border-color: rgba(255, 182, 220, 0.34);
+  background: rgba(255, 255, 255, 0.10);
+  color: #fff;
 }

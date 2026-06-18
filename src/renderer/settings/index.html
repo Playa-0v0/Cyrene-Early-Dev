@@ -77,39 +77,29 @@
 
           <div class="form-grid">
             <label class="field">
-              <span>模式</span>
-              <select id="mode">
-                <option value="auto">Auto（自动）</option>
-                <option value="manual">Manual（手动）</option>
-              </select>
-            </label>
-
-            <label class="field">
               <span>Provider</span>
               <input id="provider" type="text" placeholder="deepseek / openai / custom" autocomplete="off" />
-            </label>
-
-            <label class="field field--full">
-              <span>Base URL</span>
-              <input id="base-url" type="url" placeholder="https://api.deepseek.com" autocomplete="off" />
-            </label>
-
-            <label class="field">
-              <span>模型名</span>
-              <!--
-                Auto 模式：显示 #model-select（从厂商预设挑选）
-                Manual 模式：显示 #model-input（用户自行输入，配合 datalist 联想）
-                两者切换时 settings.ts 会同步它们的 value
-              -->
-              <select id="model-select"></select>
-              <input id="model-input" type="text" placeholder="自行填写模型名" autocomplete="off" list="model-input-suggestions" hidden />
-              <datalist id="model-input-suggestions"></datalist>
             </label>
 
             <label class="field">
               <span>API Key</span>
               <input id="api-key" type="password" placeholder="sk-..." autocomplete="off" />
-            </label>          </div>
+            </label>
+
+            <label class="field field--full base-url-field">
+              <span>Base URL</span>
+              <div class="base-url-row">
+                <input id="base-url" type="url" placeholder="https://api.deepseek.com" autocomplete="off" />
+                <button type="button" class="base-url-reset" id="base-url-reset-btn" title="重置为厂商默认 URL">↻</button>
+              </div>
+            </label>
+
+            <label class="field field--full">
+              <span>模型名</span>
+              <input id="model-input" type="text" placeholder="选厂商后自动填入，可手填覆盖" autocomplete="off" list="model-input-suggestions" />
+              <datalist id="model-input-suggestions"></datalist>
+            </label>
+          </div>
 
           <div class="api-note">
             <span>🔒</span>
@@ -128,10 +118,13 @@
               </div>
             </div>
 
-            <label class="field field--full vision-sync-field">
-              <input type="checkbox" id="vision-sync-main" />
-              <span>与主聊天模型相同（主模型支持视觉时推荐）</span>
-            </label>
+            <div class="vision-sync-row">
+              <span class="field-label">配置方式</span>
+              <div class="option-blocks option-blocks--wide" id="vision-sync-blocks" role="radiogroup" aria-label="视觉模型配置方式">
+                <button type="button" class="option-block is-active" data-vision-sync="main" aria-pressed="true">与主聊天模型相同</button>
+                <button type="button" class="option-block" data-vision-sync="independent" aria-pressed="false">独立配置</button>
+              </div>
+            </div>
 
             <div class="form-grid vision-fields">
               <label class="field field--full">
