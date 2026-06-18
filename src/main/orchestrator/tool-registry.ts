@@ -3,6 +3,7 @@
 
 import { searchMemory } from "../rag/index";
 import type { ToolRiskLevel } from "../permission";
+import type { ToolContext } from "./tool-context";
 
 export interface ToolDefinition {
   id: string;           // 工具唯一标识，如 "imported_docs"
@@ -17,8 +18,10 @@ export interface ToolDefinition {
     properties: Record<string, { type: string; description: string }>;
     required?: string[];
   };
+  /** 工具若声明 needsContext，调度层执行时会传入 ToolContext。默认不声明=不传。 */
+  needsContext?: boolean;
   // 执行器：内置工具指向本地函数，外部 MCP 工具指向 transport 调用
-  execute: (args: Record<string, unknown>) => Promise<string>;
+  execute: (args: Record<string, unknown>, ctx?: ToolContext) => Promise<string>;
 }
 
 export class ToolRegistry {
