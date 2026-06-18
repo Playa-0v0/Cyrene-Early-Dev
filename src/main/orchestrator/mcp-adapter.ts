@@ -110,6 +110,8 @@ export async function connectMcpServer(config: McpServerConfig): Promise<string[
         properties: mt.inputSchema?.properties as Record<string, { type: string; description: string }> || {},
         required: mt.inputSchema?.required,
       },
+      // TODO: 未来若 MCP 工具需要 ToolContext，在此将 ctx 映射为 MCP 协议 arguments 的隐藏字段。
+      // 当前 MCP 工具 execute 签名不带 ctx，按需接入时改签名为 (args, ctx?) 并在这里处理。
       execute: async (args: Record<string, unknown>) => {
         console.log(LOG_PREFIX, "调用工具:", toolId, JSON.stringify(args));
         try {
