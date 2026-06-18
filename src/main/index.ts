@@ -444,8 +444,11 @@ export function loadVisionConfig(): VisionConfig | null {
       console.warn("[Vision] syncWithMain=true 但主模型不支持视觉，视为未启用");
       return null;
     }
-    if (!settings.baseUrl || !settings.apiKey || !settings.model) return null;
-    return { baseUrl: settings.baseUrl, apiKey: settings.apiKey, model: settings.model };
+    if (!settings.apiKey || !settings.model) return null;
+    // 视觉 baseUrl：优先用 visionBaseUrl（主配走 Anthropic 入口时视觉需走 OpenAI 入口），
+    // 没标就用主配置 baseUrl。这样用户勾"同步"就能用，不用手动改 URL。
+    const visionBaseUrl = cap.visionBaseUrl || settings.baseUrl;
+    return { baseUrl: visionBaseUrl, apiKey: settings.apiKey, model: settings.model };
   }
 
   // 独立配置

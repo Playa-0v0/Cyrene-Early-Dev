@@ -106,6 +106,11 @@ export interface ProviderCapability {
   testStrategy: TestStrategy;
   /** 是否支持视觉（图片）输入。非多模态模型禁止走 read_image。 */
   supportsVision: boolean;
+  /**
+   * 视觉模型的 OpenAI 兼容 baseUrl。仅当主聊天走 Anthropic 入口、视觉需走 OpenAI 入口时才需要标
+   * （如 MiniMax 主配 /anthropic，视觉要走 /v1）。不标 = 视觉用主配置 baseUrl。
+   */
+  visionBaseUrl?: string;
   /** UI 是否允许选择（Claude 等 Anthropic adapter 未就绪前先禁用）。 */
   disabled?: boolean;
 }

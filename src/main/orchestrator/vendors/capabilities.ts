@@ -19,6 +19,9 @@ export const PROVIDER_CAPABILITIES: ProviderCapability[] = [
     testStrategy: "text",
     // M3 原生多模态（image_url / video_url）
     supportsVision: true,
+    // 主配走 /anthropic（Anthropic 入口），但视觉要走 OpenAI 入口 /v1。
+    // 同步主模型时用这个 baseUrl，避免用户手动改。
+    visionBaseUrl: "https://api.minimaxi.com/v1",
   },
   {
     id: "deepseek",
