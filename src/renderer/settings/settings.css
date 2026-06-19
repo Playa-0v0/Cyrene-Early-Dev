@@ -1972,3 +1972,124 @@ body {
 #token-charts.is-hidden {
   display: none;
 }
+
+/* ============================================================
+   🎙️ TTS 设置面板
+   ============================================================ */
+
+.tts-section {
+  margin-bottom: 24px;
+}
+
+.tts-section__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(235, 229, 245, 0.8);
+  margin: 0 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 182, 220, 0.12);
+}
+
+/* 引擎选择卡片 */
+.tts-engines {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.tts-engine {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1.5px solid rgba(255, 182, 220, 0.18);
+  background: rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+  transition: all 0.18s;
+  min-width: 90px;
+  position: relative;
+}
+
+.tts-engine:hover {
+  background: rgba(255, 192, 230, 0.1);
+  border-color: rgba(255, 182, 220, 0.36);
+}
+
+.tts-engine.is-active {
+  background: rgba(255, 192, 230, 0.16);
+  border-color: rgba(255, 182, 220, 0.6);
+  box-shadow: 0 0 14px rgba(236, 72, 153, 0.22);
+}
+
+.tts-engine__icon {
+  font-size: 24px;
+}
+
+.tts-engine__name {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(254, 247, 255, 0.9);
+}
+
+.tts-engine__tag {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(255, 182, 220, 0.16);
+  color: rgba(254, 247, 255, 0.6);
+  text-transform: uppercase;
+}
+
+/* 引擎配置表单 */
+.tts-config {
+  margin-bottom: 20px;
+}
+
+.tts-config[hidden] {
+  display: none;
+}
+
+.tts-field {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.tts-field label {
+  flex: 0 0 100px;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(235, 229, 245, 0.7);
+}
+
+.tts-field input {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 182, 220, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(254, 247, 255, 0.9);
+  font-size: 13px;
+}
+
+.tts-field input:focus {
+  outline: none;
+  border-color: rgba(255, 182, 220, 0.5);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.tts-hint {
+  margin-top: 20px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(255, 192, 230, 0.06);
+  border: 1px solid rgba(255, 182, 220, 0.12);
+  font-size: 12px;
+  color: rgba(235, 229, 245, 0.5);
+  line-height: 1.6;
+}

@@ -1142,6 +1142,7 @@ function switchSection(section: string): void {
   const isIdentity = section === "identity";
   const isPlugins = section === "plugins";
   const isTokens = section === "tokens";
+  const isTts = section === "tts";
   apiForm.classList.toggle("is-hidden", !isApi);
   generalForm.classList.toggle("is-hidden", !isGeneral);
   cyrenePanel.classList.toggle("is-hidden", !isCyrene);
@@ -1159,9 +1160,11 @@ function switchSection(section: string): void {
   pluginsPanel.classList.toggle("is-hidden", !isPlugins);
   const tokenPanel = document.getElementById("token-panel");
   if (tokenPanel) tokenPanel.classList.toggle("is-hidden", !isTokens);
-  placeholderPanel.classList.toggle("is-hidden", isApi || isGeneral || isCyrene || isDisclaimer || isMemory || isUser || isChat || isIdentity || isPlugins || isTokens);
+  const ttsPanel = document.getElementById("tts-panel");
+  if (ttsPanel) ttsPanel.classList.toggle("is-hidden", !isTts);
+  placeholderPanel.classList.toggle("is-hidden", isApi || isGeneral || isCyrene || isDisclaimer || isMemory || isUser || isChat || isIdentity || isPlugins || isTokens || isTts);
 
-  if (!isApi && !isGeneral && !isCyrene && !isDisclaimer && !isMemory && !isUser && !isChat && !isIdentity && !isPlugins && !isTokens) {
+  if (!isApi && !isGeneral && !isCyrene && !isDisclaimer && !isMemory && !isUser && !isChat && !isIdentity && !isPlugins && !isTokens && !isTts) {
     placeholderIcon.textContent = label.emoji;
     placeholderTitle.textContent = label.title;
     placeholderCopy.textContent = "这个模块先占位，等核心聊天与 API 接通后再继续扩展。";
@@ -2517,3 +2520,56 @@ document.querySelectorAll<HTMLButtonElement>(".token-range__btn").forEach((btn) 
 
 // 初始渲染
 void refreshTokenPanel(7);
+
+/* ============================================================
+   🎙️ TTS 设置面板交互
+   - 引擎选择卡片切换：选中哪个展开哪个配置表单
+   - 语速/音量滑块实时显示数值
+   - 测试发音按钮：引擎未接入时提示"敬请期待"
+   - 配置暂不持久化（等接引擎时再接 general settings 存储）
+   ============================================================ */
+
+// 引擎选择切换
+document.querySelectorAll<HTMLButtonElement>(".tts-engine").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll<HTMLButtonElement>(".tts-engine").forEach((b) => {
+      b.classList.remove("is-active");
+      b.setAttribute("aria-checked", "false");
+    });
+    btn.classList.add("is-active");
+    btn.setAttribute("aria-checked", "true");
+
+    const engine = btn.dataset.engine || "off";
+    // 隐藏所有配置表单，显示选中的
+    document.querySelectorAll<HTMLElement>(".tts-config").forEach((el) => {
+      el.hidden = true;
+    });
+    if (engine !== "off") {
+      const config = document.getElementById("tts-config-" + engine);
+      if (config) config.hidden = false;
+    }
+  });
+});
+
+// 语速滑块实时显示
+const ttsSpeed = document.getElementById("tts-speed") as HTMLInputElement | null;
+const ttsSpeedVal = document.getElementById("tts-speed-val") as HTMLElement | null;
+ttsSpeed?.addEventListener("input", () => {
+  if (ttsSpeedVal) ttsSpeedVal.textContent = Number(ttsSpeed.value).toFixed(1) + "x";
+});
+
+// 音量滑块实时显示
+const ttsVolume = document.getElementById("tts-volume") as HTMLInputElement | null;
+const ttsVolumeVal = document.getElementById("tts-volume-val") as HTMLElement | null;
+ttsVolume?.addEventListener("input", () => {
+  if (ttsVolumeVal) ttsVolumeVal.textContent = Math.round(Number(ttsVolume.value) * 100) + "%";
+});
+
+// 测试发音按钮（引擎未接入，统一占位提示）
+const TTS_TEST_TEXT = "你好，我是昔涟，很高兴见到你。";
+document.querySelectorAll<HTMLButtonElement>("[id^='tts-'][id$='-test']").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const engine = btn.id.replace("tts-", "").replace("-test", "");
+    window.alert("「" + engine + "」引擎尚未接入，敬请期待。\n\n测试文本：" + TTS_TEST_TEXT);
+  });
+});

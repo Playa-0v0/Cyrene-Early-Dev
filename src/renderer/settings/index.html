@@ -791,6 +791,108 @@
           </div>
         </section>
 
+        <section class="settings-panel is-hidden" id="tts-panel" data-panel="tts">
+          <div class="panel-heading">
+            <div class="panel-heading__icon">🎙️</div>
+            <div>
+              <h1>TTS 设置</h1>
+              <p>语音合成与朗读偏好</p>
+            </div>
+          </div>
+          <div class="panel-body">
+            <!-- 播放交互（最上面） -->
+            <div class="tts-section">
+              <h2 class="tts-section__title">播放交互</h2>
+              <label class="setting-row">
+                <div>
+                  <strong>自动朗读回复</strong>
+                  <span>昔涟每次回复后自动语音朗读</span>
+                </div>
+                <span class="switch"><input type="checkbox" id="tts-auto-read" checked /><span class="switch__track"><span class="switch__thumb"></span></span></span>
+              </label>
+              <div class="setting-row">
+                <div>
+                  <strong>语速</strong>
+                  <span>控制语音朗读速度</span>
+                </div>
+                <input type="range" id="tts-speed" min="0.5" max="2" step="0.1" value="1" />
+                <span class="range-val" id="tts-speed-val">1.0x</span>
+              </div>
+              <div class="setting-row">
+                <div>
+                  <strong>音量</strong>
+                  <span>控制语音朗读音量</span>
+                </div>
+                <input type="range" id="tts-volume" min="0" max="1" step="0.1" value="1" />
+                <span class="range-val" id="tts-volume-val">100%</span>
+              </div>
+            </div>
+
+            <!-- 引擎选择 -->
+            <div class="tts-section">
+              <h2 class="tts-section__title">引擎选择</h2>
+              <div class="tts-engines" role="radiogroup" aria-label="TTS引擎">
+                <button type="button" class="tts-engine is-active" data-engine="off" role="radio" aria-checked="true">
+                  <span class="tts-engine__icon">🔇</span>
+                  <span class="tts-engine__name">关闭</span>
+                </button>
+                <button type="button" class="tts-engine" data-engine="volcano" role="radio" aria-checked="false">
+                  <span class="tts-engine__icon">🌋</span>
+                  <span class="tts-engine__name">火山引擎</span>
+                  <span class="tts-engine__tag">云端</span>
+                </button>
+                <button type="button" class="tts-engine" data-engine="minimax" role="radio" aria-checked="false">
+                  <span class="tts-engine__icon">✨</span>
+                  <span class="tts-engine__name">MiniMax</span>
+                  <span class="tts-engine__tag">云端</span>
+                </button>
+                <button type="button" class="tts-engine" data-engine="gptsovits" role="radio" aria-checked="false">
+                  <span class="tts-engine__icon">🤖</span>
+                  <span class="tts-engine__name">GPT-SoVITS</span>
+                  <span class="tts-engine__tag">本地</span>
+                </button>
+                <button type="button" class="tts-engine" data-engine="vits2" role="radio" aria-checked="false">
+                  <span class="tts-engine__icon">🎵</span>
+                  <span class="tts-engine__name">VITS2</span>
+                  <span class="tts-engine__tag">本地</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- 引擎配置表单（选中哪个显示哪个） -->
+            <div class="tts-config" id="tts-config-volcano" hidden>
+              <h2 class="tts-section__title">🌋 火山引擎配置</h2>
+              <div class="tts-field"><label>App ID</label><input type="text" id="tts-volcano-appid" placeholder="火山引擎语音 App ID" /></div>
+              <div class="tts-field"><label>Access Token</label><input type="password" id="tts-volcano-token" placeholder="访问令牌" /></div>
+              <div class="tts-field"><label>音色 ID</label><input type="text" id="tts-volcano-voice" placeholder="训练好的音色 ID" /></div>
+              <button type="button" class="ghost-btn" id="tts-volcano-test">🔊 测试发音</button>
+            </div>
+
+            <div class="tts-config" id="tts-config-minimax" hidden>
+              <h2 class="tts-section__title">✨ MiniMax 配置</h2>
+              <div class="tts-field"><label>API Key</label><input type="password" id="tts-minimax-key" placeholder="MiniMax API Key" /></div>
+              <div class="tts-field"><label>音色 ID</label><input type="text" id="tts-minimax-voice" placeholder="训练好的音色 ID" /></div>
+              <button type="button" class="ghost-btn" id="tts-minimax-test">🔊 测试发音</button>
+            </div>
+
+            <div class="tts-config" id="tts-config-gptsovits" hidden>
+              <h2 class="tts-section__title">🤖 GPT-SoVITS 配置</h2>
+              <div class="tts-field"><label>API 地址</label><input type="text" id="tts-gptsovits-url" placeholder="http://localhost:9880" value="http://localhost:9880" /></div>
+              <div class="tts-field"><label>模型路径</label><input type="text" id="tts-gptsovits-model" placeholder="训练好的模型文件路径（可选）" /></div>
+              <button type="button" class="ghost-btn" id="tts-gptsovits-test">🔊 测试发音</button>
+            </div>
+
+            <div class="tts-config" id="tts-config-vits2" hidden>
+              <h2 class="tts-section__title">🎵 VITS2 配置</h2>
+              <div class="tts-field"><label>API 地址</label><input type="text" id="tts-vits2-url" placeholder="http://localhost:9880" value="http://localhost:9880" /></div>
+              <div class="tts-field"><label>模型路径</label><input type="text" id="tts-vits2-model" placeholder="训练好的模型文件路径（可选）" /></div>
+              <button type="button" class="ghost-btn" id="tts-vits2-test">🔊 测试发音</button>
+            </div>
+
+            <p class="tts-hint">💡 云端引擎需在各平台控制台用昔涟配音素材训练音色，拿到音色 ID 填入上方。本地引擎需自行安装 GPT-SoVITS / VITS2 并起 HTTP 服务。</p>
+          </div>
+        </section>
+
 
         <section class="settings-panel is-hidden" id="placeholder-panel">
           <div class="placeholder-card">
