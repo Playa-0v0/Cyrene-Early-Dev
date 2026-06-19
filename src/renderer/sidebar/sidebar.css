@@ -95,6 +95,8 @@ body {
 
 .sidebar__icon-btn,
 .sidebar__winbtn {
+  /* titlebar 整体是 drag 区，按钮必须 no-drag 否则点击被拖拽吞掉 */
+  -webkit-app-region: no-drag;
   display: grid;
   place-items: center;
   width: 28px;
