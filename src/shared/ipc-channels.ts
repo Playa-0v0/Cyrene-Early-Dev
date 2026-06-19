@@ -54,6 +54,29 @@ export const IPC = {
   SETTINGS_PREVIEW_RUNTIME_SYNC: "settings:preview-runtime-sync",
   SETTINGS_OPEN_STICKER_MANAGER: "settings:open-sticker-manager",
 
+  // chat sessions (multi-conversation history, persisted to userData/cyrene-chats/)
+  CHATS_LIST: "chats:list",
+  CHATS_GET: "chats:get",
+  CHATS_CREATE: "chats:create",
+  CHATS_APPEND: "chats:append",
+  CHATS_REPLACE_MESSAGES: "chats:replace-messages",
+  CHATS_RENAME: "chats:rename",
+  CHATS_DELETE: "chats:delete",
+  CHATS_OPEN_FOLDER: "chats:open-folder",
+  CHATS_MIGRATE_LEGACY: "chats:migrate-legacy",
+  // 任意会话变动后 main → 所有渲染窗口 broadcast，触发列表/标题刷新
+  CHATS_CHANGED: "chats:changed",
+  // 设置中心 → main：要求打开聊天窗口并加载指定 sessionId
+  CHATS_OPEN_IN_CHAT_WINDOW: "chats:open-in-chat-window",
+  // main → 聊天窗口：要求切到指定 sessionId（窗口已存在时用）
+  CHATS_SWITCH_SESSION: "chats:switch-session",
+  // 聊天窗口 → main：声明当前活跃 sessionId（用于设置面板"删除当前会话"时差异化提示）
+  CHATS_SET_ACTIVE_SESSION: "chats:set-active-session",
+  // renderer → main: 查询当前活跃 sessionId（设置面板初次打开时用）
+  CHATS_GET_ACTIVE_SESSION: "chats:get-active-session",
+  // main → 所有窗口：活跃 sessionId 变化时广播
+  CHATS_ACTIVE_SESSION_CHANGED: "chats:active-session-changed",
+
   // sticker manager window
   STICKERS_MINIMIZE: "stickers:minimize",
   STICKERS_CLOSE: "stickers:close",

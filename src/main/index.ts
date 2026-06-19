@@ -22,6 +22,7 @@ import { getEmbeddingStatus, downloadEmbeddingModel, deleteEmbeddingModel } from
 import { initReranker } from "./rag/reranker";
 import { memoryStore } from "./memory/memory-store"
 import type { L0Profile, L1Profile } from "./memory/memory-types";
+import { registerChatsIpc } from "./chats/chats-ipc";
 
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
@@ -30,6 +31,9 @@ let sidebarWindow: BrowserWindow | null = null;
 let tasksWindow: BrowserWindow | null = null;
 let settingsWindow: BrowserWindow | null = null;
 let stickerManagerWindow: BrowserWindow | null = null;
+// 聊天窗口当前活跃的会话 id（通过 IPC 由聊天窗口上报）；
+// 设置面板"删除当前会话"差异化提示用。聊天窗口关闭时由 closed 事件置 null。
+let activeChatSessionId: string | null = null;
 
 const isDev = process.env.VITE_DEV === "1";
 
@@ -1243,10 +1247,14 @@ function createWindow(): void {
 }
 
 
-function createChatWindow(): void {
+function createChatWindow(sessionId?: string): void {
   if (chatWindow && !chatWindow.isDestroyed()) {
     chatWindow.show();
     chatWindow.focus();
+    // 窗口已存在：通过事件让渲染进程切到目标会话（不重 load）
+    if (sessionId) {
+      chatWindow.webContents.send(IPC.CHATS_SWITCH_SESSION, sessionId);
+    }
     return;
   }
 
@@ -1273,11 +1281,15 @@ function createChatWindow(): void {
     },
   });
 
+  // 通过 URL query 把目标 sessionId 带给渲染进程（首次加载用），
+  // 后续切换走 CHATS_SWITCH_SESSION 事件，避免重新加载页面。
+  const queryString = sessionId ? "?sessionId=" + encodeURIComponent(sessionId) : "";
   if (isDev) {
-    chatWindow.loadURL("http://localhost:5173/chat/");
+    chatWindow.loadURL("http://localhost:5173/chat/" + queryString);
   } else {
     chatWindow.loadFile(
-      path.join(__dirname, "..", "..", "renderer", "chat", "index.html")
+      path.join(__dirname, "..", "..", "renderer", "chat", "index.html"),
+      sessionId ? { search: queryString } : undefined,
     );
   }
 
@@ -1287,6 +1299,13 @@ function createChatWindow(): void {
 
   chatWindow.on("closed", () => {
     chatWindow = null;
+    // 聊天窗口关闭后清空活跃 sessionId 广播，让设置面板的"删除当前会话"
+    // 提示文案恢复成普通的"确定删除？"
+    activeChatSessionId = null;
+    for (const win of BrowserWindow.getAllWindows()) {
+      if (win.isDestroyed()) continue;
+      try { win.webContents.send(IPC.CHATS_ACTIVE_SESSION_CHANGED, null); } catch { /* ignore */ }
+    }
   });
 }
 
@@ -2000,6 +2019,24 @@ ipcMain.handle(IPC.EMBEDDING_DELETE, async (_event, payload: unknown) => {
 });
 
 app.whenReady().then(async () => {
+  // 聊天会话存储 IPC（chats-store.initialize 会建好 cyrene-chats 目录并加载 index）
+  registerChatsIpc();
+  ipcMain.handle(IPC.CHATS_OPEN_IN_CHAT_WINDOW, (_event, sessionId: string) => {
+    createChatWindow(sessionId);
+    return true;
+  });
+  // 聊天窗口启动/切换会话时上报当前活跃 sessionId；main 广播给所有窗口
+  // 用途：设置面板"删除当前会话"时差异化提示文案
+  ipcMain.handle(IPC.CHATS_SET_ACTIVE_SESSION, (_event, sessionId: string | null) => {
+    activeChatSessionId = sessionId ?? null;
+    for (const win of BrowserWindow.getAllWindows()) {
+      if (win.isDestroyed()) continue;
+      try { win.webContents.send(IPC.CHATS_ACTIVE_SESSION_CHANGED, activeChatSessionId); } catch { /* ignore */ }
+    }
+    return true;
+  });
+  ipcMain.handle(IPC.CHATS_GET_ACTIVE_SESSION, () => activeChatSessionId);
+
   createWindow();
   createChatWindow();
   createSidebarWindow();

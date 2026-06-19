@@ -134,3 +134,46 @@ contextBridge.exposeInMainWorld("user", userApi);
 contextBridge.exposeInMainWorld("memoryPanel", memoryPanelApi);
 contextBridge.exposeInMainWorld("runtimeState", runtimeStateApi);
 
+// 聊天会话存储（多对话历史）
+const chatStoreApi = {
+  list: () => ipcRenderer.invoke(IPC.CHATS_LIST),
+  get: (id: string) => ipcRenderer.invoke(IPC.CHATS_GET, id),
+  create: (payload?: { title?: string; identityId?: string | null }) =>
+    ipcRenderer.invoke(IPC.CHATS_CREATE, payload ?? {}),
+  append: (id: string, message: unknown) =>
+    ipcRenderer.invoke(IPC.CHATS_APPEND, { id, message }),
+  replaceMessages: (id: string, messages: unknown[]) =>
+    ipcRenderer.invoke(IPC.CHATS_REPLACE_MESSAGES, { id, messages }),
+  rename: (id: string, title: string) =>
+    ipcRenderer.invoke(IPC.CHATS_RENAME, { id, title }),
+  delete: (id: string) => ipcRenderer.invoke(IPC.CHATS_DELETE, id),
+  openFolder: () => ipcRenderer.invoke(IPC.CHATS_OPEN_FOLDER),
+  migrateLegacy: (messages: unknown[]) =>
+    ipcRenderer.invoke(IPC.CHATS_MIGRATE_LEGACY, messages),
+  openInChatWindow: (sessionId: string) =>
+    ipcRenderer.invoke(IPC.CHATS_OPEN_IN_CHAT_WINDOW, sessionId),
+  // 聊天窗口加载 / 切换 session 时上报；其他窗口可查询/订阅
+  setActiveSession: (sessionId: string | null) =>
+    ipcRenderer.invoke(IPC.CHATS_SET_ACTIVE_SESSION, sessionId),
+  getActiveSession: () => ipcRenderer.invoke(IPC.CHATS_GET_ACTIVE_SESSION),
+  onActiveSessionChanged: (callback: (sessionId: string | null) => void) => {
+    const listener = (_e: Electron.IpcRendererEvent, sessionId: string | null) => callback(sessionId);
+    ipcRenderer.on(IPC.CHATS_ACTIVE_SESSION_CHANGED, listener);
+    return () => ipcRenderer.removeListener(IPC.CHATS_ACTIVE_SESSION_CHANGED, listener);
+  },
+  // 任意会话变动后 main 广播；列表/聊天窗口订阅刷新
+  onChanged: (callback: () => void) => {
+    const listener = () => callback();
+    ipcRenderer.on(IPC.CHATS_CHANGED, listener);
+    return () => ipcRenderer.removeListener(IPC.CHATS_CHANGED, listener);
+  },
+  // main → 聊天窗口：要求切到指定 sessionId（窗口已打开时用）
+  onSwitchSession: (callback: (sessionId: string) => void) => {
+    const listener = (_e: Electron.IpcRendererEvent, sessionId: string) => callback(sessionId);
+    ipcRenderer.on(IPC.CHATS_SWITCH_SESSION, listener);
+    return () => ipcRenderer.removeListener(IPC.CHATS_SWITCH_SESSION, listener);
+  },
+};
+
+contextBridge.exposeInMainWorld("chatStore", chatStoreApi);
+

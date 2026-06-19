@@ -1444,3 +1444,198 @@ body {
   background: rgba(255, 255, 255, 0.10);
   color: #fff;
 }
+
+/* ============================================================
+   💬 聊天面板：会话列表
+   - 顶部"+新对话"按钮（铺满宽度，带 hover/active 动效）
+   - 列表项三列：标题 / 时间+identity 标签 / 🗑️
+   - hover 整行高亮，🗑️ 默认半透明，hover 变红警告
+   - 空态：📭 + 一行提示文案
+   - 底部："打开存储位置"按钮 + 路径说明
+   ============================================================ */
+
+.chat-sessions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 4px 0;
+}
+
+.chat-sessions__new {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  border: 1.5px dashed rgba(255, 182, 220, 0.4);
+  background: rgba(255, 192, 230, 0.08);
+  color: rgba(254, 247, 255, 0.9);
+  font: var(--rb-text-small-em);
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, transform 0.12s;
+}
+
+.chat-sessions__new:hover {
+  background: rgba(255, 192, 230, 0.16);
+  border-color: rgba(255, 182, 220, 0.7);
+}
+
+.chat-sessions__new:active {
+  transform: scale(0.98);
+}
+
+.chat-sessions__new-icon {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.chat-sessions__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.chat-sessions__item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+  gap: 4px 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+  transition: background 0.18s, border-color 0.18s;
+}
+
+.chat-sessions__item:hover {
+  background: rgba(255, 192, 230, 0.1);
+  border-color: rgba(255, 182, 220, 0.28);
+}
+
+.chat-sessions__item.is-active {
+  background: rgba(255, 192, 230, 0.16);
+  border-color: rgba(255, 182, 220, 0.5);
+}
+
+.chat-sessions__title {
+  grid-column: 1;
+  grid-row: 1;
+  font-size: 14px;
+  color: rgba(254, 247, 255, 0.95);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.chat-sessions__title[contenteditable="true"] {
+  outline: 1px solid rgba(255, 182, 220, 0.7);
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 6px;
+  padding: 2px 6px;
+  user-select: text;
+  cursor: text;
+}
+
+.chat-sessions__meta {
+  grid-column: 1;
+  grid-row: 2;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: rgba(254, 247, 255, 0.55);
+}
+
+.chat-sessions__time {
+  flex: 0 0 auto;
+}
+
+.chat-sessions__identity {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255, 192, 230, 0.12);
+  color: rgba(254, 247, 255, 0.78);
+  font-size: 11px;
+  letter-spacing: 0.2px;
+}
+
+.chat-sessions__delete {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: transparent;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  opacity: 0.4;
+  transition: opacity 0.18s, background 0.18s, color 0.18s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chat-sessions__item:hover .chat-sessions__delete {
+  opacity: 0.85;
+}
+
+.chat-sessions__delete:hover {
+  background: rgba(255, 99, 132, 0.18);
+  opacity: 1;
+}
+
+.chat-sessions__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 40px 20px;
+  color: rgba(254, 247, 255, 0.55);
+  font-size: 13px;
+  text-align: center;
+}
+
+.chat-sessions__empty.is-hidden {
+  display: none;
+}
+
+.chat-sessions__empty-icon {
+  font-size: 32px;
+  opacity: 0.7;
+}
+
+.chat-sessions__empty p {
+  margin: 0;
+}
+
+.chat-sessions__footer {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.chat-sessions__footer-hint {
+  font-size: 11px;
+  color: rgba(254, 247, 255, 0.4);
+  flex: 1;
+  min-width: 200px;
+}

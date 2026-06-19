@@ -74,7 +74,8 @@ const maxBtn = document.getElementById("max-btn") as HTMLButtonElement;
 const closeBtn = document.getElementById("close-btn") as HTMLButtonElement;
 const chatHintEl = document.getElementById("chat-hint") as HTMLElement;
 
-const STORAGE_KEY = "cyrene.chat.history.v1";
+// 旧版 localStorage key——首次启动时检测到老数据会迁移到主进程 chats 存储再清掉。
+const LEGACY_STORAGE_KEY = "cyrene.chat.history.v1";
 const FRONTEND_REPLY_TIMEOUT_MS = 35000;
 
 /**
@@ -114,14 +115,11 @@ const STICKER_SRC: Record<StickerId, string> = {
   applause: "/stickers/applause.webp",
 };
 
-const initialGreeting: Message = {
-  id: "0",
-  role: "model",
-  content: "Hi! 我是昔涟 ✨\nAPI 配好后就可以直接和我聊天啦。",
-  at: Date.now(),
-};
-
-const messages: Message[] = loadHistory() ?? [initialGreeting];
+// 多会话改造：messages 是当前活跃 session 的消息数组（启动时为空，由 bootstrap 填充）。
+// currentSessionId 是当前正在显示的会话 id，所有持久化操作都基于它。
+// 启动期间 currentSessionId 为 null，发送按钮通过 sending 标志兜底（bootstrap 极快）。
+const messages: Message[] = [];
+let currentSessionId: string | null = null;
 let currentModelConfig: ModelConfig | null = null;
 
 function formatModelHint(config: ModelConfig | null): string {
@@ -155,30 +153,153 @@ async function initModelConfig(): Promise<void> {
   window.modelConfig?.onChanged((config) => applyModelConfig(config));
 }
 
-function loadHistory(): Message[] | null {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as Message[];
-    if (!Array.isArray(parsed) || parsed.length === 0) return null;
-    const normalized = parsed.filter((message) =>
-      message &&
-      (message.role === "user" || message.role === "model") &&
-      typeof message.content === "string" &&
-      message.content.trim(),
-    );
-    return normalized.length > 0 ? normalized : null;
-  } catch {
-    return null;
+// ── 多会话存储桥接 ───────────────────────────────────────────
+// 旧版聊天记录从 localStorage 一次性迁移到主进程 chats 存储，之后整窗口
+// 所有读写都走 IPC（window.chatStore）。所有 saveHistory 调用点改成
+// saveSession，本质是把 messages 全量回写当前 session 文件。
+
+interface ChatStoreSessionMeta {
+  id: string;
+  title: string;
+  identityId: string | null;
+  createdAt: number;
+  updatedAt: number;
+  messageCount: number;
+}
+
+interface ChatStoreSession {
+  id: string;
+  title: string;
+  identityId: string | null;
+  messages: Array<{ id: string; role: Role; content: string; at: number; sticker?: StickerId | null }>;
+  createdAt: number;
+  updatedAt: number;
+  schemaVersion: 1;
+}
+
+interface ChatStoreApi {
+  list: () => Promise<ChatStoreSessionMeta[]>;
+  get: (id: string) => Promise<ChatStoreSession | null>;
+  create: (payload?: { title?: string; identityId?: string | null }) => Promise<ChatStoreSession>;
+  append: (id: string, message: unknown) => Promise<ChatStoreSession | null>;
+  replaceMessages: (id: string, messages: unknown[]) => Promise<ChatStoreSession | null>;
+  rename: (id: string, title: string) => Promise<ChatStoreSession | null>;
+  delete: (id: string) => Promise<boolean>;
+  openFolder: () => Promise<boolean>;
+  migrateLegacy: (messages: unknown[]) => Promise<ChatStoreSession | null>;
+  openInChatWindow: (sessionId: string) => Promise<boolean>;
+  setActiveSession: (sessionId: string | null) => Promise<boolean>;
+  getActiveSession: () => Promise<string | null>;
+  onActiveSessionChanged: (callback: (sessionId: string | null) => void) => () => void;
+  onChanged: (callback: () => void) => () => void;
+  onSwitchSession: (callback: (sessionId: string) => void) => () => void;
+}
+
+declare global {
+  interface Window {
+    chatStore?: ChatStoreApi;
   }
 }
 
-function saveHistory(): void {
+// 把渲染端 Message 数组归一化为后端能持久化的形态：
+// - 过滤空 content / 渲染中的 thinking 占位（thinking=true 时通常 content 为空，但保险起见双重过滤）
+// - 丢弃 thinking 字段（持久化层不存这种瞬态状态）
+function toPersistableMessages(arr: Message[]): Array<{
+  id: string; role: Role; content: string; at: number; sticker?: StickerId | null;
+}> {
+  return arr
+    .filter((m) => m && (m.role === "user" || m.role === "model") && typeof m.content === "string" && m.content.trim() && !m.thinking)
+    .map((m) => ({
+      id: m.id,
+      role: m.role,
+      content: m.content,
+      at: m.at,
+      sticker: m.sticker ?? null,
+    }));
+}
+
+async function saveSession(): Promise<void> {
+  if (!currentSessionId || !window.chatStore) return;
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
-  } catch {
-    /* quota / private mode -- ignore */
+    await window.chatStore.replaceMessages(currentSessionId, toPersistableMessages(messages));
+  } catch (err) {
+    console.warn("[Cyrene Chat] saveSession 失败:", err);
   }
+}
+
+// 把 store 里的 ChatStoreSession 装载到当前窗口（替换 messages 数组并 render）。
+function loadSessionIntoUI(session: ChatStoreSession): void {
+  currentSessionId = session.id;
+  messages.length = 0;
+  for (const m of session.messages) {
+    messages.push({
+      id: m.id,
+      role: m.role,
+      content: m.content,
+      at: m.at,
+      sticker: m.sticker ?? null,
+    });
+  }
+  // 上报活跃 sessionId（设置面板"删除当前会话"差异化提示用）
+  void window.chatStore?.setActiveSession(session.id);
+  render();
+}
+
+// 一次性迁移：检测老 localStorage 数据 → 包成 session → 删 key。
+// 失败/没数据时静默 no-op，不影响后续 bootstrap。
+async function maybeMigrateLegacy(): Promise<void> {
+  const raw = localStorage.getItem(LEGACY_STORAGE_KEY);
+  if (!raw) return;
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      localStorage.removeItem(LEGACY_STORAGE_KEY);
+      return;
+    }
+    const normalized = (parsed as Message[]).filter(
+      (m) => m && (m.role === "user" || m.role === "model") && typeof m.content === "string" && m.content.trim(),
+    );
+    if (normalized.length === 0) {
+      localStorage.removeItem(LEGACY_STORAGE_KEY);
+      return;
+    }
+    await window.chatStore?.migrateLegacy(normalized);
+  } catch (err) {
+    console.warn("[Cyrene Chat] 旧 localStorage 迁移失败:", err);
+  } finally {
+    // 不管成功失败都清掉，避免每次启动都尝试迁移
+    localStorage.removeItem(LEGACY_STORAGE_KEY);
+  }
+}
+
+// 启动流程：迁移老数据 → 决定加载哪个 session → render
+async function bootstrap(): Promise<void> {
+  if (!window.chatStore) {
+    console.warn("[Cyrene Chat] chatStore IPC 未就绪——可能是 preload 未加载");
+    render();
+    return;
+  }
+
+  await maybeMigrateLegacy();
+
+  // 优先级：URL ?sessionId= → 列表最新一条 → 自动建新
+  const urlSessionId = new URLSearchParams(window.location.search).get("sessionId");
+  let session: ChatStoreSession | null = null;
+
+  if (urlSessionId) {
+    session = await window.chatStore.get(urlSessionId);
+  }
+  if (!session) {
+    const list = await window.chatStore.list();
+    if (list.length > 0) {
+      session = await window.chatStore.get(list[0].id);
+    }
+  }
+  if (!session) {
+    session = await window.chatStore.create({ identityId: null });
+  }
+
+  loadSessionIntoUI(session);
 }
 
 function formatTime(at: number): string {
@@ -208,6 +329,11 @@ function setAvatar(slot: HTMLElement, role: Role): void {
 }
 
 function render(): void {
+  // 空态：当前会话还没有消息时（新建/全清）显示"昔涟期待与你聊天哦 ✨"占位
+  const emptyEl = document.getElementById("chat-empty");
+  const hasMessages = messages.some((m) => m.content.trim());
+  if (emptyEl) emptyEl.toggleAttribute("hidden", hasMessages);
+
   messagesEl.replaceChildren();
   for (const m of messages) {
     const row = document.createElement("div");
@@ -311,6 +437,12 @@ let sending = false;
 async function send(): Promise<void> {
   const text = inputEl.value.trim();
   if ((!text && attachedFiles.length === 0) || sending) return;
+  // bootstrap 极快但理论上仍有竞态：currentSessionId 为 null 时消息无处可存，
+  // 直接拦截避免丢失。正常情况下 bootstrap 会在用户首次按键前完成。
+  if (!currentSessionId) {
+    console.warn("[Cyrene Chat] 会话尚未初始化完成，已忽略此次发送");
+    return;
+  }
 
     const fileHint = attachedFiles.length > 0
     ? "\n\n【已上传文件：" + attachedFiles.map(f => f.name).join("、") + "，已导入 RAG，请结合相关文件片段回答。】"
@@ -332,7 +464,7 @@ async function send(): Promise<void> {
   inputEl.value = "";
   autosize();
   removeAttachedFiles();
-  saveHistory();
+  void saveSession();
   render();
 
   let streamMsgId = "";
@@ -385,7 +517,7 @@ async function send(): Promise<void> {
       msg.content = replyPayload.reply || streamContent;
       msg.sticker = replyPayload.sticker;
     }
-    saveHistory();
+    void saveSession();
     render();
   } catch (err) {
     window.chat?.removeStreamListeners();
@@ -402,7 +534,7 @@ async function send(): Promise<void> {
         at: Date.now(),
       });
     }
-    saveHistory();
+    void saveSession();
     render();  } finally {
     sending = false;
     sendBtn.disabled = false;
@@ -412,12 +544,11 @@ async function send(): Promise<void> {
 }
 function clearChat(): void {
   if (sending) return;
-  if (messages.length <= 1) return;
+  if (messages.length === 0) return;
   const ok = window.confirm("清空当前对话？");
   if (!ok) return;
   messages.length = 0;
-  messages.push({ ...initialGreeting, id: "0", at: Date.now() });
-  saveHistory();
+  void saveSession();
   render();
 }
 
@@ -708,7 +839,31 @@ if (particlesCtx) {
 }
 
 
-render();
+// 启动：迁移老 localStorage → 选会话 → render
+void bootstrap();
 void initModelConfig();
+
+// main → renderer：设置面板点列表/新对话时，让窗口切到指定 session
+window.chatStore?.onSwitchSession(async (sessionId) => {
+  if (!window.chatStore) return;
+  if (sessionId === currentSessionId) return;
+  const session = await window.chatStore.get(sessionId);
+  if (session) loadSessionIntoUI(session);
+});
+
+// 任意会话变动后 main 广播——主要关心两种情况：
+// 1. 当前活跃会话被设置面板删了 → 跳到最新一条 / 自动建新
+// 2. 当前会话标题被改名 → 暂时不在窗口 UI 显示，无需处理
+window.chatStore?.onChanged(async () => {
+  if (!window.chatStore || !currentSessionId) return;
+  const stillExists = await window.chatStore.get(currentSessionId);
+  if (stillExists) return;
+  // 当前会话已被外部删除：fallback 到最新一条 / 自动建新
+  const list = await window.chatStore.list();
+  let next: ChatStoreSession | null = null;
+  if (list.length > 0) next = await window.chatStore.get(list[0].id);
+  if (!next) next = await window.chatStore.create({ identityId: null });
+  if (next) loadSessionIntoUI(next);
+});
 autosize();
 inputEl.focus();

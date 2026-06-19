@@ -947,10 +947,21 @@ pluginAddBtn?.addEventListener("click", async () => {
   }
 });
 
-clearChatHistoryBtn.addEventListener("click", () => {
-  if (!window.confirm("清空当前聊天记录？")) return;
-  localStorage.removeItem("cyrene.chat.history.v1");
-  setGeneralSaveStatus("聊天记录已清空", "is-ok");
+clearChatHistoryBtn.addEventListener("click", async () => {
+  if (!window.confirm("清空所有聊天会话？\n此操作会删除全部历史对话，无法恢复。")) return;
+  try {
+    const sessions = await window.chatStore?.list();
+    if (sessions && sessions.length > 0) {
+      // 串行删除（store 不支持批量删除；会话数量不会大，可接受）
+      for (const s of sessions) {
+        await window.chatStore?.delete(s.id);
+      }
+    }
+    setGeneralSaveStatus("所有聊天会话已清空", "is-ok");
+  } catch (err) {
+    console.warn("[settings] 清空聊天会话失败:", err);
+    setGeneralSaveStatus("清空失败，请查看终端日志", "is-error");
+  }
 });
 
 presetSelect.addEventListener("change", () => {
@@ -1121,6 +1132,7 @@ function switchSection(section: string): void {
   const isDisclaimer = section === "disclaimer";
   const isMemory = section === "memory";
   const isUser = section === "user";
+  const isChat = section === "chat";
   const isIdentity = section === "identity";
   const isPlugins = section === "plugins";
   apiForm.classList.toggle("is-hidden", !isApi);
@@ -1131,12 +1143,16 @@ function switchSection(section: string): void {
   if (memoryPanel) memoryPanel.classList.toggle("is-hidden", !isMemory);
   const userPanel = document.getElementById("user-panel");
   if (userPanel) userPanel.classList.toggle("is-hidden", !isUser);
+  const chatPanel = document.getElementById("chat-panel");
+  if (chatPanel) chatPanel.classList.toggle("is-hidden", !isChat);
+  // 切到 💬 聊天面板时拉一次列表（cross-window 变化由 onChanged 监听器自己刷新）
+  if (isChat) void renderChatSessions();
   const identityPanel = document.getElementById("identity-panel");
   if (identityPanel) identityPanel.classList.toggle("is-hidden", !isIdentity);
   pluginsPanel.classList.toggle("is-hidden", !isPlugins);
-  placeholderPanel.classList.toggle("is-hidden", isApi || isGeneral || isCyrene || isDisclaimer || isMemory || isUser || isIdentity || isPlugins);
+  placeholderPanel.classList.toggle("is-hidden", isApi || isGeneral || isCyrene || isDisclaimer || isMemory || isUser || isChat || isIdentity || isPlugins);
 
-  if (!isApi && !isGeneral && !isCyrene && !isDisclaimer && !isMemory && !isUser && !isIdentity && !isPlugins) {
+  if (!isApi && !isGeneral && !isCyrene && !isDisclaimer && !isMemory && !isUser && !isChat && !isIdentity && !isPlugins) {
     placeholderIcon.textContent = label.emoji;
     placeholderTitle.textContent = label.title;
     placeholderCopy.textContent = "这个模块先占位，等核心聊天与 API 接通后再继续扩展。";
@@ -1890,3 +1906,257 @@ if (permissionBlocksWrap) {
 
 
 
+
+/* ============================================================
+   💬 聊天面板：会话列表
+   - 渲染 chatStore.list 返回的会话元数据，按 updatedAt desc 排序（store 已排）
+   - 微信式时间：刚刚 / N 分钟前 / 今天 HH:mm / 昨天 HH:mm / N 天前 / MM-DD
+   - 点击列表项 = 在聊天窗口里打开（窗口未开则开窗）
+   - 双击标题 = 改名（contentEditable + Enter/Esc/blur 提交）
+   - 点🗑️ = 删除（活跃会话给出"正在阅读这个会话"差异化提示）
+   - 跨窗口同步：onChanged 触发重渲；onActiveSessionChanged 更新高亮态
+   - HTML/CSS 已在 index.html / settings.css 里就位（见 chat-sessions__*）
+   ============================================================ */
+
+interface ChatSessionMetaUI {
+  id: string;
+  title: string;
+  identityId: string | null;
+  createdAt: number;
+  updatedAt: number;
+  messageCount: number;
+}
+
+declare global {
+  interface Window {
+    chatStore?: {
+      list: () => Promise<ChatSessionMetaUI[]>;
+      get: (id: string) => Promise<unknown>;
+      create: (payload?: { title?: string; identityId?: string | null }) => Promise<{ id: string } | null>;
+      delete: (id: string) => Promise<boolean>;
+      rename: (id: string, title: string) => Promise<unknown>;
+      openFolder: () => Promise<boolean>;
+      openInChatWindow: (sessionId: string) => Promise<boolean>;
+      getActiveSession: () => Promise<string | null>;
+      onChanged: (cb: () => void) => () => void;
+      onActiveSessionChanged: (cb: (sessionId: string | null) => void) => () => void;
+    };
+  }
+}
+
+const CHAT_DEFAULT_IDENTITY_LABEL = "聊天陪伴";
+
+function formatChatRelativeTime(at: number): string {
+  const now = Date.now();
+  const diff = now - at;
+  if (diff < 0) {
+    // 极少见的时钟回拨：直接降级到绝对时间
+    const d = new Date(at);
+    return `${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  }
+  if (diff < 60_000) return "刚刚";
+  if (diff < 60 * 60_000) return Math.floor(diff / 60_000) + " 分钟前";
+
+  const target = new Date(at);
+  const today = new Date();
+  const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const dayDiff = Math.floor((startOfDay(today) - startOfDay(target)) / (24 * 3600 * 1000));
+
+  const hh = String(target.getHours()).padStart(2, "0");
+  const mm = String(target.getMinutes()).padStart(2, "0");
+  if (dayDiff === 0) return `今天 ${hh}:${mm}`;
+  if (dayDiff === 1) return `昨天 ${hh}:${mm}`;
+  if (dayDiff < 7) return `${dayDiff} 天前`;
+
+  const sameYear = target.getFullYear() === today.getFullYear();
+  const md = `${String(target.getMonth() + 1).padStart(2, "0")}-${String(target.getDate()).padStart(2, "0")}`;
+  return sameYear ? md : `${target.getFullYear()}-${md}`;
+}
+
+let chatSessionsActiveId: string | null = null;
+
+async function renderChatSessions(): Promise<void> {
+  const listEl = document.getElementById("chat-sessions-list");
+  const emptyEl = document.getElementById("chat-sessions-empty");
+  if (!listEl || !window.chatStore) return;
+
+  // 第一次渲染前如果还不知道活跃 sessionId，主动拉一次
+  if (chatSessionsActiveId === null) {
+    try { chatSessionsActiveId = (await window.chatStore.getActiveSession()) ?? null; } catch { /* ignore */ }
+  }
+
+  let sessions: ChatSessionMetaUI[] = [];
+  try {
+    sessions = await window.chatStore.list();
+  } catch (err) {
+    console.warn("[settings] 加载聊天会话列表失败:", err);
+  }
+
+  listEl.innerHTML = "";
+  if (sessions.length === 0) {
+    if (emptyEl) emptyEl.classList.remove("is-hidden");
+    return;
+  }
+  if (emptyEl) emptyEl.classList.add("is-hidden");
+
+  for (const session of sessions) {
+    const item = buildChatSessionItem(session);
+    listEl.appendChild(item);
+  }
+}
+
+function buildChatSessionItem(session: ChatSessionMetaUI): HTMLLIElement {
+  const li = document.createElement("li");
+  li.className = "chat-sessions__item";
+  if (session.id === chatSessionsActiveId) li.classList.add("is-active");
+  li.dataset.sessionId = session.id;
+
+  const titleEl = document.createElement("div");
+  titleEl.className = "chat-sessions__title";
+  titleEl.textContent = session.title || "新对话";
+  titleEl.title = "双击改名";
+
+  const metaEl = document.createElement("div");
+  metaEl.className = "chat-sessions__meta";
+
+  const timeEl = document.createElement("span");
+  timeEl.className = "chat-sessions__time";
+  timeEl.textContent = formatChatRelativeTime(session.updatedAt);
+
+  const identityEl = document.createElement("span");
+  identityEl.className = "chat-sessions__identity";
+  // 职位面板未做，所有 identityId == null 的会话先 fallback 到"聊天陪伴"
+  // 后续职位面板做好后这里改成用 identity 注册表查实际名称
+  identityEl.textContent = "💼 " + (session.identityId ? session.identityId : CHAT_DEFAULT_IDENTITY_LABEL);
+
+  metaEl.appendChild(timeEl);
+  metaEl.appendChild(identityEl);
+
+  const deleteBtn = document.createElement("button");
+  deleteBtn.type = "button";
+  deleteBtn.className = "chat-sessions__delete";
+  deleteBtn.title = "删除会话";
+  deleteBtn.setAttribute("aria-label", "删除会话");
+  deleteBtn.textContent = "🗑️";
+
+  // —— 交互绑定 ——
+  // 点列表项 = 在聊天窗口里打开
+  li.addEventListener("click", (e) => {
+    // 编辑标题中、点击删除按钮、点击标题本身且处于编辑态：不触发打开
+    const target = e.target as HTMLElement;
+    if (target.closest(".chat-sessions__delete")) return;
+    if (titleEl.isContentEditable) return;
+    void window.chatStore?.openInChatWindow(session.id);
+  });
+
+  // 双击标题进入改名
+  titleEl.addEventListener("dblclick", (e) => {
+    e.stopPropagation();
+    enterRenameMode(titleEl, session);
+  });
+
+  // 删除（含活跃会话差异化提示）
+  deleteBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    void deleteChatSession(session);
+  });
+
+  li.appendChild(titleEl);
+  li.appendChild(metaEl);
+  li.appendChild(deleteBtn);
+  return li;
+}
+
+function enterRenameMode(titleEl: HTMLElement, session: ChatSessionMetaUI): void {
+  const original = titleEl.textContent || "";
+  titleEl.contentEditable = "true";
+  titleEl.focus();
+  // 全选当前文本，方便用户直接覆盖
+  const range = document.createRange();
+  range.selectNodeContents(titleEl);
+  const sel = window.getSelection();
+  if (sel) { sel.removeAllRanges(); sel.addRange(range); }
+
+  const finish = (commit: boolean) => {
+    titleEl.contentEditable = "false";
+    const newTitle = (titleEl.textContent || "").trim();
+    if (commit && newTitle && newTitle !== original) {
+      void window.chatStore?.rename(session.id, newTitle);
+      // rename 成功后 main 会广播 chats:changed，触发整体重渲；
+      // 此处不必手动改 DOM
+    } else {
+      titleEl.textContent = original; // 还原
+    }
+    titleEl.removeEventListener("keydown", onKey);
+    titleEl.removeEventListener("blur", onBlur);
+  };
+
+  const onKey = (e: KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      finish(true);
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      finish(false);
+    }
+  };
+  const onBlur = () => finish(true);
+
+  titleEl.addEventListener("keydown", onKey);
+  titleEl.addEventListener("blur", onBlur);
+}
+
+async function deleteChatSession(session: ChatSessionMetaUI): Promise<void> {
+  const isActive = session.id === chatSessionsActiveId;
+  const prompt = isActive
+    ? `「${session.title || "新对话"}」正在聊天窗口里打开，确定删除？\n删除后聊天窗口会跳到最新一条会话或自动新建。`
+    : `确定删除「${session.title || "新对话"}」？\n删除后无法恢复。`;
+  if (!window.confirm(prompt)) return;
+  try {
+    await window.chatStore?.delete(session.id);
+    // 删除成功后 main 广播 chats:changed → 列表重渲；
+    // 聊天窗口若在显示该会话也会通过 onChanged 自动 fallback。
+  } catch (err) {
+    console.warn("[settings] 删除会话失败:", err);
+    window.alert("删除失败，请查看终端日志。");
+  }
+}
+
+// —— 顶部"+新对话"按钮 ——
+const chatNewBtn = document.getElementById("chat-new-btn") as HTMLButtonElement | null;
+chatNewBtn?.addEventListener("click", async () => {
+  if (!window.chatStore) return;
+  try {
+    const session = await window.chatStore.create({ identityId: null });
+    if (session?.id) await window.chatStore.openInChatWindow(session.id);
+  } catch (err) {
+    console.warn("[settings] 新建会话失败:", err);
+    window.alert("新建会话失败，请查看终端日志。");
+  }
+});
+
+// —— 底部"打开存储位置"按钮 ——
+const chatOpenFolderBtn = document.getElementById("chat-open-folder-btn") as HTMLButtonElement | null;
+chatOpenFolderBtn?.addEventListener("click", () => {
+  void window.chatStore?.openFolder();
+});
+
+// —— 跨窗口同步 ——
+// 任意会话变动（创建/追加/改名/删除）：重渲列表
+// 仅在面板可见时刷新，节省 DOM 写入；不可见时下次切到面板会重新拉
+window.chatStore?.onChanged(() => {
+  const panel = document.getElementById("chat-panel");
+  if (panel && !panel.classList.contains("is-hidden")) {
+    void renderChatSessions();
+  }
+});
+
+// 活跃 sessionId 变化：仅更新 is-active 高亮，不重新拉列表（轻量）
+window.chatStore?.onActiveSessionChanged((sessionId) => {
+  chatSessionsActiveId = sessionId;
+  const listEl = document.getElementById("chat-sessions-list");
+  if (!listEl) return;
+  listEl.querySelectorAll<HTMLElement>(".chat-sessions__item").forEach((el) => {
+    el.classList.toggle("is-active", el.dataset.sessionId === sessionId);
+  });
+});

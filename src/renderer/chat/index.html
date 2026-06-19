@@ -45,6 +45,10 @@
       </div>
     </header>
     <main class="chat__messages" id="messages" aria-live="polite"></main>
+    <div class="chat__empty-state" id="chat-empty" hidden>
+      <div class="chat__empty-icon">💬</div>
+      <p class="chat__empty-text">昔涟期待与你聊天哦 ✨</p>
+    </div>
     <div class="chat__file-tags" id="file-tags"></div>
     <form class="chat__input" id="composer">
       <input type="file" id="file-input" accept=".txt,.md,.json,.csv,.log" multiple style="display:none" />

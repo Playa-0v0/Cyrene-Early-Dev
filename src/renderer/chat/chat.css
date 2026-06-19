@@ -584,3 +584,33 @@ body {
   0%, 60%, 100% { opacity: 0.3; }
   30% { opacity: 1; }
 }
+
+/* 空态：当前会话无消息时显示（设置面板"+新对话"或删除清空后的过渡态） */
+.chat__empty-state {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  gap: 12px;
+  z-index: 1;
+}
+
+.chat__empty-state[hidden] {
+  display: none;
+}
+
+.chat__empty-icon {
+  font-size: 56px;
+  opacity: 0.6;
+  filter: drop-shadow(0 2px 12px rgba(255, 192, 230, 0.4));
+}
+
+.chat__empty-text {
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.65);
+  margin: 0;
+  letter-spacing: 0.5px;
+}

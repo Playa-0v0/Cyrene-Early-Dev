@@ -232,7 +232,7 @@
             <div class="setting-row">
               <div>
                 <strong>聊天记录管理</strong>
-                <span>清空当前本地聊天记录。</span>
+                <span>清空全部本地聊天会话（迁移到「💬 聊天」面板可逐条管理）。</span>
               </div>
               <button type="button" class="ghost-btn" id="clear-chat-history-btn">清空记录</button>
             </div>
@@ -530,6 +530,33 @@
                   <p class="user-avatar-hint">支持 JPG、PNG，建议 1:1 比例</p>
                 </div>
               </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="settings-panel is-hidden" id="chat-panel" data-panel="chat">
+          <div class="panel-heading">
+            <div class="panel-heading__icon">💬</div>
+            <div>
+              <h1>聊天</h1>
+              <p>管理聊天窗口与会话历史</p>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="chat-sessions">
+              <button type="button" class="chat-sessions__new" id="chat-new-btn">
+                <span class="chat-sessions__new-icon" aria-hidden="true">＋</span>
+                <span>新对话</span>
+              </button>
+              <ul class="chat-sessions__list" id="chat-sessions-list" role="list"></ul>
+              <div class="chat-sessions__empty is-hidden" id="chat-sessions-empty">
+                <span class="chat-sessions__empty-icon" aria-hidden="true">📭</span>
+                <p>还没有对话，点上面的「＋ 新对话」开始吧</p>
+              </div>
+            </div>
+            <div class="chat-sessions__footer">
+              <button type="button" class="ghost-btn" id="chat-open-folder-btn">📂 打开存储位置</button>
+              <span class="chat-sessions__footer-hint">所有会话保存在 userData/cyrene-chats/ 下，可整体迁移</span>
             </div>
           </div>
         </section>
