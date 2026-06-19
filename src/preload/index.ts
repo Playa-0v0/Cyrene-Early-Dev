@@ -38,7 +38,13 @@ const aguiApi = {
   run: (input: { messages: unknown[]; style: string }) =>
     ipcRenderer.invoke(IPC.AGUI_RUN, input) as Promise<{ success: boolean; error?: string }>,
   onEvent: (callback: (event: unknown) => void) => {
-    const listener = (_e: unknown, event: unknown) => callback(event);
+    const listener = (_e: unknown, event: unknown) => {
+      try {
+        callback(event);
+      } catch (err) {
+        console.error("[Preload] listener抛错:", err);
+      }
+    };
     ipcRenderer.on(IPC.AGUI_EVENT, listener);
     return () => ipcRenderer.off(IPC.AGUI_EVENT, listener);
   },

@@ -84,37 +84,43 @@ export function registerAgUiIpc(
       for (const t of targets) {
         try {
           t.send(IPC.AGUI_EVENT, baseEvent);
-        } catch {
-          // 窗口可能已销毁，忽略
+        } catch (err) {
+          console.error("[AgUiBridge] send 失败:", (err instanceof Error ? err.message : String(err)), "事件类型=", (baseEvent as { type?: string })?.type);
         }
       }
     };
 
-    return new Promise<{ success: boolean; error?: string }>((resolve) => {
-      const sub = agent.runWithEvents(options).subscribe({
-        next: (baseEvent) => {
-          send(baseEvent);
-        },
-        error: (err) => {
-          const message = err instanceof Error ? err.message : String(err);
-          console.error("[AgUiBridge] run 失败:", message);
-          activeRuns.delete(runId);
-          resolve({ success: false, error: message });
-        },
-        complete: async () => {
-          activeRuns.delete(runId);
-          try {
-            if (agent.lastResult) {
-              await onFinished(agent.lastResult, latestUserText);
-            }
-          } catch (err) {
-            console.warn("[AgUiBridge] 副作用失败（不影响结果）:", err);
+    // 订阅 agent 事件流：每个事件透传渲染端；
+    // complete/error 时做副作用，并补发一个终态事件让渲染端知道这轮结束。
+    const sub = agent.runWithEvents(options).subscribe({
+      next: (baseEvent) => {
+        send(baseEvent);
+      },
+      error: (err) => {
+        const message = err instanceof Error ? err.message : String(err);
+        console.error("[AgUiBridge] run 失败:", message);
+        // 补发 RUN_ERROR 事件，渲染端据此收尾（invoke 早已 resolve，靠事件驱动）
+        send({ type: "RUN_ERROR", error: message, threadId, runId });
+        activeRuns.delete(runId);
+      },
+      complete: async () => {
+        activeRuns.delete(runId);
+        try {
+          if (agent.lastResult) {
+            await onFinished(agent.lastResult, latestUserText);
           }
-          resolve({ success: true });
-        },
-      });
-      activeRuns.set(runId, sub);
+        } catch (err) {
+          console.warn("[AgUiBridge] 副作用失败（不影响结果）:", err);
+        }
+        // RUN_FINISHED 已由 agent 在 complete 前发出，渲染端据此收尾
+      },
     });
+    activeRuns.set(runId, sub);
+
+    // invoke 立刻返回 ack，不等 Observable 结束。
+    // 终态（RUN_FINISHED/RUN_ERROR）由事件流承载，渲染端据此 offEvent + 收尾。
+    // 这样避免 invoke reply 与 send 事件的投递顺序竞争导致 offEvent 提前取消监听。
+    return { success: true, runId };
   });
 
   ipcMain.handle(IPC.AGUI_CANCEL, () => {

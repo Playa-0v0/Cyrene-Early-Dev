@@ -710,44 +710,69 @@ async function send(): Promise<void> {
     let streamContent = "";
     let sticker: StickerId | null = null;
 
+    // 终态信号：由事件流的 RUN_FINISHED/RUN_ERROR 触发 resolve，
+    // 不依赖 invoke 的 resolve（invoke 只做 ack，可能与事件投递存在顺序竞争）。
+    let finishRun!: () => void;
+    let failRun!: (err: Error) => void;
+    const runDone = new Promise<void>((resolve, reject) => {
+      finishRun = resolve;
+      failRun = reject;
+    });
+
     // AG-UI 事件流：订阅 window.agui.onEvent，按事件类型渲染
     const offEvent = window.agui!.onEvent((rawEvent) => {
-      const event = rawEvent as AguiBaseEvent;
-      const msg = messages.find(m => m.id === streamMsgId);
-      switch (event.type) {
-        case "TEXT_MESSAGE_START":
-          if (msg) { msg.thinking = false; render(); }
-          break;
-        case "TEXT_MESSAGE_CONTENT":
-          if (event.delta) {
-            streamContent += event.delta;
-            if (msg) { msg.thinking = false; msg.content = streamContent; render(); }
-          }
-          break;
-        case "TEXT_MESSAGE_END":
-          // 文本流结束，content 已是完整文本
-          break;
-        case "CUSTOM":
-          // 主进程发的自定义事件：sticker
-          if (event.name === "cyrene.sticker") {
-            sticker = (event.value as StickerId | null) ?? null;
-          }
-          break;
-        default:
-          // TOOL_CALL_* / STEP_* / RUN_* 等暂不在 UI 处理（骨架阶段）
-          break;
+      try {
+        const event = rawEvent as AguiBaseEvent;
+        const msg = messages.find(m => m.id === streamMsgId);
+        switch (event.type) {
+          case "TEXT_MESSAGE_START":
+            if (msg) { msg.thinking = false; render(); }
+            break;
+          case "TEXT_MESSAGE_CONTENT":
+            if (event.delta) {
+              streamContent += event.delta;
+              if (msg) { msg.thinking = false; msg.content = streamContent; render(); }
+            }
+            break;
+          case "TEXT_MESSAGE_END":
+            // 文本流结束，content 已是完整文本
+            break;
+          case "CUSTOM":
+            // 主进程发的自定义事件：sticker
+            if (event.name === "cyrene.sticker") {
+              sticker = (event.value as StickerId | null) ?? null;
+            }
+            break;
+          case "RUN_FINISHED":
+            // 终态：这轮结束，触发收尾
+            finishRun();
+            break;
+          case "RUN_ERROR":
+            failRun(new Error(event.content || "模型请求失败"));
+            break;
+          default:
+            // TOOL_CALL_* / STEP_* 暂不在 UI 处理（骨架阶段）
+            break;
+        }
+      } catch (err) {
+        console.error("[Chat] onEvent回调抛错:", err);
       }
     });
 
-    const runResult = await window.agui!.run({
+    // invoke 只确认"已发起"，不等 Observable 结束。
+    // 真正的完成由事件流 RUN_FINISHED/RUN_ERROR 驱动（await runDone）。
+    const ack = await window.agui!.run({
       messages: buildModelMessages(),
       style: getCurrentStyle(),
     });
-    offEvent();
-
-    if (!runResult.success) {
-      throw new Error(runResult.error || "模型请求失败");
+    if (!ack.success) {
+      offEvent();
+      throw new Error(ack.error || "模型请求发起失败");
     }
+
+    // 等事件流终态
+    await runDone;
+    offEvent();
 
     const msg = messages.find(m => m.id === streamMsgId);
     if (msg) {

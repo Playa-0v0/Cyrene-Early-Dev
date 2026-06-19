@@ -86,9 +86,8 @@ function emitTextMessage(
   text: string,
 ): void {
   observer.next({ type: EventType.TEXT_MESSAGE_START, messageId, role: "assistant" });
-  for (const delta of sliceToDeltas(text)) {
-    observer.next({ type: EventType.TEXT_MESSAGE_CONTENT, messageId, delta });
-  }
+  // 整段一次发（FC 是一次性拿全文，前端逐字流式感由渲染层做或后续切片）
+  observer.next({ type: EventType.TEXT_MESSAGE_CONTENT, messageId, delta: text });
   observer.next({ type: EventType.TEXT_MESSAGE_END, messageId });
 }
 
