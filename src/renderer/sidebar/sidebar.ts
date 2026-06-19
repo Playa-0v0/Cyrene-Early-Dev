@@ -65,6 +65,7 @@ const minBtn = document.getElementById("min-btn") as HTMLButtonElement;
 const closeBtn = document.getElementById("close-btn") as HTMLButtonElement;
 const settingsBtn = document.getElementById("settings-btn") as HTMLButtonElement;
 const modelSwitchBtn = document.getElementById("model-switch-btn") as HTMLButtonElement;
+const openChatBtn = document.getElementById("open-chat-btn") as HTMLButtonElement;
 const onlineStatusLabel = document.getElementById("online-status-label") as HTMLElement;
 const statusEmojiEl = document.getElementById("status-emoji") as HTMLElement;
 const statusLabelEl = document.getElementById("status-label") as HTMLElement;
@@ -176,6 +177,30 @@ settingsBtn.addEventListener("click", () => {
 modelSwitchBtn.addEventListener("click", () => {
   // "切换模型"直奔 API 配置标签，而不是默认的通用标签
   window.sidebar?.openSettings("api");
+});
+
+// "打开聊天"：拿到最近一条会话 id，让 main 打开聊天窗口并加载它；
+// 没有任何会话时先建一个再打开，保证点按钮总能进到一个具体会话。
+openChatBtn.addEventListener("click", async () => {
+  const chatStore = (window as unknown as {
+    chatStore?: {
+      list: () => Promise<Array<{ id: string }>>;
+      create: (payload?: { identityId?: string | null }) => Promise<{ id: string } | null>;
+      openInChatWindow: (sessionId: string) => Promise<unknown>;
+    };
+  }).chatStore;
+  if (!chatStore) return;
+  try {
+    const list = await chatStore.list();
+    let latestId = list.length > 0 ? list[0].id : "";
+    if (!latestId) {
+      const created = await chatStore.create({ identityId: null });
+      latestId = created?.id ?? "";
+    }
+    if (latestId) await chatStore.openInChatWindow(latestId);
+  } catch (err) {
+    console.warn("[sidebar] 打开聊天失败:", err);
+  }
 });
 
 void syncCollapseUI();
