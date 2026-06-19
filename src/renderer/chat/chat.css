@@ -954,6 +954,30 @@ body {
   to { opacity: 1; }
 }
 
+/* 工具调用提示：FC 循环里模型调工具时，气泡显示"🔧 调用中：xxx" */
+.msg__tool-tip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: rgba(235, 229, 245, 0.6);
+  padding: 2px 0;
+  transition: opacity 0.3s;
+}
+
+.msg__tool-icon {
+  font-size: 13px;
+}
+
+.msg__tool-text {
+  letter-spacing: 0.02em;
+}
+
+/* 工具完成：淡出，准备让位给文字流 */
+.msg__tool-tip--done {
+  opacity: 0.4;
+}
+
 /* 空态：当前会话无消息时显示（设置面板"+新对话"或删除清空后的过渡态） */
 .chat__empty-state {
   position: absolute;

@@ -767,8 +767,43 @@ async function send(): Promise<void> {
         const event = rawEvent as AguiBaseEvent;
         const msg = messages.find(m => m.id === streamMsgId);
         switch (event.type) {
+          case "TOOL_CALL_START": {
+            // 工具调用开始：在 thinking 气泡里显示"🔧 调用中：xxx"，替换三个点
+            const bubble = getStreamingBubble();
+            if (bubble) {
+              bubble.classList.remove("msg__bubble--thinking");
+              bubble.replaceChildren();
+              const tip = document.createElement("div");
+              tip.className = "msg__tool-tip";
+              tip.dataset.toolCallId = event.toolCallId ?? "";
+              const icon = document.createElement("span");
+              icon.className = "msg__tool-icon";
+              icon.textContent = "🔧";
+              const text = document.createElement("span");
+              text.className = "msg__tool-text";
+              text.textContent = "调用中：" + (event.toolCallName ?? "工具");
+              tip.appendChild(icon);
+              tip.appendChild(text);
+              bubble.appendChild(tip);
+            }
+            break;
+          }
+          case "TOOL_CALL_END": {
+            // 工具调用完成：把"调用中"改成"完成"，淡出准备让位给文字
+            const bubble = getStreamingBubble();
+            if (bubble) {
+              const tip = bubble.querySelector(".msg__tool-tip");
+              if (tip) {
+                const textEl = tip.querySelector(".msg__tool-text");
+                if (textEl) textEl.textContent = "已完成";
+                tip.classList.add("msg__tool-tip--done");
+              }
+            }
+            break;
+          }
           case "TEXT_MESSAGE_START":
             // 切换 thinking 点 → 空气泡，render 一次建立 DOM（带 data-msg-id）
+            // 工具提示（若有）会被 render 重建清掉，自然过渡到文字
             if (msg) { msg.thinking = false; render(); }
             break;
           case "TEXT_MESSAGE_CONTENT":

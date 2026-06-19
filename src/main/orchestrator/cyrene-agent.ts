@@ -188,14 +188,13 @@ async function runFcLoopWithEvents(
       const execResults: ToolExecutionResult[] = [];
       for (const tc of chat.toolCalls) {
         const toolCallId = tc.id || `${tc.name}-${Date.now()}`;
-        // 工具调用开始事件
+        const tool = toolRegistry.getById(tc.name);
+        // 工具调用开始事件（toolCallName 用显示名，找不到工具则用 id 兜底）
         observer.next({
           type: EventType.TOOL_CALL_START,
           toolCallId,
-          toolCallName: tc.name,
+          toolCallName: tool?.name ?? tc.name,
         });
-
-        const tool = toolRegistry.getById(tc.name);
 
         let args: Record<string, unknown> = {};
         try {
