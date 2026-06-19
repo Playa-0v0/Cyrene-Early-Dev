@@ -32,6 +32,21 @@ const chatApi = {
 contextBridge.exposeInMainWorld("cyrene", cyreneApi);
 contextBridge.exposeInMainWorld("chat", chatApi);
 
+// AG-UI 事件流：发起一次 agent run，通过 onEvent 回调收 AG-UI 标准事件，
+// 返回 Promise<{success,error}> 表示整轮结束。onEvent 返回的取消订阅函数用于停止监听。
+const aguiApi = {
+  run: (input: { messages: unknown[]; style: string }) =>
+    ipcRenderer.invoke(IPC.AGUI_RUN, input) as Promise<{ success: boolean; error?: string }>,
+  onEvent: (callback: (event: unknown) => void) => {
+    const listener = (_e: unknown, event: unknown) => callback(event);
+    ipcRenderer.on(IPC.AGUI_EVENT, listener);
+    return () => ipcRenderer.off(IPC.AGUI_EVENT, listener);
+  },
+  cancel: () => ipcRenderer.invoke(IPC.AGUI_CANCEL),
+};
+
+contextBridge.exposeInMainWorld("agui", aguiApi);
+
 const sidebarApi = {
   minimize: () => ipcRenderer.send(IPC.SIDEBAR_MINIMIZE),
   close: () => ipcRenderer.send(IPC.SIDEBAR_CLOSE),

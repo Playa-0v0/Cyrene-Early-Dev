@@ -25,6 +25,7 @@ import type { L0Profile, L1Profile } from "./memory/memory-types";
 import { registerChatsIpc } from "./chats/chats-ipc";
 import { recordUsage, getUsage, flush as flushTokenUsage } from "./token-usage-store";
 import { uploadFile as ttsUploadFile, cloneVoice as ttsCloneVoice, synthesize as ttsSynthesize } from "./tts/minimax-engine";
+import { registerAgUiIpc, type AguiRunInput } from "./agui-bridge";
 
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
@@ -2129,6 +2130,82 @@ app.whenReady().then(async () => {
 
   // 聊天会话存储 IPC（chats-store.initialize 会建好 cyrene-chats 目录并加载 index）
   registerChatsIpc();
+
+  // AG-UI 事件流桥：渲染进程 invoke(AGUI_RUN) → CyreneAgent 跑 FC 循环 → 事件透传
+  // buildOptions 复用 requestModelReply 的上下文构建；onRunFinished 复用副作用
+  registerAgUiIpc(
+    async (input: AguiRunInput) => {
+      const settings = loadModelSettings();
+      if (!settings.apiKey) {
+        throw new Error("还没有填写 API Key，请先在设置里保存 API 配置。");
+      }
+      const messages = normalizeChatMessages(input.messages);
+      if (messages.length === 0) {
+        throw new Error("没有可发送的聊天内容。");
+      }
+      const latestUserText = messages.filter((m) => m.role === "user").at(-1)?.content ?? "";
+
+      let alwaysOnContext = "";
+      try {
+        alwaysOnContext = await buildAlwaysOnContext(latestUserText, messages);
+      } catch (err) {
+        console.warn("[Cyrene] always-on context build failed:", err);
+      }
+      let environmentContext = "";
+      try {
+        environmentContext = buildEnvironmentContext({ provider: settings.provider, model: settings.model });
+      } catch (err) {
+        console.warn("[Cyrene] environment context build failed:", err);
+      }
+      const systemContent = buildSystemPrompt(input.style || "01_default.md")
+        + (alwaysOnContext ? "\n\n" + alwaysOnContext : "")
+        + (environmentContext ? "\n\n" + environmentContext : "");
+
+      const fcMessages = [
+        { role: "system" as const, content: systemContent },
+        ...messages,
+      ];
+      return {
+        options: {
+          settings: { provider: settings.provider, baseUrl: settings.baseUrl, model: settings.model, apiKey: settings.apiKey },
+          messages: fcMessages,
+          timeoutMs: CHAT_REQUEST_TIMEOUT_MS,
+        },
+        latestUserText,
+      };
+    },
+    async (result, latestUserText) => {
+      // 副作用：记忆 + 表情/sticker 推断 + 广播（与 requestModelReply 一致）
+      const chatContent = result.reply;
+      scheduleMemoryWrite(latestUserText, chatContent);
+      const settings = loadModelSettings();
+      const inferredStatus = inferRuntimeState(latestUserText, chatContent, false);
+      runtimeState.status = inferredStatus.status;
+      runtimeState.expression = feelingToExpression[runtimeState.feeling] ?? 0;
+      runtimeState.updatedAt = Date.now();
+
+      const stickerCandidate = settings.stickerEnabled ? inferStickerId(runtimeState, chatContent, latestUserText) : null;
+      const stickerSettings = loadStickerSettings();
+      const sticker = stickerCandidate && stickerSettings[stickerCandidate] !== false ? stickerCandidate : null;
+      // sticker 通过 AG-UI 的 CUSTOM 事件发给渲染进程（渲染端按 RUN_FINISHED 后取兜底）
+      const chatWin = chatWindow;
+      if (chatWin && !chatWin.isDestroyed()) {
+        chatWin.webContents.send(IPC.AGUI_EVENT, {
+          type: "CUSTOM",
+          name: "cyrene.sticker",
+          value: sticker,
+        });
+      }
+      if (settings.runtimeSync === "local") {
+        broadcastRuntimeStateChanged();
+      } else if (settings.runtimeSync === "llm") {
+        broadcastRuntimeStateChanged();
+        void observeRuntimeState(settings, [], latestUserText, chatContent);
+      }
+    },
+    () => chatWindow,
+  );
+
   ipcMain.handle(IPC.CHATS_OPEN_IN_CHAT_WINDOW, (_event, sessionId: string) => {
     createChatWindow(sessionId);
     return true;

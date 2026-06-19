@@ -22,6 +22,11 @@ export const IPC = {
   CHAT_STREAM_CHUNK: "chat:stream-chunk",
   CHAT_STREAM_DONE: "chat:stream-done",
 
+  // AG-UI 事件流（替换上面的 chat:stream-* 的新通道）
+  AGUI_RUN: "agui:run",
+  AGUI_EVENT: "agui:event",
+  AGUI_CANCEL: "agui:cancel",
+
   // sidebar window (status / schedule / settings entry)
   SIDEBAR_MINIMIZE: "sidebar:minimize",
   SIDEBAR_CLOSE: "sidebar:close",

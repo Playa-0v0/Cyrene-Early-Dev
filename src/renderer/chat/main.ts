@@ -62,9 +62,31 @@ interface ChatApi {
   importDocument: (fileName: string, content: string) => Promise<{ chunks: number; error?: string }>;
 }
 
+/** AG-UI 事件流 API（window.agui）。 */
+interface AguiApi {
+  run: (input: { messages: unknown[]; style: string }) => Promise<{ success: boolean; error?: string }>;
+  onEvent: (callback: (event: unknown) => void) => () => void;
+  cancel: () => Promise<boolean>;
+}
+
+/** AG-UI BaseEvent 的最小本地类型（只取我们关心的字段）。 */
+interface AguiBaseEvent {
+  type: string;
+  messageId?: string;
+  delta?: string;
+  role?: string;
+  toolCallId?: string;
+  toolCallName?: string;
+  content?: string;
+  stepName?: string;
+  name?: string;   // CUSTOM 事件的 name
+  value?: unknown; // CUSTOM 事件的 value
+}
+
 declare global {
   interface Window {
     chat?: ChatApi;
+    agui?: AguiApi;
     modelConfig?: ModelConfigApi;
   }
 }
@@ -686,47 +708,52 @@ async function send(): Promise<void> {
     render();
 
     let streamContent = "";
-    let firstChunkReceived = false;
-    window.chat.onStreamChunk((chunk) => {
-      streamContent += chunk;
+    let sticker: StickerId | null = null;
+
+    // AG-UI 事件流：订阅 window.agui.onEvent，按事件类型渲染
+    const offEvent = window.agui!.onEvent((rawEvent) => {
+      const event = rawEvent as AguiBaseEvent;
       const msg = messages.find(m => m.id === streamMsgId);
-      if (msg) {
-        if (!firstChunkReceived) {
-          firstChunkReceived = true;
-          // Keep dots for 150ms for smooth transition
-          setTimeout(() => {
-            const m2 = messages.find(x => x.id === streamMsgId);
-            if (m2) { m2.thinking = false; m2.content = streamContent; render(); }
-          }, 150);
-        } else {
-          msg.content = streamContent;
-          render();
-        }
+      switch (event.type) {
+        case "TEXT_MESSAGE_START":
+          if (msg) { msg.thinking = false; render(); }
+          break;
+        case "TEXT_MESSAGE_CONTENT":
+          if (event.delta) {
+            streamContent += event.delta;
+            if (msg) { msg.thinking = false; msg.content = streamContent; render(); }
+          }
+          break;
+        case "TEXT_MESSAGE_END":
+          // 文本流结束，content 已是完整文本
+          break;
+        case "CUSTOM":
+          // 主进程发的自定义事件：sticker
+          if (event.name === "cyrene.sticker") {
+            sticker = (event.value as StickerId | null) ?? null;
+          }
+          break;
+        default:
+          // TOOL_CALL_* / STEP_* / RUN_* 等暂不在 UI 处理（骨架阶段）
+          break;
       }
     });
 
-    const replyPayload = await new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        window.chat.removeStreamListeners();
-        reject(new Error("模型响应超时，请稍后重试。"));
-      }, 60000);
-      window.chat.onStreamDone((payload) => {
-        clearTimeout(timeout);
-        window.chat.removeStreamListeners();
-        resolve(normalizeChatReplyPayload(payload));
-      });
-      window.chat.sendMessage(buildModelMessages(), getCurrentStyle()).catch((err) => {
-        clearTimeout(timeout);
-        window.chat.removeStreamListeners();
-        reject(err);
-      });
+    const runResult = await window.agui!.run({
+      messages: buildModelMessages(),
+      style: getCurrentStyle(),
     });
+    offEvent();
+
+    if (!runResult.success) {
+      throw new Error(runResult.error || "模型请求失败");
+    }
 
     const msg = messages.find(m => m.id === streamMsgId);
     if (msg) {
       msg.thinking = false;
-      msg.content = replyPayload.reply || streamContent;
-      msg.sticker = replyPayload.sticker;
+      msg.content = streamContent;
+      msg.sticker = sticker;
     }
     void saveSession();
     render();
@@ -735,7 +762,6 @@ async function send(): Promise<void> {
       void autoSpeakIfEnabled(msg.content);
     }
   } catch (err) {
-    window.chat?.removeStreamListeners();
     const message = err instanceof Error ? err.message : "模型请求失败";
     const msg = messages.find(m => m.id === streamMsgId);
     if (msg) {
