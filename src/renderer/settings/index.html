@@ -713,6 +713,45 @@
           </div>
         </section>
 
+        <section class="settings-panel is-hidden" id="token-panel" data-panel="tokens">
+          <div class="panel-heading">
+            <div class="panel-heading__icon">📊</div>
+            <div>
+              <h1>Token 用量</h1>
+              <p>查看 API 调用统计与消耗</p>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="schedule-usage">
+              <div class="usage-info">
+                <span class="usage-label">⚡ Token 用量</span>
+                <span class="usage-number" id="token-usage-number">2,470</span>
+                <span class="usage-total" id="token-usage-total">/ 5,000</span>
+              </div>
+              <div class="usage-bar" aria-hidden="true">
+                <div class="usage-bar__fill" id="token-usage-fill" style="width: 49.4%;"></div>
+              </div>
+            </div>
+
+            <div class="mini-chart" aria-hidden="true">
+              <div class="mini-chart__avg"><span>日均 2.8K</span></div>
+              <div class="mini-chart__bars">
+                <div class="chart-bar chart-bar--mo"><span>Mo</span></div>
+                <div class="chart-bar chart-bar--tu chart-bar--peak"><span>Tu</span></div>
+                <div class="chart-bar chart-bar--we"><span>We</span></div>
+                <div class="chart-bar chart-bar--th"><span>Th</span></div>
+                <div class="chart-bar chart-bar--fr"><span>Fr</span></div>
+                <div class="chart-bar chart-bar--sa"><span>Sa</span></div>
+                <div class="chart-bar chart-bar--su"><span>Su</span></div>
+              </div>
+            </div>
+
+            <div class="schedule-note">📊 本周 Token 消耗趋势 ｜ 峰值 4.8K（周二）</div>
+
+            <p class="token-panel__hint">💡 数据接入后，这里将显示真实的每日 Token 消耗统计。</p>
+          </div>
+        </section>
+
 
         <section class="settings-panel is-hidden" id="placeholder-panel">
           <div class="placeholder-card">

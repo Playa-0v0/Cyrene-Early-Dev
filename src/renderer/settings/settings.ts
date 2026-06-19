@@ -1140,6 +1140,7 @@ function switchSection(section: string): void {
   const isChat = section === "chat";
   const isIdentity = section === "identity";
   const isPlugins = section === "plugins";
+  const isTokens = section === "tokens";
   apiForm.classList.toggle("is-hidden", !isApi);
   generalForm.classList.toggle("is-hidden", !isGeneral);
   cyrenePanel.classList.toggle("is-hidden", !isCyrene);
@@ -1155,9 +1156,11 @@ function switchSection(section: string): void {
   const identityPanel = document.getElementById("identity-panel");
   if (identityPanel) identityPanel.classList.toggle("is-hidden", !isIdentity);
   pluginsPanel.classList.toggle("is-hidden", !isPlugins);
-  placeholderPanel.classList.toggle("is-hidden", isApi || isGeneral || isCyrene || isDisclaimer || isMemory || isUser || isChat || isIdentity || isPlugins);
+  const tokenPanel = document.getElementById("token-panel");
+  if (tokenPanel) tokenPanel.classList.toggle("is-hidden", !isTokens);
+  placeholderPanel.classList.toggle("is-hidden", isApi || isGeneral || isCyrene || isDisclaimer || isMemory || isUser || isChat || isIdentity || isPlugins || isTokens);
 
-  if (!isApi && !isGeneral && !isCyrene && !isDisclaimer && !isMemory && !isUser && !isChat && !isIdentity && !isPlugins) {
+  if (!isApi && !isGeneral && !isCyrene && !isDisclaimer && !isMemory && !isUser && !isChat && !isIdentity && !isPlugins && !isTokens) {
     placeholderIcon.textContent = label.emoji;
     placeholderTitle.textContent = label.title;
     placeholderCopy.textContent = "这个模块先占位，等核心聊天与 API 接通后再继续扩展。";
