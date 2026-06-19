@@ -33,8 +33,7 @@ interface RuntimeStateApi {
 interface SidebarApi {
   minimize: () => void;
   close: () => void;
-  toggleCollapse: () => void;
-  isCollapsed: () => Promise<boolean>;
+  toggleAlwaysOnTop: () => Promise<boolean>;
   openTasks: () => void;
   openSettings: (section?: string) => void;
 }
@@ -52,17 +51,16 @@ if (!window.sidebar) {
   (window as unknown as { sidebar: SidebarApi }).sidebar = {
     minimize: () => {},
     close: () => {},
-    toggleCollapse: () => {},
-    isCollapsed: () => Promise.resolve(false),
+    toggleAlwaysOnTop: () => Promise.resolve(false),
     openTasks: () => {},
     openSettings: (_section?: string) => {},
   };
 }
 
 const root = document.querySelector(".sidebar") as HTMLElement | null;
-const collapseBtn = document.getElementById("collapse-btn") as HTMLButtonElement;
 const minBtn = document.getElementById("min-btn") as HTMLButtonElement;
 const closeBtn = document.getElementById("close-btn") as HTMLButtonElement;
+const pinBtn = document.getElementById("pin-btn") as HTMLButtonElement;
 const settingsBtn = document.getElementById("settings-btn") as HTMLButtonElement;
 const modelSwitchBtn = document.getElementById("model-switch-btn") as HTMLButtonElement;
 const openChatBtn = document.getElementById("open-chat-btn") as HTMLButtonElement;
@@ -149,17 +147,13 @@ async function initModelConfig(): Promise<void> {
   }
   window.modelConfig?.onChanged((config) => applyModelConfig(config));
 }
-async function syncCollapseUI(): Promise<void> {
-  const collapsed = await window.sidebar!.isCollapsed();
-  if (root) root.classList.toggle("is-collapsed", collapsed);
-  collapseBtn.textContent = collapsed ? "›" : "‹";
-  collapseBtn.setAttribute("aria-label", collapsed ? "展开" : "收起");
-  collapseBtn.setAttribute("title", collapsed ? "展开" : "收起");
-}
-
-collapseBtn.addEventListener("click", () => {
-  window.sidebar?.toggleCollapse();
-  setTimeout(() => { void syncCollapseUI(); }, 100);
+// 置顶 toggle：点 📌 切换 alwaysOnTop，按钮高亮态反映当前是否已置顶。
+pinBtn.addEventListener("click", async () => {
+  const pinned = await window.sidebar?.toggleAlwaysOnTop();
+  const isPinned = Boolean(pinned);
+  pinBtn.classList.toggle("is-active", isPinned);
+  pinBtn.setAttribute("aria-label", isPinned ? "取消置顶" : "置顶");
+  pinBtn.setAttribute("title", isPinned ? "取消置顶" : "置顶");
 });
 
 minBtn.addEventListener("click", () => {
@@ -203,6 +197,5 @@ openChatBtn.addEventListener("click", async () => {
   }
 });
 
-void syncCollapseUI();
 void initModelConfig();
 void initRuntimeState();

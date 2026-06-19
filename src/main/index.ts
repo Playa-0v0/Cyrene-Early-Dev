@@ -1693,18 +1693,12 @@ ipcMain.on(IPC.SIDEBAR_CLOSE, () => {
   sidebarWindow?.close();
 });
 
-ipcMain.on(IPC.SIDEBAR_TOGGLE_COLLAPSE, () => {
-  if (!sidebarWindow) return;
-  const cur = sidebarWindow.getBounds();
-  const collapsed = cur.width <= 80;
-  sidebarWindow.setBounds({
-    width: collapsed ? 320 : 56,
-    height: cur.height,
-  });
-});
-
-ipcMain.handle(IPC.SIDEBAR_IS_COLLAPSED, () => {
-  return (sidebarWindow?.getBounds().width ?? 320) <= 80;
+// 状态栏窗口置顶 toggle：返回切换后的新状态（true=已置顶）
+ipcMain.handle(IPC.SIDEBAR_TOGGLE_ALWAYS_ON_TOP, () => {
+  if (!sidebarWindow) return false;
+  const next = !sidebarWindow.isAlwaysOnTop();
+  sidebarWindow.setAlwaysOnTop(next, next ? "screen-saver" : "normal");
+  return next;
 });
 
 ipcMain.on(IPC.SIDEBAR_OPEN_TASKS, () => {

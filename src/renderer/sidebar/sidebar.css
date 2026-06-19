@@ -377,38 +377,16 @@ body {
   user-select: none;
 }
 
-.sidebar.is-collapsed .sidebar__title,
-.sidebar.is-collapsed .sidebar__titlebar-actions,
-.sidebar.is-collapsed .sidebar__body {
-  display: none;
-}
-
-.sidebar.is-collapsed .sidebar__titlebar {
-  justify-content: center;
-  padding: 0;
-  height: 100%;
-  flex-direction: column;
-  border-bottom: none;
-  background: linear-gradient(180deg, rgba(236, 72, 153, 0.18), rgba(168, 85, 247, 0.10));
-}
-
-.sidebar.is-collapsed .sidebar__icon-btn#collapse-btn {
-  width: 36px;
-  height: 36px;
-  font-size: 18px;
+.sidebar__icon-btn.is-active {
   background: linear-gradient(135deg, #ff6ec7, #ec4899 48%, #a855f7);
   color: var(--rb-text-on-pink);
   box-shadow: 0 0 18px rgba(236, 72, 153, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.22);
 }
 
-.sidebar.is-collapsed .sidebar__icon-btn#collapse-btn:hover {
+.sidebar__icon-btn.is-active:hover {
   transform: translateY(-1px) scale(1.05);
 }
 
-.sidebar.is-collapsed {
-  border-color: rgba(255, 182, 220, 0.22);
-  background: linear-gradient(180deg, #2a1844 0%, #1a1230 100%);
-}
 .sidebar__divider {
   display: block;
   align-self: stretch;

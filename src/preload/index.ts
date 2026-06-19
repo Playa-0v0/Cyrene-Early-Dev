@@ -35,8 +35,7 @@ contextBridge.exposeInMainWorld("chat", chatApi);
 const sidebarApi = {
   minimize: () => ipcRenderer.send(IPC.SIDEBAR_MINIMIZE),
   close: () => ipcRenderer.send(IPC.SIDEBAR_CLOSE),
-  toggleCollapse: () => ipcRenderer.send(IPC.SIDEBAR_TOGGLE_COLLAPSE),
-  isCollapsed: () => ipcRenderer.invoke(IPC.SIDEBAR_IS_COLLAPSED),
+  toggleAlwaysOnTop: () => ipcRenderer.invoke(IPC.SIDEBAR_TOGGLE_ALWAYS_ON_TOP),
   openTasks: () => ipcRenderer.send(IPC.SIDEBAR_OPEN_TASKS),
   openSettings: (section?: string) => ipcRenderer.send(IPC.SIDEBAR_OPEN_SETTINGS, section),
 };

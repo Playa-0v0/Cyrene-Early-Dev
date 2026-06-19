@@ -25,10 +25,9 @@ export const IPC = {
   // sidebar window (status / schedule / settings entry)
   SIDEBAR_MINIMIZE: "sidebar:minimize",
   SIDEBAR_CLOSE: "sidebar:close",
-  SIDEBAR_TOGGLE_COLLAPSE: "sidebar:toggle-collapse",
+  SIDEBAR_TOGGLE_ALWAYS_ON_TOP: "sidebar:toggle-always-on-top",
   SIDEBAR_OPEN_SETTINGS: "sidebar:open-settings",
   SIDEBAR_OPEN_TASKS: "sidebar:open-tasks",
-  SIDEBAR_IS_COLLAPSED: "sidebar:is-collapsed",
 
   // tasks window (read-only display, no per-element interactions)
   TASKS_CLOSE: "tasks:close",
