@@ -872,6 +872,13 @@
               <h2 class="tts-section__title">✨ MiniMax 配置</h2>
               <div class="tts-field"><label>API Key</label><input type="password" id="tts-minimax-key" placeholder="MiniMax API Key" /></div>
               <div class="tts-field"><label>音色 ID</label><input type="text" id="tts-minimax-voice" placeholder="训练好的音色 ID（或下方复刻后自动填入）" /></div>
+              <div class="tts-field">
+                <label>合成模型</label>
+                <select id="tts-minimax-model">
+                  <option value="speech-2.8-turbo">speech-2.8-turbo（极速 ¥2.0/万字符）</option>
+                  <option value="speech-2.8-hd">speech-2.8-hd（高保真 ¥3.5/万字符）</option>
+                </select>
+              </div>
               <button type="button" class="ghost-btn" id="tts-minimax-test">🔊 测试发音</button>
 
               <!-- 音色快速复刻 -->

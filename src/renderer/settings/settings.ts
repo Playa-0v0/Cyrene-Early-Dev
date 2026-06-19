@@ -2595,6 +2595,8 @@ async function loadTtsConfig(): Promise<void> {
   // MiniMax
   ttsEl("tts-minimax-key").value = String(ttsConfig.ttsMinimaxKey ?? "");
   ttsEl("tts-minimax-voice").value = String(ttsConfig.ttsMinimaxVoiceId ?? "");
+  (ttsEl("tts-minimax-model") as HTMLSelectElement).value =
+    ttsConfig.ttsMinimaxModel === "speech-2.8-hd" ? "speech-2.8-hd" : "speech-2.8-turbo";
 
   // 火山
   ttsEl("tts-volcano-appid").value = String(ttsConfig.ttsVolcanoAppId ?? "");
@@ -2674,6 +2676,7 @@ ttsEl("tts-volume").addEventListener("change", () => saveTtsField("ttsVolume", N
 const ttsSaveFields: Array<[string, string]> = [
   ["tts-minimax-key", "ttsMinimaxKey"],
   ["tts-minimax-voice", "ttsMinimaxVoiceId"],
+  ["tts-minimax-model", "ttsMinimaxModel"],
   ["tts-volcano-appid", "ttsVolcanoAppId"],
   ["tts-volcano-token", "ttsVolcanoToken"],
   ["tts-volcano-voice", "ttsVolcanoVoiceId"],

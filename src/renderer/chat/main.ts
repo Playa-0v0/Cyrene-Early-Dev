@@ -534,6 +534,7 @@ interface TtsSettings {
   ttsVolume: number;
   ttsMinimaxKey: string;
   ttsMinimaxVoiceId: string;
+  ttsMinimaxModel: "speech-2.8-hd" | "speech-2.8-turbo";
 }
 
 interface TtsApi {
@@ -575,6 +576,7 @@ async function loadTtsSettings(): Promise<TtsSettings | null> {
       ttsVolume: Number(raw.ttsVolume ?? 1),
       ttsMinimaxKey: String(raw.ttsMinimaxKey ?? ""),
       ttsMinimaxVoiceId: String(raw.ttsMinimaxVoiceId ?? ""),
+      ttsMinimaxModel: raw.ttsMinimaxModel === "speech-2.8-hd" ? "speech-2.8-hd" : "speech-2.8-turbo",
     };
     return ttsSettingsCache;
   } catch {
@@ -600,6 +602,7 @@ async function speakText(text: string): Promise<void> {
       text,
       speed: settings.ttsSpeed,
       volume: settings.ttsVolume,
+      model: settings.ttsMinimaxModel,
     });
     // base64 → 播放（先停旧的，避免重叠）
     stopCurrentTts();

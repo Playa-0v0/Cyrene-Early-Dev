@@ -148,6 +148,8 @@ interface GeneralSettings {
   // MiniMax
   ttsMinimaxKey: string;
   ttsMinimaxVoiceId: string;
+  /** MiniMax 合成模型：speech-2.8-hd(高保真¥3.5/万字符) | speech-2.8-turbo(极速¥2.0/万字符) */
+  ttsMinimaxModel: "speech-2.8-hd" | "speech-2.8-turbo";
   // 火山（后续接入）
   ttsVolcanoAppId: string;
   ttsVolcanoToken: string;
@@ -244,6 +246,7 @@ const DEFAULT_GENERAL_SETTINGS: GeneralSettings = {
   ttsVolume: 1,
   ttsMinimaxKey: "",
   ttsMinimaxVoiceId: "",
+  ttsMinimaxModel: "speech-2.8-turbo",
   ttsVolcanoAppId: "",
   ttsVolcanoToken: "",
   ttsVolcanoVoiceId: "",
@@ -569,6 +572,7 @@ function normalizeGeneralSettings(input: Partial<GeneralSettings> | null | undef
     ttsVolume: typeof input?.ttsVolume === "number" ? Math.max(0, Math.min(1, input.ttsVolume)) : DEFAULT_GENERAL_SETTINGS.ttsVolume,
     ttsMinimaxKey: typeof input?.ttsMinimaxKey === "string" ? input.ttsMinimaxKey : "",
     ttsMinimaxVoiceId: typeof input?.ttsMinimaxVoiceId === "string" ? input.ttsMinimaxVoiceId : "",
+    ttsMinimaxModel: input?.ttsMinimaxModel === "speech-2.8-hd" ? "speech-2.8-hd" : "speech-2.8-turbo",
     ttsVolcanoAppId: typeof input?.ttsVolcanoAppId === "string" ? input.ttsVolcanoAppId : "",
     ttsVolcanoToken: typeof input?.ttsVolcanoToken === "string" ? input.ttsVolcanoToken : "",
     ttsVolcanoVoiceId: typeof input?.ttsVolcanoVoiceId === "string" ? input.ttsVolcanoVoiceId : "",
