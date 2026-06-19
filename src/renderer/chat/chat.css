@@ -327,12 +327,24 @@ body {
   box-shadow: 0 0 20px rgba(236, 72, 153, 0.56), inset 0 1px 0 rgba(255, 255, 255, 0.22);
 }
 
-/* ===== Body: 会话侧栏 + 消息区 横向行容器 ===== */
+/* ===== Body: 会话侧栏 + (标题栏/消息区) 横向行容器 =====
+   侧栏贯穿从顶到底（含标题栏高度），标题栏+消息流整体在侧栏右侧；
+   输入框/file-tags 留在 body 外，保持全宽不动。 */
 .chat__body {
   position: relative;
   z-index: 1;
   display: flex;
   flex: 1;
+  min-height: 0;
+}
+
+/* 右侧纵向列：标题栏 + 消息区（含空态遮罩） */
+.chat__main {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
   min-height: 0;
 }
 

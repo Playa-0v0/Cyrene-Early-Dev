@@ -12,58 +12,6 @@
 <body>
   <div class="chat">
     <canvas class="chat__particles" id="particles" aria-hidden="true"></canvas>
-    <header class="chat__titlebar">
-      <div class="chat__titlebar-drag">
-        <button type="button" class="chat__status-btn" id="chat-status-btn" aria-label="会话列表" title="会话列表">
-          <div class="loader">
-            <svg width="100" height="100" viewBox="0 0 100 100">
-              <defs>
-                <mask id="clipping">
-                  <polygon points="0,0 100,0 100,100 0,100" fill="black"></polygon>
-                  <polygon points="25,25 75,25 50,75" fill="white"></polygon>
-                  <polygon points="50,25 75,75 25,75" fill="white"></polygon>
-                  <polygon points="35,35 65,35 50,65" fill="white"></polygon>
-                  <polygon points="35,35 65,35 50,65" fill="white"></polygon>
-                  <polygon points="35,35 65,35 50,65" fill="white"></polygon>
-                  <polygon points="35,35 65,35 50,65" fill="white"></polygon>
-                </mask>
-              </defs>
-            </svg>
-            <div class="box"></div>
-          </div>
-        </button>
-        <span class="chat__title-meta">
-          <span class="chat__name">昔涟</span>
-          <span class="chat__name-sep" aria-hidden="true">·</span>
-          <span class="chat__hint" id="chat-hint">模型未连接</span>
-        </span>
-      </div>
-      <div class="chat__titlebar-actions">
-        <div class="dropdown-trigger" data-dropdown="style-dropdown">
-          <span class="dt-label">风格</span>
-          <span class="dt-value" id="style-val">温柔 · 和善</span>
-          <span class="dt-arrow"></span>
-        </div>
-        <div class="dropdown-trigger" data-dropdown="reasoning-dropdown">
-          <span class="dt-label">推理</span>
-          <span class="dt-value" id="reasoning-val">Auto · 自动</span>
-          <span class="dt-arrow"></span>
-        </div>
-        <button type="button" class="chat__icon-btn" id="clear" aria-label="清空对话" title="清空对话">⌫</button>
-        <button type="button" class="chat__winbtn" id="min-btn" aria-label="最小化" title="最小化">
-          <svg width="10" height="2" viewBox="0 0 10 2" aria-hidden="true"><rect width="10" height="2" rx="1" fill="currentColor"/></svg>
-        </button>
-        <button type="button" class="chat__winbtn" id="max-btn" aria-label="最大化" title="最大化">
-          <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><rect x="0.75" y="0.75" width="8.5" height="8.5" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>
-        </button>
-        <button type="button" class="chat__winbtn chat__winbtn--close" id="close-btn" aria-label="关闭" title="关闭">
-          <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">
-            <line x1="2" y1="2" x2="8" y2="8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-            <line x1="8" y1="2" x2="2" y2="8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-          </svg>
-        </button>
-      </div>
-    </header>
     <div class="chat__body">
       <aside class="chat__rail" id="chat-rail" hidden>
         <button type="button" class="chat__rail-new" id="chat-rail-new">
@@ -76,10 +24,64 @@
           <p>还没有对话</p>
         </div>
       </aside>
-      <main class="chat__messages" id="messages" aria-live="polite"></main>
-      <div class="chat__empty-state" id="chat-empty" hidden>
-        <div class="chat__empty-icon">💬</div>
-        <p class="chat__empty-text">昔涟期待与你聊天哦 ✨</p>
+      <div class="chat__main">
+        <header class="chat__titlebar">
+          <div class="chat__titlebar-drag">
+            <button type="button" class="chat__status-btn" id="chat-status-btn" aria-label="会话列表" title="会话列表">
+              <div class="loader">
+                <svg width="100" height="100" viewBox="0 0 100 100">
+                  <defs>
+                    <mask id="clipping">
+                      <polygon points="0,0 100,0 100,100 0,100" fill="black"></polygon>
+                      <polygon points="25,25 75,25 50,75" fill="white"></polygon>
+                      <polygon points="50,25 75,75 25,75" fill="white"></polygon>
+                      <polygon points="35,35 65,35 50,65" fill="white"></polygon>
+                      <polygon points="35,35 65,35 50,65" fill="white"></polygon>
+                      <polygon points="35,35 65,35 50,65" fill="white"></polygon>
+                      <polygon points="35,35 65,35 50,65" fill="white"></polygon>
+                    </mask>
+                  </defs>
+                </svg>
+                <div class="box"></div>
+              </div>
+            </button>
+            <span class="chat__title-meta">
+              <span class="chat__name">昔涟</span>
+              <span class="chat__name-sep" aria-hidden="true">·</span>
+              <span class="chat__hint" id="chat-hint">模型未连接</span>
+            </span>
+          </div>
+          <div class="chat__titlebar-actions">
+            <div class="dropdown-trigger" data-dropdown="style-dropdown">
+              <span class="dt-label">风格</span>
+              <span class="dt-value" id="style-val">温柔 · 和善</span>
+              <span class="dt-arrow"></span>
+            </div>
+            <div class="dropdown-trigger" data-dropdown="reasoning-dropdown">
+              <span class="dt-label">推理</span>
+              <span class="dt-value" id="reasoning-val">Auto · 自动</span>
+              <span class="dt-arrow"></span>
+            </div>
+            <button type="button" class="chat__icon-btn" id="clear" aria-label="清空对话" title="清空对话">⌫</button>
+            <button type="button" class="chat__winbtn" id="min-btn" aria-label="最小化" title="最小化">
+              <svg width="10" height="2" viewBox="0 0 10 2" aria-hidden="true"><rect width="10" height="2" rx="1" fill="currentColor"/></svg>
+            </button>
+            <button type="button" class="chat__winbtn" id="max-btn" aria-label="最大化" title="最大化">
+              <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><rect x="0.75" y="0.75" width="8.5" height="8.5" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>
+            </button>
+            <button type="button" class="chat__winbtn chat__winbtn--close" id="close-btn" aria-label="关闭" title="关闭">
+              <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">
+                <line x1="2" y1="2" x2="8" y2="8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                <line x1="8" y1="2" x2="2" y2="8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
+        </header>
+        <main class="chat__messages" id="messages" aria-live="polite"></main>
+        <div class="chat__empty-state" id="chat-empty" hidden>
+          <div class="chat__empty-icon">💬</div>
+          <p class="chat__empty-text">昔涟期待与你聊天哦 ✨</p>
+        </div>
       </div>
     </div>
     <div class="chat__file-tags" id="file-tags"></div>
