@@ -2141,6 +2141,8 @@ function enterRenameMode(
     btns.cancelRenameBtn.classList.add("is-hidden");
     titleEl.removeEventListener("keydown", onKey);
     titleEl.removeEventListener("blur", onBlur);
+    btns.confirmRenameBtn.removeEventListener("mousedown", suppressFocus);
+    btns.cancelRenameBtn.removeEventListener("mousedown", suppressFocus);
     btns.confirmRenameBtn.removeEventListener("click", onConfirm);
     btns.cancelRenameBtn.removeEventListener("click", onCancel);
   };
@@ -2170,14 +2172,19 @@ function enterRenameMode(
       cancel();
     }
   };
-  // 失焦=取消（点别处想放弃编辑的心智模型）；用户点 ✓ 时先触发 commit 再 blur，
-  // 但 cleanup 已 removeEventListener，blur 不会再调 cancel。
+  // 失焦=取消（点别处想放弃编辑的心智模型）
   const onBlur = () => cancel();
   const onConfirm = (e: MouseEvent) => { e.stopPropagation(); commit(); };
   const onCancel = (e: MouseEvent) => { e.stopPropagation(); cancel(); };
+  // 关键：mousedown 时 preventDefault，阻止 ✓/✕ 按钮抢焦点，
+  // 否则顺序是 mousedown→titleEl blur(cancel 还原内容)→click(commit 读到原值)→改不了名。
+  // 阻止焦点转移后，titleEl 保持聚焦，blur 不触发，click 正常执行 commit/cancel。
+  const suppressFocus = (e: MouseEvent) => e.preventDefault();
 
   titleEl.addEventListener("keydown", onKey);
   titleEl.addEventListener("blur", onBlur);
+  btns.confirmRenameBtn.addEventListener("mousedown", suppressFocus);
+  btns.cancelRenameBtn.addEventListener("mousedown", suppressFocus);
   btns.confirmRenameBtn.addEventListener("click", onConfirm);
   btns.cancelRenameBtn.addEventListener("click", onCancel);
 }
