@@ -776,7 +776,11 @@ async function send(): Promise<void> {
             }
             break;
           case "TEXT_MESSAGE_END":
-            // 所有 delta 已入队
+            // 全文 delta 已收齐（streamContent 是完整文本），立刻触发 TTS 合成，
+            // 不等逐字渐显播完——方向A：声音来了就播，文字各走各的（不同步但来得早）。
+            if (streamContent.trim()) {
+              void autoSpeakIfEnabled(streamContent);
+            }
             break;
           case "CUSTOM":
             // 主进程发的自定义事件：sticker
@@ -824,10 +828,7 @@ async function send(): Promise<void> {
     }
     void saveSession();
     render();
-    // 自动朗读：回复完成后触发（仅在 TTS 开启且 autoRead=true 时）
-    if (msg && msg.content.trim()) {
-      void autoSpeakIfEnabled(msg.content);
-    }
+    // TTS 已在 TEXT_MESSAGE_END 时触发，这里不再重复朗读
   } catch (err) {
     const message = err instanceof Error ? err.message : "模型请求失败";
     const msg = messages.find(m => m.id === streamMsgId);
