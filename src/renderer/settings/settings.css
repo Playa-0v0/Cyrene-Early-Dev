@@ -1502,10 +1502,9 @@ body {
 }
 
 .chat-sessions__item {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  grid-template-rows: auto auto;
-  gap: 4px 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
   padding: 12px 14px;
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.04);
@@ -1524,9 +1523,16 @@ body {
   border-color: rgba(255, 182, 220, 0.5);
 }
 
+/* 左侧：标题 + meta 纵向堆叠，吃满剩余宽度 */
+.chat-sessions__main {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 .chat-sessions__title {
-  grid-column: 1;
-  grid-row: 1;
   font-size: 14px;
   color: rgba(254, 247, 255, 0.95);
   overflow: hidden;
@@ -1535,18 +1541,18 @@ body {
   user-select: none;
 }
 
-.chat-sessions__title[contenteditable="true"] {
+.chat-sessions__title.is-editing {
   outline: 1px solid rgba(255, 182, 220, 0.7);
   background: rgba(0, 0, 0, 0.25);
   border-radius: 6px;
   padding: 2px 6px;
   user-select: text;
   cursor: text;
+  overflow: visible;
+  white-space: normal;
 }
 
 .chat-sessions__meta {
-  grid-column: 1;
-  grid-row: 2;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -1571,16 +1577,24 @@ body {
   letter-spacing: 0.2px;
 }
 
-.chat-sessions__delete {
-  grid-column: 2;
-  grid-row: 1 / span 2;
-  align-self: center;
+/* 右侧：操作按钮组（✏️ 🗑️ 常规态 / ✓ ✕ 编辑态） */
+.chat-sessions__actions {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.chat-sessions__rename,
+.chat-sessions__delete,
+.chat-sessions__confirm-rename,
+.chat-sessions__cancel-rename {
   width: 28px;
   height: 28px;
   border-radius: 8px;
   background: transparent;
   border: none;
-  font-size: 16px;
+  font-size: 15px;
   cursor: pointer;
   opacity: 0.4;
   transition: opacity 0.18s, background 0.18s, color 0.18s;
@@ -1589,13 +1603,42 @@ body {
   justify-content: center;
 }
 
+/* 编辑态的 ✓/✕ 始终可见（不受 hover 限制） */
+.chat-sessions__confirm-rename,
+.chat-sessions__cancel-rename {
+  opacity: 0.9;
+}
+
+.chat-sessions__item:hover .chat-sessions__rename,
 .chat-sessions__item:hover .chat-sessions__delete {
   opacity: 0.85;
+}
+
+.chat-sessions__rename:hover {
+  background: rgba(255, 192, 230, 0.18);
+  opacity: 1;
 }
 
 .chat-sessions__delete:hover {
   background: rgba(255, 99, 132, 0.18);
   opacity: 1;
+}
+
+.chat-sessions__confirm-rename:hover {
+  background: rgba(120, 220, 160, 0.2);
+  opacity: 1;
+}
+
+.chat-sessions__cancel-rename:hover {
+  background: rgba(255, 99, 132, 0.18);
+  opacity: 1;
+}
+
+.chat-sessions__rename.is-hidden,
+.chat-sessions__delete.is-hidden,
+.chat-sessions__confirm-rename.is-hidden,
+.chat-sessions__cancel-rename.is-hidden {
+  display: none;
 }
 
 .chat-sessions__empty {

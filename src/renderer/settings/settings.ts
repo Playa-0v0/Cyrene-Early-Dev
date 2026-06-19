@@ -2014,7 +2014,6 @@ function buildChatSessionItem(session: ChatSessionMetaUI): HTMLLIElement {
   const titleEl = document.createElement("div");
   titleEl.className = "chat-sessions__title";
   titleEl.textContent = session.title || "新对话";
-  titleEl.title = "双击改名";
 
   const metaEl = document.createElement("div");
   metaEl.className = "chat-sessions__meta";
@@ -2032,6 +2031,12 @@ function buildChatSessionItem(session: ChatSessionMetaUI): HTMLLIElement {
   metaEl.appendChild(timeEl);
   metaEl.appendChild(identityEl);
 
+  // 左侧主区：标题 + meta
+  const mainEl = document.createElement("div");
+  mainEl.className = "chat-sessions__main";
+  mainEl.appendChild(titleEl);
+  mainEl.appendChild(metaEl);
+
   const deleteBtn = document.createElement("button");
   deleteBtn.type = "button";
   deleteBtn.className = "chat-sessions__delete";
@@ -2039,71 +2044,142 @@ function buildChatSessionItem(session: ChatSessionMetaUI): HTMLLIElement {
   deleteBtn.setAttribute("aria-label", "删除会话");
   deleteBtn.textContent = "🗑️";
 
+  const renameBtn = document.createElement("button");
+  renameBtn.type = "button";
+  renameBtn.className = "chat-sessions__rename";
+  renameBtn.title = "重命名";
+  renameBtn.setAttribute("aria-label", "重命名会话");
+  renameBtn.textContent = "✏️";
+
+  // 编辑态确认/取消按钮（默认隐藏，进入编辑态时显示，替换 ✏️/🗑️ 的位置）
+  const confirmRenameBtn = document.createElement("button");
+  confirmRenameBtn.type = "button";
+  confirmRenameBtn.className = "chat-sessions__confirm-rename is-hidden";
+  confirmRenameBtn.title = "确认（Enter）";
+  confirmRenameBtn.setAttribute("aria-label", "确认重命名");
+  confirmRenameBtn.textContent = "✓";
+
+  const cancelRenameBtn = document.createElement("button");
+  cancelRenameBtn.type = "button";
+  cancelRenameBtn.className = "chat-sessions__cancel-rename is-hidden";
+  cancelRenameBtn.title = "取消（Esc）";
+  cancelRenameBtn.setAttribute("aria-label", "取消重命名");
+  cancelRenameBtn.textContent = "✕";
+
+  // 右侧操作区：✏️ 🗑️（常规）/ ✓ ✕（编辑态）
+  const actionsEl = document.createElement("div");
+  actionsEl.className = "chat-sessions__actions";
+  actionsEl.appendChild(renameBtn);
+  actionsEl.appendChild(confirmRenameBtn);
+  actionsEl.appendChild(cancelRenameBtn);
+  actionsEl.appendChild(deleteBtn);
+
   // —— 交互绑定 ——
-  // 点列表项 = 在聊天窗口里打开
+  // 点列表项 = 在聊天窗口里打开（编辑态时禁用，避免切走会话）
   li.addEventListener("click", (e) => {
-    // 编辑标题中、点击删除按钮、点击标题本身且处于编辑态：不触发打开
     const target = e.target as HTMLElement;
-    if (target.closest(".chat-sessions__delete")) return;
+    if (target.closest(".chat-sessions__actions")) return;
     if (titleEl.isContentEditable) return;
     void window.chatStore?.openInChatWindow(session.id);
   });
 
-  // 双击标题进入改名
-  titleEl.addEventListener("dblclick", (e) => {
+  // ✏️ 按钮进入改名态
+  renameBtn.addEventListener("click", (e) => {
     e.stopPropagation();
-    enterRenameMode(titleEl, session);
+    enterRenameMode(titleEl, session, { renameBtn, deleteBtn, confirmRenameBtn, cancelRenameBtn });
   });
 
-  // 删除（含活跃会话差异化提示）
+  // 🗑️ 删除（含活跃会话差异化提示）
   deleteBtn.addEventListener("click", (e) => {
     e.stopPropagation();
     void deleteChatSession(session);
   });
 
-  li.appendChild(titleEl);
-  li.appendChild(metaEl);
-  li.appendChild(deleteBtn);
+  li.appendChild(mainEl);
+  li.appendChild(actionsEl);
   return li;
 }
 
-function enterRenameMode(titleEl: HTMLElement, session: ChatSessionMetaUI): void {
+// 进入改名态：把 ✏️/🗑️ 隐藏，显示 ✓/✕；title 变 contentEditable 并聚焦全选。
+// 提交走 ✓ 按钮 / Enter；取消走 ✕ 按钮 / Esc / 失焦。失焦=取消（避免点别处误提交）。
+function enterRenameMode(
+  titleEl: HTMLElement,
+  session: ChatSessionMetaUI,
+  btns: {
+    renameBtn: HTMLButtonElement;
+    deleteBtn: HTMLButtonElement;
+    confirmRenameBtn: HTMLButtonElement;
+    cancelRenameBtn: HTMLButtonElement;
+  },
+): void {
   const original = titleEl.textContent || "";
-  titleEl.contentEditable = "true";
-  titleEl.focus();
-  // 全选当前文本，方便用户直接覆盖
-  const range = document.createRange();
-  range.selectNodeContents(titleEl);
-  const sel = window.getSelection();
-  if (sel) { sel.removeAllRanges(); sel.addRange(range); }
 
-  const finish = (commit: boolean) => {
+  // 切换按钮可见性
+  btns.renameBtn.classList.add("is-hidden");
+  btns.deleteBtn.classList.add("is-hidden");
+  btns.confirmRenameBtn.classList.remove("is-hidden");
+  btns.cancelRenameBtn.classList.remove("is-hidden");
+
+  titleEl.contentEditable = "true";
+  titleEl.classList.add("is-editing");
+  // 用 requestAnimationFrame 等按钮 click 冒泡完再聚焦，避免焦点抢夺导致 blur 误触发
+  requestAnimationFrame(() => {
+    titleEl.focus();
+    // 全选当前文本，方便用户直接覆盖
+    const range = document.createRange();
+    range.selectNodeContents(titleEl);
+    const sel = window.getSelection();
+    if (sel) { sel.removeAllRanges(); sel.addRange(range); }
+  });
+
+  const cleanup = () => {
     titleEl.contentEditable = "false";
-    const newTitle = (titleEl.textContent || "").trim();
-    if (commit && newTitle && newTitle !== original) {
-      void window.chatStore?.rename(session.id, newTitle);
-      // rename 成功后 main 会广播 chats:changed，触发整体重渲；
-      // 此处不必手动改 DOM
-    } else {
-      titleEl.textContent = original; // 还原
-    }
+    titleEl.classList.remove("is-editing");
+    btns.renameBtn.classList.remove("is-hidden");
+    btns.deleteBtn.classList.remove("is-hidden");
+    btns.confirmRenameBtn.classList.add("is-hidden");
+    btns.cancelRenameBtn.classList.add("is-hidden");
     titleEl.removeEventListener("keydown", onKey);
     titleEl.removeEventListener("blur", onBlur);
+    btns.confirmRenameBtn.removeEventListener("click", onConfirm);
+    btns.cancelRenameBtn.removeEventListener("click", onCancel);
+  };
+
+  const commit = () => {
+    const newTitle = (titleEl.textContent || "").trim();
+    cleanup();
+    if (newTitle && newTitle !== original) {
+      void window.chatStore?.rename(session.id, newTitle);
+      // rename 成功后 main 广播 chats:changed → 列表重渲，无需手动改 DOM
+    } else {
+      titleEl.textContent = original; // 空内容或未变：还原
+    }
+  };
+
+  const cancel = () => {
+    cleanup();
+    titleEl.textContent = original;
   };
 
   const onKey = (e: KeyboardEvent) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      finish(true);
+      commit();
     } else if (e.key === "Escape") {
       e.preventDefault();
-      finish(false);
+      cancel();
     }
   };
-  const onBlur = () => finish(true);
+  // 失焦=取消（点别处想放弃编辑的心智模型）；用户点 ✓ 时先触发 commit 再 blur，
+  // 但 cleanup 已 removeEventListener，blur 不会再调 cancel。
+  const onBlur = () => cancel();
+  const onConfirm = (e: MouseEvent) => { e.stopPropagation(); commit(); };
+  const onCancel = (e: MouseEvent) => { e.stopPropagation(); cancel(); };
 
   titleEl.addEventListener("keydown", onKey);
   titleEl.addEventListener("blur", onBlur);
+  btns.confirmRenameBtn.addEventListener("click", onConfirm);
+  btns.cancelRenameBtn.addEventListener("click", onCancel);
 }
 
 async function deleteChatSession(session: ChatSessionMetaUI): Promise<void> {
