@@ -2275,26 +2275,24 @@ function renderTokenBarChart(data: TokenDayData[]): void {
     ? data.filter((_, i) => i % 2 === 0)
     : data;
 
+  // 容器实际可用高度（mini-chart 高度 112px - padding-top 18px - 底部 label 区 18px ≈ 76px）
+  // 用固定像素高度，避免 flex 百分比高度在 padding 容器里不可靠
+  const chartHeight = 76;
+
   for (let i = 0; i < displayData.length; i++) {
     const d = displayData[i];
     const total = d.input + d.output;
-    const heightPct = Math.max(8, (total / maxVal) * 100);
+    const barH = Math.max(6, Math.round((total / maxVal) * chartHeight));
     const bar = document.createElement("div");
     bar.className = "chart-bar";
-    // 用 inline style 控制高度（chart.css 里是固定 px，这里动态覆盖）
-    bar.style.setProperty("--bar-h", heightPct + "%");
     // 峰值柱加标记
     const origIdx = data.indexOf(d);
     if (origIdx === peakIdx) bar.classList.add("chart-bar--peak");
 
-    // 覆盖 ::before 的高度——用内联 style 不行（伪元素），
-    // 改用 CSS 变量 + 在 chart.css 补规则太麻烦；
-    // 这里直接用 data 属性 + 额外 style 标签注入。
-    // 更简单：直接创建真实 div 代替伪元素
-    bar.innerHTML = "";
+    // 真实 fill div（不用伪元素，直接控制像素高度）
     const fill = document.createElement("div");
-    fill.style.cssText = `width:100%;max-width:24px;height:${heightPct}%;min-height:8px;border-radius:9999px;background:linear-gradient(180deg,#ec4899,#ff8ccc);box-shadow:0 0 10px rgba(236,72,153,0.22);align-self:flex-end;`;
-    fill.style.position = "relative";
+    fill.className = "chart-bar__fill";
+    fill.style.height = barH + "px";
 
     const label = document.createElement("span");
     label.textContent = d.date.split("-")[1]; // 只显示日
