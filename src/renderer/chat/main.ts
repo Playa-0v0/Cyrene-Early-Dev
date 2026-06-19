@@ -480,7 +480,14 @@ function render(): void {
       speakBtn.title = "朗读";
       speakBtn.setAttribute("aria-label", "朗读这条消息");
       speakBtn.textContent = "🔊";
-      speakBtn.addEventListener("click", () => void speakText(m.content));
+      // 点击逻辑：正在播放则停止，否则开始朗读（避免重叠）
+      speakBtn.addEventListener("click", () => {
+        if (currentTtsAudio) {
+          stopCurrentTts();
+        } else {
+          void speakText(m.content);
+        }
+      });
       body.appendChild(speakBtn);
     }
 
@@ -521,6 +528,17 @@ declare global {
 }
 
 let ttsSettingsCache: TtsSettings | null = null;
+// 当前正在播放的 TTS 音频实例（全局唯一）。点新朗读前先停这个，避免重叠。
+let currentTtsAudio: HTMLAudioElement | null = null;
+
+/** 停止当前正在播放的 TTS 音频（如果有）。 */
+function stopCurrentTts(): void {
+  if (currentTtsAudio) {
+    currentTtsAudio.pause();
+    currentTtsAudio.currentTime = 0;
+    currentTtsAudio = null;
+  }
+}
 
 async function loadTtsSettings(): Promise<TtsSettings | null> {
   if (ttsSettingsCache) return ttsSettingsCache;
@@ -560,13 +578,18 @@ async function speakText(text: string): Promise<void> {
       speed: settings.ttsSpeed,
       volume: settings.ttsVolume,
     });
-    // base64 → 播放
+    // base64 → 播放（先停旧的，避免重叠）
+    stopCurrentTts();
     const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
     const blob = new Blob([bytes], { type: "audio/mp3" });
     const url = URL.createObjectURL(blob);
     const audio = new Audio(url);
+    currentTtsAudio = audio;
     audio.play().catch((err) => console.warn("[TTS] 播放失败:", err));
-    audio.onended = () => URL.revokeObjectURL(url);
+    audio.onended = () => {
+      URL.revokeObjectURL(url);
+      if (currentTtsAudio === audio) currentTtsAudio = null;
+    };
   } catch (err) {
     console.warn("[TTS] 合成失败:", err);
   }
