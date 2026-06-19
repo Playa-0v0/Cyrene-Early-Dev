@@ -12,6 +12,7 @@ import {
   type ToolSpec,
 } from "./vendors";
 import { extractLastUserQuery, type ToolContext } from "./tool-context";
+import { recordUsage } from "../token-usage-store";
 
 const LOG_PREFIX = "[FunctionCalling]";
 const MAX_TOOL_ROUNDS = 5; // 最多 5 轮工具调用，防止死循环
@@ -54,11 +55,15 @@ export async function runFunctionCallingLoop(
 ): Promise<{
   reply: string;
   toolResults: ToolCallResult[];
+  totalUsage?: { input: number; output: number };
 }> {
   const adapter = getAdapter(settings.provider);
   const tools = buildToolSpecs();
   const allToolResults: ToolCallResult[] = [];
   const startTime = Date.now();
+  // 累加所有轮次的 token 用量（工具循环可能多轮，每轮都有 usage）
+  let accInput = 0;
+  let accOutput = 0;
 
   console.log(LOG_PREFIX, `provider=${settings.provider} transport=${adapter.transport} model=${settings.model}`);
   console.log(LOG_PREFIX, "可用工具:", tools.map(t => t.name).join(", ") || "(无)");
@@ -110,6 +115,13 @@ export async function runFunctionCallingLoop(
 
     const data = await response.json();
     const chat = adapter.parseResponse(data);
+
+    // 累加 token 用量（每轮都记）
+    if (chat.usage) {
+      accInput += chat.usage.input;
+      accOutput += chat.usage.output;
+      recordUsage(chat.usage.input, chat.usage.output, 1);
+    }
 
     console.log(
       LOG_PREFIX,
@@ -189,7 +201,8 @@ export async function runFunctionCallingLoop(
     // 情况2：模型正常返回文本
     const content = chat.text || "";
     console.log(LOG_PREFIX, "Function Calling 完成，最终回复长度=" + content.length);
-    return { reply: content, toolResults: allToolResults };
+    const totalUsage = (accInput > 0 || accOutput > 0) ? { input: accInput, output: accOutput } : undefined;
+    return { reply: content, toolResults: allToolResults, totalUsage };
   }
 
   // 超过最大轮数，强制要求模型总结（不带 tools）
@@ -226,7 +239,14 @@ export async function runFunctionCallingLoop(
     const data = await response.json();
     const chat = adapter.parseResponse(data);
     console.log(LOG_PREFIX, "强制回复完成，长度=" + chat.text.length);
-    return { reply: chat.text, toolResults: allToolResults };
+    // 最终回复也记 usage
+    if (chat.usage) {
+      accInput += chat.usage.input;
+      accOutput += chat.usage.output;
+      recordUsage(chat.usage.input, chat.usage.output, 1);
+    }
+    const totalUsage = (accInput > 0 || accOutput > 0) ? { input: accInput, output: accOutput } : undefined;
+    return { reply: chat.text, toolResults: allToolResults, totalUsage };
   } finally {
     clearTimeout(timer);
   }

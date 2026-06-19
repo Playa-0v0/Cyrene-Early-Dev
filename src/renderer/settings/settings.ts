@@ -2216,9 +2216,9 @@ window.chatStore?.onActiveSessionChanged((sessionId) => {
 
 /* ============================================================
    📊 Token 用量面板：指标卡片 + 柱状图 + Chart.js 波浪图
-   - 时间范围 7d/14d/30d 切换，切换后重新生成假数据并重渲
+   - 时间范围 7d/14d/30d 切换，切换后调 IPC 拉真实数据并重渲
    - hover 柱子/波浪节点 → tooltip 显示当天 输入/输出/命中/未命中
-   - 数据全是假数据占位，接真实统计后替换 generateFakeData 即可
+   - 全空时显示空态（暂无用量数据）
    ============================================================ */
 
 import { Chart, registerables, type ChartConfiguration } from "chart.js";
@@ -2232,34 +2232,18 @@ interface TokenDayData {
   output: number;
   hit: number;        // 缓存命中（占位 0）
   miss: number;       // 缓存未命中（占位 0）
+  requests: number;
 }
 
-const WEEKDAYS = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+declare global {
+  interface Window {
+    tokenUsage?: {
+      get: (days: number) => Promise<TokenDayData[]>;
+    };
+  }
+}
 
 // 根据天数生成假数据（带随机波动，模拟真实趋势）
-function generateFakeData(days: number): TokenDayData[] {
-  const result: TokenDayData[] = [];
-  const now = new Date();
-  for (let i = days - 1; i >= 0; i--) {
-    const d = new Date(now);
-    d.setDate(d.getDate() - i);
-    const mm = String(d.getMonth() + 1).padStart(2, "0");
-    const dd = String(d.getDate()).padStart(2, "0");
-    // 假数据：input 800-2000，output 是 input 的 30-60%
-    const input = Math.round(800 + Math.random() * 1200);
-    const output = Math.round(input * (0.3 + Math.random() * 0.3));
-    result.push({
-      date: `${mm}-${dd}`,
-      weekday: WEEKDAYS[d.getDay()],
-      input,
-      output,
-      hit: 0,
-      miss: 0,
-    });
-  }
-  return result;
-}
-
 // 柱状图：根据数据动态生成柱子（复用 chart.css 的 .chart-bar 样式）
 function renderTokenBarChart(data: TokenDayData[]): void {
   const container = document.getElementById("token-bar-chart");
@@ -2469,7 +2453,7 @@ function updateTokenStats(data: TokenDayData[]): void {
   const totalInput = data.reduce((s, d) => s + d.input, 0);
   const totalOutput = data.reduce((s, d) => s + d.output, 0);
   const total = totalInput + totalOutput;
-  const requests = data.length * 6; // 假数据：每天约6次请求
+  const requests = data.reduce((s, d) => s + d.requests, 0);
 
   const set = (id: string, val: string) => {
     const el = document.getElementById(id);
@@ -2482,9 +2466,35 @@ function updateTokenStats(data: TokenDayData[]): void {
   set("token-hit", "N/A");
 }
 
-// 刷新整个面板（切换时间范围时调用）
-function refreshTokenPanel(days: number): void {
-  const data = generateFakeData(days);
+// 刷新整个面板：调 IPC 拉真实数据 → 有数据渲染图表，无数据显示空态
+async function refreshTokenPanel(days: number): Promise<void> {
+  let data: TokenDayData[] = [];
+  try {
+    data = await window.tokenUsage?.get(days) ?? [];
+  } catch (err) {
+    console.warn("[settings] 拉取 Token 用量失败:", err);
+  }
+
+  const hasData = data.some((d) => d.input > 0 || d.output > 0 || d.requests > 0);
+  const emptyEl = document.getElementById("token-empty");
+  const chartsEl = document.getElementById("token-charts");
+
+  if (!hasData) {
+    // 空态：隐藏图表区，显示空态提示，指标卡片归零
+    if (emptyEl) emptyEl.classList.remove("is-hidden");
+    if (chartsEl) chartsEl.classList.add("is-hidden");
+    const set = (id: string, val: string) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    set("token-total", "0");
+    set("token-requests", "0");
+    set("token-input", "0");
+    set("token-output", "0");
+    set("token-hit", "N/A");
+    return;
+  }
+
+  // 有数据：显示图表区，隐藏空态
+  if (emptyEl) emptyEl.classList.add("is-hidden");
+  if (chartsEl) chartsEl.classList.remove("is-hidden");
   updateTokenStats(data);
   renderTokenBarChart(data);
   renderTokenTrendChart(data);
@@ -2500,9 +2510,9 @@ document.querySelectorAll<HTMLButtonElement>(".token-range__btn").forEach((btn) 
     btn.classList.add("is-active");
     btn.setAttribute("aria-selected", "true");
     const days = Number(btn.dataset.range) || 7;
-    refreshTokenPanel(days);
+    void refreshTokenPanel(days);
   });
 });
 
-// 初始渲染（面板首次显示时已有内容）
+// 初始渲染
 void refreshTokenPanel(7);

@@ -67,6 +67,9 @@ export interface ChatResponse {
   toolCalls: ToolCall[];
   finishReason: string;
   raw: unknown;
+  /** API 返回的 token 用量（OpenAI: prompt_tokens/completion_tokens；Anthropic: input_tokens/output_tokens）。
+   *  未上报时为 undefined，由调用方兜底。 */
+  usage?: { input: number; output: number };
 }
 
 export interface HttpRequest {

@@ -117,6 +117,9 @@ export const IPC = {
   TOOL_SET_ENABLED: "tool:set-enabled",
   TOOL_GET_ENABLED: "tool:get-enabled",
 
+  // token usage statistics
+  TOKEN_USAGE_GET: "token-usage:get",
+
   // agent permission level (file/shell access)
   PERMISSION_GET_LEVEL: "permission:get-level",
   PERMISSION_SET_LEVEL: "permission:set-level",

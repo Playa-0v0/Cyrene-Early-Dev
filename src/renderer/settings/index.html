@@ -758,23 +758,33 @@
               </div>
             </div>
 
-            <!-- 柱状图（保留 CSS 版，按时间范围动态生成天数） -->
-            <div class="token-section-title">📈 每日消耗柱状图</div>
-            <div class="mini-chart" aria-hidden="true">
-              <div class="mini-chart__avg"><span id="token-avg-label">日均 1.8K</span></div>
-              <div class="mini-chart__bars" id="token-bar-chart"></div>
+            <!-- 空态：无用量数据时显示 -->
+            <div class="token-empty is-hidden" id="token-empty">
+              <span class="token-empty__icon" aria-hidden="true">📭</span>
+              <p class="token-empty__text">暂无用量数据</p>
+              <p class="token-empty__hint">和昔涟聊天后这里会显示真实的 Token 消耗统计</p>
             </div>
 
-            <!-- 波浪面积图（Chart.js，输入蓝/输出粉双曲线） -->
-            <div class="token-section-title">🌊 使用趋势</div>
-            <div class="token-trend-wrap">
-              <canvas id="token-trend-chart"></canvas>
+            <!-- 图表区（有数据时显示） -->
+            <div id="token-charts">
+              <!-- 柱状图（保留 CSS 版，按时间范围动态生成天数） -->
+              <div class="token-section-title">📈 每日消耗柱状图</div>
+              <div class="mini-chart" aria-hidden="true">
+                <div class="mini-chart__avg"><span id="token-avg-label">日均 0</span></div>
+                <div class="mini-chart__bars" id="token-bar-chart"></div>
+              </div>
+
+              <!-- 波浪面积图（Chart.js，输入蓝/输出粉双曲线） -->
+              <div class="token-section-title">🌊 使用趋势</div>
+              <div class="token-trend-wrap">
+                <canvas id="token-trend-chart"></canvas>
+              </div>
             </div>
 
             <!-- hover tooltip 浮层（柱状图和波浪图共用） -->
             <div class="token-tooltip" id="token-tooltip" hidden></div>
 
-            <p class="token-panel__hint">💡 命中/未命中为缓存统计占位，数据接入后显示真实值。当前所有数据为演示假数据。</p>
+            <p class="token-panel__hint">💡 命中/未命中为缓存统计占位，接入缓存功能后显示真实值。</p>
           </div>
         </section>
 

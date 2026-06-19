@@ -1934,3 +1934,41 @@ body {
   color: rgba(235, 229, 245, 0.5);
   line-height: 1.5;
 }
+
+/* 空态：无用量数据时 */
+.token-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 50px 20px;
+  text-align: center;
+}
+
+.token-empty.is-hidden {
+  display: none;
+}
+
+.token-empty__icon {
+  font-size: 40px;
+  opacity: 0.6;
+}
+
+.token-empty__text {
+  font-size: 15px;
+  font-weight: 600;
+  color: rgba(235, 229, 245, 0.7);
+  margin: 0;
+}
+
+.token-empty__hint {
+  font-size: 12px;
+  color: rgba(235, 229, 245, 0.4);
+  margin: 0;
+}
+
+/* 图表区无数据时隐藏 */
+#token-charts.is-hidden {
+  display: none;
+}

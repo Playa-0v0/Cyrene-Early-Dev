@@ -23,6 +23,7 @@ import { initReranker } from "./rag/reranker";
 import { memoryStore } from "./memory/memory-store"
 import type { L0Profile, L1Profile } from "./memory/memory-types";
 import { registerChatsIpc } from "./chats/chats-ipc";
+import { recordUsage, getUsage, flush as flushTokenUsage } from "./token-usage-store";
 
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
@@ -916,7 +917,10 @@ async function callChatCompletionsStream(
         if (jsonStr === "[DONE]") continue;
 
         try {
-          const parsed = JSON.parse(jsonStr) as { choices?: Array<{ delta?: { content?: string } }> };
+          const parsed = JSON.parse(jsonStr) as {
+            choices?: Array<{ delta?: { content?: string } }>;
+            usage?: { prompt_tokens?: number; completion_tokens?: number };
+          };
           const delta = parsed.choices?.[0]?.delta?.content;
           if (delta) {
             fullText += delta;
@@ -924,6 +928,10 @@ async function callChatCompletionsStream(
             if (visibleDelta) {
               onChunk(visibleDelta);
             }
+          }
+          // 流式末尾的 usage 块（choices 为空但带 usage），记录 token 用量
+          if (parsed.usage) {
+            recordUsage(parsed.usage.prompt_tokens ?? 0, parsed.usage.completion_tokens ?? 0, 1);
           }
         } catch {
         }
@@ -2013,6 +2021,11 @@ ipcMain.handle(IPC.EMBEDDING_DELETE, async (_event, payload: unknown) => {
 });
 
 app.whenReady().then(async () => {
+  // Token 用量查询 IPC
+  ipcMain.handle(IPC.TOKEN_USAGE_GET, (_event, days: number) => {
+    return getUsage(Math.max(1, Math.min(90, Number(days) || 7)));
+  });
+
   // 聊天会话存储 IPC（chats-store.initialize 会建好 cyrene-chats 目录并加载 index）
   registerChatsIpc();
   ipcMain.handle(IPC.CHATS_OPEN_IN_CHAT_WINDOW, (_event, sessionId: string) => {
@@ -2056,6 +2069,11 @@ app.whenReady().then(async () => {
 });
 
 app.on("window-all-closed", () => {});
+
+// 应用退出前把 token 用量缓存落盘（防抖未触发的最后一次写）
+app.on("before-quit", () => {
+  flushTokenUsage();
+});
 
 app.on("activate", () => {
   if (mainWindow === null) {

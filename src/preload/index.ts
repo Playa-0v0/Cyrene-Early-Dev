@@ -176,3 +176,9 @@ const chatStoreApi = {
 
 contextBridge.exposeInMainWorld("chatStore", chatStoreApi);
 
+// Token 用量查询（设置中心 Token 面板用）
+const tokenUsageApi = {
+  get: (days: number) => ipcRenderer.invoke(IPC.TOKEN_USAGE_GET, days),
+};
+contextBridge.exposeInMainWorld("tokenUsage", tokenUsageApi);
+

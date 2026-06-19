@@ -90,6 +90,7 @@ export class OpenAICompatAdapter implements ChatVendorAdapter {
         };
         finish_reason?: string;
       }>;
+      usage?: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number };
     };
     const choice = data.choices?.[0];
     const msg = choice?.message;
@@ -109,6 +110,11 @@ export class OpenAICompatAdapter implements ChatVendorAdapter {
       ...(thinking ? { thinking } : {}),
     };
 
+    // 提取 token 用量（OpenAI 协议: prompt_tokens/completion_tokens）
+    const usage = data.usage
+      ? { input: data.usage.prompt_tokens ?? 0, output: data.usage.completion_tokens ?? 0 }
+      : undefined;
+
     return {
       assistantMessage,
       text,
@@ -116,6 +122,7 @@ export class OpenAICompatAdapter implements ChatVendorAdapter {
       toolCalls,
       finishReason: choice?.finish_reason ?? "stop",
       raw,
+      usage,
     };
   }
 

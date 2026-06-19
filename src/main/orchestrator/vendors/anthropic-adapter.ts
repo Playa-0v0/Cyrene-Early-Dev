@@ -169,7 +169,12 @@ export class AnthropicAdapter implements ChatVendorAdapter {
       rawAssistant: blocks,
     };
 
-    return { assistantMessage, text, thinking, toolCalls, finishReason, raw };
+    // 提取 token 用量（Anthropic 协议: input_tokens/output_tokens）
+    const usage = data.usage
+      ? { input: data.usage.input_tokens ?? 0, output: data.usage.output_tokens ?? 0 }
+      : undefined;
+
+    return { assistantMessage, text, thinking, toolCalls, finishReason, raw, usage };
   }
 
   appendToolResults(messages: ChatMessage[], results: ToolExecutionResult[]): ChatMessage[] {

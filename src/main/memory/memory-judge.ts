@@ -3,6 +3,7 @@ import * as path from "path"
 import { buildVendorUrl } from "../orchestrator/vendors"
 import { app } from "electron"
 import { MemoryCandidate, L0_FIELD_DESCRIPTIONS } from "./memory-types"
+import { recordUsage } from "../token-usage-store"
 
 interface ModelSettings {
   provider: string
@@ -159,7 +160,14 @@ async function callChatCompletions(
       throw new Error(errMsg || `模型请求失败：HTTP ${response.status}`)
     }
 
-    const data = await response.json() as { choices?: Array<{ message?: { content?: string } }> }
+    const data = await response.json() as {
+      choices?: Array<{ message?: { content?: string } }>;
+      usage?: { prompt_tokens?: number; completion_tokens?: number };
+    }
+    // 记录 MemoryJudge 的 token 用量
+    if (data.usage) {
+      recordUsage(data.usage.prompt_tokens ?? 0, data.usage.completion_tokens ?? 0, 1)
+    }
     const content = data.choices?.[0]?.message?.content ?? ""
     return stripThinkBlocks(content)
   } finally {
