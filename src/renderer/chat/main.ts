@@ -1,5 +1,10 @@
 import "../ui/base.css";
 import "./chat.css";
+import {
+  CHAT_DEFAULT_IDENTITY_LABEL,
+  formatChatRelativeTime,
+  type ChatSessionMetaUI,
+} from "../../shared/chat-ui";
 
 type Role = "user" | "model";
 
@@ -73,6 +78,11 @@ const minBtn = document.getElementById("min-btn") as HTMLButtonElement;
 const maxBtn = document.getElementById("max-btn") as HTMLButtonElement;
 const closeBtn = document.getElementById("close-btn") as HTMLButtonElement;
 const chatHintEl = document.getElementById("chat-hint") as HTMLElement;
+const chatStatusBtn = document.getElementById("chat-status-btn") as HTMLButtonElement;
+const chatRail = document.getElementById("chat-rail") as HTMLElement | null;
+const chatRailNew = document.getElementById("chat-rail-new") as HTMLButtonElement | null;
+const chatRailList = document.getElementById("chat-rail-list") as HTMLElement | null;
+const chatRailEmpty = document.getElementById("chat-rail-empty") as HTMLElement | null;
 
 // 旧版 localStorage key——首次启动时检测到老数据会迁移到主进程 chats 存储再清掉。
 const LEGACY_STORAGE_KEY = "cyrene.chat.history.v1";
@@ -157,15 +167,7 @@ async function initModelConfig(): Promise<void> {
 // 旧版聊天记录从 localStorage 一次性迁移到主进程 chats 存储，之后整窗口
 // 所有读写都走 IPC（window.chatStore）。所有 saveHistory 调用点改成
 // saveSession，本质是把 messages 全量回写当前 session 文件。
-
-interface ChatStoreSessionMeta {
-  id: string;
-  title: string;
-  identityId: string | null;
-  createdAt: number;
-  updatedAt: number;
-  messageCount: number;
-}
+// 会话元数据类型用 shared 的 ChatSessionMetaUI（跟设置面板共用）。
 
 interface ChatStoreSession {
   id: string;
@@ -178,7 +180,7 @@ interface ChatStoreSession {
 }
 
 interface ChatStoreApi {
-  list: () => Promise<ChatStoreSessionMeta[]>;
+  list: () => Promise<ChatSessionMetaUI[]>;
   get: (id: string) => Promise<ChatStoreSession | null>;
   create: (payload?: { title?: string; identityId?: string | null }) => Promise<ChatStoreSession>;
   append: (id: string, message: unknown) => Promise<ChatStoreSession | null>;
@@ -243,7 +245,95 @@ function loadSessionIntoUI(session: ChatStoreSession): void {
   // 上报活跃 sessionId（设置面板"删除当前会话"差异化提示用）
   void window.chatStore?.setActiveSession(session.id);
   render();
+  // 切换会话后刷新侧栏列表的活跃高亮
+  void renderRailList();
 }
+
+// ── 会话侧栏（点左上角 loader 展开）──
+// 精简版：+新对话 / 列表点击切换 / 活跃高亮。改名删除留设置面板。
+// 渲染逻辑跟 settings.ts 的 renderChatSessions 同源（复用 shared 的格式化函数），
+// 但点击行为不同：这里是本地 loadSessionIntoUI，不走跨窗口 IPC，更快。
+
+async function renderRailList(): Promise<void> {
+  if (!chatRailList || !window.chatStore) return;
+
+  let sessions: ChatSessionMetaUI[] = [];
+  try {
+    sessions = await window.chatStore.list();
+  } catch (err) {
+    console.warn("[Cyrene Chat] 侧栏加载会话列表失败:", err);
+  }
+
+  chatRailList.innerHTML = "";
+  if (sessions.length === 0) {
+    if (chatRailEmpty) chatRailEmpty.classList.remove("is-hidden");
+    return;
+  }
+  if (chatRailEmpty) chatRailEmpty.classList.add("is-hidden");
+
+  for (const session of sessions) {
+    const item = buildRailItem(session);
+    chatRailList.appendChild(item);
+  }
+}
+
+function buildRailItem(session: ChatSessionMetaUI): HTMLLIElement {
+  const li = document.createElement("li");
+  li.className = "chat__rail-item";
+  if (session.id === currentSessionId) li.classList.add("is-active");
+  li.dataset.sessionId = session.id;
+
+  const titleEl = document.createElement("div");
+  titleEl.className = "chat__rail-title";
+  titleEl.textContent = session.title || "新对话";
+
+  const metaEl = document.createElement("div");
+  metaEl.className = "chat__rail-meta";
+
+  const timeEl = document.createElement("span");
+  timeEl.className = "chat__rail-time";
+  timeEl.textContent = formatChatRelativeTime(session.updatedAt);
+
+  const identityEl = document.createElement("span");
+  identityEl.className = "chat__rail-identity";
+  identityEl.textContent = "💼 " + (session.identityId ? session.identityId : CHAT_DEFAULT_IDENTITY_LABEL);
+
+  metaEl.appendChild(timeEl);
+  metaEl.appendChild(identityEl);
+
+  // 点击列表项 = 本地切换会话（不走跨窗口 IPC，比设置面板还快）
+  li.addEventListener("click", async () => {
+    if (session.id === currentSessionId) return;
+    const full = await window.chatStore?.get(session.id);
+    if (full) loadSessionIntoUI(full as ChatStoreSession);
+  });
+
+  li.appendChild(titleEl);
+  li.appendChild(metaEl);
+  return li;
+}
+
+// loader 按钮 toggle 侧栏显隐
+chatStatusBtn?.addEventListener("click", () => {
+  if (!chatRail) return;
+  chatRail.toggleAttribute("hidden");
+  // 首次展开时拉一次列表（后续由 onChanged 持续刷新）
+  if (!chatRail.hidden) void renderRailList();
+});
+
+// +新对话
+chatRailNew?.addEventListener("click", async () => {
+  if (!window.chatStore) return;
+  try {
+    const session = await window.chatStore.create({ identityId: null });
+    if (session?.id) {
+      const full = await window.chatStore.get(session.id);
+      if (full) loadSessionIntoUI(full as ChatStoreSession);
+    }
+  } catch (err) {
+    console.warn("[Cyrene Chat] 新建会话失败:", err);
+  }
+});
 
 // 一次性迁移：检测老 localStorage 数据 → 包成 session → 删 key。
 // 失败/没数据时静默 no-op，不影响后续 bootstrap。
@@ -851,10 +941,13 @@ window.chatStore?.onSwitchSession(async (sessionId) => {
   if (session) loadSessionIntoUI(session);
 });
 
-// 任意会话变动后 main 广播——主要关心两种情况：
-// 1. 当前活跃会话被设置面板删了 → 跳到最新一条 / 自动建新
-// 2. 当前会话标题被改名 → 暂时不在窗口 UI 显示，无需处理
+// 任意会话变动后 main 广播——两种处理：
+// 1. 当前活跃会话被外部删了 → fallback 到最新一条 / 自动建新
+// 2. 侧栏展开时刷新列表（别的窗口新建/改名/删除都会触发）
 window.chatStore?.onChanged(async () => {
+  // 侧栏展开时刷新列表（收起时不浪费 DOM 写入）
+  if (chatRail && !chatRail.hidden) void renderRailList();
+
   if (!window.chatStore || !currentSessionId) return;
   const stillExists = await window.chatStore.get(currentSessionId);
   if (stillExists) return;

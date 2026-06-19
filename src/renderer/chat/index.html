@@ -64,10 +64,23 @@
         </button>
       </div>
     </header>
-    <main class="chat__messages" id="messages" aria-live="polite"></main>
-    <div class="chat__empty-state" id="chat-empty" hidden>
-      <div class="chat__empty-icon">💬</div>
-      <p class="chat__empty-text">昔涟期待与你聊天哦 ✨</p>
+    <div class="chat__body">
+      <aside class="chat__rail" id="chat-rail" hidden>
+        <button type="button" class="chat__rail-new" id="chat-rail-new">
+          <span class="chat__rail-new-icon" aria-hidden="true">＋</span>
+          <span>新对话</span>
+        </button>
+        <ul class="chat__rail-list" id="chat-rail-list" role="list"></ul>
+        <div class="chat__rail-empty is-hidden" id="chat-rail-empty">
+          <span aria-hidden="true">📭</span>
+          <p>还没有对话</p>
+        </div>
+      </aside>
+      <main class="chat__messages" id="messages" aria-live="polite"></main>
+      <div class="chat__empty-state" id="chat-empty" hidden>
+        <div class="chat__empty-icon">💬</div>
+        <p class="chat__empty-text">昔涟期待与你聊天哦 ✨</p>
+      </div>
     </div>
     <div class="chat__file-tags" id="file-tags"></div>
     <form class="chat__input" id="composer">
