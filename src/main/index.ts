@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, screen, shell } from "electron";
+import { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, screen, shell, dialog } from "electron";
 import * as path from "path";
 import * as fs from "fs";
 import * as os from "os";
@@ -24,6 +24,7 @@ import { memoryStore } from "./memory/memory-store"
 import type { L0Profile, L1Profile } from "./memory/memory-types";
 import { registerChatsIpc } from "./chats/chats-ipc";
 import { recordUsage, getUsage, flush as flushTokenUsage } from "./token-usage-store";
+import { uploadFile as ttsUploadFile, cloneVoice as ttsCloneVoice, synthesize as ttsSynthesize } from "./tts/minimax-engine";
 
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
@@ -138,6 +139,23 @@ interface GeneralSettings {
   petVisible: boolean;
   launchAtLogin: boolean;
   language: "zh-CN";
+  // TTS 配置
+  ttsEngine: "off" | "volcano" | "minimax" | "gptsovits" | "vits2";
+  ttsAutoRead: boolean;
+  ttsSpeed: number;
+  ttsVolume: number;
+  // MiniMax
+  ttsMinimaxKey: string;
+  ttsMinimaxVoiceId: string;
+  // 火山（后续接入）
+  ttsVolcanoAppId: string;
+  ttsVolcanoToken: string;
+  ttsVolcanoVoiceId: string;
+  // 本地引擎
+  ttsGptsovitsUrl: string;
+  ttsGptsovitsModel: string;
+  ttsVits2Url: string;
+  ttsVits2Model: string;
 }
 
 
@@ -219,6 +237,19 @@ const DEFAULT_GENERAL_SETTINGS: GeneralSettings = {
   petVisible: true,
   launchAtLogin: false,
   language: "zh-CN",
+  ttsEngine: "off",
+  ttsAutoRead: true,
+  ttsSpeed: 1,
+  ttsVolume: 1,
+  ttsMinimaxKey: "",
+  ttsMinimaxVoiceId: "",
+  ttsVolcanoAppId: "",
+  ttsVolcanoToken: "",
+  ttsVolcanoVoiceId: "",
+  ttsGptsovitsUrl: "http://localhost:9880",
+  ttsGptsovitsModel: "",
+  ttsVits2Url: "http://localhost:9880",
+  ttsVits2Model: "",
 };
 
 function getSettingsPath(): string {
@@ -530,6 +561,20 @@ function normalizeGeneralSettings(input: Partial<GeneralSettings> | null | undef
     petVisible: input?.petVisible === undefined ? DEFAULT_GENERAL_SETTINGS.petVisible : Boolean(input.petVisible),
     launchAtLogin: Boolean(input?.launchAtLogin),
     language: "zh-CN",
+    // TTS 配置
+    ttsEngine: (["off", "volcano", "minimax", "gptsovits", "vits2"].includes(input?.ttsEngine as string) ? input?.ttsEngine : "off") as GeneralSettings["ttsEngine"],
+    ttsAutoRead: input?.ttsAutoRead === undefined ? DEFAULT_GENERAL_SETTINGS.ttsAutoRead : Boolean(input.ttsAutoRead),
+    ttsSpeed: typeof input?.ttsSpeed === "number" ? Math.max(0.5, Math.min(2, input.ttsSpeed)) : DEFAULT_GENERAL_SETTINGS.ttsSpeed,
+    ttsVolume: typeof input?.ttsVolume === "number" ? Math.max(0, Math.min(1, input.ttsVolume)) : DEFAULT_GENERAL_SETTINGS.ttsVolume,
+    ttsMinimaxKey: typeof input?.ttsMinimaxKey === "string" ? input.ttsMinimaxKey : "",
+    ttsMinimaxVoiceId: typeof input?.ttsMinimaxVoiceId === "string" ? input.ttsMinimaxVoiceId : "",
+    ttsVolcanoAppId: typeof input?.ttsVolcanoAppId === "string" ? input.ttsVolcanoAppId : "",
+    ttsVolcanoToken: typeof input?.ttsVolcanoToken === "string" ? input.ttsVolcanoToken : "",
+    ttsVolcanoVoiceId: typeof input?.ttsVolcanoVoiceId === "string" ? input.ttsVolcanoVoiceId : "",
+    ttsGptsovitsUrl: typeof input?.ttsGptsovitsUrl === "string" ? input.ttsGptsovitsUrl : DEFAULT_GENERAL_SETTINGS.ttsGptsovitsUrl,
+    ttsGptsovitsModel: typeof input?.ttsGptsovitsModel === "string" ? input.ttsGptsovitsModel : "",
+    ttsVits2Url: typeof input?.ttsVits2Url === "string" ? input.ttsVits2Url : DEFAULT_GENERAL_SETTINGS.ttsVits2Url,
+    ttsVits2Model: typeof input?.ttsVits2Model === "string" ? input.ttsVits2Model : "",
   };
 }
 
@@ -2024,6 +2069,62 @@ app.whenReady().then(async () => {
   // Token 用量查询 IPC
   ipcMain.handle(IPC.TOKEN_USAGE_GET, (_event, days: number) => {
     return getUsage(Math.max(1, Math.min(90, Number(days) || 7)));
+  });
+
+  // ── TTS IPC ──
+  // 保存/加载 TTS 配置（复用 general settings 存储）
+  ipcMain.handle(IPC.TTS_SAVE_SETTINGS, (_event, tts: Partial<GeneralSettings>) => {
+    const saved = saveGeneralSettings({ ...loadGeneralSettings(), ...tts });
+    // 返回不含密钥明文的副本（前端展示用）
+    return saved;
+  });
+  ipcMain.handle(IPC.TTS_LOAD_SETTINGS, () => {
+    return loadGeneralSettings();
+  });
+
+  // 上传音频文件 → file_id
+  ipcMain.handle(IPC.TTS_UPLOAD, async (_event, payload: { apiKey: string; filePath: string; purpose: "voice_clone" | "prompt_audio" }) => {
+    if (!payload?.apiKey || !payload?.filePath) {
+      throw new Error("缺少 API Key 或文件路径");
+    }
+    return await ttsUploadFile(payload.apiKey, payload.filePath, payload.purpose);
+  });
+
+  // 选择音频文件（Electron dialog）
+  ipcMain.handle(IPC.TTS_PICK_AUDIO, async () => {
+    const result = await dialog.showOpenDialog({
+      title: "选择音频文件",
+      filters: [{ name: "音频文件", extensions: ["mp3", "m4a", "wav"] }],
+      properties: ["openFile"],
+    });
+    if (result.canceled || result.filePaths.length === 0) return null;
+    return result.filePaths[0];
+  });
+
+  // 音色快速复刻 → voice_id
+  ipcMain.handle(IPC.TTS_CLONE, async (_event, payload: {
+    apiKey: string; fileId: string; voiceId: string;
+    promptAudioId?: string; promptText?: string;
+    text: string; model?: string;
+  }) => {
+    if (!payload?.apiKey || !payload?.fileId || !payload?.voiceId || !payload?.text) {
+      throw new Error("缺少必要参数（apiKey/fileId/voiceId/text）");
+    }
+    return await ttsCloneVoice(payload);
+  });
+
+  // 语音合成 → base64 音频（聊天朗读 / 测试发音都用这个）
+  ipcMain.handle(IPC.TTS_SYNTHESIZE, async (_event, payload: {
+    apiKey: string; voiceId: string; text: string;
+    speed?: number; volume?: number; pitch?: number;
+    model?: string; format?: "mp3" | "wav" | "pcm";
+  }) => {
+    if (!payload?.apiKey || !payload?.voiceId || !payload?.text) {
+      throw new Error("缺少必要参数（apiKey/voiceId/text）");
+    }
+    const audioBuffer = await ttsSynthesize(payload);
+    // Buffer → base64 传给渲染进程（渲染进程用 atob 解码再播）
+    return audioBuffer.toString("base64");
   });
 
   // 聊天会话存储 IPC（chats-store.initialize 会建好 cyrene-chats 目录并加载 index）

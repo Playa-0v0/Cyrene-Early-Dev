@@ -871,8 +871,39 @@
             <div class="tts-config" id="tts-config-minimax" hidden>
               <h2 class="tts-section__title">✨ MiniMax 配置</h2>
               <div class="tts-field"><label>API Key</label><input type="password" id="tts-minimax-key" placeholder="MiniMax API Key" /></div>
-              <div class="tts-field"><label>音色 ID</label><input type="text" id="tts-minimax-voice" placeholder="训练好的音色 ID" /></div>
+              <div class="tts-field"><label>音色 ID</label><input type="text" id="tts-minimax-voice" placeholder="训练好的音色 ID（或下方复刻后自动填入）" /></div>
               <button type="button" class="ghost-btn" id="tts-minimax-test">🔊 测试发音</button>
+
+              <!-- 音色快速复刻 -->
+              <div class="tts-clone-section">
+                <h3 class="tts-clone-title">🎙️ 音色快速复刻</h3>
+                <p class="tts-clone-hint">上传昔涟配音（mp3/m4a/wav，10秒~5分钟，≤20MB），训练专属音色</p>
+
+                <div class="tts-field">
+                  <label>配音文件</label>
+                  <input type="text" id="tts-clone-file" placeholder="点击右侧选择音频文件" readonly />
+                  <button type="button" class="ghost-btn tts-pick-btn" id="tts-clone-pick">选择</button>
+                </div>
+                <div class="tts-field">
+                  <label>示例音频</label>
+                  <input type="text" id="tts-clone-prompt-file" placeholder="可选，增强克隆效果（≤8秒）" readonly />
+                  <button type="button" class="ghost-btn tts-pick-btn" id="tts-clone-prompt-pick">选择</button>
+                </div>
+                <div class="tts-field">
+                  <label>示例文本</label>
+                  <input type="text" id="tts-clone-prompt-text" placeholder="示例音频对应的文字（可选）" />
+                </div>
+                <div class="tts-field">
+                  <label>复刻文本</label>
+                  <input type="text" id="tts-clone-text" placeholder="训练时合成这句做对比" value="你好，我是昔涟，很高兴见到你。" />
+                </div>
+                <div class="tts-field">
+                  <label>音色命名</label>
+                  <input type="text" id="tts-clone-voice-id" placeholder="自定义音色ID（如 cyrene-voice）" />
+                </div>
+                <button type="button" class="ghost-btn" id="tts-clone-start">🚀 开始复刻</button>
+                <div class="tts-clone-status" id="tts-clone-status"></div>
+              </div>
             </div>
 
             <div class="tts-config" id="tts-config-gptsovits" hidden>

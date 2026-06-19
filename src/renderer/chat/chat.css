@@ -629,6 +629,30 @@ body {
   padding: 0 4px;
 }
 
+/* model 消息朗读按钮 */
+.msg__speak {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--rb-radius-full);
+  background: transparent;
+  border: 1px solid rgba(255, 182, 220, 0.16);
+  font-size: 13px;
+  cursor: pointer;
+  opacity: 0.4;
+  transition: opacity 0.18s, background 0.18s, border-color 0.18s;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  line-height: 1;
+}
+
+.msg__speak:hover {
+  opacity: 1;
+  background: rgba(255, 192, 230, 0.12);
+  border-color: rgba(255, 182, 220, 0.36);
+}
+
 
 /* ── 文件上传按钮 ── */
 .chat__attach {

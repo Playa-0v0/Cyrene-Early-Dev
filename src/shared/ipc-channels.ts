@@ -120,6 +120,14 @@ export const IPC = {
   // token usage statistics
   TOKEN_USAGE_GET: "token-usage:get",
 
+  // TTS 语音合成
+  TTS_UPLOAD: "tts:upload",          // 上传音频文件 → file_id
+  TTS_CLONE: "tts:clone",           // 音色快速复刻 → voice_id
+  TTS_SYNTHESIZE: "tts:synthesize", // 语音合成 → audio buffer(base64)
+  TTS_SAVE_SETTINGS: "tts:save-settings",   // 保存 TTS 配置
+  TTS_LOAD_SETTINGS: "tts:load-settings",   // 加载 TTS 配置
+  TTS_PICK_AUDIO: "tts:pick-audio",         // 选择音频文件（dialog）
+
   // agent permission level (file/shell access)
   PERMISSION_GET_LEVEL: "permission:get-level",
   PERMISSION_SET_LEVEL: "permission:set-level",

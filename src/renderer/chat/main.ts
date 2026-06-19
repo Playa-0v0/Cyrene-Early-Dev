@@ -472,6 +472,18 @@ function render(): void {
       }
     }
 
+    // model 消息加 🔊 朗读按钮（thinking 中的不显示）
+    if (m.role === "model" && !m.thinking && m.content.trim()) {
+      const speakBtn = document.createElement("button");
+      speakBtn.type = "button";
+      speakBtn.className = "msg__speak";
+      speakBtn.title = "朗读";
+      speakBtn.setAttribute("aria-label", "朗读这条消息");
+      speakBtn.textContent = "🔊";
+      speakBtn.addEventListener("click", () => void speakText(m.content));
+      body.appendChild(speakBtn);
+    }
+
     body.appendChild(time);
 
     row.appendChild(avatar);
@@ -479,6 +491,92 @@ function render(): void {
     messagesEl.appendChild(row);
   }
   messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+// ── TTS 朗读 ──
+// 从主进程加载 TTS 配置，按当前引擎调用合成并播放。
+// 自动朗读（回复完成后触发）和手动 🔊 按钮共用此函数。
+
+interface TtsSettings {
+  ttsEngine: string;
+  ttsAutoRead: boolean;
+  ttsSpeed: number;
+  ttsVolume: number;
+  ttsMinimaxKey: string;
+  ttsMinimaxVoiceId: string;
+}
+
+interface TtsApi {
+  synthesize: (payload: {
+    apiKey: string; voiceId: string; text: string;
+    speed?: number; volume?: number; model?: string; format?: "mp3" | "wav" | "pcm";
+  }) => Promise<string>;
+  loadSettings: () => Promise<Record<string, unknown>>;
+}
+
+declare global {
+  interface Window {
+    tts?: TtsApi;
+  }
+}
+
+let ttsSettingsCache: TtsSettings | null = null;
+
+async function loadTtsSettings(): Promise<TtsSettings | null> {
+  if (ttsSettingsCache) return ttsSettingsCache;
+  if (!window.tts) return null;
+  try {
+    const raw = await window.tts.loadSettings();
+    ttsSettingsCache = {
+      ttsEngine: String(raw.ttsEngine ?? "off"),
+      ttsAutoRead: Boolean(raw.ttsAutoRead),
+      ttsSpeed: Number(raw.ttsSpeed ?? 1),
+      ttsVolume: Number(raw.ttsVolume ?? 1),
+      ttsMinimaxKey: String(raw.ttsMinimaxKey ?? ""),
+      ttsMinimaxVoiceId: String(raw.ttsMinimaxVoiceId ?? ""),
+    };
+    return ttsSettingsCache;
+  } catch {
+    return null;
+  }
+}
+
+// 清除缓存（用户在设置面板改了配置后，下次朗读会重新加载）
+// 通过监听 storage 事件或其他方式触发——简单起见每次启动加载一次
+async function speakText(text: string): Promise<void> {
+  if (!window.tts) return;
+  const settings = await loadTtsSettings();
+  if (!settings || settings.ttsEngine === "off") return;
+
+  // 目前只接了 MiniMax，其他引擎后续加
+  if (settings.ttsEngine !== "minimax") return;
+  if (!settings.ttsMinimaxKey || !settings.ttsMinimaxVoiceId) return;
+
+  try {
+    const base64 = await window.tts.synthesize({
+      apiKey: settings.ttsMinimaxKey,
+      voiceId: settings.ttsMinimaxVoiceId,
+      text,
+      speed: settings.ttsSpeed,
+      volume: settings.ttsVolume,
+    });
+    // base64 → 播放
+    const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+    const blob = new Blob([bytes], { type: "audio/mp3" });
+    const url = URL.createObjectURL(blob);
+    const audio = new Audio(url);
+    audio.play().catch((err) => console.warn("[TTS] 播放失败:", err));
+    audio.onended = () => URL.revokeObjectURL(url);
+  } catch (err) {
+    console.warn("[TTS] 合成失败:", err);
+  }
+}
+
+// 自动朗读：检查引擎是否开启 + autoRead 开关，满足条件才朗读
+async function autoSpeakIfEnabled(text: string): Promise<void> {
+  const settings = await loadTtsSettings();
+  if (!settings || settings.ttsEngine === "off" || !settings.ttsAutoRead) return;
+  void speakText(text);
 }
 
 function autosize(): void {
@@ -609,6 +707,10 @@ async function send(): Promise<void> {
     }
     void saveSession();
     render();
+    // 自动朗读：回复完成后触发（仅在 TTS 开启且 autoRead=true 时）
+    if (msg && msg.content.trim()) {
+      void autoSpeakIfEnabled(msg.content);
+    }
   } catch (err) {
     window.chat?.removeStreamListeners();
     const message = err instanceof Error ? err.message : "模型请求失败";

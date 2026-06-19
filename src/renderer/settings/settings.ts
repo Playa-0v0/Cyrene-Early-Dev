@@ -2523,53 +2523,276 @@ void refreshTokenPanel(7);
 
 /* ============================================================
    🎙️ TTS 设置面板交互
+   - 配置加载/保存（存 general settings，跟其他设置一起）
    - 引擎选择卡片切换：选中哪个展开哪个配置表单
-   - 语速/音量滑块实时显示数值
-   - 测试发音按钮：引擎未接入时提示"敬请期待"
-   - 配置暂不持久化（等接引擎时再接 general settings 存储）
+   - 语速/音量滑块实时显示数值 + 自动保存
+   - MiniMax 测试发音：调 synthesize 合成固定文本并播放
+   - 音色快速复刻：选文件→上传→训练→自动填入 voice_id
    ============================================================ */
+
+interface TtsApi {
+  upload: (apiKey: string, filePath: string, purpose: "voice_clone" | "prompt_audio") => Promise<{ file_id: string }>;
+  pickAudio: () => Promise<string | null>;
+  clone: (payload: {
+    apiKey: string; fileId: string; voiceId: string;
+    promptAudioId?: string; promptText?: string;
+    text: string; model?: string;
+  }) => Promise<{ voiceId: string; audioDemo?: string }>;
+  synthesize: (payload: {
+    apiKey: string; voiceId: string; text: string;
+    speed?: number; volume?: number; pitch?: number;
+    model?: string; format?: "mp3" | "wav" | "pcm";
+  }) => Promise<string>; // base64 音频
+  saveSettings: (tts: Record<string, unknown>) => Promise<unknown>;
+  loadSettings: () => Promise<Record<string, unknown>>;
+}
+
+declare global {
+  interface Window {
+    tts?: TtsApi;
+  }
+}
+
+const TTS_TEST_TEXT = "你好，我是昔涟，很高兴见到你。";
+
+// 获取 DOM 元素的辅助函数
+function ttsEl(id: string): HTMLInputElement {
+  return document.getElementById(id) as HTMLInputElement;
+}
+
+// 当前加载的 TTS 配置（内存缓存，改一个字段就存一次）
+let ttsConfig: Record<string, unknown> = {};
+
+// 加载配置并填充表单
+async function loadTtsConfig(): Promise<void> {
+  if (!window.tts) return;
+  try {
+    ttsConfig = await window.tts.loadSettings() as Record<string, unknown>;
+  } catch (err) {
+    console.warn("[TTS] 加载配置失败:", err);
+    return;
+  }
+
+  // 引擎选择
+  const engine = String(ttsConfig.ttsEngine || "off");
+  document.querySelectorAll<HTMLButtonElement>(".tts-engine").forEach((btn) => {
+    const isActive = btn.dataset.engine === engine;
+    btn.classList.toggle("is-active", isActive);
+    btn.setAttribute("aria-checked", isActive ? "true" : "false");
+  });
+  document.querySelectorAll<HTMLElement>(".tts-config").forEach((el) => { el.hidden = true; });
+  if (engine !== "off") {
+    const config = document.getElementById("tts-config-" + engine);
+    if (config) config.hidden = false;
+  }
+
+  // 播放交互
+  ttsEl("tts-auto-read").checked = Boolean(ttsConfig.ttsAutoRead);
+  ttsEl("tts-speed").value = String(ttsConfig.ttsSpeed ?? 1);
+  ttsEl("tts-volume").value = String(ttsConfig.ttsVolume ?? 1);
+  updateTtsSliderLabels();
+
+  // MiniMax
+  ttsEl("tts-minimax-key").value = String(ttsConfig.ttsMinimaxKey ?? "");
+  ttsEl("tts-minimax-voice").value = String(ttsConfig.ttsMinimaxVoiceId ?? "");
+
+  // 火山
+  ttsEl("tts-volcano-appid").value = String(ttsConfig.ttsVolcanoAppId ?? "");
+  ttsEl("tts-volcano-token").value = String(ttsConfig.ttsVolcanoToken ?? "");
+  ttsEl("tts-volcano-voice").value = String(ttsConfig.ttsVolcanoVoiceId ?? "");
+
+  // 本地
+  ttsEl("tts-gptsovits-url").value = String(ttsConfig.ttsGptsovitsUrl ?? "http://localhost:9880");
+  ttsEl("tts-gptsovits-model").value = String(ttsConfig.ttsGptsovitsModel ?? "");
+  ttsEl("tts-vits2-url").value = String(ttsConfig.ttsVits2Url ?? "http://localhost:9880");
+  ttsEl("tts-vits2-model").value = String(ttsConfig.ttsVits2Model ?? "");
+}
+
+function updateTtsSliderLabels(): void {
+  const speedVal = document.getElementById("tts-speed-val");
+  const volVal = document.getElementById("tts-volume-val");
+  if (speedVal) speedVal.textContent = Number(ttsEl("tts-speed").value).toFixed(1) + "x";
+  if (volVal) volVal.textContent = Math.round(Number(ttsEl("tts-volume").value) * 100) + "%";
+}
+
+// 保存单个 TTS 配置字段
+async function saveTtsField(field: string, value: unknown): Promise<void> {
+  if (!window.tts) return;
+  ttsConfig[field] = value;
+  try {
+    await window.tts.saveSettings({ [field]: value });
+  } catch (err) {
+    console.warn("[TTS] 保存配置失败:", field, err);
+  }
+}
+
+// 播放 base64 音频
+function playTtsAudio(base64: string): void {
+  try {
+    const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+    const blob = new Blob([bytes], { type: "audio/mp3" });
+    const url = URL.createObjectURL(blob);
+    const audio = new Audio(url);
+    audio.play().catch((err) => console.warn("[TTS] 播放失败:", err));
+    audio.onended = () => URL.revokeObjectURL(url);
+  } catch (err) {
+    console.warn("[TTS] 音频解码失败:", err);
+  }
+}
 
 // 引擎选择切换
 document.querySelectorAll<HTMLButtonElement>(".tts-engine").forEach((btn) => {
   btn.addEventListener("click", () => {
+    const engine = btn.dataset.engine || "off";
     document.querySelectorAll<HTMLButtonElement>(".tts-engine").forEach((b) => {
       b.classList.remove("is-active");
       b.setAttribute("aria-checked", "false");
     });
     btn.classList.add("is-active");
     btn.setAttribute("aria-checked", "true");
-
-    const engine = btn.dataset.engine || "off";
-    // 隐藏所有配置表单，显示选中的
-    document.querySelectorAll<HTMLElement>(".tts-config").forEach((el) => {
-      el.hidden = true;
-    });
+    document.querySelectorAll<HTMLElement>(".tts-config").forEach((el) => { el.hidden = true; });
     if (engine !== "off") {
       const config = document.getElementById("tts-config-" + engine);
       if (config) config.hidden = false;
     }
+    void saveTtsField("ttsEngine", engine);
   });
 });
 
-// 语速滑块实时显示
-const ttsSpeed = document.getElementById("tts-speed") as HTMLInputElement | null;
-const ttsSpeedVal = document.getElementById("tts-speed-val") as HTMLElement | null;
-ttsSpeed?.addEventListener("input", () => {
-  if (ttsSpeedVal) ttsSpeedVal.textContent = Number(ttsSpeed.value).toFixed(1) + "x";
+// 自动朗读开关
+ttsEl("tts-auto-read").addEventListener("change", () => {
+  void saveTtsField("ttsAutoRead", ttsEl("tts-auto-read").checked);
 });
 
-// 音量滑块实时显示
-const ttsVolume = document.getElementById("tts-volume") as HTMLInputElement | null;
-const ttsVolumeVal = document.getElementById("tts-volume-val") as HTMLElement | null;
-ttsVolume?.addEventListener("input", () => {
-  if (ttsVolumeVal) ttsVolumeVal.textContent = Math.round(Number(ttsVolume.value) * 100) + "%";
+// 语速/音量滑块（change 时保存，input 时实时显示）
+ttsEl("tts-speed").addEventListener("input", updateTtsSliderLabels);
+ttsEl("tts-speed").addEventListener("change", () => saveTtsField("ttsSpeed", Number(ttsEl("tts-speed").value)));
+ttsEl("tts-volume").addEventListener("input", updateTtsSliderLabels);
+ttsEl("tts-volume").addEventListener("change", () => saveTtsField("ttsVolume", Number(ttsEl("tts-volume").value)));
+
+// 配置输入框 change 时保存
+const ttsSaveFields: Array<[string, string]> = [
+  ["tts-minimax-key", "ttsMinimaxKey"],
+  ["tts-minimax-voice", "ttsMinimaxVoiceId"],
+  ["tts-volcano-appid", "ttsVolcanoAppId"],
+  ["tts-volcano-token", "ttsVolcanoToken"],
+  ["tts-volcano-voice", "ttsVolcanoVoiceId"],
+  ["tts-gptsovits-url", "ttsGptsovitsUrl"],
+  ["tts-gptsovits-model", "ttsGptsovitsModel"],
+  ["tts-vits2-url", "ttsVits2Url"],
+  ["tts-vits2-model", "ttsVits2Model"],
+];
+for (const [elId, field] of ttsSaveFields) {
+  ttsEl(elId).addEventListener("change", () => saveTtsField(field, ttsEl(elId).value));
+}
+
+// MiniMax 测试发音
+document.getElementById("tts-minimax-test")?.addEventListener("click", async () => {
+  if (!window.tts) return;
+  const apiKey = ttsEl("tts-minimax-key").value.trim();
+  const voiceId = ttsEl("tts-minimax-voice").value.trim();
+  if (!apiKey) { window.alert("请先填写 MiniMax API Key"); return; }
+  if (!voiceId) { window.alert("请先填写音色 ID（或下方复刻训练）"); return; }
+
+  const btn = document.getElementById("tts-minimax-test") as HTMLButtonElement;
+  btn.disabled = true;
+  btn.textContent = "合成中…";
+  try {
+    const base64 = await window.tts.synthesize({ apiKey, voiceId, text: TTS_TEST_TEXT });
+    playTtsAudio(base64);
+  } catch (err) {
+    window.alert("测试失败: " + (err instanceof Error ? err.message : String(err)));
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "🔊 测试发音";
+  }
 });
 
-// 测试发音按钮（引擎未接入，统一占位提示）
-const TTS_TEST_TEXT = "你好，我是昔涟，很高兴见到你。";
-document.querySelectorAll<HTMLButtonElement>("[id^='tts-'][id$='-test']").forEach((btn) => {
-  btn.addEventListener("click", () => {
-    const engine = btn.id.replace("tts-", "").replace("-test", "");
-    window.alert("「" + engine + "」引擎尚未接入，敬请期待。\n\n测试文本：" + TTS_TEST_TEXT);
-  });
+// ── 音色快速复刻 ──
+// 选择配音文件
+document.getElementById("tts-clone-pick")?.addEventListener("click", async () => {
+  if (!window.tts) return;
+  const filePath = await window.tts.pickAudio();
+  if (filePath) ttsEl("tts-clone-file").value = filePath;
 });
+
+// 选择示例音频
+document.getElementById("tts-clone-prompt-pick")?.addEventListener("click", async () => {
+  if (!window.tts) return;
+  const filePath = await window.tts.pickAudio();
+  if (filePath) ttsEl("tts-clone-prompt-file").value = filePath;
+});
+
+// 设置复刻状态文案
+function setCloneStatus(text: string, type: "ok" | "error" | "loading"): void {
+  const el = document.getElementById("tts-clone-status");
+  if (!el) return;
+  el.textContent = text;
+  el.className = "tts-clone-status" + (type ? " is-" + type : "");
+}
+
+// 开始复刻
+document.getElementById("tts-clone-start")?.addEventListener("click", async () => {
+  if (!window.tts) return;
+  const apiKey = ttsEl("tts-minimax-key").value.trim();
+  const cloneFile = ttsEl("tts-clone-file").value.trim();
+  const promptFile = ttsEl("tts-clone-prompt-file").value.trim();
+  const promptText = ttsEl("tts-clone-prompt-text").value.trim();
+  const cloneText = ttsEl("tts-clone-text").value.trim();
+  const voiceId = ttsEl("tts-clone-voice-id").value.trim();
+
+  if (!apiKey) { window.alert("请先填写 MiniMax API Key"); return; }
+  if (!cloneFile) { window.alert("请选择配音文件"); return; }
+  if (!cloneText) { window.alert("请填写复刻文本"); return; }
+  if (!voiceId) { window.alert("请填写音色命名"); return; }
+
+  const btn = document.getElementById("tts-clone-start") as HTMLButtonElement;
+  btn.disabled = true;
+  setCloneStatus("正在上传配音文件…", "loading");
+
+  try {
+    // 步骤1: 上传配音文件
+    const cloneUpload = await window.tts.upload(apiKey, cloneFile, "voice_clone");
+    setCloneStatus("配音文件上传完成 (file_id: " + cloneUpload.file_id + ")，正在上传示例音频…", "loading");
+
+    // 步骤2: 上传示例音频（可选）
+    let promptFileId: string | undefined;
+    if (promptFile) {
+      const promptUpload = await window.tts.upload(apiKey, promptFile, "prompt_audio");
+      promptFileId = promptUpload.file_id;
+      setCloneStatus("示例音频上传完成，正在训练音色…", "loading");
+    } else {
+      setCloneStatus("正在训练音色…", "loading");
+    }
+
+    // 步骤3: 音色克隆
+    const result = await window.tts.clone({
+      apiKey, fileId: cloneUpload.file_id, voiceId,
+      promptAudioId: promptFileId, promptText: promptText || undefined,
+      text: cloneText,
+    });
+
+    // 自动填入音色 ID
+    ttsEl("tts-minimax-voice").value = result.voiceId;
+    void saveTtsField("ttsMinimaxVoiceId", result.voiceId);
+
+    setCloneStatus("✅ 复刻成功！音色 ID「" + result.voiceId + "」已自动填入。", "ok");
+
+    // 如果有试听音频，播放
+    if (result.audioDemo) {
+      try {
+        const resp = await fetch(result.audioDemo);
+        const buf = await resp.arrayBuffer();
+        const base64 = btoa(String.fromCharCode(...new Uint8Array(buf)));
+        playTtsAudio(base64);
+      } catch { /* 试听音频播放失败不影响主流程 */ }
+    }
+  } catch (err) {
+    setCloneStatus("❌ " + (err instanceof Error ? err.message : String(err)), "error");
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+// 初始加载配置
+void loadTtsConfig();

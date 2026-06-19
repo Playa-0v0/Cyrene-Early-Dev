@@ -2093,3 +2093,43 @@ body {
   color: rgba(235, 229, 245, 0.5);
   line-height: 1.6;
 }
+
+/* 音色快速复刻区 */
+.tts-clone-section {
+  margin-top: 24px;
+  padding: 16px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 182, 220, 0.14);
+}
+
+.tts-clone-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(235, 229, 245, 0.85);
+  margin: 0 0 6px;
+}
+
+.tts-clone-hint {
+  font-size: 11px;
+  color: rgba(235, 229, 245, 0.45);
+  margin: 0 0 14px;
+  line-height: 1.5;
+}
+
+.tts-pick-btn {
+  flex: 0 0 auto;
+  padding: 6px 14px !important;
+  font-size: 12px !important;
+}
+
+.tts-clone-status {
+  margin-top: 12px;
+  font-size: 12px;
+  line-height: 1.6;
+  min-height: 18px;
+}
+
+.tts-clone-status.is-ok { color: #4ade80; }
+.tts-clone-status.is-error { color: #f87171; }
+.tts-clone-status.is-loading { color: rgba(235, 229, 245, 0.6); }

@@ -182,3 +182,23 @@ const tokenUsageApi = {
 };
 contextBridge.exposeInMainWorld("tokenUsage", tokenUsageApi);
 
+// TTS 语音合成（设置中心 TTS 面板 + 聊天窗口朗读用）
+const ttsApi = {
+  upload: (apiKey: string, filePath: string, purpose: "voice_clone" | "prompt_audio") =>
+    ipcRenderer.invoke(IPC.TTS_UPLOAD, { apiKey, filePath, purpose }),
+  pickAudio: () => ipcRenderer.invoke(IPC.TTS_PICK_AUDIO),
+  clone: (payload: {
+    apiKey: string; fileId: string; voiceId: string;
+    promptAudioId?: string; promptText?: string;
+    text: string; model?: string;
+  }) => ipcRenderer.invoke(IPC.TTS_CLONE, payload),
+  synthesize: (payload: {
+    apiKey: string; voiceId: string; text: string;
+    speed?: number; volume?: number; pitch?: number;
+    model?: string; format?: "mp3" | "wav" | "pcm";
+  }) => ipcRenderer.invoke(IPC.TTS_SYNTHESIZE, payload),
+  saveSettings: (tts: Record<string, unknown>) => ipcRenderer.invoke(IPC.TTS_SAVE_SETTINGS, tts),
+  loadSettings: () => ipcRenderer.invoke(IPC.TTS_LOAD_SETTINGS),
+};
+contextBridge.exposeInMainWorld("tts", ttsApi);
+
