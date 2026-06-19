@@ -463,6 +463,7 @@ const NAV_LABELS: Record<string, { emoji: string; title: string; hint: string }>
   chat: { emoji: "💬", title: "聊天", hint: "管理聊天窗口与会话" },
   user: { emoji: "👤", title: "用户信息", hint: "编辑你的个人资料" },
   tasks: { emoji: "⏰", title: "定时任务", hint: "管理定时提醒与日程" },
+  identity: { emoji: "💼", title: "职位", hint: "自定义昔涟的身份定位与工作职责" },
   skills: { emoji: "✨", title: "技能 Skill", hint: "管理昔涟的能力插件" },
   plugins: { emoji: "🔌", title: "插件", hint: "扩展功能与第三方集成" },
   general: { emoji: "⚙️", title: "设置", hint: "通用偏好与外观" },
