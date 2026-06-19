@@ -102,13 +102,166 @@ body {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
-.chat__status {
-  width: 10px;
-  height: 10px;
-  border-radius: var(--rb-radius-full);
-  background: linear-gradient(135deg, #ff8ccc, #ec4899);
-  box-shadow: 0 0 18px rgba(236, 72, 153, 0.75);
+/* 左上角触发按钮：内嵌旋转 loader 动画，点击调出会话侧栏（侧栏逻辑后续接入）。
+   loader 来自 Uiverse.io，配色改成粉紫系跟主题统一，用 --size 缩到 30px 塞进标题栏。 */
+.chat__status-btn {
+  -webkit-app-region: no-drag;
   flex: 0 0 auto;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  border-radius: var(--rb-radius-full);
+}
+
+.chat__status-btn:hover {
+  filter: brightness(1.15);
+}
+
+.loader {
+  --color-one: #ff8ccc;
+  --color-two: #a855f7;
+  --color-three: #ff8ccc80;
+  --color-four: #a855f780;
+  --color-five: #ff8ccc40;
+  --time-animation: 2s;
+  --size: 0.3; /* 100px × 0.3 = 30px，跟其他标题栏按钮一致 */
+  position: relative;
+  border-radius: 50%;
+  transform: scale(var(--size));
+  box-shadow:
+    0 0 25px 0 var(--color-three),
+    0 20px 50px 0 var(--color-four);
+  animation: colorize calc(var(--time-animation) * 3) ease-in-out infinite;
+}
+
+.loader::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border-top: solid 1px var(--color-one);
+  border-bottom: solid 1px var(--color-two);
+  background: linear-gradient(180deg, var(--color-five), var(--color-four));
+  box-shadow:
+    inset 0 10px 10px 0 var(--color-three),
+    inset 0 -10px 10px 0 var(--color-four);
+}
+
+.loader .box {
+  width: 100px;
+  height: 100px;
+  background: linear-gradient(
+    180deg,
+    var(--color-one) 30%,
+    var(--color-two) 70%
+  );
+  mask: url(#clipping);
+  -webkit-mask: url(#clipping);
+}
+
+.loader svg {
+  position: absolute;
+}
+
+.loader svg #clipping {
+  filter: contrast(15);
+  animation: roundness calc(var(--time-animation) / 2) linear infinite;
+}
+
+.loader svg #clipping polygon {
+  filter: blur(7px);
+}
+
+.loader svg #clipping polygon:nth-child(1) {
+  transform-origin: 75% 25%;
+  transform: rotate(90deg);
+}
+
+.loader svg #clipping polygon:nth-child(2) {
+  transform-origin: 50% 50%;
+  animation: rotation var(--time-animation) linear infinite reverse;
+}
+
+.loader svg #clipping polygon:nth-child(3) {
+  transform-origin: 50% 60%;
+  animation: rotation var(--time-animation) linear infinite;
+  animation-delay: calc(var(--time-animation) / -3);
+}
+
+.loader svg #clipping polygon:nth-child(4) {
+  transform-origin: 40% 40%;
+  animation: rotation var(--time-animation) linear infinite reverse;
+}
+
+.loader svg #clipping polygon:nth-child(5) {
+  transform-origin: 40% 40%;
+  animation: rotation var(--time-animation) linear infinite reverse;
+  animation-delay: calc(var(--time-animation) / -2);
+}
+
+.loader svg #clipping polygon:nth-child(6) {
+  transform-origin: 60% 40%;
+  animation: rotation var(--time-animation) linear infinite;
+}
+
+.loader svg #clipping polygon:nth-child(7) {
+  transform-origin: 60% 40%;
+  animation: rotation var(--time-animation) linear infinite;
+  animation-delay: calc(var(--time-animation) / -1.5);
+}
+
+@keyframes rotation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes roundness {
+  0% {
+    filter: contrast(15);
+  }
+  20% {
+    filter: contrast(3);
+  }
+  40% {
+    filter: contrast(3);
+  }
+  60% {
+    filter: contrast(15);
+  }
+  100% {
+    filter: contrast(15);
+  }
+}
+
+@keyframes colorize {
+  0% {
+    filter: hue-rotate(0deg);
+  }
+  20% {
+    filter: hue-rotate(-30deg);
+  }
+  40% {
+    filter: hue-rotate(-60deg);
+  }
+  60% {
+    filter: hue-rotate(-90deg);
+  }
+  80% {
+    filter: hue-rotate(-45deg);
+  }
+  100% {
+    filter: hue-rotate(0deg);
+  }
 }
 
 .chat__titlebar-actions {
