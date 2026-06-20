@@ -1340,9 +1340,16 @@ function createWindow(): void {
   setWeatherConfig(
     () => loadUserProfile().defaultCity,
     () => loadGeneralSettings().weatherSource,
-    () => {
-      const s = loadGeneralSettings();
-      return s.amapKey;
+    () => loadGeneralSettings().amapKey,
+    // 天气卡片回调：工具拿到结构化数据后，发 Custom 事件给聊天窗口渲染卡片
+    (card) => {
+      if (chatWindow && !chatWindow.isDestroyed()) {
+        chatWindow.webContents.send(IPC.AGUI_EVENT, {
+          type: "CUSTOM",
+          name: "cyrene.weather",
+          value: card,
+        });
+      }
     },
   );
 

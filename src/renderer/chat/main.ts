@@ -421,6 +421,82 @@ function formatTime(at: number): string {
   return `${hh}:${mm}`;
 }
 
+/** 构建天气卡片 DOM 元素（不插入，由调用方决定位置）。 */
+function buildWeatherCardEl(data: Record<string, unknown>): HTMLElement {
+  const card = document.createElement("div");
+  card.className = "weather-card";
+
+  const now = new Date();
+  const dateStr = `${now.getMonth() + 1}月${now.getDate()}日 周${"日一二三四五六"[now.getDay()]}`;
+  const timeStr = formatTime(Date.now());
+
+  const temp = Number(data.temp ?? 0);
+  const feelsLike = Number(data.feelsLike ?? temp);
+  const humidity = Number(data.humidity ?? 0);
+  const precip = Number(data.precip ?? 0);
+  const pressure = Number(data.pressure ?? 0);
+  const icon = String(data.icon ?? "🌤️");
+  const windDir = String(data.windDir ?? "");
+  const windScale = String(data.windScale ?? "");
+  const visibility = data.visibility != null ? `${data.visibility}km` : "—";
+  const uv = String(data.uv ?? "—");
+  const aqi = data.aqi != null ? Number(data.aqi) : null;
+  const aqiText = String(data.aqiText ?? "");
+  const kaomoji = aqi != null ? aqiKaomojiText(Number(aqi)) : "";
+
+  card.innerHTML = `
+    <div class="w-header">
+      <div class="w-datetime"><span class="w-date">${dateStr}</span><span class="w-time">${timeStr} 更新</span></div>
+      <div class="w-loc"><span class="w-city">${String(data.city ?? "")}</span><span class="w-adm">${String(data.adm ?? "")}</span></div>
+    </div>
+    <div class="w-main">
+      <div class="w-icon-box"><span class="w-icon">${icon}</span><span class="w-desc">${String(data.text ?? "")}</span></div>
+      <div class="w-temp-box">
+        <div class="w-temp">${temp}<span class="w-deg">°</span></div>
+        ${data.hi != null ? `<div class="w-hilo"><span class="w-hi">↑${data.hi}°</span><span class="w-sep">|</span><span class="w-lo">↓${data.lo}°</span></div>` : ""}
+      </div>
+    </div>
+    <div class="w-feels">体感 ${feelsLike}°C</div>
+    <div class="w-quick">
+      <div class="w-qitem"><div class="w-qicon">💧</div><div class="w-qlabel">湿度</div><div class="w-qvalue">${humidity}%</div></div>
+      <div class="w-qitem"><div class="w-qicon">💨</div><div class="w-qlabel">风力</div><div class="w-qvalue">${windScale}</div></div>
+      <div class="w-qitem"><div class="w-qicon">🌧️</div><div class="w-qlabel">降水</div><div class="w-qvalue">${precip}mm</div></div>
+      <div class="w-qitem"><div class="w-qicon">📊</div><div class="w-qlabel">气压</div><div class="w-qvalue">${pressure || "—"}</div></div>
+    </div>
+    <button class="w-expand" type="button">查看更多 <span class="w-arrow">▼</span></button>
+    <div class="w-details">
+      <div class="w-detail-grid">
+        <div class="w-ditem"><span class="w-dicon">🌡️</span><div><div class="w-dlabel">体感温度</div><div class="w-dvalue">${feelsLike}°C</div></div></div>
+        <div class="w-ditem"><span class="w-dicon">💨</span><div><div class="w-dlabel">风向风力</div><div class="w-dvalue">${windDir} ${windScale}</div></div></div>
+        <div class="w-ditem"><span class="w-dicon">🔆</span><div><div class="w-dlabel">紫外线</div><div class="w-dvalue">${uv}</div></div></div>
+        <div class="w-ditem"><span class="w-dicon">👁️</span><div><div class="w-dlabel">能见度</div><div class="w-dvalue">${visibility}</div></div></div>
+        ${aqi != null ? `<div class="w-ditem"><span class="w-dicon">🌿</span><div><div class="w-dlabel">空气质量</div><div class="w-dvalue">${aqi} ${aqiText} <span class="w-kaomoji">${kaomoji}</span></div></div></div>` : ""}
+      </div>
+    </div>
+    <div class="w-source"><span>${icon} ${String(data.source ?? "")}</span><span>${timeStr} 更新</span></div>
+  `;
+
+  // 展开按钮点击切换
+  const expandBtn = card.querySelector(".w-expand") as HTMLButtonElement | null;
+  if (expandBtn) {
+    expandBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      card.classList.toggle("expanded");
+    });
+  }
+
+  return card;
+}
+
+/** AQI → 颜文字。 */
+function aqiKaomojiText(aqi: number): string {
+  if (aqi <= 50) return "(◕‿◕)";
+  if (aqi <= 100) return "(´ー`)";
+  if (aqi <= 150) return "(´-ω-`)";
+  if (aqi <= 200) return "(；´д`)";
+  return "(╥﹏╥)";
+}
+
 /**
  * Fill the avatar slot for a given role.
  * - model role: insert an <img> with the configured PNG (auto-cropped to
@@ -713,6 +789,7 @@ async function send(): Promise<void> {
 
     let streamContent = "";
     let sticker: StickerId | null = null;
+    let pendingWeatherCard: Record<string, unknown> | null = null;
 
     // 终态信号：由事件流的 RUN_FINISHED/RUN_ERROR 触发 resolve，
     // 不依赖 invoke 的 resolve（invoke 只做 ack，可能与事件投递存在顺序竞争）。
@@ -821,9 +898,13 @@ async function send(): Promise<void> {
             }
             break;
           case "CUSTOM":
-            // 主进程发的自定义事件：sticker
+            // 主进程发的自定义事件：sticker / 天气卡片
             if (event.name === "cyrene.sticker") {
               sticker = (event.value as StickerId | null) ?? null;
+            } else if (event.name === "cyrene.weather") {
+              // 暂存天气数据，等 runDone 后 render 再插入（避免 render 的 replaceChildren 清掉卡片）
+              console.log("[Chat] 收到天气卡片数据:", JSON.stringify(event.value)?.slice(0, 100));
+              pendingWeatherCard = event.value as Record<string, unknown>;
             }
             break;
           case "RUN_FINISHED":
@@ -866,6 +947,14 @@ async function send(): Promise<void> {
     }
     void saveSession();
     render();
+    // 天气卡片在 render 后追加到末尾（模型回复之后）
+    if (pendingWeatherCard) {
+      console.log("[Chat] 插入天气卡片");
+      const card = buildWeatherCardEl(pendingWeatherCard);
+      messagesEl.appendChild(card);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+      pendingWeatherCard = null;
+    }
     // TTS 已在 TEXT_MESSAGE_END 时触发，这里不再重复朗读
   } catch (err) {
     const message = err instanceof Error ? err.message : "模型请求失败";

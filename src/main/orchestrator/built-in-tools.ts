@@ -305,18 +305,93 @@ let weatherCityGetter: (() => string) | null = null;
 let weatherSourceGetter: (() => string) | null = null;
 let amapKeyGetter: (() => string) | null = null;
 
+/** 天气卡片数据回调：工具拿到结构化数据后调这个，由桥层发 Custom 事件给渲染端。 */
+let weatherCardCallback: ((card: WeatherCardData) => void) | null = null;
+
+/** 天气卡片结构化数据（发给渲染端渲染 MBE 卡片用）。 */
+export interface WeatherCardData {
+  city: string;
+  adm: string;
+  temp: number;
+  feelsLike: number;
+  text: string;
+  icon: string;
+  hi?: number;
+  lo?: number;
+  humidity: number;
+  windDir: string;
+  windScale: string;
+  precip: number;
+  pressure: number;
+  visibility?: number;
+  uv?: string;
+  aqi?: number;
+  aqiText?: string;
+  source: string;
+  updateTime: string;
+}
+
+/** WMO 天气代码 → emoji 图标。 */
+function weatherIconFromCode(code: number): string {
+  if (code === 0) return "☀️";
+  if (code <= 2) return "⛅";
+  if (code === 3) return "☁️";
+  if (code >= 45 && code <= 48) return "🌫️";
+  if ((code >= 51 && code <= 57) || (code >= 61 && code <= 67)) return "🌧️";
+  if (code >= 71 && code <= 77) return "❄️";
+  if (code >= 80 && code <= 82) return "🌦️";
+  if (code >= 85 && code <= 86) return "🌨️";
+  if (code >= 95) return "⛈️";
+  return "🌤️";
+}
+
+/** 高德天气文字 → emoji 图标。 */
+function weatherIconFromText(text: string): string {
+  if (/晴/.test(text)) return "☀️";
+  if (/雷/.test(text)) return "⛈️";
+  if (/大雨|暴雨/.test(text)) return "🌧️";
+  if (/雨/.test(text)) return "🌦️";
+  if (/大雪|暴雪/.test(text)) return "❄️";
+  if (/雪/.test(text)) return "🌨️";
+  if (/雾|霾/.test(text)) return "🌫️";
+  if (/阴/.test(text)) return "☁️";
+  if (/云|多云/.test(text)) return "⛅";
+  if (/风/.test(text)) return "💨";
+  return "🌤️";
+}
+
+/** AQI → 等级文字 + 颜文字。 */
+function aqiKaomoji(aqi: number): { text: string; kaomoji: string } {
+  if (aqi <= 50) return { text: "优", kaomoji: "(◕‿◕)" };
+  if (aqi <= 100) return { text: "良", kaomoji: "(´ー`)" };
+  if (aqi <= 150) return { text: "轻度污染", kaomoji: "(´-ω-`)" };
+  if (aqi <= 200) return { text: "中度污染", kaomoji: "(；´д`)" };
+  return { text: "重度污染", kaomoji: "(╥﹏╥)" };
+}
+
+/** 紫外线指数 → 文字。 */
+function uvText(uv: number): string {
+  if (uv <= 2) return "弱";
+  if (uv <= 5) return "中等";
+  if (uv <= 7) return "强";
+  if (uv <= 10) return "很强";
+  return "极强";
+}
+
 /**
- * index.ts 启动时调用，注入默认城市/天气源/高德key 的读取器。
+ * index.ts 启动时调用，注入默认城市/天气源/高德key/卡片回调 的读取器。
  * source: "open-meteo"（免配置默认）| "amap"（高德）
  */
 export function setWeatherConfig(
   cityGetter: () => string,
   sourceGetter: () => string,
   amapKeyFn: () => string,
+  cardCb?: (card: WeatherCardData) => void,
 ): void {
   weatherCityGetter = cityGetter;
   weatherSourceGetter = sourceGetter;
   amapKeyGetter = amapKeyFn;
+  if (cardCb) weatherCardCallback = cardCb;
 }
 
 // ── Open-Meteo 实现（免 key 免配置）──
@@ -370,6 +445,19 @@ async function omFetchWeather(city: string): Promise<string> {
     const wmoText = omWeatherCodeText(c.weather_code);
     const windDir = omWindDir(c.wind_direction_10m);
     const adm = loc.admin1 ? `${loc.admin1}` : loc.country;
+    const icon = weatherIconFromCode(c.weather_code);
+
+    // 发送天气卡片数据给渲染端
+    if (weatherCardCallback) {
+      weatherCardCallback({
+        city: loc.name, adm, temp: c.temperature_2m, feelsLike: c.apparent_temperature,
+        text: wmoText, icon,
+        humidity: c.relative_humidity_2m, windDir, windScale: `${c.wind_speed_10m}km/h`,
+        precip: c.precipitation, pressure: Math.round(c.surface_pressure),
+        source: "Open-Meteo", updateTime: new Date().toLocaleString("zh-CN", { hour: "2-digit", minute: "2-digit" }),
+      });
+    }
+
     return [
       `城市：${loc.name}（${adm}）`,
       `天气：${wmoText}`,
@@ -454,6 +542,19 @@ async function amapFetchWeather(city: string, key: string): Promise<string> {
       return `[错误] 天气查询失败：高德返回 status=${data.status ?? "?"}`;
     }
     const w = data.lives[0];
+    const icon = weatherIconFromText(w.weather);
+
+    // 发送天气卡片数据给渲染端
+    if (weatherCardCallback) {
+      weatherCardCallback({
+        city: w.city, adm: w.province, temp: Number(w.temperature), feelsLike: Number(w.temperature),
+        text: w.weather, icon,
+        humidity: Number(w.humidity), windDir: w.winddirection, windScale: `${w.windpower}级`,
+        precip: 0, pressure: 0,
+        source: "高德天气", updateTime: w.reporttime.slice(11, 16) || new Date().toLocaleString("zh-CN", { hour: "2-digit", minute: "2-digit" }),
+      });
+    }
+
     return [
       `城市：${w.city}（${w.province}）`,
       `天气：${w.weather}`,
