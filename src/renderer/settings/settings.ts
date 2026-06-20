@@ -856,55 +856,62 @@ async function loadPluginStates(): Promise<void> {
 }
 void loadPluginStates();
 
-// ── 天气插件（和风天气 key + 启用开关）──
-const qweatherEnabledCheckbox = document.getElementById("plugin-weather-enabled") as HTMLInputElement | null;
-const qweatherHostInput = document.getElementById("qweather-host") as HTMLInputElement | null;
-const qweatherKeyInput = document.getElementById("qweather-key") as HTMLInputElement | null;
-const qweatherConfig = document.getElementById("plugin-weather-config") as HTMLElement | null;
+// ── 天气插件（Open-Meteo / 高德天气）──
+const weatherEnabledCheckbox = document.getElementById("plugin-weather-enabled") as HTMLInputElement | null;
+const weatherConfig = document.getElementById("plugin-weather-config") as HTMLElement | null;
+const weatherSourceSelect = document.getElementById("weather-source") as HTMLSelectElement | null;
+const amapFields = document.getElementById("amap-fields");
+const amapKeyInput = document.getElementById("amap-key") as HTMLInputElement | null;
 
-// 启用开关：勾上才展开 key 配置区
-function syncQweatherConfigVisibility(): void {
-  if (qweatherConfig) qweatherConfig.style.display = qweatherEnabledCheckbox?.checked ? "block" : "none";
+// 启用开关：勾上才展开配置区
+function syncWeatherConfigVisibility(): void {
+  if (weatherConfig) weatherConfig.style.display = weatherEnabledCheckbox?.checked ? "block" : "none";
+  syncWeatherFieldsVisibility();
 }
-qweatherEnabledCheckbox?.addEventListener("change", () => {
-  syncQweatherConfigVisibility();
-  void saveQweatherField("qweatherEnabled", qweatherEnabledCheckbox.checked);
+function syncWeatherFieldsVisibility(): void {
+  const src = weatherSourceSelect?.value ?? "open-meteo";
+  // 选高德才显示高德 Key 输入框
+  if (amapFields) amapFields.style.display = src === "amap" ? "block" : "none";
+}
+weatherEnabledCheckbox?.addEventListener("change", () => {
+  syncWeatherConfigVisibility();
+  void saveWeatherField("qweatherEnabled", weatherEnabledCheckbox.checked);
 });
-qweatherKeyInput?.addEventListener("change", () => {
-  void saveQweatherField("qweatherKey", qweatherKeyInput.value.trim());
+weatherSourceSelect?.addEventListener("change", () => {
+  syncWeatherFieldsVisibility();
+  void saveWeatherField("weatherSource", weatherSourceSelect.value);
 });
-qweatherHostInput?.addEventListener("change", () => {
-  void saveQweatherField("qweatherHost", qweatherHostInput.value.trim());
+amapKeyInput?.addEventListener("change", () => {
+  void saveWeatherField("amapKey", amapKeyInput.value.trim());
 });
 
-async function saveQweatherField(field: string, value: unknown): Promise<void> {
+async function saveWeatherField(field: string, value: unknown): Promise<void> {
   if (!window.tts) return;
   try {
     await window.tts.saveSettings({ [field]: value });
   } catch (err) {
-    console.warn("[plugins] 保存和风配置失败:", field, err);
+    console.warn("[plugins] 保存天气配置失败:", field, err);
   }
 }
 
-async function loadQweatherConfig(): Promise<void> {
+async function loadWeatherConfig(): Promise<void> {
   try {
     const cfg = await window.tts?.loadSettings();
-    console.log("[plugins] 和风加载结果:", { enabled: cfg?.qweatherEnabled, hasKey: Boolean(cfg?.qweatherKey), checkbox: !!qweatherEnabledCheckbox, keyInput: !!qweatherKeyInput });
-    if (cfg && qweatherEnabledCheckbox) {
-      qweatherEnabledCheckbox.checked = Boolean(cfg.qweatherEnabled);
+    if (cfg && weatherEnabledCheckbox) {
+      weatherEnabledCheckbox.checked = Boolean(cfg.qweatherEnabled);
     }
-    if (cfg && qweatherKeyInput) {
-      qweatherKeyInput.value = String(cfg.qweatherKey ?? "");
+    if (cfg && weatherSourceSelect) {
+      weatherSourceSelect.value = cfg.weatherSource === "amap" ? "amap" : "open-meteo";
     }
-    if (cfg && qweatherHostInput) {
-      qweatherHostInput.value = String(cfg.qweatherHost ?? "");
+    if (cfg && amapKeyInput) {
+      amapKeyInput.value = String(cfg.amapKey ?? "");
     }
-    syncQweatherConfigVisibility();
+    syncWeatherConfigVisibility();
   } catch (err) {
-    console.warn("[plugins] 加载和风配置失败", err);
+    console.warn("[plugins] 加载天气配置失败", err);
   }
 }
-void loadQweatherConfig();
+void loadWeatherConfig();
 
 // ── 联网搜索插件（博查/Tavily/火山/MiniMax）──
 const searchEnabledCheckbox = document.getElementById("plugin-search-enabled") as HTMLInputElement | null;

@@ -153,10 +153,10 @@ interface GeneralSettings {
   ttsMinimaxVoiceId: string;
   /** MiniMax 合成模型：speech-2.8-hd(高保真¥3.5/万字符) | speech-2.8-turbo(极速¥2.0/万字符) */
   ttsMinimaxModel: "speech-2.8-hd" | "speech-2.8-turbo";
-  // 插件 key：和风天气（免费 https://dev.qweather.com 注册）
-  qweatherHost: string;
-  qweatherKey: string;
-  qweatherEnabled: boolean;
+  /** 天气源：open-meteo(免配置默认) | amap(高德,需填key) */
+  weatherSource: "open-meteo" | "amap";
+  /** 高德天气 key（https://lbs.amap.com 注册 Web服务 key） */
+  amapKey: string;
   // 联网搜索：选哪个搜索源 + 对应 key
   searchEngine: "off" | "bocha" | "tavily" | "volcano" | "minimax";
   searchBochaKey: string;
@@ -260,9 +260,8 @@ const DEFAULT_GENERAL_SETTINGS: GeneralSettings = {
   ttsMinimaxKey: "",
   ttsMinimaxVoiceId: "",
   ttsMinimaxModel: "speech-2.8-turbo",
-  qweatherHost: "",
-  qweatherKey: "",
-  qweatherEnabled: false,
+  weatherSource: "open-meteo",
+  amapKey: "",
   searchEngine: "off",
   searchBochaKey: "",
   searchTavilyKey: "",
@@ -595,9 +594,10 @@ function normalizeGeneralSettings(input: Partial<GeneralSettings> | null | undef
     ttsMinimaxKey: typeof input?.ttsMinimaxKey === "string" ? input.ttsMinimaxKey : "",
     ttsMinimaxVoiceId: typeof input?.ttsMinimaxVoiceId === "string" ? input.ttsMinimaxVoiceId : "",
     ttsMinimaxModel: input?.ttsMinimaxModel === "speech-2.8-hd" ? "speech-2.8-hd" : "speech-2.8-turbo",
-    qweatherHost: typeof input?.qweatherHost === "string" ? input.qweatherHost : "",
-    qweatherKey: typeof input?.qweatherKey === "string" ? input.qweatherKey : "",
-    qweatherEnabled: Boolean(input?.qweatherEnabled),
+    weatherSource: ["open-meteo", "amap"].includes(String(input?.weatherSource))
+      ? (input!.weatherSource as "open-meteo" | "amap")
+      : "open-meteo",
+    amapKey: typeof input?.amapKey === "string" ? input.amapKey : "",
     searchEngine: ["off", "bocha", "tavily", "volcano", "minimax"].includes(String(input?.searchEngine))
       ? (input!.searchEngine as "off" | "bocha" | "tavily" | "volcano" | "minimax")
       : "off",
@@ -1338,9 +1338,12 @@ function createWindow(): void {
   // 注入天气工具配置获取器：每次工具执行时实时读 key/默认城市
   // （用户改了设置不用重启就能生效）
   setWeatherConfig(
-    () => loadGeneralSettings().qweatherHost,
-    () => loadGeneralSettings().qweatherKey,
     () => loadUserProfile().defaultCity,
+    () => loadGeneralSettings().weatherSource,
+    () => {
+      const s = loadGeneralSettings();
+      return s.amapKey;
+    },
   );
 
   mainWindow.on("closed", () => {

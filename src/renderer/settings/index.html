@@ -659,17 +659,23 @@
               <div class="plugin-card__icon">🌤️</div>
               <div class="plugin-card__body">
                 <h2>天气查询</h2>
-                <p>查指定城市的实时天气与预报。需要和风天气 API Key（<a href="https://dev.qweather.com" target="_blank" rel="noopener">免费注册</a>）。</p>
+                <p>查指定城市的实时天气与预报。Open-Meteo 免配置，或用高德（<a href="https://lbs.amap.com" target="_blank" rel="noopener">注册 Key</a>）。</p>
                 <div class="plugin-config" id="plugin-weather-config">
                   <div class="tts-field">
-                    <label for="qweather-host">API Host</label>
-                    <input type="text" id="qweather-host" placeholder="如 abc123.qweatherapi.com（控制台→设置里查看）" autocomplete="off" />
+                    <label for="weather-source">天气源</label>
+                    <select id="weather-source">
+                      <option value="open-meteo">Open-Meteo（免配置，推荐）</option>
+                      <option value="amap">高德天气（需 Key，国内准）</option>
+                    </select>
                   </div>
-                  <div class="tts-field">
-                    <label for="qweather-key">API Key</label>
-                    <input type="password" id="qweather-key" placeholder="JWT 格式的 Key（控制台→设置里查看）" autocomplete="off" />
+                  <div id="amap-fields" style="display:none">
+                    <div class="tts-field">
+                      <label for="amap-key">高德 Key</label>
+                      <input type="password" id="amap-key" placeholder="lbs.amap.com 注册 Web服务 Key" autocomplete="off" />
+                    </div>
+                    <p class="user-field-hint">高德开放平台 → 控制台 → 应用管理 → 创建「Web服务」类型 Key。</p>
                   </div>
-                  <p class="user-field-hint">在和风控制台「设置」页可找到 API Host 和 API Key。默认城市在「我的信息」面板填。</p>
+                  <p class="user-field-hint">Open-Meteo 免配置直接用。默认城市在「我的信息」面板填。</p>
                 </div>
               </div>
               <label class="plugin-switch" aria-label="启用天气查询">

@@ -291,100 +291,187 @@ toolRegistry.register({
 
 console.log(LOG_PREFIX, "已注册：fetch_url / run_shell / install_mcp_server");
 
-// ── 工具 4：weather（和风天气）─────────────────────────────
+// ── 工具 4：weather（天气查询）─────────────────────────────
 // 查指定城市的实时天气。城市参数可选——没传就读用户信息的默认城市。
-// 和风天气 v8 API：每个开发者有独立 API Host + JWT Key。
-// 先用 /geo/v2/city/lookup 查城市 ID，再调 /v7/weather/now 查实时天气。
-// host/key/默认城市通过 setWeatherConfig 注入（避免 import index.ts 造成循环依赖）。
+// 支持两个天气源：
+//   - open-meteo（免配置默认，海外开源 API）
+//   - amap（高德天气，国内数据准，需填 key）
+// 默认城市/天气源/高德key 通过 setWeatherConfig 注入（避免 import index.ts 造成循环依赖）。
 
 const WEATHER_TIMEOUT_MS = 15_000;
 
 /** 注入的配置获取器（由 index.ts 启动时调 setWeatherConfig 设置）。 */
-let weatherHostGetter: (() => string) | null = null;
-let weatherKeyGetter: (() => string) | null = null;
 let weatherCityGetter: (() => string) | null = null;
+let weatherSourceGetter: (() => string) | null = null;
+let amapKeyGetter: (() => string) | null = null;
 
 /**
- * index.ts 启动时调用，注入 host/key/默认城市的读取器。
- * host: 开发者独立 API Host（如 xxx.qweatherapi.com）
- * key:  JWT API Key（Authorization: Bearer 用）
+ * index.ts 启动时调用，注入默认城市/天气源/高德key 的读取器。
+ * source: "open-meteo"（免配置默认）| "amap"（高德）
  */
 export function setWeatherConfig(
-  hostGetter: () => string,
-  keyGetter: () => string,
   cityGetter: () => string,
+  sourceGetter: () => string,
+  amapKeyFn: () => string,
 ): void {
-  weatherHostGetter = hostGetter;
-  weatherKeyGetter = keyGetter;
   weatherCityGetter = cityGetter;
+  weatherSourceGetter = sourceGetter;
+  amapKeyGetter = amapKeyFn;
 }
 
-interface QWeatherNow {
-  obsTime: string;
-  temp: string;
-  feelsLike: string;
-  icon: string;
-  text: string;
-  wind360: string;
-  windDir: string;
-  windScale: string;
-  windSpeed: string;
-  humidity: string;
-  precip: string;
-  pressure: string;
-  vis: string;
-  cloud: string;
-  dew: string;
-}
+// ── Open-Meteo 实现（免 key 免配置）──
 
-/** 规范化 host：去掉 https:// 前缀和末尾斜杠，保证拼 URL 干净。 */
-function normalizeHost(host: string): string {
-  let h = host.trim();
-  h = h.replace(/^https?:\/\//i, "");
-  h = h.replace(/\/+$/, "");
-  return h;
-}
+interface OMCity { name: string; latitude: number; longitude: number; country: string; admin1?: string }
 
-/** 用 GeoAPI 查城市，返回第一个匹配的 location。 */
-async function resolveCityId(
-  city: string,
-  host: string,
-  key: string,
-): Promise<{ id: string; name: string; adm: string } | null> {
-  const url = `https://${host}/geo/v2/city/lookup?location=${encodeURIComponent(city)}&number=1`;
-  console.log(LOG_PREFIX, `[weather] GeoAPI 请求: ${url}`);
+/** Open-Meteo 城市查询（Geocoding API，免费免 key）。 */
+async function omResolveCity(city: string): Promise<OMCity | null> {
+  const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=zh&format=json`;
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), WEATHER_TIMEOUT_MS);
   try {
-    const resp = await fetch(url, {
-      signal: ctrl.signal,
-      headers: { Authorization: `Bearer ${key}` },
-    });
-    console.log(LOG_PREFIX, `[weather] GeoAPI HTTP ${resp.status} ${resp.statusText}`);
-    if (!resp.ok) {
-      const errBody = await resp.text().catch(() => "");
-      console.error(LOG_PREFIX, `[weather] GeoAPI 失败响应: ${errBody.slice(0, 300)}`);
-      return null;
-    }
-    const data = await resp.json() as { code?: string; location?: Array<{ id: string; name: string; adm1: string; adm2: string }> };
-    console.log(LOG_PREFIX, `[weather] GeoAPI code=${data.code} location数=${data.location?.length ?? 0}`);
-    if (data.code !== "200" || !data.location || data.location.length === 0) return null;
-    const loc = data.location[0];
-    return { id: loc.id, name: loc.name, adm: loc.adm1 || loc.adm2 || "" };
-  } catch (err) {
-    console.error(LOG_PREFIX, `[weather] GeoAPI 异常:`, err instanceof Error ? err.message : String(err));
+    const resp = await fetch(url, { signal: ctrl.signal });
+    if (!resp.ok) return null;
+    const data = await resp.json() as { results?: OMCity[] };
+    if (!data.results || data.results.length === 0) return null;
+    return data.results[0];
+  } catch {
     return null;
   } finally {
     clearTimeout(timer);
   }
 }
 
-async function executeWeather(args: Record<string, unknown>): Promise<string> {
-  const host = normalizeHost(weatherHostGetter?.() ?? "");
-  const key = weatherKeyGetter?.() ?? "";
-  if (!host || !key) {
-    return "[错误] 还没有配置和风天气。请在 设置 → 插件 → 天气查询 填入 API Host 和 API Key 并启用。";
+/** Open-Meteo 实时天气查询（免费免 key）。 */
+async function omFetchWeather(city: string): Promise<string> {
+  const loc = await omResolveCity(city);
+  if (!loc) {
+    return `[错误] 找不到城市"${city}"，请确认城市名（支持中文/拼音）。`;
   }
+  const params = [
+    "temperature_2m", "relative_humidity_2m", "apparent_temperature",
+    "precipitation", "weather_code", "wind_speed_10m", "wind_direction_10m",
+    "surface_pressure",
+  ].join(",");
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${loc.latitude}&longitude=${loc.longitude}&current=${params}`;
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), WEATHER_TIMEOUT_MS);
+  try {
+    const resp = await fetch(url, { signal: ctrl.signal });
+    if (!resp.ok) return `[错误] 天气查询失败：HTTP ${resp.status}`;
+    const data = await resp.json() as {
+      current?: {
+        temperature_2m: number; relative_humidity_2m: number; apparent_temperature: number;
+        precipitation: number; weather_code: number; wind_speed_10m: number;
+        wind_direction_10m: number; surface_pressure: number;
+      };
+    };
+    const c = data.current;
+    if (!c) return "[错误] 天气查询失败：Open-Meteo 未返回数据";
+    const wmoText = omWeatherCodeText(c.weather_code);
+    const windDir = omWindDir(c.wind_direction_10m);
+    const adm = loc.admin1 ? `${loc.admin1}` : loc.country;
+    return [
+      `城市：${loc.name}（${adm}）`,
+      `天气：${wmoText}`,
+      `温度：${c.temperature_2m}°C（体感 ${c.apparent_temperature}°C）`,
+      `风向风速：${windDir} ${c.wind_speed_10m}km/h`,
+      `湿度：${c.relative_humidity_2m}%`,
+      `降水量：${c.precipitation}mm`,
+      `气压：${c.surface_pressure}hPa`,
+    ].join("\n");
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return "[错误] 天气查询失败：" + msg;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/** WMO 天气代码 → 中文描述（Open-Meteo 用 WMO 标准代码）。 */
+function omWeatherCodeText(code: number): string {
+  const map: Record<number, string> = {
+    0: "晴", 1: "晴间多云", 2: "多云", 3: "阴",
+    45: "雾", 48: "雾凇",
+    51: "小雨", 53: "中雨", 55: "大雨",
+    56: "冻雨", 57: "强冻雨",
+    61: "小雨", 63: "中雨", 65: "大雨",
+    66: "冻雨", 67: "强冻雨",
+    71: "小雪", 73: "中雪", 75: "大雪",
+    77: "雪粒",
+    80: "阵雨", 81: "强阵雨", 82: "暴雨",
+    85: "阵雪", 86: "强阵雪",
+    95: "雷暴", 96: "雷暴伴冰雹", 99: "强雷暴伴冰雹",
+  };
+  return map[code] ?? `未知（代码${code}）`;
+}
+
+/** 风向角度 → 中文方位。 */
+function omWindDir(deg: number): string {
+  const dirs = ["北", "东北偏北", "东北", "东北偏东", "东", "东南偏东", "东南", "东南偏南",
+    "南", "西南偏南", "西南", "西南偏西", "西", "西北偏西", "西北", "西北偏北"];
+  return dirs[Math.round(deg / 22.5) % 16];
+}
+
+// ── 高德天气实现（需 key，国内数据准）──
+
+interface AmapDistrict { adcode: string; name: string; level: string }
+
+/** 高德行政区查询：城市名 → adcode。 */
+async function amapResolveAdcode(city: string, key: string): Promise<AmapDistrict | null> {
+  const url = `https://restapi.amap.com/v3/config/district?keywords=${encodeURIComponent(city)}&subdistrict=0&key=${key}`;
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), WEATHER_TIMEOUT_MS);
+  try {
+    const resp = await fetch(url, { signal: ctrl.signal });
+    if (!resp.ok) return null;
+    const data = await resp.json() as { status?: string; districts?: AmapDistrict[] };
+    if (data.status !== "1" || !data.districts || data.districts.length === 0) return null;
+    return data.districts[0];
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/** 高德实时天气查询。 */
+async function amapFetchWeather(city: string, key: string): Promise<string> {
+  const district = await amapResolveAdcode(city, key);
+  if (!district) {
+    return `[错误] 找不到城市"${city}"，请确认城市名（支持中文，如"无锡"）。`;
+  }
+  const url = `https://restapi.amap.com/v3/weather/weatherInfo?city=${district.adcode}&extensions=base&key=${key}`;
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), WEATHER_TIMEOUT_MS);
+  try {
+    const resp = await fetch(url, { signal: ctrl.signal });
+    if (!resp.ok) return `[错误] 天气查询失败：HTTP ${resp.status}`;
+    const data = await resp.json() as { status?: string; lives?: Array<{
+      province: string; city: string; weather: string; temperature: string;
+      winddirection: string; windpower: string; humidity: string; reporttime: string;
+    }> };
+    if (data.status !== "1" || !data.lives || data.lives.length === 0) {
+      return `[错误] 天气查询失败：高德返回 status=${data.status ?? "?"}`;
+    }
+    const w = data.lives[0];
+    return [
+      `城市：${w.city}（${w.province}）`,
+      `天气：${w.weather}`,
+      `温度：${w.temperature}°C`,
+      `风向风速：${w.winddirection}风 ${w.windpower}级`,
+      `湿度：${w.humidity}%`,
+      `发布时间：${w.reporttime}`,
+    ].join("\n");
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return "[错误] 天气查询失败：" + msg;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function executeWeather(args: Record<string, unknown>): Promise<string> {
+  const source = weatherSourceGetter?.() ?? "open-meteo";
 
   // 城市：参数优先，没传读用户信息默认城市
   let city = String(args.city ?? "").trim();
@@ -395,54 +482,27 @@ async function executeWeather(args: Record<string, unknown>): Promise<string> {
     return "[提示] 没有指定城市，也没设置默认城市。请告诉用户：在 设置 → 我的信息 填默认城市，或直接说出要查的城市名。";
   }
 
-  // 1. 查城市 ID
-  const location = await resolveCityId(city, host, key);
-  if (!location) {
-    return `[错误] 找不到城市"${city}"，请确认城市名（支持中文/拼音，不要带省份，如"淄博"而非"山东淄博"）。`;
+  // 按天气源分支
+  if (source === "open-meteo") {
+    return omFetchWeather(city);
+  }
+  if (source === "amap") {
+    const amapKey = amapKeyGetter?.() ?? "";
+    if (!amapKey) {
+      return "[错误] 还没有配置高德天气 Key。请在 设置 → 插件 → 天气查询 填入高德 Key，或切换天气源为 Open-Meteo（免配置）。";
+    }
+    return amapFetchWeather(city, amapKey);
   }
 
-  // 2. 查实时天气
-  const weatherUrl = `https://${host}/v7/weather/now?location=${location.id}`;
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), WEATHER_TIMEOUT_MS);
-  try {
-    const resp = await fetch(weatherUrl, {
-      signal: ctrl.signal,
-      headers: { Authorization: `Bearer ${key}` },
-    });
-    if (!resp.ok) {
-      return `[错误] 天气查询失败：HTTP ${resp.status}`;
-    }
-    const data = await resp.json() as { code?: string; now?: QWeatherNow };
-    if (data.code !== "200" || !data.now) {
-      return `[错误] 天气查询失败：和风返回 code=${data.code ?? "?"}`;
-    }
-    const w = data.now;
-    // 返回结构化文本给模型（模型据此回答用户；卡片渲染另走 Custom 事件）
-    return [
-      `城市：${location.name}（${location.adm}）`,
-      `天气：${w.text}`,
-      `温度：${w.temp}°C（体感 ${w.feelsLike}°C）`,
-      `风向风速：${w.windDir} ${w.windScale}级 ${w.windSpeed}km/h`,
-      `湿度：${w.humidity}%`,
-      `降水量：${w.precip}mm`,
-      `气压：${w.pressure}hPa`,
-      `能见度：${w.vis}km`,
-      `观测时间：${w.obsTime}`,
-    ].join("\n");
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    return "[错误] 天气查询失败：" + msg;
-  } finally {
-    clearTimeout(timer);
-  }
+  // 未知天气源
+  return `[错误] 未知的天气源"${source}"。请在 设置 → 插件 → 天气查询 选择 Open-Meteo 或 高德天气。`;
 }
 
 toolRegistry.register({
   id: "weather",
   name: "查天气",
   description:
-    "查询指定城市的实时天气（温度/体感/风/湿度/降水等）。调用和风天气 API，数据准确。" +
+    "查询指定城市的实时天气（温度/体感/风/湿度/降水等）。数据准确。" +
     "参数：city（可选，城市名中文或拼音；不传则用用户设置的默认城市）。" +
     "适合用户问'今天天气怎样''外面冷不冷'等。",
   enabled: true,
