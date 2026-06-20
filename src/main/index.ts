@@ -26,7 +26,7 @@ import { registerChatsIpc } from "./chats/chats-ipc";
 import { recordUsage, getUsage, flush as flushTokenUsage } from "./token-usage-store";
 import { uploadFile as ttsUploadFile, cloneVoice as ttsCloneVoice, synthesize as ttsSynthesize } from "./tts/minimax-engine";
 import { registerAgUiIpc, type AguiRunInput } from "./agui-bridge";
-import { setWeatherConfig } from "./orchestrator/built-in-tools";
+import { setWeatherConfig, setSearchConfig } from "./orchestrator/built-in-tools";
 
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
@@ -1351,6 +1351,12 @@ function createWindow(): void {
         });
       }
     },
+  );
+
+  // 注入搜索配置获取器
+  setSearchConfig(
+    () => loadGeneralSettings().searchEngine,
+    () => loadGeneralSettings().searchBochaKey,
   );
 
   mainWindow.on("closed", () => {

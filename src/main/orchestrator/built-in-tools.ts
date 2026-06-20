@@ -618,4 +618,124 @@ toolRegistry.register({
   execute: executeWeather,
 });
 
-console.log(LOG_PREFIX, "已注册：fetch_url / run_shell / install_mcp_server / weather");
+// ── 工具 5：web_search（博查搜索）─────────────────────────
+// 联网搜索：给关键词，返回搜索结果（标题/链接/摘要）。博查 API 返回 AI 友好的结构化数据。
+// key 通过 setSearchConfig 注入（避免 import index.ts 造成循环依赖）。
+
+const SEARCH_TIMEOUT_MS = 20_000;
+
+/** 注入的搜索配置获取器。 */
+let searchEngineGetter: (() => string) | null = null;
+let searchBochaKeyGetter: (() => string) | null = null;
+
+/**
+ * index.ts 启动时调用，注入搜索引擎/各源key 的读取器。
+ * engine: "off" | "bocha" | "tavily" | "volcano" | "minimax"
+ */
+export function setSearchConfig(
+  engineGetter: () => string,
+  bochaKeyGetter: () => string,
+): void {
+  searchEngineGetter = engineGetter;
+  searchBochaKeyGetter = bochaKeyGetter;
+}
+
+interface BochaResult {
+  name: string;
+  url: string;
+  snippet: string;
+  summary?: string;
+  siteName?: string;
+}
+
+/** 博查搜索：调 /v1/web-search，返回结构化文本给模型。 */
+async function bochaSearch(query: string, key: string): Promise<string> {
+  const url = "https://api.bochaai.com/v1/web-search";
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), SEARCH_TIMEOUT_MS);
+  try {
+    const resp = await fetch(url, {
+      method: "POST",
+      signal: ctrl.signal,
+      headers: {
+        Authorization: `Bearer ${key}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        query,
+        count: 8,
+        summary: true,
+      }),
+    });
+    if (!resp.ok) {
+      return `[错误] 搜索失败：HTTP ${resp.status}`;
+    }
+    const data = await resp.json() as {
+      webPages?: { value?: BochaResult[] };
+    };
+    const results = data.webPages?.value ?? [];
+    if (results.length === 0) {
+      return `[提示] 搜索"${query}"没有找到结果。`;
+    }
+    // 格式化成模型易读的文本
+    const lines: string[] = [`搜索"${query}"的结果（共 ${results.length} 条）：`, ""];
+    for (let i = 0; i < results.length; i++) {
+      const r = results[i];
+      lines.push(`【${i + 1}】${r.name}`);
+      if (r.siteName) lines.push(`  来源：${r.siteName}`);
+      lines.push(`  链接：${r.url}`);
+      lines.push(`  摘要：${r.summary || r.snippet || "（无摘要）"}`);
+      lines.push("");
+    }
+    return lines.join("\n");
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return "[错误] 搜索失败：" + msg;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function executeWebSearch(args: Record<string, unknown>): Promise<string> {
+  const engine = searchEngineGetter?.() ?? "off";
+  if (engine === "off") {
+    return "[提示] 联网搜索未启用。请在 设置 → 插件 → 联网搜索 选择搜索源并填入 Key。";
+  }
+
+  const query = String(args.query ?? "").trim();
+  if (!query) {
+    return "[提示] 请提供搜索关键词。";
+  }
+
+  if (engine === "bocha") {
+    const key = searchBochaKeyGetter?.() ?? "";
+    if (!key) {
+      return "[错误] 还没有配置博查搜索 Key。请在 设置 → 插件 → 联网搜索 填入博查 Key。";
+    }
+    return bochaSearch(query, key);
+  }
+
+  // 其他搜索引擎暂未接入
+  return `[提示] 搜索引擎"${engine}"暂未接入，目前支持 bocha。`;
+}
+
+toolRegistry.register({
+  id: "web_search",
+  name: "联网搜索",
+  description:
+    "搜索互联网获取实时信息（新闻/知识/技术文档等）。返回搜索结果的标题、链接和摘要。" +
+    "参数：query（必填，搜索关键词）。" +
+    "适合用户问'最近有什么新闻''搜一下xxx怎么用'等需要联网的问题。",
+  enabled: true,
+  risk: "network",
+  inputSchema: {
+    type: "object",
+    properties: {
+      query: { type: "string", description: "搜索关键词" },
+    },
+    required: ["query"],
+  },
+  execute: executeWebSearch,
+});
+
+console.log(LOG_PREFIX, "已注册：fetch_url / run_shell / install_mcp_server / weather / web_search");
