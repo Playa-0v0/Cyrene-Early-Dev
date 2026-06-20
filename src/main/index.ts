@@ -155,6 +155,8 @@ interface GeneralSettings {
   ttsMinimaxModel: "speech-2.8-hd" | "speech-2.8-turbo";
   /** 天气源：open-meteo(免配置默认) | amap(高德,需填key) */
   weatherSource: "open-meteo" | "amap";
+  /** 天气插件是否启用（开关） */
+  weatherEnabled: boolean;
   /** 高德天气 key（https://lbs.amap.com 注册 Web服务 key） */
   amapKey: string;
   // 联网搜索：选哪个搜索源 + 对应 key
@@ -260,6 +262,7 @@ const DEFAULT_GENERAL_SETTINGS: GeneralSettings = {
   ttsMinimaxVoiceId: "",
   ttsMinimaxModel: "speech-2.8-turbo",
   weatherSource: "open-meteo",
+  weatherEnabled: false,
   amapKey: "",
   searchEngine: "off",
   searchBochaKey: "",
@@ -595,6 +598,7 @@ function normalizeGeneralSettings(input: Partial<GeneralSettings> | null | undef
     weatherSource: ["open-meteo", "amap"].includes(String(input?.weatherSource))
       ? (input!.weatherSource as "open-meteo" | "amap")
       : "open-meteo",
+    weatherEnabled: Boolean(input?.weatherEnabled),
     amapKey: typeof input?.amapKey === "string" ? input.amapKey : "",
     searchEngine: ["off", "bocha", "tavily", "minimax"].includes(String(input?.searchEngine))
       ? (input!.searchEngine as "off" | "bocha" | "tavily" | "minimax")

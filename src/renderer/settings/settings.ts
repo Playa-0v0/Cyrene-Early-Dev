@@ -828,7 +828,7 @@ function syncWeatherFieldsVisibility(): void {
 }
 weatherEnabledCheckbox?.addEventListener("change", () => {
   syncWeatherConfigVisibility();
-  void saveWeatherField("qweatherEnabled", weatherEnabledCheckbox.checked);
+  void saveWeatherField("weatherEnabled", weatherEnabledCheckbox.checked);
 });
 weatherSourceSelect?.addEventListener("change", () => {
   syncWeatherFieldsVisibility();
@@ -851,7 +851,7 @@ async function loadWeatherConfig(): Promise<void> {
   try {
     const cfg = await window.tts?.loadSettings();
     if (cfg && weatherEnabledCheckbox) {
-      weatherEnabledCheckbox.checked = Boolean(cfg.qweatherEnabled);
+      weatherEnabledCheckbox.checked = Boolean(cfg.weatherEnabled);
     }
     if (cfg && weatherSourceSelect) {
       weatherSourceSelect.value = cfg.weatherSource === "amap" ? "amap" : "open-meteo";
