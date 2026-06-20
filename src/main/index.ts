@@ -642,6 +642,76 @@ function saveGeneralSettings(settings: Partial<GeneralSettings>): GeneralSetting
   return normalized;
 }
 
+/** 火山联网搜索 MCP Server 的固定 ID。 */
+const VOLCANO_SEARCH_MCP_ID = "volcano-web-search";
+
+/**
+ * 同步火山搜索 MCP Server：选火山+有key→注册连接，否则→移除断开。
+ * 在 TTS_SAVE_SETTINGS 检测到搜索配置变化时调用。
+ */
+async function syncVolcanoSearchMcp(settings: GeneralSettings): Promise<void> {
+  const shouldEnable = settings.searchEngine === "volcano" && settings.searchVolcanoKey.trim().length > 0;
+  const exists = listMcpServers().some(s => s.id === VOLCANO_SEARCH_MCP_ID);
+
+  if (shouldEnable && !exists) {
+    // 注册火山搜索 MCP Server
+    console.log("[Cyrene] 注册火山联网搜索 MCP Server...");
+    try {
+      const result = await addMcpServer({
+        id: VOLCANO_SEARCH_MCP_ID,
+        name: "火山联网搜索",
+        transport: "stdio",
+        command: "uvx",
+        args: [
+          "--from",
+          "git+https://github.com/volcengine/mcp-server#subdirectory=server/mcp_server_askecho_search_infinity",
+          "mcp-server-askecho-search-infinity",
+        ],
+        env: {
+          ASK_ECHO_SEARCH_INFINITY_API_KEY: settings.searchVolcanoKey.trim(),
+        },
+      });
+      if (result.ok) {
+        console.log("[Cyrene] 火山搜索 MCP 注册成功，工具:", result.toolIds?.join(", "));
+      } else {
+        console.error("[Cyrene] 火山搜索 MCP 注册失败:", result.error);
+      }
+    } catch (err) {
+      console.error("[Cyrene] 火山搜索 MCP 注册异常:", err);
+    }
+  } else if (!shouldEnable && exists) {
+    // 移除火山搜索 MCP Server
+    console.log("[Cyrene] 移除火山联网搜索 MCP Server...");
+    try {
+      await removeMcpServer(VOLCANO_SEARCH_MCP_ID);
+    } catch (err) {
+      console.error("[Cyrene] 火山搜索 MCP 移除异常:", err);
+    }
+  } else if (shouldEnable && exists) {
+    // 已存在但 key 可能变了：先移除再重新注册
+    console.log("[Cyrene] 火山搜索 key 变化，重新注册 MCP Server...");
+    try {
+      await removeMcpServer(VOLCANO_SEARCH_MCP_ID);
+      await addMcpServer({
+        id: VOLCANO_SEARCH_MCP_ID,
+        name: "火山联网搜索",
+        transport: "stdio",
+        command: "uvx",
+        args: [
+          "--from",
+          "git+https://github.com/volcengine/mcp-server#subdirectory=server/mcp_server_askecho_search_infinity",
+          "mcp-server-askecho-search-infinity",
+        ],
+        env: {
+          ASK_ECHO_SEARCH_INFINITY_API_KEY: settings.searchVolcanoKey.trim(),
+        },
+      });
+    } catch (err) {
+      console.error("[Cyrene] 火山搜索 MCP 重新注册异常:", err);
+    }
+  }
+}
+
 function loadStickerSettings(): Record<StickerId, boolean> {
   let raw: Record<string, unknown> = {};
   try {
@@ -2139,8 +2209,16 @@ app.whenReady().then(async () => {
 
   // ── TTS IPC ──
   // 保存/加载 TTS 配置（复用 general settings 存储）
-  ipcMain.handle(IPC.TTS_SAVE_SETTINGS, (_event, tts: Partial<GeneralSettings>) => {
-    const saved = saveGeneralSettings({ ...loadGeneralSettings(), ...tts });
+  ipcMain.handle(IPC.TTS_SAVE_SETTINGS, async (_event, tts: Partial<GeneralSettings>) => {
+    const before = loadGeneralSettings();
+    const saved = saveGeneralSettings({ ...before, ...tts });
+
+    // 火山搜索 MCP 自动注册/移除：选火山+有key→注册，否则→移除
+    const volcanoKeyChanged = "searchVolcanoKey" in tts || "searchEngine" in tts;
+    if (volcanoKeyChanged) {
+      await syncVolcanoSearchMcp(saved);
+    }
+
     // 返回不含密钥明文的副本（前端展示用）
     return saved;
   });
