@@ -50,58 +50,78 @@ function stripThinkBlocks(text: string): string {
 }
 
 function extractJsonArray(raw: string): unknown[] | null {
-  // 第一步：去掉 markdown 代码块包裹
+  // 第一步：去掉 markdown 代码块包裹 + think 块
   let text = raw
     .replace(/```json\s*/gi, '')
     .replace(/```\s*/gi, '')
     .trim()
 
-  // 第二步：截取第一个 [ 到最后一个 ] 之间的内容
+  // 第二步：截取从第一个 [ 开始的内容（不要求结尾有 ]，防 max_tokens 截断）
   const start = text.indexOf('[')
-  const end = text.lastIndexOf(']')
-  if (start === -1 || end === -1 || end <= start) return null
-  text = text.slice(start, end + 1)
+  if (start === -1) return null
+  text = text.slice(start)
 
-  // 第三步：直接尝试解析
+  // 第三步：直接尝试解析（完整数组的情况）
   try {
-    return JSON.parse(text) as unknown[]
+    const parsed = JSON.parse(text) as unknown[]
+    if (Array.isArray(parsed)) return parsed
   } catch (_) {}
 
-  // 第四步：修复嵌套英文引号问题
+  // 第四步：截断救场 —— 即使末尾 ] 缺失，把已完整的 {...} 对象逐个捞出来。
+  // 关键：用栈匹配大括号深度，避免把对象内部的 } 当成对象结束。
+  const results: unknown[] = []
+  let i = 0
+  while (i < text.length) {
+    if (text[i] !== '{') { i++; continue }
+    // 找匹配的 } —— 跟踪引号和嵌套深度
+    let depth = 0
+    let inStr = false
+    let esc = false
+    let j = i
+    for (; j < text.length; j++) {
+      const c = text[j]
+      if (esc) { esc = false; continue }
+      if (c === '\\') { esc = true; continue }
+      if (c === '"') { inStr = !inStr; continue }
+      if (inStr) continue
+      if (c === '{') depth++
+      else if (c === '}') {
+        depth--
+        if (depth === 0) break  // 找到匹配的闭合
+      }
+    }
+    if (depth !== 0) break  // 这个对象被截断了，后面也不可能有完整的了
+    const objStr = text.slice(i, j + 1)
+    try {
+      const obj = JSON.parse(objStr)
+      if (obj && typeof obj === "object") results.push(obj)
+    } catch (_) {
+      // 单个对象解析失败，跳过继续找下一个
+    }
+    i = j + 1
+  }
+
+  if (results.length > 0) {
+    console.log('[MemoryJudge] 截断救场提取成功，条数:', results.length)
+    return results
+  }
+
+  // 第五步：修复嵌套英文引号问题（针对完整数组的情况再试一次）
   try {
-    const fixed = text.replace(
-      /("content"|"triggerText"):\s*"([\s\S]*?)(?<!\\)"/g,
+    // 给 text 补上缺失的 ] 让 JSON.parse 有机会成功
+    const fixedText = text.replace(/("content"|"triggerText"):\s*"([\s\S]*?)(?<!\\)"/g,
       (match: string, key: string, value: string) => {
-        let i = 0
-        const cleaned = value.replace(/"/g, () => i++ % 2 === 0 ? '「' : '」')
+        let k = 0
+        const cleaned = value.replace(/"/g, () => k++ % 2 === 0 ? '「' : '」')
         return key + ': "' + cleaned + '"'
       }
     )
-    return JSON.parse(fixed) as unknown[]
-  } catch (_) {}
-
-  // 第五步：最后兜底，用正则逐字段提取
-  try {
-    const results: unknown[] = []
-    const itemRegex = /\{[\s\S]*?\}/g
-    const items = text.match(itemRegex) || []
-    for (const item of items) {
-      const layer = item.match(/"layer"\s*:\s*"([^"]+)"/)
-      const content = item.match(/"content"\s*:\s*"([\s\S]+?)"(?:\s*,|\s*\})/)
-      const confidence = item.match(/"confidence"\s*:\s*([\d.]+)/)
-      const triggerText = item.match(/"triggerText"\s*:\s*"([\s\S]+?)"(?:\s*,|\s*\})/)
-      if (layer && content && confidence) {
-        results.push({
-          layer: layer[1],
-          content: content[1],
-          confidence: parseFloat(confidence[1]),
-          triggerText: triggerText ? triggerText[1] : content[1].slice(0, 30)
-        })
-      }
-    }
-    if (results.length > 0) {
-      console.log('[MemoryJudge] 使用兜底正则提取成功，条数:', results.length)
-      return results
+    // 尝试找最后一个完整对象后补 ]
+    const lastBrace = fixedText.lastIndexOf('}')
+    if (lastBrace > 0) {
+      const candidate = fixedText.slice(0, lastBrace + 1) + ']'
+      const parsed = JSON.parse(candidate) as unknown[]
+      if (Array.isArray(parsed)) return parsed
     }
   } catch (_) {}
 
@@ -149,7 +169,7 @@ async function callChatCompletions(
         model: settings.model,
         messages,
         // 不传 temperature：不同型号约束不同（如 Kimi k2.6 只允许 1），传固定值会报错
-        max_tokens: 300,
+        max_tokens: 800,
         stream: false,
       }),
     })
