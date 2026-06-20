@@ -157,6 +157,12 @@ interface GeneralSettings {
   qweatherHost: string;
   qweatherKey: string;
   qweatherEnabled: boolean;
+  // 联网搜索：选哪个搜索源 + 对应 key
+  searchEngine: "off" | "bocha" | "tavily" | "volcano" | "minimax";
+  searchBochaKey: string;
+  searchTavilyKey: string;
+  searchVolcanoKey: string;
+  searchMinimaxKey: string;
   // 火山（后续接入）
   ttsVolcanoAppId: string;
   ttsVolcanoToken: string;
@@ -257,6 +263,11 @@ const DEFAULT_GENERAL_SETTINGS: GeneralSettings = {
   qweatherHost: "",
   qweatherKey: "",
   qweatherEnabled: false,
+  searchEngine: "off",
+  searchBochaKey: "",
+  searchTavilyKey: "",
+  searchVolcanoKey: "",
+  searchMinimaxKey: "",
   ttsVolcanoAppId: "",
   ttsVolcanoToken: "",
   ttsVolcanoVoiceId: "",
@@ -587,6 +598,13 @@ function normalizeGeneralSettings(input: Partial<GeneralSettings> | null | undef
     qweatherHost: typeof input?.qweatherHost === "string" ? input.qweatherHost : "",
     qweatherKey: typeof input?.qweatherKey === "string" ? input.qweatherKey : "",
     qweatherEnabled: Boolean(input?.qweatherEnabled),
+    searchEngine: ["off", "bocha", "tavily", "volcano", "minimax"].includes(String(input?.searchEngine))
+      ? (input!.searchEngine as "off" | "bocha" | "tavily" | "volcano" | "minimax")
+      : "off",
+    searchBochaKey: typeof input?.searchBochaKey === "string" ? input.searchBochaKey : "",
+    searchTavilyKey: typeof input?.searchTavilyKey === "string" ? input.searchTavilyKey : "",
+    searchVolcanoKey: typeof input?.searchVolcanoKey === "string" ? input.searchVolcanoKey : "",
+    searchMinimaxKey: typeof input?.searchMinimaxKey === "string" ? input.searchMinimaxKey : "",
     ttsVolcanoAppId: typeof input?.ttsVolcanoAppId === "string" ? input.ttsVolcanoAppId : "",
     ttsVolcanoToken: typeof input?.ttsVolcanoToken === "string" ? input.ttsVolcanoToken : "",
     ttsVolcanoVoiceId: typeof input?.ttsVolcanoVoiceId === "string" ? input.ttsVolcanoVoiceId : "",

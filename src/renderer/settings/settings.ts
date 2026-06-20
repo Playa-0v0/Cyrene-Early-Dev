@@ -905,6 +905,105 @@ async function loadQweatherConfig(): Promise<void> {
   }
 }
 void loadQweatherConfig();
+
+// ── 联网搜索插件（博查/Tavily/火山/MiniMax）──
+const searchEnabledCheckbox = document.getElementById("plugin-search-enabled") as HTMLInputElement | null;
+const searchConfig = document.getElementById("plugin-search-config") as HTMLElement | null;
+const searchEngineSelect = document.getElementById("search-engine") as HTMLSelectElement | null;
+const searchBochaKeyInput = document.getElementById("search-bocha-key") as HTMLInputElement | null;
+const searchTavilyKeyInput = document.getElementById("search-tavily-key") as HTMLInputElement | null;
+const searchVolcanoKeyInput = document.getElementById("search-volcano-key") as HTMLInputElement | null;
+const searchMinimaxKeyInput = document.getElementById("search-minimax-key") as HTMLInputElement | null;
+const searchBochaRow = document.getElementById("search-bocha-row");
+const searchTavilyRow = document.getElementById("search-tavily-row");
+const searchVolcanoRow = document.getElementById("search-volcano-row");
+const searchMinimaxRow = document.getElementById("search-minimax-row");
+
+const SEARCH_ROW_MAP: Record<string, HTMLElement | null> = {
+  bocha: searchBochaRow,
+  tavily: searchTavilyRow,
+  volcano: searchVolcanoRow,
+  minimax: searchMinimaxRow,
+};
+
+const SEARCH_KEY_INPUT_MAP: Record<string, HTMLInputElement | null> = {
+  bocha: searchBochaKeyInput,
+  tavily: searchTavilyKeyInput,
+  volcano: searchVolcanoKeyInput,
+  minimax: searchMinimaxKeyInput,
+};
+
+const SEARCH_KEY_FIELD_MAP: Record<string, string> = {
+  bocha: "searchBochaKey",
+  tavily: "searchTavilyKey",
+  volcano: "searchVolcanoKey",
+  minimax: "searchMinimaxKey",
+};
+
+function syncSearchConfigVisibility(): void {
+  if (searchConfig) searchConfig.style.display = searchEnabledCheckbox?.checked ? "block" : "none";
+  syncSearchEngineRows();
+}
+
+function syncSearchEngineRows(): void {
+  const engine = searchEngineSelect?.value ?? "off";
+  for (const [key, row] of Object.entries(SEARCH_ROW_MAP)) {
+    if (row) row.style.display = key === engine ? "flex" : "none";
+  }
+}
+
+searchEnabledCheckbox?.addEventListener("change", () => {
+  syncSearchConfigVisibility();
+  // 开关变化时，若开启则把 searchEngine 从 off 改成第一个有 key 的源（或 bocha）
+  if (searchEnabledCheckbox.checked && searchEngineSelect?.value === "off") {
+    searchEngineSelect.value = "bocha";
+    syncSearchEngineRows();
+    void saveSearchField("searchEngine", "bocha");
+  } else {
+    void saveSearchField("searchEngine", searchEngineSelect?.value ?? "off");
+  }
+});
+
+searchEngineSelect?.addEventListener("change", () => {
+  syncSearchEngineRows();
+  void saveSearchField("searchEngine", searchEngineSelect.value);
+});
+
+// 各源 key 输入：失焦保存
+for (const [engine, input] of Object.entries(SEARCH_KEY_INPUT_MAP)) {
+  if (!input) continue;
+  const field = SEARCH_KEY_FIELD_MAP[engine];
+  input.addEventListener("change", () => { void saveSearchField(field, input.value.trim()); });
+  input.addEventListener("blur", () => { void saveSearchField(field, input.value.trim()); });
+}
+
+async function saveSearchField(field: string, value: unknown): Promise<void> {
+  if (!window.tts) return;
+  try {
+    await window.tts.saveSettings({ [field]: value });
+  } catch (err) {
+    console.warn("[plugins] 保存搜索配置失败:", field, err);
+  }
+}
+
+async function loadSearchConfig(): Promise<void> {
+  try {
+    const cfg = await window.tts?.loadSettings();
+    if (!cfg) return;
+    const engine = String(cfg.searchEngine ?? "off");
+    if (searchEngineSelect) searchEngineSelect.value = engine;
+    if (searchBochaKeyInput) searchBochaKeyInput.value = String(cfg.searchBochaKey ?? "");
+    if (searchTavilyKeyInput) searchTavilyKeyInput.value = String(cfg.searchTavilyKey ?? "");
+    if (searchVolcanoKeyInput) searchVolcanoKeyInput.value = String(cfg.searchVolcanoKey ?? "");
+    if (searchMinimaxKeyInput) searchMinimaxKeyInput.value = String(cfg.searchMinimaxKey ?? "");
+    // 开关状态：engine 不是 off 就算启用
+    if (searchEnabledCheckbox) searchEnabledCheckbox.checked = engine !== "off";
+    syncSearchConfigVisibility();
+  } catch (err) {
+    console.warn("[plugins] 加载搜索配置失败", err);
+  }
+}
+void loadSearchConfig();
 // ── MCP Server 管理 UI ──────────────────────────────────────
 const pluginAddBtn = document.querySelector(".plugin-add-btn") as HTMLButtonElement | null;
 console.log("[settings] plugin-add-btn 查询结果:", pluginAddBtn ? "找到" : "未找到");

@@ -678,6 +678,47 @@
               </label>
             </article>
 
+            <article class="plugin-card" id="plugin-search-card">
+              <div class="plugin-card__icon">🔍</div>
+              <div class="plugin-card__body">
+                <h2>联网搜索</h2>
+                <p>让昔涟能搜索互联网获取实时信息。选择一个搜索源并填入对应 Key。</p>
+                <div class="plugin-config" id="plugin-search-config">
+                  <div class="tts-field">
+                    <label for="search-engine">搜索源</label>
+                    <select id="search-engine">
+                      <option value="off">关闭</option>
+                      <option value="bocha">博查 Bocha（国内，AI 友好）</option>
+                      <option value="tavily">Tavily（海外，AI 友好）</option>
+                      <option value="volcano">火山引擎（MCP，需 uvx）</option>
+                      <option value="minimax">MiniMax（稀宇）</option>
+                    </select>
+                  </div>
+                  <div class="tts-field" id="search-bocha-row" style="display:none">
+                    <label for="search-bocha-key">博查 Key</label>
+                    <input type="password" id="search-bocha-key" placeholder="open.bochaai.com 注册获取" autocomplete="off" />
+                  </div>
+                  <div class="tts-field" id="search-tavily-row" style="display:none">
+                    <label for="search-tavily-key">Tavily Key</label>
+                    <input type="password" id="search-tavily-key" placeholder="tavily.com 注册获取" autocomplete="off" />
+                  </div>
+                  <div class="tts-field" id="search-volcano-row" style="display:none">
+                    <label for="search-volcano-key">火山 Key</label>
+                    <input type="password" id="search-volcano-key" placeholder="Agent Plan 控制台→联网 API Key" autocomplete="off" />
+                  </div>
+                  <div class="tts-field" id="search-minimax-row" style="display:none">
+                    <label for="search-minimax-key">MiniMax Key</label>
+                    <input type="password" id="search-minimax-key" placeholder="MiniMax 平台 API Key" autocomplete="off" />
+                  </div>
+                  <p class="user-field-hint" id="search-engine-hint">选择搜索源后填入对应 Key。火山需先安装 uvx（Python）。</p>
+                </div>
+              </div>
+              <label class="plugin-switch" aria-label="启用联网搜索">
+                <input type="checkbox" id="plugin-search-enabled" />
+                <span></span>
+              </label>
+            </article>
+
             <article class="plugin-card is-muted">
               <div class="plugin-card__icon">📁</div>
               <div class="plugin-card__body">
