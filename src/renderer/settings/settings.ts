@@ -806,55 +806,8 @@ openStickerManagerBtn.addEventListener("click", async () => {
 });
 
 // ── 插件开关事件 ──────────────────────────────────────────
-const pluginDocsCheckbox = document.getElementById("plugin-docs-enabled") as HTMLInputElement | null;
-const pluginMemoryCheckbox = document.getElementById("plugin-memory-enabled") as HTMLInputElement | null;
-const pluginWorldbookCheckbox = document.getElementById("plugin-worldbook-enabled") as HTMLInputElement | null;
-
-function syncPluginSwitch(toolId: string, enabled: boolean): void {
-  window.settings?.setToolEnabled?.(toolId, enabled).then((result) => {
-    if (!result?.ok) {
-      console.warn("[settings] 工具开关同步失败: " + toolId, result?.error);
-    }
-  }).catch((err) => {
-    console.error("[settings] 工具开关同步异常: " + toolId, err);
-  });
-}
-
-pluginDocsCheckbox?.addEventListener("change", () => {
-  syncPluginSwitch("imported_docs", pluginDocsCheckbox.checked);
-});
-
-pluginMemoryCheckbox?.addEventListener("change", () => {
-  syncPluginSwitch("user_memory", pluginMemoryCheckbox.checked);
-});
-
-pluginWorldbookCheckbox?.addEventListener("change", () => {
-  // 世界书不走 ToolRegistry，这里仅做 UI 状态记录
-  localStorage.setItem("cyrene.plugin.worldbook", String(pluginWorldbookCheckbox.checked));
-});
-
-// 初始化：从后端同步开关状态
-async function loadPluginStates(): Promise<void> {
-  try {
-    const states = await window.settings?.getToolEnabled?.();
-    if (states) {
-      if (pluginDocsCheckbox && "imported_docs" in states) {
-        pluginDocsCheckbox.checked = states["imported_docs"];
-      }
-      if (pluginMemoryCheckbox && "user_memory" in states) {
-        pluginMemoryCheckbox.checked = states["user_memory"];
-      }
-    }
-    // 世界书从 localStorage 恢复
-    const wbState = localStorage.getItem("cyrene.plugin.worldbook");
-    if (pluginWorldbookCheckbox && wbState !== null) {
-      pluginWorldbookCheckbox.checked = wbState === "true";
-    }
-  } catch (err) {
-    console.warn("[settings] 加载插件状态失败", err);
-  }
-}
-void loadPluginStates();
+// 文档检索/用户记忆/世界书/联网搜索为常驻工具，无开关，显示绿灯。
+// 天气查询/联网搜索有独立配置卡片（下方）。
 
 // ── 天气插件（Open-Meteo / 高德天气）──
 const weatherEnabledCheckbox = document.getElementById("plugin-weather-enabled") as HTMLInputElement | null;
