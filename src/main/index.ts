@@ -1357,6 +1357,7 @@ function createWindow(): void {
   setSearchConfig(
     () => loadGeneralSettings().searchEngine,
     () => loadGeneralSettings().searchBochaKey,
+    () => loadGeneralSettings().searchTavilyKey,
   );
 
   mainWindow.on("closed", () => {

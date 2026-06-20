@@ -627,6 +627,7 @@ const SEARCH_TIMEOUT_MS = 20_000;
 /** 注入的搜索配置获取器。 */
 let searchEngineGetter: (() => string) | null = null;
 let searchBochaKeyGetter: (() => string) | null = null;
+let searchTavilyKeyGetter: (() => string) | null = null;
 
 /**
  * index.ts 启动时调用，注入搜索引擎/各源key 的读取器。
@@ -635,9 +636,11 @@ let searchBochaKeyGetter: (() => string) | null = null;
 export function setSearchConfig(
   engineGetter: () => string,
   bochaKeyGetter: () => string,
+  tavilyKeyGetter: () => string,
 ): void {
   searchEngineGetter = engineGetter;
   searchBochaKeyGetter = bochaKeyGetter;
+  searchTavilyKeyGetter = tavilyKeyGetter;
 }
 
 interface BochaResult {
@@ -696,6 +699,54 @@ async function bochaSearch(query: string, key: string): Promise<string> {
   }
 }
 
+/** Tavily 搜索：调 /search，返回结构化文本给模型。 */
+async function tavilySearch(query: string, key: string): Promise<string> {
+  const url = "https://api.tavily.com/search";
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), SEARCH_TIMEOUT_MS);
+  try {
+    const resp = await fetch(url, {
+      method: "POST",
+      signal: ctrl.signal,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        api_key: key,
+        query,
+        max_results: 8,
+        include_answer: true,
+      }),
+    });
+    if (!resp.ok) {
+      return `[错误] 搜索失败：HTTP ${resp.status}`;
+    }
+    const data = await resp.json() as {
+      answer?: string;
+      results?: Array<{ title: string; url: string; content: string }>;
+    };
+    const results = data.results ?? [];
+    if (results.length === 0) {
+      return `[提示] 搜索"${query}"没有找到结果。`;
+    }
+    const lines: string[] = [`搜索"${query}"的结果（共 ${results.length} 条）：`, ""];
+    if (data.answer) {
+      lines.push(`摘要：${data.answer}`, "");
+    }
+    for (let i = 0; i < results.length; i++) {
+      const r = results[i];
+      lines.push(`【${i + 1}】${r.title}`);
+      lines.push(`  链接：${r.url}`);
+      lines.push(`  摘要：${r.content || "（无摘要）"}`);
+      lines.push("");
+    }
+    return lines.join("\n");
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return "[错误] 搜索失败：" + msg;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function executeWebSearch(args: Record<string, unknown>): Promise<string> {
   const engine = searchEngineGetter?.() ?? "off";
   if (engine === "off") {
@@ -715,8 +766,16 @@ async function executeWebSearch(args: Record<string, unknown>): Promise<string> 
     return bochaSearch(query, key);
   }
 
+  if (engine === "tavily") {
+    const key = searchTavilyKeyGetter?.() ?? "";
+    if (!key) {
+      return "[错误] 还没有配置 Tavily 搜索 Key。请在 设置 → 插件 → 联网搜索 填入 Tavily Key。";
+    }
+    return tavilySearch(query, key);
+  }
+
   // 其他搜索引擎暂未接入
-  return `[提示] 搜索引擎"${engine}"暂未接入，目前支持 bocha。`;
+  return `[提示] 搜索引擎"${engine}"暂未接入，目前支持 bocha 和 tavily。`;
 }
 
 toolRegistry.register({
