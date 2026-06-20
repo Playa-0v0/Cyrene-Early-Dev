@@ -24,6 +24,15 @@ export interface ModelInfo {
   model: string;
 }
 
+/** 用户信息片段（由 index.ts 注入，避免循环依赖）。 */
+export interface UserInfoContext {
+  nickname?: string;
+  callPreference?: string;
+  birthday?: string;
+  defaultCity?: string;
+  timezone?: string;
+}
+
 function safeGetPath(name: "desktop" | "documents" | "downloads" | "home"): string {
   try {
     return app.getPath(name);
@@ -57,7 +66,7 @@ function platformLabel(): string {
  * 注意：这里只读取既有运行时状态，不做任何副作用；调用方负责 try/catch
  * 拼接失败的情况，避免环境注入炸掉聊天主流程。
  */
-export function buildEnvironmentContext(modelInfo?: ModelInfo): string {
+export function buildEnvironmentContext(modelInfo?: ModelInfo, userInfo?: UserInfoContext): string {
   const level = getCurrentLevel();
   const levelLabel = ACCESS_LEVEL_LABEL[level];
 
@@ -127,6 +136,22 @@ export function buildEnvironmentContext(modelInfo?: ModelInfo): string {
   }
   lines.push(`- 当前模型是否支持查看图片：${supportsVision ? "支持（可调 read_image 看图）" : "不支持（看不了图片，遇到图片问题必须如实说明，不许编造图片内容）"}`);
   lines.push("");
+
+  // 用户信息：昵称、称呼偏好、生日、默认城市等。让模型知道"在和谁说话、用户在哪"，
+  // 避免每次问天气/位置都要反问用户。默认城市尤其重要——天气工具会用到。
+  if (userInfo) {
+    lines.push("## 用户信息");
+    lines.push("");
+    if (userInfo.callPreference) {
+      lines.push(`- 称呼偏好：${userInfo.callPreference}（称呼用户时优先用这个）`);
+    } else if (userInfo.nickname) {
+      lines.push(`- 昵称：${userInfo.nickname}（称呼用户时用这个）`);
+    }
+    if (userInfo.birthday) lines.push(`- 生日：${userInfo.birthday}`);
+    if (userInfo.defaultCity) lines.push(`- 默认城市：${userInfo.defaultCity}（用户问天气/位置且没指定其他城市时，默认用这个）`);
+    if (userInfo.timezone && userInfo.timezone !== tz) lines.push(`- 用户时区：${userInfo.timezone}`);
+    lines.push("");
+  }
 
   lines.push(
     "当用户提到「桌面 / 文档 / 下载」却没给绝对路径时，使用上面这些真实路径拼接，再交给文件类工具；不要写 `~/Desktop` 或硬编码盘符。",

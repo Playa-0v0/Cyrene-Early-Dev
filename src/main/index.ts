@@ -26,6 +26,7 @@ import { registerChatsIpc } from "./chats/chats-ipc";
 import { recordUsage, getUsage, flush as flushTokenUsage } from "./token-usage-store";
 import { uploadFile as ttsUploadFile, cloneVoice as ttsCloneVoice, synthesize as ttsSynthesize } from "./tts/minimax-engine";
 import { registerAgUiIpc, type AguiRunInput } from "./agui-bridge";
+import { setWeatherConfig } from "./orchestrator/built-in-tools";
 
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
@@ -129,6 +130,8 @@ interface UserProfile {
   birthday: string;
   timezone: string;
   avatarPath: string;
+  /** 默认城市（用于天气等需要地理定位的工具，没填则模型会问用户） */
+  defaultCity: string;
 }
 
 interface GeneralSettings {
@@ -150,6 +153,10 @@ interface GeneralSettings {
   ttsMinimaxVoiceId: string;
   /** MiniMax 合成模型：speech-2.8-hd(高保真¥3.5/万字符) | speech-2.8-turbo(极速¥2.0/万字符) */
   ttsMinimaxModel: "speech-2.8-hd" | "speech-2.8-turbo";
+  // 插件 key：和风天气（免费 https://dev.qweather.com 注册）
+  qweatherHost: string;
+  qweatherKey: string;
+  qweatherEnabled: boolean;
   // 火山（后续接入）
   ttsVolcanoAppId: string;
   ttsVolcanoToken: string;
@@ -247,6 +254,9 @@ const DEFAULT_GENERAL_SETTINGS: GeneralSettings = {
   ttsMinimaxKey: "",
   ttsMinimaxVoiceId: "",
   ttsMinimaxModel: "speech-2.8-turbo",
+  qweatherHost: "",
+  qweatherKey: "",
+  qweatherEnabled: false,
   ttsVolcanoAppId: "",
   ttsVolcanoToken: "",
   ttsVolcanoVoiceId: "",
@@ -283,6 +293,7 @@ const DEFAULT_USER_PROFILE: UserProfile = {
   birthday: "",
   timezone: "Asia/Shanghai",
   avatarPath: "",
+  defaultCity: "",
 };
 
 function loadUserProfile(): UserProfile {
@@ -573,6 +584,9 @@ function normalizeGeneralSettings(input: Partial<GeneralSettings> | null | undef
     ttsMinimaxKey: typeof input?.ttsMinimaxKey === "string" ? input.ttsMinimaxKey : "",
     ttsMinimaxVoiceId: typeof input?.ttsMinimaxVoiceId === "string" ? input.ttsMinimaxVoiceId : "",
     ttsMinimaxModel: input?.ttsMinimaxModel === "speech-2.8-hd" ? "speech-2.8-hd" : "speech-2.8-turbo",
+    qweatherHost: typeof input?.qweatherHost === "string" ? input.qweatherHost : "",
+    qweatherKey: typeof input?.qweatherKey === "string" ? input.qweatherKey : "",
+    qweatherEnabled: Boolean(input?.qweatherEnabled),
     ttsVolcanoAppId: typeof input?.ttsVolcanoAppId === "string" ? input.ttsVolcanoAppId : "",
     ttsVolcanoToken: typeof input?.ttsVolcanoToken === "string" ? input.ttsVolcanoToken : "",
     ttsVolcanoVoiceId: typeof input?.ttsVolcanoVoiceId === "string" ? input.ttsVolcanoVoiceId : "",
@@ -1131,7 +1145,11 @@ async function requestModelReply(inputMessages: unknown, styleFile = "01_default
   // 降低"桌面在哪"这类低级幻觉。失败不影响主流程。
   let environmentContext = "";
   try {
-    environmentContext = buildEnvironmentContext({ provider: settings.provider, model: settings.model });
+    const profile = loadUserProfile();
+    environmentContext = buildEnvironmentContext(
+      { provider: settings.provider, model: settings.model },
+      { nickname: profile.nickname, callPreference: profile.callPreference, birthday: profile.birthday, defaultCity: profile.defaultCity, timezone: profile.timezone },
+    );
   } catch (err) {
     console.warn("[Cyrene] environment context build failed:", err);
   }
@@ -1298,6 +1316,14 @@ function createWindow(): void {
   }
 
   applyGeneralSettings(loadGeneralSettings());
+
+  // 注入天气工具配置获取器：每次工具执行时实时读 key/默认城市
+  // （用户改了设置不用重启就能生效）
+  setWeatherConfig(
+    () => loadGeneralSettings().qweatherHost,
+    () => loadGeneralSettings().qweatherKey,
+    () => loadUserProfile().defaultCity,
+  );
 
   mainWindow.on("closed", () => {
     mainWindow = null;
@@ -2157,7 +2183,11 @@ app.whenReady().then(async () => {
       }
       let environmentContext = "";
       try {
-        environmentContext = buildEnvironmentContext({ provider: settings.provider, model: settings.model });
+        const profile = loadUserProfile();
+        environmentContext = buildEnvironmentContext(
+          { provider: settings.provider, model: settings.model },
+          { nickname: profile.nickname, callPreference: profile.callPreference, birthday: profile.birthday, defaultCity: profile.defaultCity, timezone: profile.timezone },
+        );
       } catch (err) {
         console.warn("[Cyrene] environment context build failed:", err);
       }

@@ -190,7 +190,7 @@ interface GeneralSettings {
 }
 
 interface UserApi {
-  getProfile: () => Promise<{ nickname: string; callPreference: string; birthday: string; timezone: string; avatarPath: string }>;
+  getProfile: () => Promise<{ nickname: string; callPreference: string; birthday: string; timezone: string; avatarPath: string; defaultCity: string }>;
   saveProfile: (profile: Record<string, unknown>) => Promise<unknown>;
   uploadAvatar: () => Promise<{ avatarPath: string } | null>;
   getAvatar: () => Promise<string | null>;
@@ -855,6 +855,56 @@ async function loadPluginStates(): Promise<void> {
   }
 }
 void loadPluginStates();
+
+// ── 天气插件（和风天气 key + 启用开关）──
+const qweatherEnabledCheckbox = document.getElementById("plugin-weather-enabled") as HTMLInputElement | null;
+const qweatherHostInput = document.getElementById("qweather-host") as HTMLInputElement | null;
+const qweatherKeyInput = document.getElementById("qweather-key") as HTMLInputElement | null;
+const qweatherConfig = document.getElementById("plugin-weather-config") as HTMLElement | null;
+
+// 启用开关：勾上才展开 key 配置区
+function syncQweatherConfigVisibility(): void {
+  if (qweatherConfig) qweatherConfig.style.display = qweatherEnabledCheckbox?.checked ? "block" : "none";
+}
+qweatherEnabledCheckbox?.addEventListener("change", () => {
+  syncQweatherConfigVisibility();
+  void saveQweatherField("qweatherEnabled", qweatherEnabledCheckbox.checked);
+});
+qweatherKeyInput?.addEventListener("change", () => {
+  void saveQweatherField("qweatherKey", qweatherKeyInput.value.trim());
+});
+qweatherHostInput?.addEventListener("change", () => {
+  void saveQweatherField("qweatherHost", qweatherHostInput.value.trim());
+});
+
+async function saveQweatherField(field: string, value: unknown): Promise<void> {
+  if (!window.tts) return;
+  try {
+    await window.tts.saveSettings({ [field]: value });
+  } catch (err) {
+    console.warn("[plugins] 保存和风配置失败:", field, err);
+  }
+}
+
+async function loadQweatherConfig(): Promise<void> {
+  try {
+    const cfg = await window.tts?.loadSettings();
+    console.log("[plugins] 和风加载结果:", { enabled: cfg?.qweatherEnabled, hasKey: Boolean(cfg?.qweatherKey), checkbox: !!qweatherEnabledCheckbox, keyInput: !!qweatherKeyInput });
+    if (cfg && qweatherEnabledCheckbox) {
+      qweatherEnabledCheckbox.checked = Boolean(cfg.qweatherEnabled);
+    }
+    if (cfg && qweatherKeyInput) {
+      qweatherKeyInput.value = String(cfg.qweatherKey ?? "");
+    }
+    if (cfg && qweatherHostInput) {
+      qweatherHostInput.value = String(cfg.qweatherHost ?? "");
+    }
+    syncQweatherConfigVisibility();
+  } catch (err) {
+    console.warn("[plugins] 加载和风配置失败", err);
+  }
+}
+void loadQweatherConfig();
 // ── MCP Server 管理 UI ──────────────────────────────────────
 const pluginAddBtn = document.querySelector(".plugin-add-btn") as HTMLButtonElement | null;
 console.log("[settings] plugin-add-btn 查询结果:", pluginAddBtn ? "找到" : "未找到");
@@ -1404,6 +1454,10 @@ const avatarEl = document.getElementById("user-avatar-el") as HTMLElement | null
 const avatarImg = avatarEl?.querySelector("img") as HTMLImageElement | null;
 const avatarPlaceholder = avatarEl?.querySelector("span") as HTMLElement | null;
 const uploadAvatarBtn = document.getElementById("upload-avatar-btn") as HTMLButtonElement | null;
+const userDefaultCityInput = document.getElementById("user-default-city") as HTMLInputElement | null;
+const userNicknameInput = document.getElementById("user-nickname") as HTMLInputElement | null;
+const userCallPrefInput = document.getElementById("user-call-pref") as HTMLInputElement | null;
+const userBirthdayInput = document.getElementById("user-birthday") as HTMLInputElement | null;
 const memoryL0NameInput = document.getElementById("memory-l0-name") as HTMLInputElement | null;
 const memoryL0OccupationInput = document.getElementById("memory-l0-occupation") as HTMLInputElement | null;
 const memoryL0InterestsInput = document.getElementById("memory-l0-interests") as HTMLInputElement | null;
@@ -1566,9 +1620,37 @@ async function loadUserProfile(): Promise<void> {
     const avatarDataUrl = await window.user?.getAvatar();
     if (avatarDataUrl) showAvatar(avatarDataUrl);
     if (uploadAvatarBtn) uploadAvatarBtn.disabled = false;
+    // 加载用户字段（昵称/称呼偏好/生日/默认城市）
+    const profile = await window.user?.getProfile();
+    if (profile) {
+      if (userNicknameInput) userNicknameInput.value = String(profile.nickname ?? "");
+      if (userCallPrefInput) userCallPrefInput.value = String(profile.callPreference ?? "");
+      if (userBirthdayInput) userBirthdayInput.value = String(profile.birthday ?? "");
+      if (userDefaultCityInput) userDefaultCityInput.value = String(profile.defaultCity ?? "");
+    }
   } catch {
     console.warn("[settings] load user profile failed");
   }
+}
+
+// 用户字段：失焦/回车保存（每个字段独立原子保存）
+function bindUserProfileSave(input: HTMLInputElement | null, field: string): void {
+  if (!input) return;
+  const save = (): void => { void window.user?.saveProfile({ [field]: input.value.trim() }); };
+  input.addEventListener("change", save);
+  input.addEventListener("blur", save);
+}
+bindUserProfileSave(userNicknameInput, "nickname");
+bindUserProfileSave(userCallPrefInput, "callPreference");
+bindUserProfileSave(userBirthdayInput, "birthday");
+// 默认城市复用上面的 saveCity（保持原逻辑）
+if (userDefaultCityInput) {
+  const saveCity = (): void => {
+    const value = userDefaultCityInput.value.trim();
+    void window.user?.saveProfile({ defaultCity: value });
+  };
+  userDefaultCityInput.addEventListener("change", saveCity);
+  userDefaultCityInput.addEventListener("blur", saveCity);
 }
 
 if (uploadAvatarBtn) {

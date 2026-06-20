@@ -1258,6 +1258,19 @@ body {
   font-size: 11px;
 }
 
+/* 用户字段（默认城市等）：和 tts-field 复用粉紫主题输入框 */
+.user-profile-fields {
+  margin-top: 16px;
+  display: grid;
+  gap: 8px;
+}
+.user-field-hint {
+  margin: 0;
+  color: rgba(235, 229, 245, 0.4);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
 
 /* 插件面板 */
 .plugin-panel-heading {
@@ -1333,6 +1346,38 @@ body {
   margin: 4px 0 0;
   color: rgba(235, 229, 245, 0.52);
   font: var(--rb-text-small);
+}
+
+/* 插件卡片内可折叠的配置区（key 输入等） */
+.plugin-config {
+  display: none;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed rgba(255, 182, 220, 0.15);
+}
+.plugin-config .tts-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.plugin-config .tts-field label {
+  min-width: 64px;
+  font-size: 12px;
+  color: rgba(235, 229, 245, 0.6);
+}
+.plugin-config .tts-field input {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 182, 220, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(254, 247, 255, 0.9);
+  font-size: 13px;
+}
+.plugin-config .tts-field input:focus {
+  outline: none;
+  border-color: rgba(255, 182, 220, 0.5);
+  background: rgba(255, 255, 255, 0.08);
 }
 .plugin-switch {
   position: relative;
