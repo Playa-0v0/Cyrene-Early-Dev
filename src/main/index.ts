@@ -28,6 +28,7 @@ import { uploadFile as ttsUploadFile, cloneVoice as ttsCloneVoice, synthesize as
 import { registerAgUiIpc, type AguiRunInput } from "./agui-bridge";
 import { setWeatherConfig, setSearchConfig, loadTodos, onTodosChange } from "./orchestrator/built-in-tools";
 import { registerRecallHistoryTool } from "./orchestrator/history-tools";
+import { registerDocumentTools } from "./orchestrator/document-tools";
 
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
@@ -2264,6 +2265,9 @@ app.whenReady().then(async () => {
 
   // 历史召回工具（recall_history）——让模型能回忆滚出窗口的对话
   registerRecallHistoryTool();
+
+  // 文档生成工具（write_excel/write_word/write_pdf/write_markdown）
+  registerDocumentTools();
 
   // 任务清单（todo_write 工具的持久化 + 事件广播）：
   // - loadTodos 从磁盘恢复上次未完成的任务（跨重启延续）
