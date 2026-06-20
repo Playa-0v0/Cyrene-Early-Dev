@@ -72,7 +72,17 @@ function formatMemoryResult(result: unknown): string {
 toolRegistry.register({
   id: 'imported_docs',
   name: '导入文档',
-  description: '查询用户上传导入的文档、小说、文件的具体内容。当用户提到「文件」「文档」「小说」，或消息中包含「已上传文件」标记时使用。参数 query 为搜索关键词，topK 为返回条数（默认5）。',
+  description:
+    '在用户上传导入的文档/小说/文件范围内做语义检索，返回相关片段。\n\n' +
+    '何时用：\n' +
+    '- 用户提到「文件」「文档」「小说」，或消息包含「已上传文件」标记\n' +
+    '- 用户问的内容可能在导入的文档里\n' +
+    '- 用户要「在文档里找 xxx」「小说里有没有写到 yyy」\n\n' +
+    '不要用于：\n' +
+    '- 本机任意路径的文件（那是 read_file）\n' +
+    '- 用户的历史对话记忆（那是 user_memory）\n' +
+    '- 联网信息（那是 web_search）\n\n' +
+    '参数：query (必填，搜索关键词)，topK (可选，返回条数，默认5)。',
   enabled: true,
   inputSchema: {
     type: 'object',
@@ -91,7 +101,17 @@ toolRegistry.register({
 toolRegistry.register({
   id: 'user_memory',
   name: '用户记忆',
-  description: '查询用户的历史记忆、个人信息、过往对话提到的内容。当用户说「你还记得」「我之前说过」「以前」等时使用。参数 query 为搜索关键词，topK 为返回条数（默认5）。',
+  description:
+    '查询用户的历史记忆、个人信息、过往对话中提到的事实。\n\n' +
+    '何时用：\n' +
+    '- 用户说「你还记得」「我之前说过」「以前」「上次」等指代词\n' +
+    '- 用户问自己的偏好/习惯/背景（「我喜欢什么」「我是做什么的」）\n' +
+    '- 需要确认用户曾经提过的具体信息\n\n' +
+    '不要用于：\n' +
+    '- 当前对话最近几轮能看到的内容\n' +
+    '- 导入文档内容（那是 imported_docs）\n' +
+    '- 用户从没提过的信息（查不到就老实说不知道）\n\n' +
+    '参数：query (必填，搜索关键词)，topK (可选，返回条数，默认5)。',
   enabled: true,
   inputSchema: {
     type: 'object',

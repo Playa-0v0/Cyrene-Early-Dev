@@ -87,8 +87,17 @@ toolRegistry.register({
   id: "fetch_url",
   name: "读取网页",
   description:
-    "下载指定 URL 的内容并返回正文。支持 http/https，HTML 会用 turndown 转成结构化 markdown" +
-    "（保留标题/列表/代码块/表格），便于阅读。适合给 agent 读 README、GitHub 仓库说明、MCP 安装文档等。" +
+    "下载指定 URL 的网页内容并返回正文。HTML 会用 turndown 转成结构化 markdown" +
+    "（保留标题/列表/代码块/表格），便于阅读。\n\n" +
+    "何时用：\n" +
+    "- 用户给了明确的网址（https://...），想看内容\n" +
+    "- 用户说'看看这个链接''读一下这个网页'\n" +
+    "- 需要读 GitHub README、MCP 安装文档、API 文档等具体页面\n" +
+    "- web_search 之后拿到链接，想看具体内容\n\n" +
+    "不要用于：\n" +
+    "- 用户只给关键词没给网址 → 用 web_search\n" +
+    "- 用户问'今天有什么新闻' → 用 web_search\n" +
+    "- 本地文件路径 → 用 read_file\n\n" +
     "参数：url (必填，完整 http(s) 地址)，format (可选 markdown|raw，默认 markdown)。",
   enabled: true,
   risk: "network",
@@ -195,10 +204,19 @@ toolRegistry.register({
   id: "run_shell",
   name: "执行命令",
   description:
-    "在用户电脑上执行一条命令（不通过 shell，按 argv 数组传参）。" +
-    "适合给 agent 跑 git clone / npm install / pip install / node --version 等。" +
-    "参数：command (可执行文件名或绝对路径)，args (字符串数组)，cwd (可选工作目录)。" +
-    "返回 exitCode + stdout + stderr。危险命令需用户在权限档位中授权或单次同意。",
+    "在用户电脑上执行一条命令（不通过 shell，按 argv 数组传参）。返回 exitCode + stdout + stderr。\n\n" +
+    "何时用：\n" +
+    "- git clone / git status / git log 等版本控制操作\n" +
+    "- npm install / npm run / pip install / node xxx.js 等开发操作\n" +
+    "- node --version / python --version 等查环境\n" +
+    "- 用户明确要求'跑一下这条命令'\n\n" +
+    "不要用于：\n" +
+    "- 读文件 → read_file（更安全）\n" +
+    "- 列目录 → list_dir\n" +
+    "- 下载网页 → fetch_url\n" +
+    "- 能用专用工具完成的事\n\n" +
+    "高风险：会真实修改用户系统。危险命令需用户在权限档位授权或单次同意。" +
+    "参数：command (可执行文件名或绝对路径)，args (字符串数组)，cwd (可选工作目录)。",
   enabled: true,
   risk: "shell",
   inputSchema: {
@@ -268,8 +286,15 @@ toolRegistry.register({
   id: "install_mcp_server",
   name: "安装 MCP",
   description:
-    "把一个 MCP server 加到昔涟的工具盘里：写入配置 → 启动 → 发现工具。" +
-    "通常先用 fetch_url 读 README，找到 mcpServers 配置块（command/args/env），再用本工具一次性安装。" +
+    "把一个 MCP server 加到昔涟的工具盘里：写入配置 → 启动 → 发现工具。\n\n" +
+    "何时用：\n" +
+    "- 用户明确要装某个 MCP server（'帮我装 xxx mcp'）\n" +
+    "- 用户给了 MCP 的 GitHub 仓库或配置\n\n" +
+    "推荐流程：先用 fetch_url 读 README，找到 mcpServers 配置块" +
+    "（command/args/env），再用本工具一次性安装。\n\n" +
+    "不要用于：\n" +
+    "- 日常工具调用（已注册的工具直接用）\n" +
+    "- 系统软件安装（那是 run_shell 的活）\n\n" +
     "参数：id (可选，唯一标识，留空则用时间戳)，name (展示名)，command (可执行命令)，" +
     "args (字符串数组)，env (键值对，环境变量)，cwd (可选工作目录)。",
   enabled: true,
@@ -603,9 +628,16 @@ toolRegistry.register({
   id: "weather",
   name: "查天气",
   description:
-    "查询指定城市的实时天气（温度/体感/风/湿度/降水等）。数据准确。" +
-    "参数：city（可选，城市名中文或拼音；不传则用用户设置的默认城市）。" +
-    "适合用户问'今天天气怎样''外面冷不冷'等。",
+    "查询指定城市的实时天气。返回温度、体感温度、湿度、风速风向、降水、日出日落、AQI、UV 等。\n\n" +
+    "何时用：\n" +
+    "- 用户问'今天天气怎样''外面冷不冷''热不热''要不要带伞''穿什么'\n" +
+    "- 用户提到城市名 + 天气相关词\n" +
+    "- 用户问'周末适合出去玩吗'且涉及天气判断\n\n" +
+    "不要用于：\n" +
+    "- 历史天气（'上周北京天气'）—— 做不到，直接告诉用户\n" +
+    "- 逐小时精确预报\n" +
+    "- 完全跟天气无关的问题\n\n" +
+    "参数：city（可选，城市名中文或拼音；不传则用用户设置的默认城市）。",
   enabled: true,
   risk: "network",
   inputSchema: {
@@ -782,9 +814,16 @@ toolRegistry.register({
   id: "web_search",
   name: "联网搜索",
   description:
-    "搜索互联网获取实时信息（新闻/知识/技术文档等）。返回搜索结果的标题、链接和摘要。" +
-    "参数：query（必填，搜索关键词）。" +
-    "适合用户问'最近有什么新闻''搜一下xxx怎么用'等需要联网的问题。",
+    "搜索互联网获取实时信息。返回搜索结果的标题、链接和摘要。\n\n" +
+    "何时用：\n" +
+    "- 用户问'最近有什么新闻''搜一下 xxx 怎么用''xxx 是什么'\n" +
+    "- 用户问的事需要联网才能知道（股价、赛事、最新技术）\n" +
+    "- 用户只给关键词，没给具体网址\n\n" +
+    "不要用于：\n" +
+    "- 用户已经给了明确网址 → 用 fetch_url\n" +
+    "- 用户问本机文件 → read_file / list_dir\n" +
+    "- 能凭已有知识直接回答的简单问题\n\n" +
+    "参数：query（必填，搜索关键词）。",
   enabled: true,
   risk: "network",
   inputSchema: {
