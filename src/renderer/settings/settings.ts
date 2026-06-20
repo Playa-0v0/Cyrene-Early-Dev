@@ -919,31 +919,26 @@ const searchConfig = document.getElementById("plugin-search-config") as HTMLElem
 const searchEngineSelect = document.getElementById("search-engine") as HTMLSelectElement | null;
 const searchBochaKeyInput = document.getElementById("search-bocha-key") as HTMLInputElement | null;
 const searchTavilyKeyInput = document.getElementById("search-tavily-key") as HTMLInputElement | null;
-const searchVolcanoKeyInput = document.getElementById("search-volcano-key") as HTMLInputElement | null;
 const searchMinimaxKeyInput = document.getElementById("search-minimax-key") as HTMLInputElement | null;
 const searchBochaRow = document.getElementById("search-bocha-row");
 const searchTavilyRow = document.getElementById("search-tavily-row");
-const searchVolcanoRow = document.getElementById("search-volcano-row");
 const searchMinimaxRow = document.getElementById("search-minimax-row");
 
 const SEARCH_ROW_MAP: Record<string, HTMLElement | null> = {
   bocha: searchBochaRow,
   tavily: searchTavilyRow,
-  volcano: searchVolcanoRow,
   minimax: searchMinimaxRow,
 };
 
 const SEARCH_KEY_INPUT_MAP: Record<string, HTMLInputElement | null> = {
   bocha: searchBochaKeyInput,
   tavily: searchTavilyKeyInput,
-  volcano: searchVolcanoKeyInput,
   minimax: searchMinimaxKeyInput,
 };
 
 const SEARCH_KEY_FIELD_MAP: Record<string, string> = {
   bocha: "searchBochaKey",
   tavily: "searchTavilyKey",
-  volcano: "searchVolcanoKey",
   minimax: "searchMinimaxKey",
 };
 
@@ -1001,7 +996,6 @@ async function loadSearchConfig(): Promise<void> {
     if (searchEngineSelect) searchEngineSelect.value = engine;
     if (searchBochaKeyInput) searchBochaKeyInput.value = String(cfg.searchBochaKey ?? "");
     if (searchTavilyKeyInput) searchTavilyKeyInput.value = String(cfg.searchTavilyKey ?? "");
-    if (searchVolcanoKeyInput) searchVolcanoKeyInput.value = String(cfg.searchVolcanoKey ?? "");
     if (searchMinimaxKeyInput) searchMinimaxKeyInput.value = String(cfg.searchMinimaxKey ?? "");
     // 开关状态：engine 不是 off 就算启用
     if (searchEnabledCheckbox) searchEnabledCheckbox.checked = engine !== "off";

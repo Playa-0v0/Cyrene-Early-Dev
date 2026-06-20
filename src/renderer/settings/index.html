@@ -696,8 +696,7 @@
                       <option value="off">关闭</option>
                       <option value="bocha">博查 Bocha（国内，AI 友好）</option>
                       <option value="tavily">Tavily（海外，AI 友好）</option>
-                      <option value="volcano">火山引擎（MCP，需 uvx）</option>
-                      <option value="minimax">MiniMax（稀宇）</option>
+                      <option value="minimax">MiniMax（需 uvx）</option>
                     </select>
                   </div>
                   <div class="tts-field" id="search-bocha-row" style="display:none">
@@ -708,15 +707,11 @@
                     <label for="search-tavily-key">Tavily Key</label>
                     <input type="password" id="search-tavily-key" placeholder="tavily.com 注册获取" autocomplete="off" />
                   </div>
-                  <div class="tts-field" id="search-volcano-row" style="display:none">
-                    <label for="search-volcano-key">火山 Key</label>
-                    <input type="password" id="search-volcano-key" placeholder="Agent Plan 控制台→联网 API Key" autocomplete="off" />
-                  </div>
                   <div class="tts-field" id="search-minimax-row" style="display:none">
                     <label for="search-minimax-key">MiniMax Key</label>
                     <input type="password" id="search-minimax-key" placeholder="MiniMax 平台 API Key" autocomplete="off" />
                   </div>
-                  <p class="user-field-hint" id="search-engine-hint">选择搜索源后填入对应 Key。火山需先安装 uvx（Python）。</p>
+                  <p class="user-field-hint" id="search-engine-hint">选择搜索源后填入对应 Key。MiniMax 需先安装 uvx（Python）。</p>
                 </div>
               </div>
               <label class="plugin-switch" aria-label="启用联网搜索">
