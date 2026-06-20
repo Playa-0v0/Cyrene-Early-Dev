@@ -29,6 +29,7 @@ import { registerAgUiIpc, type AguiRunInput } from "./agui-bridge";
 import { setWeatherConfig, setSearchConfig, loadTodos, onTodosChange } from "./orchestrator/built-in-tools";
 import { registerRecallHistoryTool } from "./orchestrator/history-tools";
 import { registerDocumentTools } from "./orchestrator/document-tools";
+import { registerLifeTools, setTranslateConfig } from "./orchestrator/life-tools";
 
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
@@ -2268,6 +2269,14 @@ app.whenReady().then(async () => {
 
   // 文档生成工具（write_excel/write_word/write_pdf/write_markdown）
   registerDocumentTools();
+
+  // 生活类工具（记账/汇率/翻译/代码补丁）
+  // 翻译需要主模型，注入 loadModelSettings getter
+  setTranslateConfig(() => {
+    const s = loadModelSettings();
+    return s.apiKey ? { provider: s.provider, baseUrl: s.baseUrl, model: s.model, apiKey: s.apiKey } : null;
+  });
+  registerLifeTools();
 
   // 任务清单（todo_write 工具的持久化 + 事件广播）：
   // - loadTodos 从磁盘恢复上次未完成的任务（跨重启延续）
