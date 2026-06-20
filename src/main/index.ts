@@ -1224,9 +1224,14 @@ async function requestModelReply(inputMessages: unknown, styleFile = "01_default
     console.warn("[Cyrene] environment context build failed:", err);
   }
 
-  const systemContent = buildSystemPrompt(styleFile)
-    + (alwaysOnContext ? "\n\n" + alwaysOnContext : "")
-    + (environmentContext ? "\n\n" + environmentContext : "");
+  // system prompt 拼装顺序：事实层在前，人格层在后。
+  // 原因：LLM 有 recency bias，越靠近末尾的内容越被严格遵守。
+  // 改前末尾是 environment（路径/工具），模型最重视"路径在哪"，人格反而最容易被丢。
+  // 改后末尾是 canon_quotes（原作台词）→ soul → style，让模型最近读到的是语气底色。
+  const systemContent =
+    (environmentContext ? environmentContext + "\n\n" : "") +
+    (alwaysOnContext ? alwaysOnContext + "\n\n" : "") +
+    buildSystemPrompt(styleFile);
 
   // 2. Function Calling 循环：模型自己决定调不调工具、调哪个
   const fcMessages: Array<{ role: "system" | "user" | "assistant" | "tool"; content: string }> = [
@@ -2286,9 +2291,11 @@ app.whenReady().then(async () => {
       } catch (err) {
         console.warn("[Cyrene] environment context build failed:", err);
       }
-      const systemContent = buildSystemPrompt(input.style || "01_default.md")
-        + (alwaysOnContext ? "\n\n" + alwaysOnContext : "")
-        + (environmentContext ? "\n\n" + environmentContext : "");
+      // 事实层在前，人格层在后（recency bias：模型最重视末尾的人格/语气）
+      const systemContent =
+        (environmentContext ? environmentContext + "\n\n" : "") +
+        (alwaysOnContext ? alwaysOnContext + "\n\n" : "") +
+        buildSystemPrompt(input.style || "01_default.md");
 
       const fcMessages = [
         { role: "system" as const, content: systemContent },
