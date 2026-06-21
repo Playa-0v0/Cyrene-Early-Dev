@@ -20,7 +20,8 @@ export const ACCESS_LEVEL_LABEL: Record<AgentFileAccessLevel, string> = {
 };
 
 // 工具危险等级：决定该工具在哪些档位下可用
-export type ToolRiskLevel = "safe" | "fs-read" | "fs-write" | "shell" | "network";
+// input-control（键鼠/截屏控制）按 shell 同档处理：read-only/scoped 拒绝，per-action 审批，full 允许
+export type ToolRiskLevel = "safe" | "fs-read" | "fs-write" | "shell" | "network" | "input-control";
 
 /**
  * 给定档位 + 工具危险等级 → 返回授权策略：
