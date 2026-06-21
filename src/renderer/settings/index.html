@@ -318,7 +318,7 @@
               <button type="button" class="ghost-btn" id="open-sticker-manager-btn">管理表情包</button>
             </article>
 
-            <article class="agent-setting-card agent-setting-card--rag">
+            <article class="agent-setting-card agent-setting-card--rag agent-setting-card--full">
               <div class="agent-setting-card__head">
                 <span>📚</span>
                 <div>
@@ -375,7 +375,7 @@
                 <button type="button" class="ghost-btn" id="embedding-update-btn">检查更新</button>
               </div>
 
-                            <div class="agent-setting-subgroup" style="margin-top:12px">
+              <div class="agent-setting-subgroup" style="margin-top:12px">
                 <strong>下载镜像源</strong>
                 <div class="option-blocks option-blocks--wide" id="embedding-mirror" role="radiogroup" aria-label="镜像源">
                   <button type="button" class="option-block is-active" data-value="official" aria-pressed="true">官方源</button>
@@ -384,40 +384,6 @@
               </div>
 
               <p class="agent-setting-card__note">按钮暂为界面预留；后续会接入安装包可选模型、模型状态检测和文档导入检索。</p>
-            </article>
-
-            <article class="agent-setting-card">
-              <div class="agent-setting-card__head">
-                <span>🧠</span>
-                <div>
-                  <h2>记忆与调度</h2>
-                  <p>Memory Judge、Query Rewrite、世界书召回等能力。</p>
-                </div>
-              </div>
-              <div class="agent-toggle-list">
-                <span>记忆写入 <em>待开发</em></span>
-                <span>问句重写 <em>待开发</em></span>
-                <span>世界书召回 <em>待开发</em></span>
-              </div>
-            </article>
-
-            <article class="agent-setting-card agent-setting-card--full">
-              <div class="agent-setting-card__head">
-                <span>🛡️</span>
-                <div>
-                  <h2>本地文件权限</h2>
-                  <p>后续用于控制昔涟读取、检索或修改本地文件的权限边界。</p>
-                </div>
-              </div>
-              <div class="option-blocks option-blocks--permission" id="agent-permission-blocks" aria-label="文件权限模式">
-                <button type="button" class="option-block is-active" data-level="read-only">只读</button>
-                <button type="button" class="option-block" data-level="scoped">指定目录</button>
-                <button type="button" class="option-block" data-level="per-action">每次审批</button>
-                <button type="button" class="option-block" data-level="full">完全访问</button>
-              </div>
-              <p class="agent-setting-card__note" id="agent-permission-note">
-                只读：昔涟不会修改本地任何文件。
-              </p>
             </article>
           </div>
 
@@ -620,7 +586,7 @@
               <div class="plugin-card__icon">🧠</div>
               <div class="plugin-card__body">
                 <h2>用户记忆</h2>
-                <p>让昔涟按需调用与你有关的长期画像和阶段记忆。</p>
+                <p>用户画像、阶段记忆，以及历史对话的语义召回。</p>
               </div>
               <span class="plugin-always-on" title="常驻">●</span>
             </article>
@@ -708,16 +674,82 @@
               </label>
             </article>
 
-            <article class="plugin-card is-muted">
+            <article class="plugin-card" id="plugin-file-card">
               <div class="plugin-card__icon">📁</div>
               <div class="plugin-card__body">
                 <h2>本地文件</h2>
-                <p>读取用户授权目录中的文件，后续接入权限管理。</p>
+                <p id="plugin-file-note">只读：昔涟不会修改本地任何文件。</p>
               </div>
-              <label class="plugin-switch" aria-label="启用本地文件">
-                <input type="checkbox" id="plugin-file-enabled" />
-                <span></span>
-              </label>
+              <div class="plugin-perm-capsule" id="plugin-file-permission" role="group" aria-label="本地文件权限">
+                <button type="button" class="perm-seg is-active" data-level="read-only" title="只读">只读</button>
+                <button type="button" class="perm-seg" data-level="per-action" title="每次审批">审批</button>
+                <button type="button" class="perm-seg" data-level="full" title="完全访问">完全</button>
+              </div>
+            </article>
+
+            <article class="plugin-card">
+              <div class="plugin-card__icon">📑</div>
+              <div class="plugin-card__body">
+                <h2>多档编写</h2>
+                <p>把数据整理成 Excel / Word / PDF / Markdown，保存到桌面。</p>
+              </div>
+              <span class="plugin-always-on" title="常驻">●</span>
+            </article>
+
+            <article class="plugin-card">
+              <div class="plugin-card__icon">🕷️</div>
+              <div class="plugin-card__body">
+                <h2>网页抓取</h2>
+                <p>下载指定网址并转成结构化 Markdown 喂给昔涟。</p>
+              </div>
+              <span class="plugin-always-on" title="常驻">●</span>
+            </article>
+
+            <article class="plugin-card">
+              <div class="plugin-card__icon">💰</div>
+              <div class="plugin-card__body">
+                <h2>收支记账</h2>
+                <p>记支出、查账汇总、汇率换算（frankfurter 免配置）。</p>
+              </div>
+              <span class="plugin-always-on" title="常驻">●</span>
+            </article>
+
+            <article class="plugin-card">
+              <div class="plugin-card__icon">🔌</div>
+              <div class="plugin-card__body">
+                <h2>MCP 工具</h2>
+                <p>已注册的 MCP Server 工具，按需自动调用。</p>
+              </div>
+              <span class="plugin-always-on" title="常驻">●</span>
+            </article>
+
+            <article class="plugin-card plugin-card--accordion" id="plugin-life-card">
+              <div class="plugin-accordion-header">
+                <div class="plugin-card__icon">🏘️</div>
+                <div class="plugin-card__body">
+                  <h2>生活工具</h2>
+                  <p>日常小工具集合，点击展开。</p>
+                </div>
+                <button type="button" class="accordion-toggle" id="plugin-life-toggle" aria-label="展开生活工具" aria-expanded="false">▾</button>
+              </div>
+              <div class="plugin-accordion-body is-collapsed" id="plugin-life-body">
+                <article class="plugin-card plugin-card--sub">
+                  <div class="plugin-card__icon">📋</div>
+                  <div class="plugin-card__body">
+                    <h2>任务拆解</h2>
+                    <p>把复杂任务拆成步骤，左上角面板显示进度。</p>
+                  </div>
+                  <span class="plugin-always-on" title="常驻">●</span>
+                </article>
+                <article class="plugin-card plugin-card--sub">
+                  <div class="plugin-card__icon">🔤</div>
+                  <div class="plugin-card__body">
+                    <h2>翻译</h2>
+                    <p>把文本翻译成指定语言，走主模型保证质量。</p>
+                  </div>
+                  <span class="plugin-always-on" title="常驻">●</span>
+                </article>
+              </div>
             </article>
           </div>
         </section>

@@ -4,10 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>昔涟 · 设置</title>
-  <script type="module" crossorigin src="../assets/settings-BlaWpEF1.js"></script>
+  <script type="module" crossorigin src="../assets/settings-BWxwt70f.js"></script>
   <link rel="modulepreload" crossorigin href="../assets/base-CVzNOcnc.js">
+  <link rel="modulepreload" crossorigin href="../assets/chat-ui-kPmAHPjl.js">
   <link rel="stylesheet" crossorigin href="../assets/base-BTHABN_A.css">
-  <link rel="stylesheet" crossorigin href="../assets/settings-DbYeQTAO.css">
+  <link rel="stylesheet" crossorigin href="../assets/settings-ibOVM9qi.css">
 </head>
 <body>
   <div class="settings-shell">
@@ -19,7 +20,7 @@
 
       <nav class="settings-nav__list">
         <button type="button" class="nav-item" data-section="memory"><span>🧠</span>记忆</button>
-        <button type="button" class="nav-item" data-section="gallery"><span>🖼️</span>图库</button>
+        <button type="button" class="nav-item" data-section="chat"><span>💬</span>聊天</button>
         <button type="button" class="nav-item" data-section="user"><span>👤</span>用户信息</button>
         <hr class="nav-divider" />
         <button type="button" class="nav-item" data-section="tasks"><span>⏰</span>定时任务</button>
@@ -77,32 +78,29 @@
 
           <div class="form-grid">
             <label class="field">
-              <span>模式</span>
-              <select id="mode">
-                <option value="auto">Auto（自动）</option>
-                <option value="manual">Manual（手动）</option>
-              </select>
-            </label>
-
-            <label class="field">
-              <span>Provider</span>
-              <input id="provider" type="text" placeholder="deepseek / openai / custom" autocomplete="off" />
-            </label>
-
-            <label class="field field--full">
-              <span>Base URL</span>
-              <input id="base-url" type="url" placeholder="https://api.deepseek.com" autocomplete="off" />
-            </label>
-
-            <label class="field">
-              <span>模型名</span>
-              <select id="model"></select>
+              <span>昵称</span>
+              <input id="display-name" type="text" placeholder="给模型起个名字，留空用厂商名" autocomplete="off" />
             </label>
 
             <label class="field">
               <span>API Key</span>
               <input id="api-key" type="password" placeholder="sk-..." autocomplete="off" />
-            </label>          </div>
+            </label>
+
+            <label class="field field--full base-url-field">
+              <span>Base URL</span>
+              <div class="base-url-row">
+                <input id="base-url" type="url" placeholder="https://api.deepseek.com" autocomplete="off" />
+                <button type="button" class="base-url-reset" id="base-url-reset-btn" title="重置为厂商默认 URL">↻</button>
+              </div>
+            </label>
+
+            <label class="field field--full">
+              <span>模型名</span>
+              <input id="model-input" type="text" placeholder="选厂商后自动填入，可手填覆盖" autocomplete="off" list="model-input-suggestions" />
+              <datalist id="model-input-suggestions"></datalist>
+            </label>
+          </div>
 
           <div class="api-note">
             <span>🔒</span>
@@ -111,8 +109,51 @@
 
           <hr class="api-section-divider" />
 
+          <!-- 视觉模型配置区（可选） -->
+          <div class="vision-config-section">
+            <div class="vision-config-heading">
+              <span class="vision-config-icon">🖼️</span>
+              <div>
+                <h2>视觉模型（可选）</h2>
+                <p>配置后昔涟能看懂图片。留空则遇到图片会诚实告知看不了。</p>
+              </div>
+            </div>
+
+            <div class="vision-sync-row">
+              <span class="field-label">配置方式</span>
+              <div class="option-blocks option-blocks--wide" id="vision-sync-blocks" role="radiogroup" aria-label="视觉模型配置方式">
+                <button type="button" class="option-block is-active" data-vision-sync="main" aria-pressed="true">与主聊天模型相同</button>
+                <button type="button" class="option-block" data-vision-sync="independent" aria-pressed="false">独立配置</button>
+              </div>
+            </div>
+
+            <div class="form-grid vision-fields">
+              <label class="field field--full">
+                <span>Base URL</span>
+                <input id="vision-base-url" type="url" placeholder="https://api.openai.com/v1" autocomplete="off" />
+              </label>
+              <label class="field">
+                <span>API Key</span>
+                <input id="vision-api-key" type="password" placeholder="sk-..." autocomplete="off" />
+              </label>
+              <label class="field">
+                <span>视觉型号</span>
+                <input id="vision-model" type="text" placeholder="gpt-4o / glm-5v-turbo / qwen-vl-max" autocomplete="off" />
+              </label>
+            </div>
+            <p class="vision-hint">ⓘ 该模型需支持 OpenAI 兼容的 /chat/completions 接口及 image_url 多模态能力</p>
+
+            <button type="button" class="save-btn save-btn--ghost" id="test-vision-btn">测试视觉模型</button>
+            <div class="save-status" id="vision-test-status"></div>
+          </div>
+
           <div class="form-actions">
             <div class="save-status" id="save-status">等待保存</div>
+            <!--
+              测试连接按钮：当前为 UI 占位，点击后只弹一行临时提示。
+              等到 vendor adapter 接好后再接真实测试逻辑（替换 onclick 即可）。
+            -->
+            <button type="button" class="save-btn save-btn--ghost" id="test-connection-btn">测试连接</button>
             <button type="submit" class="save-btn">保存 API 设置</button>
           </div>
         </form>
@@ -192,7 +233,7 @@
             <div class="setting-row">
               <div>
                 <strong>聊天记录管理</strong>
-                <span>清空当前本地聊天记录。</span>
+                <span>清空全部本地聊天会话（迁移到「💬 聊天」面板可逐条管理）。</span>
               </div>
               <button type="button" class="ghost-btn" id="clear-chat-history-btn">清空记录</button>
             </div>
@@ -360,23 +401,6 @@
                 <span>世界书召回 <em>待开发</em></span>
               </div>
             </article>
-
-            <article class="agent-setting-card agent-setting-card--full">
-              <div class="agent-setting-card__head">
-                <span>🛡️</span>
-                <div>
-                  <h2>本地文件权限</h2>
-                  <p>后续用于控制昔涟读取、检索或修改本地文件的权限边界。</p>
-                </div>
-              </div>
-              <div class="option-blocks option-blocks--permission" aria-label="文件权限模式">
-                <button type="button" class="option-block is-active" disabled>只读</button>
-                <button type="button" class="option-block" disabled>指定目录</button>
-                <button type="button" class="option-block" disabled>每次审批</button>
-                <button type="button" class="option-block" disabled>完全访问</button>
-              </div>
-              <p class="agent-setting-card__note">完全访问未来会额外弹出风险提示，并延迟确认。</p>
-            </article>
           </div>
 
           <div class="form-actions agent-form-actions">
@@ -488,20 +512,69 @@
                   <p class="user-avatar-hint">支持 JPG、PNG，建议 1:1 比例</p>
                 </div>
               </div>
+              <div class="user-profile-fields">
+                <div class="tts-field">
+                  <label for="user-nickname">昵称</label>
+                  <input type="text" id="user-nickname" placeholder="你想让昔涟怎么称呼你" />
+                </div>
+                <div class="tts-field">
+                  <label for="user-call-pref">称呼偏好</label>
+                  <input type="text" id="user-call-pref" placeholder="例如：P宝、主人、哥哥（留空用昵称）" />
+                </div>
+                <div class="tts-field">
+                  <label for="user-birthday">生日</label>
+                  <input type="date" id="user-birthday" />
+                </div>
+                <div class="tts-field">
+                  <label for="user-default-city">默认城市</label>
+                  <input type="text" id="user-default-city" placeholder="例如：上海、北京、广州（用于天气等）" />
+                </div>
+                <p class="user-field-hint">这些信息会告诉昔涟，让她知道怎么称呼你、你在哪。默认城市用于天气等需要定位的工具。</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="settings-panel is-hidden" id="chat-panel" data-panel="chat">
+          <div class="panel-heading">
+            <div class="panel-heading__icon">💬</div>
+            <div>
+              <h1>聊天</h1>
+              <p>管理聊天窗口与会话历史</p>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="chat-sessions">
+              <button type="button" class="chat-sessions__new" id="chat-new-btn">
+                <span class="chat-sessions__new-icon" aria-hidden="true">＋</span>
+                <span>新对话</span>
+              </button>
+              <ul class="chat-sessions__list" id="chat-sessions-list" role="list"></ul>
+              <div class="chat-sessions__empty is-hidden" id="chat-sessions-empty">
+                <span class="chat-sessions__empty-icon" aria-hidden="true">📭</span>
+                <p>还没有对话，点上面的「＋ 新对话」开始吧</p>
+              </div>
+            </div>
+            <div class="chat-sessions__footer">
+              <button type="button" class="ghost-btn" id="chat-open-folder-btn">📂 打开存储位置</button>
+              <span class="chat-sessions__footer-hint">所有会话保存在 userData/cyrene-chats/ 下，可整体迁移</span>
             </div>
           </div>
         </section>
 
         <section class="settings-panel is-hidden" id="identity-panel" data-panel="identity">
           <div class="panel-heading">
-            <h2 class="panel-title">💼 职位</h2>
-            <p class="panel-subtitle">自定义昔涟的身份定位与工作职责</p>
+            <div class="panel-heading__icon">💼</div>
+            <div>
+              <h1>职位</h1>
+              <p>自定义昔涟的身份定位与工作职责</p>
+            </div>
           </div>
           <div class="panel-body">
             <div class="placeholder-card">
               <span class="placeholder-icon">🚧</span>
-              <p class="placeholder-text">待开发</p>
-              <p class="placeholder-hint">此功能正在规划中，敬请期待</p>
+              <p class="placeholder-text">敬请期待</p>
+              <p class="placeholder-hint">此功能将在后续版本更新加入多 agent 协作后开启</p>
             </div>
           </div>
         </section>
@@ -522,22 +595,16 @@
                 <h2>文档检索</h2>
                 <p>检索用户导入的小说、资料和知识库片段。</p>
               </div>
-              <label class="plugin-switch" aria-label="启用文档检索">
-                <input type="checkbox" checked />
-                <span></span>
-              </label>
+              <span class="plugin-always-on" title="常驻">●</span>
             </article>
 
             <article class="plugin-card">
               <div class="plugin-card__icon">🧠</div>
               <div class="plugin-card__body">
                 <h2>用户记忆</h2>
-                <p>让昔涟按需调用与你有关的长期画像和阶段记忆。</p>
+                <p>用户画像、阶段记忆，以及历史对话的语义召回。</p>
               </div>
-              <label class="plugin-switch" aria-label="启用用户记忆">
-                <input type="checkbox" checked />
-                <span></span>
-              </label>
+              <span class="plugin-always-on" title="常驻">●</span>
             </article>
 
             <article class="plugin-card">
@@ -546,34 +613,159 @@
                 <h2>世界书</h2>
                 <p>按需召回昔涟的背景设定、经历和关键词内容。</p>
               </div>
-              <label class="plugin-switch" aria-label="启用世界书">
-                <input type="checkbox" checked />
-                <span></span>
-              </label>
+              <span class="plugin-always-on" title="常驻">●</span>
             </article>
 
-            <article class="plugin-card is-muted">
+            <article class="plugin-card">
               <div class="plugin-card__icon">🌐</div>
               <div class="plugin-card__body">
-                <h2>网页搜索</h2>
-                <p>联网检索实时资料和网页内容，后续接入。</p>
+                <h2>联网搜索</h2>
+                <p>联网检索实时资料和网页内容（在下方配置搜索源）。</p>
               </div>
-              <label class="plugin-switch" aria-label="启用网页搜索">
-                <input type="checkbox" />
+              <span class="plugin-always-on" title="常驻">●</span>
+            </article>
+
+            <article class="plugin-card" id="plugin-weather-card">
+              <div class="plugin-card__icon">🌤️</div>
+              <div class="plugin-card__body">
+                <h2>天气查询</h2>
+                <p>查指定城市的实时天气与预报。Open-Meteo 免配置，或用高德（<a href="https://lbs.amap.com" target="_blank" rel="noopener">注册 Key</a>）。</p>
+                <div class="plugin-config" id="plugin-weather-config">
+                  <div class="tts-field">
+                    <label for="weather-source">天气源</label>
+                    <select id="weather-source">
+                      <option value="open-meteo">Open-Meteo（免配置，推荐）</option>
+                      <option value="amap">高德天气（需 Key，国内准）</option>
+                    </select>
+                  </div>
+                  <div id="amap-fields" style="display:none">
+                    <div class="tts-field">
+                      <label for="amap-key">高德 Key</label>
+                      <input type="password" id="amap-key" placeholder="lbs.amap.com 注册 Web服务 Key" autocomplete="off" />
+                    </div>
+                    <p class="user-field-hint">高德开放平台 → 控制台 → 应用管理 → 创建「Web服务」类型 Key。</p>
+                  </div>
+                  <p class="user-field-hint">Open-Meteo 免配置直接用。默认城市在「我的信息」面板填。</p>
+                </div>
+              </div>
+              <label class="plugin-switch" aria-label="启用天气查询">
+                <input type="checkbox" id="plugin-weather-enabled" />
                 <span></span>
               </label>
             </article>
 
-            <article class="plugin-card is-muted">
+            <article class="plugin-card" id="plugin-search-card">
+              <div class="plugin-card__icon">🔍</div>
+              <div class="plugin-card__body">
+                <h2>联网搜索</h2>
+                <p>让昔涟能搜索互联网获取实时信息。选择一个搜索源并填入对应 Key。</p>
+                <div class="plugin-config" id="plugin-search-config">
+                  <div class="tts-field">
+                    <label for="search-engine">搜索源</label>
+                    <select id="search-engine">
+                      <option value="off">关闭</option>
+                      <option value="bocha">博查 Bocha（国内，AI 友好）</option>
+                      <option value="tavily">Tavily（海外，AI 友好）</option>
+                      <option value="minimax">MiniMax（需 uvx）</option>
+                    </select>
+                  </div>
+                  <div class="tts-field" id="search-bocha-row" style="display:none">
+                    <label for="search-bocha-key">博查 Key</label>
+                    <input type="password" id="search-bocha-key" placeholder="open.bochaai.com 注册获取" autocomplete="off" />
+                  </div>
+                  <div class="tts-field" id="search-tavily-row" style="display:none">
+                    <label for="search-tavily-key">Tavily Key</label>
+                    <input type="password" id="search-tavily-key" placeholder="tavily.com 注册获取" autocomplete="off" />
+                  </div>
+                  <div class="tts-field" id="search-minimax-row" style="display:none">
+                    <label for="search-minimax-key">MiniMax Key</label>
+                    <input type="password" id="search-minimax-key" placeholder="MiniMax 平台 API Key" autocomplete="off" />
+                  </div>
+                  <p class="user-field-hint" id="search-engine-hint">选择搜索源后填入对应 Key。MiniMax 需先安装 uvx（Python）。</p>
+                </div>
+              </div>
+              <label class="plugin-switch" aria-label="启用联网搜索">
+                <input type="checkbox" id="plugin-search-enabled" />
+                <span></span>
+              </label>
+            </article>
+
+            <article class="plugin-card" id="plugin-file-card">
               <div class="plugin-card__icon">📁</div>
               <div class="plugin-card__body">
                 <h2>本地文件</h2>
-                <p>读取用户授权目录中的文件，后续接入权限管理。</p>
+                <p id="plugin-file-note">只读：昔涟不会修改本地任何文件。</p>
               </div>
-              <label class="plugin-switch" aria-label="启用本地文件">
-                <input type="checkbox" />
-                <span></span>
-              </label>
+              <div class="plugin-perm-capsule" id="plugin-file-permission" role="group" aria-label="本地文件权限">
+                <button type="button" class="perm-seg is-active" data-level="read-only" title="只读">只读</button>
+                <button type="button" class="perm-seg" data-level="per-action" title="每次审批">审批</button>
+                <button type="button" class="perm-seg" data-level="full" title="完全访问">完全</button>
+              </div>
+            </article>
+
+            <article class="plugin-card">
+              <div class="plugin-card__icon">📑</div>
+              <div class="plugin-card__body">
+                <h2>多档编写</h2>
+                <p>把数据整理成 Excel / Word / PDF / Markdown，保存到桌面。</p>
+              </div>
+              <span class="plugin-always-on" title="常驻">●</span>
+            </article>
+
+            <article class="plugin-card">
+              <div class="plugin-card__icon">🕷️</div>
+              <div class="plugin-card__body">
+                <h2>网页抓取</h2>
+                <p>下载指定网址并转成结构化 Markdown 喂给昔涟。</p>
+              </div>
+              <span class="plugin-always-on" title="常驻">●</span>
+            </article>
+
+            <article class="plugin-card">
+              <div class="plugin-card__icon">💰</div>
+              <div class="plugin-card__body">
+                <h2>收支记账</h2>
+                <p>记支出、查账汇总、汇率换算（frankfurter 免配置）。</p>
+              </div>
+              <span class="plugin-always-on" title="常驻">●</span>
+            </article>
+
+            <article class="plugin-card">
+              <div class="plugin-card__icon">🔌</div>
+              <div class="plugin-card__body">
+                <h2>MCP 工具</h2>
+                <p>已注册的 MCP Server 工具，按需自动调用。</p>
+              </div>
+              <span class="plugin-always-on" title="常驻">●</span>
+            </article>
+
+            <article class="plugin-card plugin-card--accordion" id="plugin-life-card">
+              <div class="plugin-accordion-header">
+                <div class="plugin-card__icon">🏘️</div>
+                <div class="plugin-card__body">
+                  <h2>生活工具</h2>
+                  <p>日常小工具集合，点击展开。</p>
+                </div>
+                <button type="button" class="accordion-toggle" id="plugin-life-toggle" aria-label="展开生活工具" aria-expanded="false">▾</button>
+              </div>
+              <div class="plugin-accordion-body is-collapsed" id="plugin-life-body">
+                <article class="plugin-card plugin-card--sub">
+                  <div class="plugin-card__icon">📋</div>
+                  <div class="plugin-card__body">
+                    <h2>任务拆解</h2>
+                    <p>把复杂任务拆成步骤，左上角面板显示进度。</p>
+                  </div>
+                  <span class="plugin-always-on" title="常驻">●</span>
+                </article>
+                <article class="plugin-card plugin-card--sub">
+                  <div class="plugin-card__icon">🔤</div>
+                  <div class="plugin-card__body">
+                    <h2>翻译</h2>
+                    <p>把文本翻译成指定语言，走主模型保证质量。</p>
+                  </div>
+                  <span class="plugin-always-on" title="常驻">●</span>
+                </article>
+              </div>
             </article>
           </div>
         </section>
@@ -644,6 +836,221 @@
           </div>
         </section>
 
+        <section class="settings-panel is-hidden" id="token-panel" data-panel="tokens">
+          <div class="panel-heading">
+            <div class="panel-heading__icon">📊</div>
+            <div>
+              <h1>Token 用量</h1>
+              <p>查看 API 调用统计与消耗</p>
+            </div>
+          </div>
+          <div class="panel-body">
+            <!-- 时间范围切换 -->
+            <div class="token-range" role="tablist" aria-label="时间范围">
+              <button type="button" class="token-range__btn is-active" data-range="7" role="tab" aria-selected="true">7d</button>
+              <button type="button" class="token-range__btn" data-range="14" role="tab" aria-selected="false">14d</button>
+              <button type="button" class="token-range__btn" data-range="30" role="tab" aria-selected="false">30d</button>
+            </div>
+
+            <!-- Hero 指标区：总消耗(大字)+请求数(右上小字)，下面三小框 -->
+            <div class="token-hero">
+              <div class="token-hero__main">
+                <span class="token-hero__label">📊 真实消耗</span>
+                <span class="token-hero__value" id="token-total">12,470</span>
+              </div>
+              <div class="token-hero__req">
+                <span class="token-hero__req-label">🔢 请求数</span>
+                <span class="token-hero__req-value" id="token-requests">42</span>
+              </div>
+            </div>
+            <div class="token-stats">
+              <div class="token-stat">
+                <span class="token-stat__icon">📥</span>
+                <span class="token-stat__label">输入</span>
+                <span class="token-stat__value" id="token-input">8,200</span>
+              </div>
+              <div class="token-stat">
+                <span class="token-stat__icon">📤</span>
+                <span class="token-stat__label">输出</span>
+                <span class="token-stat__value" id="token-output">4,270</span>
+              </div>
+              <div class="token-stat">
+                <span class="token-stat__icon">🎯</span>
+                <span class="token-stat__label">命中</span>
+                <span class="token-stat__value" id="token-hit">N/A</span>
+              </div>
+            </div>
+
+            <!-- 空态：无用量数据时显示 -->
+            <div class="token-empty is-hidden" id="token-empty">
+              <span class="token-empty__icon" aria-hidden="true">📭</span>
+              <p class="token-empty__text">暂无用量数据</p>
+              <p class="token-empty__hint">和昔涟聊天后这里会显示真实的 Token 消耗统计</p>
+            </div>
+
+            <!-- 图表区（有数据时显示） -->
+            <div id="token-charts">
+              <!-- 柱状图（保留 CSS 版，按时间范围动态生成天数） -->
+              <div class="token-section-title">📈 每日消耗柱状图</div>
+              <div class="mini-chart" aria-hidden="true">
+                <div class="mini-chart__avg"><span id="token-avg-label">日均 0</span></div>
+                <div class="mini-chart__bars" id="token-bar-chart"></div>
+              </div>
+
+              <!-- 波浪面积图（Chart.js，输入蓝/输出粉双曲线） -->
+              <div class="token-section-title">🌊 使用趋势</div>
+              <div class="token-trend-wrap">
+                <canvas id="token-trend-chart"></canvas>
+              </div>
+            </div>
+
+            <!-- hover tooltip 浮层（柱状图和波浪图共用） -->
+            <div class="token-tooltip" id="token-tooltip" hidden></div>
+
+            <p class="token-panel__hint">💡 命中/未命中为缓存统计占位，接入缓存功能后显示真实值。</p>
+          </div>
+        </section>
+
+        <section class="settings-panel is-hidden" id="tts-panel" data-panel="tts">
+          <div class="panel-heading">
+            <div class="panel-heading__icon">🎙️</div>
+            <div>
+              <h1>TTS 设置</h1>
+              <p>语音合成与朗读偏好</p>
+            </div>
+          </div>
+          <div class="panel-body">
+            <!-- 播放交互（最上面） -->
+            <div class="tts-section">
+              <h2 class="tts-section__title">播放交互</h2>
+              <label class="setting-row">
+                <div>
+                  <strong>自动朗读回复</strong>
+                  <span>昔涟每次回复后自动语音朗读</span>
+                </div>
+                <span class="switch"><input type="checkbox" id="tts-auto-read" checked /><span class="switch__track"><span class="switch__thumb"></span></span></span>
+              </label>
+              <div class="setting-row">
+                <div>
+                  <strong>语速</strong>
+                  <span>控制语音朗读速度</span>
+                </div>
+                <input type="range" id="tts-speed" min="0.5" max="2" step="0.1" value="1" />
+                <span class="range-val" id="tts-speed-val">1.0x</span>
+              </div>
+              <div class="setting-row">
+                <div>
+                  <strong>音量</strong>
+                  <span>控制语音朗读音量</span>
+                </div>
+                <input type="range" id="tts-volume" min="0" max="1" step="0.1" value="1" />
+                <span class="range-val" id="tts-volume-val">100%</span>
+              </div>
+            </div>
+
+            <!-- 引擎选择 -->
+            <div class="tts-section">
+              <h2 class="tts-section__title">引擎选择</h2>
+              <div class="tts-engines" role="radiogroup" aria-label="TTS引擎">
+                <button type="button" class="tts-engine is-active" data-engine="off" role="radio" aria-checked="true">
+                  <span class="tts-engine__icon">🔇</span>
+                  <span class="tts-engine__name">关闭</span>
+                </button>
+                <button type="button" class="tts-engine" data-engine="volcano" role="radio" aria-checked="false">
+                  <span class="tts-engine__icon">🌋</span>
+                  <span class="tts-engine__name">火山引擎</span>
+                  <span class="tts-engine__tag">云端</span>
+                </button>
+                <button type="button" class="tts-engine" data-engine="minimax" role="radio" aria-checked="false">
+                  <span class="tts-engine__icon">✨</span>
+                  <span class="tts-engine__name">MiniMax</span>
+                  <span class="tts-engine__tag">云端</span>
+                </button>
+                <button type="button" class="tts-engine" data-engine="gptsovits" role="radio" aria-checked="false">
+                  <span class="tts-engine__icon">🤖</span>
+                  <span class="tts-engine__name">GPT-SoVITS</span>
+                  <span class="tts-engine__tag">本地</span>
+                </button>
+                <button type="button" class="tts-engine" data-engine="vits2" role="radio" aria-checked="false">
+                  <span class="tts-engine__icon">🎵</span>
+                  <span class="tts-engine__name">VITS2</span>
+                  <span class="tts-engine__tag">本地</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- 引擎配置表单（选中哪个显示哪个） -->
+            <div class="tts-config" id="tts-config-volcano" hidden>
+              <h2 class="tts-section__title">🌋 火山引擎配置</h2>
+              <div class="tts-field"><label>App ID</label><input type="text" id="tts-volcano-appid" placeholder="火山引擎语音 App ID" /></div>
+              <div class="tts-field"><label>Access Token</label><input type="password" id="tts-volcano-token" placeholder="访问令牌" /></div>
+              <div class="tts-field"><label>音色 ID</label><input type="text" id="tts-volcano-voice" placeholder="训练好的音色 ID" /></div>
+              <button type="button" class="ghost-btn" id="tts-volcano-test">🔊 测试发音</button>
+            </div>
+
+            <div class="tts-config" id="tts-config-minimax" hidden>
+              <h2 class="tts-section__title">✨ MiniMax 配置</h2>
+              <div class="tts-field"><label>API Key</label><input type="password" id="tts-minimax-key" placeholder="MiniMax API Key" /></div>
+              <div class="tts-field"><label>音色 ID</label><input type="text" id="tts-minimax-voice" placeholder="训练好的音色 ID（或下方复刻后自动填入）" /></div>
+              <div class="tts-field">
+                <label>合成模型</label>
+                <select id="tts-minimax-model">
+                  <option value="speech-2.8-turbo">speech-2.8-turbo（极速 ¥2.0/万字符）</option>
+                  <option value="speech-2.8-hd">speech-2.8-hd（高保真 ¥3.5/万字符）</option>
+                </select>
+              </div>
+              <button type="button" class="ghost-btn" id="tts-minimax-test">🔊 测试发音</button>
+
+              <!-- 音色快速复刻 -->
+              <div class="tts-clone-section">
+                <h3 class="tts-clone-title">🎙️ 音色快速复刻</h3>
+                <p class="tts-clone-hint">上传昔涟配音（mp3/m4a/wav，10秒~5分钟，≤20MB），训练专属音色</p>
+
+                <div class="tts-field">
+                  <label>配音文件</label>
+                  <input type="text" id="tts-clone-file" placeholder="点击右侧选择音频文件" readonly />
+                  <button type="button" class="ghost-btn tts-pick-btn" id="tts-clone-pick">选择</button>
+                </div>
+                <div class="tts-field">
+                  <label>示例音频</label>
+                  <input type="text" id="tts-clone-prompt-file" placeholder="可选，增强克隆效果（≤8秒）" readonly />
+                  <button type="button" class="ghost-btn tts-pick-btn" id="tts-clone-prompt-pick">选择</button>
+                </div>
+                <div class="tts-field">
+                  <label>示例文本</label>
+                  <input type="text" id="tts-clone-prompt-text" placeholder="示例音频对应的文字（可选）" />
+                </div>
+                <div class="tts-field">
+                  <label>复刻文本</label>
+                  <input type="text" id="tts-clone-text" placeholder="训练时合成这句做对比" value="你好，我是昔涟，很高兴见到你。" />
+                </div>
+                <div class="tts-field">
+                  <label>音色命名</label>
+                  <input type="text" id="tts-clone-voice-id" placeholder="自定义音色ID（如 cyrene-voice）" />
+                </div>
+                <button type="button" class="ghost-btn" id="tts-clone-start">🚀 开始复刻</button>
+                <div class="tts-clone-status" id="tts-clone-status"></div>
+              </div>
+            </div>
+
+            <div class="tts-config" id="tts-config-gptsovits" hidden>
+              <h2 class="tts-section__title">🤖 GPT-SoVITS 配置</h2>
+              <div class="tts-field"><label>API 地址</label><input type="text" id="tts-gptsovits-url" placeholder="http://localhost:9880" value="http://localhost:9880" /></div>
+              <div class="tts-field"><label>模型路径</label><input type="text" id="tts-gptsovits-model" placeholder="训练好的模型文件路径（可选）" /></div>
+              <button type="button" class="ghost-btn" id="tts-gptsovits-test">🔊 测试发音</button>
+            </div>
+
+            <div class="tts-config" id="tts-config-vits2" hidden>
+              <h2 class="tts-section__title">🎵 VITS2 配置</h2>
+              <div class="tts-field"><label>API 地址</label><input type="text" id="tts-vits2-url" placeholder="http://localhost:9880" value="http://localhost:9880" /></div>
+              <div class="tts-field"><label>模型路径</label><input type="text" id="tts-vits2-model" placeholder="训练好的模型文件路径（可选）" /></div>
+              <button type="button" class="ghost-btn" id="tts-vits2-test">🔊 测试发音</button>
+            </div>
+
+            <p class="tts-hint">💡 云端引擎需在各平台控制台用昔涟配音素材训练音色，拿到音色 ID 填入上方。本地引擎需自行安装 GPT-SoVITS / VITS2 并起 HTTP 服务。</p>
+          </div>
+        </section>
+
 
         <section class="settings-panel is-hidden" id="placeholder-panel">
           <div class="placeholder-card">
@@ -657,3 +1064,5 @@
   </div>
 </body>
 </html>
+
+

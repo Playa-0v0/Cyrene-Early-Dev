@@ -770,8 +770,7 @@ body {
   color: rgba(255, 214, 236, 0.62) !important;
 }
 
-.agent-status-row,
-.agent-toggle-list span {
+.agent-status-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -784,14 +783,12 @@ body {
   font: var(--rb-text-small-em);
 }
 
-.agent-status-row em,
-.agent-toggle-list em {
+.agent-status-row em {
   font-style: normal;
   color: rgba(255, 214, 236, 0.70);
 }
 
-.agent-actions-row,
-.agent-toggle-list {
+.agent-actions-row {
   display: grid;
   gap: 8px;
 }
@@ -806,18 +803,12 @@ body {
   min-width: 0;
 }
 
-.option-blocks--permission {
-  grid-template-columns: repeat(4, minmax(84px, 1fr));
-  min-width: 0;
-}
-
 @media (max-width: 780px) {
   .agent-settings-grid {
     grid-template-columns: 1fr;
   }
 
-  .agent-actions-row,
-  .option-blocks--permission {
+  .agent-actions-row {
     grid-template-columns: 1fr 1fr;
   }
 }
@@ -1431,6 +1422,103 @@ body {
 .plugin-switch input:checked + span::after {
   transform: translateX(20px);
   background: #fff;
+}
+
+/* 本地文件权限胶囊（分段选择器） */
+.plugin-perm-capsule {
+  display: inline-flex;
+  flex-shrink: 0;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 182, 220, 0.16);
+  background: rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+}
+.perm-seg {
+  padding: 6px 12px;
+  border: none;
+  background: transparent;
+  color: rgba(235, 229, 245, 0.6);
+  font: var(--rb-text-small-em);
+  cursor: pointer;
+  transition: color 140ms ease, background 140ms ease, box-shadow 140ms ease;
+}
+.perm-seg + .perm-seg {
+  border-left: 1px solid rgba(255, 182, 220, 0.12);
+}
+.perm-seg:not(.is-active):hover {
+  color: rgba(255, 238, 248, 0.85);
+  background: rgba(255, 255, 255, 0.06);
+}
+.perm-seg.is-active {
+  color: var(--rb-text-on-pink);
+  background: linear-gradient(135deg, rgba(255, 110, 199, 0.88), rgba(168, 85, 247, 0.82));
+  box-shadow: 0 0 14px rgba(236, 72, 153, 0.26);
+}
+
+/* 生活工具手风琴 */
+.plugin-card--accordion {
+  display: block;
+}
+.plugin-accordion-header {
+  display: grid;
+  grid-template-columns: 42px 1fr auto;
+  align-items: center;
+  gap: 14px;
+}
+.accordion-toggle {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(235, 229, 245, 0.7);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 180ms ease, background 160ms ease, color 160ms ease;
+  flex-shrink: 0;
+}
+.accordion-toggle:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 238, 248, 0.95);
+}
+.plugin-card--accordion.is-expanded .accordion-toggle {
+  transform: rotate(180deg);
+}
+.plugin-accordion-body {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed rgba(255, 182, 220, 0.15);
+  overflow: hidden;
+  max-height: 600px;
+  transition: max-height 220ms ease, margin-top 220ms ease, padding-top 220ms ease, opacity 180ms ease;
+}
+.plugin-accordion-body.is-collapsed {
+  max-height: 0;
+  margin-top: 0;
+  padding-top: 0;
+  border-top-color: transparent;
+  opacity: 0;
+}
+.plugin-card--sub {
+  grid-template-columns: 34px 1fr auto;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.03);
+}
+.plugin-card--sub .plugin-card__icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  font-size: 18px;
+}
+.plugin-card--sub .plugin-card__body h2 {
+  font-size: 13px;
+}
+.plugin-card--sub .plugin-card__body p {
+  font-size: 11px;
+  margin-top: 2px;
 }
 
 /* 视觉模型配置区 */

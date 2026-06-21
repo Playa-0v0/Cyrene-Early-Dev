@@ -1932,8 +1932,8 @@ void loadUserProfile();
 // ── 权限档位 UI ───────────────────────────────────────────
 type PermissionLevel = "read-only" | "scoped" | "per-action" | "full";
 
-const permissionBlocksWrap = document.getElementById("agent-permission-blocks") as HTMLElement | null;
-const permissionNote = document.getElementById("agent-permission-note") as HTMLElement | null;
+const permissionBlocksWrap = document.getElementById("plugin-file-permission") as HTMLElement | null;
+const permissionNote = document.getElementById("plugin-file-note") as HTMLElement | null;
 
 const PERMISSION_NOTES: Record<PermissionLevel, string> = {
   "read-only": "只读：昔涟不会修改本地任何文件，也不能为你安装新工具。",
@@ -1944,9 +1944,11 @@ const PERMISSION_NOTES: Record<PermissionLevel, string> = {
 
 function paintPermissionUI(level: PermissionLevel): void {
   if (!permissionBlocksWrap) return;
+  // scoped 档已从插件面板移除，回退显示只读
+  const display = level === "scoped" ? "read-only" : level;
   const blocks = permissionBlocksWrap.querySelectorAll<HTMLButtonElement>("button[data-level]");
   blocks.forEach((b) => {
-    const isActive = b.dataset.level === level;
+    const isActive = b.dataset.level === display;
     b.classList.toggle("is-active", isActive);
     b.setAttribute("aria-pressed", String(isActive));
   });
@@ -2046,6 +2048,17 @@ if (permissionBlocksWrap) {
     }
   })();
 }
+
+// ── 生活工具手风琴 ─────────────────────────────────────────
+const lifeToggle = document.getElementById("plugin-life-toggle") as HTMLButtonElement | null;
+const lifeCard = document.getElementById("plugin-life-card");
+const lifeBody = document.getElementById("plugin-life-body");
+lifeToggle?.addEventListener("click", () => {
+  const expanded = lifeToggle.getAttribute("aria-expanded") === "true";
+  lifeToggle.setAttribute("aria-expanded", String(!expanded));
+  lifeCard?.classList.toggle("is-expanded", !expanded);
+  lifeBody?.classList.toggle("is-collapsed", expanded);
+});
 
 
 
