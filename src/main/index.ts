@@ -227,7 +227,7 @@ const STICKER_FILES: Record<StickerId, string> = {
   love: "love.webp",
   applause: "applause.webp",
 };
-const CHAT_REQUEST_TIMEOUT_MS = 30000;
+const CHAT_REQUEST_TIMEOUT_MS = 180000; // FC 总预算：12 轮 × 推理模型 ~10-15s 需 180s 余量
 let runtimeState: RuntimeState = {
     status: "陪伴中",
     feeling: "平静",

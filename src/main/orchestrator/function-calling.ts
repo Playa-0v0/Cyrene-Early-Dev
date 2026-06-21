@@ -15,7 +15,7 @@ import { extractLastUserQuery, type ToolContext } from "./tool-context";
 import { recordUsage } from "../token-usage-store";
 
 const LOG_PREFIX = "[FunctionCalling]";
-const MAX_TOOL_ROUNDS = 5; // 最多 5 轮工具调用，防止死循环
+const MAX_TOOL_ROUNDS = 12; // 推理模型 + skill 多步任务需更多轮；到顶强制无工具总结兜底
 
 /** 调度层传入的厂商配置（结构兼容 main/index.ts 的 ModelSettings，避免循环依赖）。 */
 interface LoopSettings {
