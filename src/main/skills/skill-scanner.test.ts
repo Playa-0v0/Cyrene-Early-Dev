@@ -121,11 +121,36 @@ describe("scanSkills", () => {
     expect(r).toHaveLength(1);
     expect(r[0].id).toBe("real-id");
     expect(r[0].name).toBe("other-name");
+    expect(r[0].dirPath).toBe(path.join(tmp, "real-id"));
+    expect(r[0].bodyPath).toBe(path.join(tmp, "real-id", "SKILL.md"));
   });
 
   it("目录不存在返回空数组", () => {
     const r = scanSkills(path.join(tmp, "nope"), "builtin");
     expect(r).toHaveLength(0);
+  });
+
+  it("空根目录返回空数组", () => {
+    const emptyRoot = path.join(tmp, "empty-root");
+    fs.mkdirSync(emptyRoot, { recursive: true });
+    const r = scanSkills(emptyRoot, "builtin");
+    expect(r).toHaveLength(0);
+  });
+
+  it("无 references 目录时 references 为空数组", () => {
+    makeSkillDir(tmp, "no-refs", "---\nname: no-refs\ndescription: x\n---\n正文");
+    const r = scanSkills(tmp, "builtin");
+    expect(r[0].references).toEqual([]);
+  });
+
+  it("references 下子目录被排除，只列文件", () => {
+    makeSkillDir(tmp, "with-refs", "---\nname: with-refs\ndescription: x\n---\n正文");
+    const refDir = path.join(tmp, "with-refs", "references");
+    fs.mkdirSync(path.join(refDir, "sub"), { recursive: true });
+    fs.writeFileSync(path.join(refDir, "note.md"), "n", "utf8");
+    fs.writeFileSync(path.join(refDir, "sub", "inner.md"), "i", "utf8");
+    const r = scanSkills(tmp, "builtin");
+    expect(r[0].references).toEqual(["note.md"]);
   });
 
   it("多个 skill 都扫到，source 标记正确", () => {
