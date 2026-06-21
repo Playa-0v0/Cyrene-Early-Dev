@@ -30,6 +30,7 @@ import { setWeatherConfig, setSearchConfig, loadTodos, onTodosChange } from "./o
 import { registerRecallHistoryTool } from "./orchestrator/history-tools";
 import { registerDocumentTools } from "./orchestrator/document-tools";
 import { registerLifeTools, setTranslateConfig } from "./orchestrator/life-tools";
+import { initSkills, skillRegistry, buildSkillCatalog, parseSlashCommand, setSkillEnabled, listSkillsForUi } from "./skills";
 
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
@@ -1139,6 +1140,38 @@ function buildSystemPrompt(styleFile: string): string {
   return parts.join("\n\n---\n\n");
 }
 
+/**
+ * /命令拦截：命中 /skill-id（且 skill 存在+启用）则返回 system 激活段
+ * （正文注入 system，user message 原样，不污染 memory，见 spec 6.3）。
+ * 命中但 skill 不存在/未启用 → 改写该 user 消息为提示，返回 ""。
+ * 未命中 → 返回 ""（放行，不误吞其他 /命令）。
+ */
+function resolveSlashActivation<T extends { role: string; content: string }>(messages: T[]): string {
+  let lastUserIdx = -1;
+  for (let i = messages.length - 1; i >= 0; i--) {
+    if (messages[i].role === "user") { lastUserIdx = i; break; }
+  }
+  if (lastUserIdx < 0) return "";
+  const lastUser = messages[lastUserIdx];
+  if (typeof lastUser.content !== "string") return "";
+  const knownIds = skillRegistry.getEnabled().map(s => s.id);
+  const parsed = parseSlashCommand(lastUser.content, knownIds);
+  if (!parsed.hit || !parsed.skillId) return "";
+  const skill = skillRegistry.getById(parsed.skillId);
+  if (skill && skill.enabled) {
+    const body = skillRegistry.getBody(parsed.skillId);
+    if (body !== null) {
+      console.log("[Cyrene] /命令激活 skill:", parsed.skillId);
+      return `\n\n---\n\n[已激活 skill: ${parsed.skillId}]\n${body}`;
+    }
+    return "";
+  }
+  // skill 不存在/未启用：替换该 user 消息为提示
+  const available = skillRegistry.getEnabled().map(s => s.id).join(", ") || "(无)";
+  messages[lastUserIdx] = { ...lastUser, content: `[系统提示：skill not found: ${parsed.skillId}。可用 skill: ${available}]` } as T;
+  return "";
+}
+
 function loadSoulFeelingContext(): string {
   try {
     const soulPath = path.join(app.getAppPath(), "prompts", "soul.md");
@@ -1227,14 +1260,16 @@ async function requestModelReply(inputMessages: unknown, styleFile = "01_default
     console.warn("[Cyrene] environment context build failed:", err);
   }
 
-  // system prompt 拼装顺序：事实层在前，人格层在后。
-  // 原因：LLM 有 recency bias，越靠近末尾的内容越被严格遵守。
-  // 改前末尾是 environment（路径/工具），模型最重视"路径在哪"，人格反而最容易被丢。
-  // 改后末尾是 canon_quotes（原作台词）→ soul → style，让模型最近读到的是语气底色。
+  // system prompt 拼装顺序：事实层在前，人格层在后，skill 清单 + /命令激活放最后。
+  // /命令拦截：命中 /skill-id 则当轮 system 注入 skill 正文（user message 原样，不污染 memory）
+  const skillCatalog = buildSkillCatalog(skillRegistry.getEnabled());
+  const skillActivation = resolveSlashActivation(messages);
   const systemContent =
     (environmentContext ? environmentContext + "\n\n" : "") +
     (alwaysOnContext ? alwaysOnContext + "\n\n" : "") +
-    buildSystemPrompt(styleFile);
+    buildSystemPrompt(styleFile) +
+    (skillCatalog ? "\n\n---\n\n" + skillCatalog : "") +
+    skillActivation;
 
   // 2. Function Calling 循环：模型自己决定调不调工具、调哪个
   const fcMessages: Array<{ role: "system" | "user" | "assistant" | "tool"; content: string }> = [
@@ -2278,6 +2313,9 @@ app.whenReady().then(async () => {
   });
   registerLifeTools();
 
+  // Skill 系统：扫描双源 skills + 注册 meta-tool
+  initSkills();
+
   // 任务清单（todo_write 工具的持久化 + 事件广播）：
   // - loadTodos 从磁盘恢复上次未完成的任务（跨重启延续）
   // - onTodosChange 订阅变化，把 TodoState 作为 CUSTOM 事件转发给所有聊天窗口
@@ -2328,11 +2366,15 @@ app.whenReady().then(async () => {
       } catch (err) {
         console.warn("[Cyrene] environment context build failed:", err);
       }
-      // 事实层在前，人格层在后（recency bias：模型最重视末尾的人格/语气）
+      // 事实层在前，人格层在后，skill 清单 + /命令激活放最后
+      const skillCatalog = buildSkillCatalog(skillRegistry.getEnabled());
+      const skillActivation = resolveSlashActivation(messages);
       const systemContent =
         (environmentContext ? environmentContext + "\n\n" : "") +
         (alwaysOnContext ? alwaysOnContext + "\n\n" : "") +
-        buildSystemPrompt(input.style || "01_default.md");
+        buildSystemPrompt(input.style || "01_default.md") +
+        (skillCatalog ? "\n\n---\n\n" + skillCatalog : "") +
+        skillActivation;
 
       const fcMessages = [
         { role: "system" as const, content: systemContent },
