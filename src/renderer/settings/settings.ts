@@ -470,6 +470,7 @@ const NAV_LABELS: Record<string, { emoji: string; title: string; hint: string }>
   identity: { emoji: "💼", title: "职位", hint: "自定义昔涟的身份定位与工作职责" },
   skills: { emoji: "✨", title: "Skill", hint: "管理 agent 的 skill 指令（约束如何用工具）" },
   plugins: { emoji: "🔌", title: "插件", hint: "扩展功能与第三方集成" },
+  gamebot: { emoji: "🎮", title: "游戏代肝", hint: "自动跑游戏每日任务（视觉定位自适应分辨率）" },
   general: { emoji: "⚙️", title: "设置", hint: "通用偏好与外观" },
   api: { emoji: "🔑", title: "API 设置", hint: "选择预设后只需要填写 API Key。" },
   cyrene: { emoji: "🌸", title: "昔涟设置", hint: "管理 Agent 行为、记忆、RAG 与权限" },
@@ -1251,6 +1252,7 @@ function switchSection(section: string): void {
   const isSkills = section === "skills";
   const isTokens = section === "tokens";
   const isTts = section === "tts";
+  const isGamebot = section === "gamebot";
   apiForm.classList.toggle("is-hidden", !isApi);
   generalForm.classList.toggle("is-hidden", !isGeneral);
   cyrenePanel.classList.toggle("is-hidden", !isCyrene);
@@ -1273,9 +1275,11 @@ function switchSection(section: string): void {
   if (tokenPanel) tokenPanel.classList.toggle("is-hidden", !isTokens);
   const ttsPanel = document.getElementById("tts-panel");
   if (ttsPanel) ttsPanel.classList.toggle("is-hidden", !isTts);
-  placeholderPanel.classList.toggle("is-hidden", isApi || isGeneral || isCyrene || isDisclaimer || isMemory || isUser || isChat || isIdentity || isPlugins || isSkills || isTokens || isTts);
+  const gamebotPanel = document.getElementById("gamebot-panel");
+  if (gamebotPanel) gamebotPanel.classList.toggle("is-hidden", !isGamebot);
+  placeholderPanel.classList.toggle("is-hidden", isApi || isGeneral || isCyrene || isDisclaimer || isMemory || isUser || isChat || isIdentity || isPlugins || isSkills || isTokens || isTts || isGamebot);
 
-  if (!isApi && !isGeneral && !isCyrene && !isDisclaimer && !isMemory && !isUser && !isChat && !isIdentity && !isPlugins && !isSkills && !isTokens && !isTts) {
+  if (!isApi && !isGeneral && !isCyrene && !isDisclaimer && !isMemory && !isUser && !isChat && !isIdentity && !isPlugins && !isSkills && !isTokens && !isTts && !isGamebot) {
     placeholderIcon.textContent = label.emoji;
     placeholderTitle.textContent = label.title;
     placeholderCopy.textContent = "这个模块先占位，等核心聊天与 API 接通后再继续扩展。";
@@ -1293,6 +1297,170 @@ document.querySelectorAll(".nav-item").forEach((el) => {
   });
 });
 
+// ===== 游戏代肝面板 =====
+function initGameBotPanel(): void {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const gb = (window as any).gameBot as {
+    getConfig: () => Promise<{ enabled: boolean; exePath: string; activeRecipe: string; vlm: { baseUrl: string; apiKey: string; model: string } }>;
+    saveConfig: (c: unknown) => Promise<unknown>;
+    listRecipes: () => Promise<{ id: string; name: string }[]>;
+    listRefs: (r: string) => Promise<string[]>;
+    writeRef: (r: string, n: string, b: string) => Promise<unknown>;
+    refsDir: (r: string) => Promise<string>;
+    start: () => Promise<{ ok: boolean; error?: string }>;
+    stop: () => Promise<unknown>;
+    onProgress: (cb: (i: unknown) => void) => (() => void) | void;
+  } | undefined;
+  if (!gb) return;
+
+  const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T | null;
+  const exe = $<HTMLInputElement>("gamebot-exe");
+  const url = $<HTMLInputElement>("gamebot-vlm-url");
+  const key = $<HTMLInputElement>("gamebot-vlm-key");
+  const model = $<HTMLInputElement>("gamebot-vlm-model");
+  const recipeSel = $<HTMLSelectElement>("gamebot-recipe");
+  const saveBtn = $<HTMLButtonElement>("gamebot-save-btn");
+  const refsDirEl = $("gamebot-refs-dir");
+  const refsListEl = $("gamebot-refs-list");
+  const refFile = $<HTMLInputElement>("gamebot-ref-file");
+  const canvas = $<HTMLCanvasElement>("gamebot-ref-canvas");
+  const refName = $<HTMLInputElement>("gamebot-ref-name");
+  const refSaveBtn = $<HTMLButtonElement>("gamebot-ref-save-btn");
+  const startBtn = $<HTMLButtonElement>("gamebot-start-btn");
+  const stopBtn = $<HTMLButtonElement>("gamebot-stop-btn");
+  const logEl = $("gamebot-log");
+  if (!exe || !url || !key || !model || !recipeSel || !canvas) return;
+
+  let currentRecipe = "star-rail-daily";
+  let img: HTMLImageElement | null = null;
+  let dragStart: { x: number; y: number } | null = null;
+  let dragEnd: { x: number; y: number } | null = null;
+
+  function appendLog(line: string): void {
+    if (!logEl) return;
+    logEl.textContent = new Date().toLocaleTimeString() + " " + line + "\n" + (logEl.textContent ?? "");
+  }
+
+  async function refreshRefs(): Promise<void> {
+    if (refsDirEl) refsDirEl.textContent = "参考图存放目录：" + await gb!.refsDir(currentRecipe);
+    const refs = await gb!.listRefs(currentRecipe);
+    if (refsListEl) {
+      refsListEl.innerHTML = refs.length
+        ? "已配置：" + refs.map((r) => "<code>" + r + "</code>").join(" ")
+        : "（还没有参考图，用下方编辑器上传并框选）";
+    }
+  }
+
+  async function refresh(): Promise<void> {
+    const cfg = await gb!.getConfig();
+    exe.value = cfg.exePath;
+    url.value = cfg.vlm.baseUrl;
+    key.value = cfg.vlm.apiKey;
+    model.value = cfg.vlm.model;
+    currentRecipe = cfg.activeRecipe;
+    const recipes = await gb!.listRecipes();
+    recipeSel.innerHTML = "";
+    for (const r of recipes) {
+      const opt = document.createElement("option");
+      opt.value = r.id;
+      opt.textContent = r.name + " (" + r.id + ")";
+      if (r.id === currentRecipe) opt.selected = true;
+      recipeSel.appendChild(opt);
+    }
+    await refreshRefs();
+  }
+
+  recipeSel.addEventListener("change", () => {
+    currentRecipe = recipeSel.value;
+    void refreshRefs();
+  });
+
+  saveBtn?.addEventListener("click", async () => {
+    await gb!.saveConfig({
+      exePath: exe.value.trim(),
+      activeRecipe: recipeSel.value,
+      vlm: { baseUrl: url.value.trim(), apiKey: key.value.trim(), model: model.value.trim() },
+    });
+    appendLog("配置已保存");
+  });
+
+  // 红框编辑器：上传图 → canvas 绘制 → 拖框 → 裁剪保存
+  refFile?.addEventListener("change", () => {
+    const f = refFile.files?.[0];
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const i = new Image();
+      i.onload = () => {
+        img = i;
+        canvas.width = i.width;
+        canvas.height = i.height;
+        canvas.getContext("2d")?.drawImage(i, 0, 0);
+        canvas.style.display = "block";
+        dragStart = null;
+        dragEnd = null;
+      };
+      i.src = reader.result as string;
+    };
+    reader.readAsDataURL(f);
+  });
+
+  function canvasCoord(e: MouseEvent): { x: number; y: number } {
+    const rect = canvas.getBoundingClientRect();
+    return {
+      x: (e.clientX - rect.left) * (canvas.width / rect.width),
+      y: (e.clientY - rect.top) * (canvas.height / rect.height),
+    };
+  }
+
+  canvas.addEventListener("mousedown", (e) => { dragStart = canvasCoord(e); });
+  canvas.addEventListener("mousemove", (e) => {
+    if (!dragStart || !img) return;
+    dragEnd = canvasCoord(e);
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.drawImage(img, 0, 0);
+    ctx.strokeStyle = "red";
+    ctx.lineWidth = Math.max(2, canvas.width / 300);
+    ctx.strokeRect(dragStart.x, dragStart.y, dragEnd.x - dragStart.x, dragEnd.y - dragStart.y);
+  });
+
+  refSaveBtn?.addEventListener("click", () => {
+    if (!img || !dragStart || !dragEnd || !refName?.value.trim()) {
+      appendLog("请先上传图、拖红框圈选区域、填写 ref 名");
+      return;
+    }
+    const x = Math.min(dragStart.x, dragEnd.x);
+    const y = Math.min(dragStart.y, dragEnd.y);
+    const w = Math.abs(dragEnd.x - dragStart.x);
+    const h = Math.abs(dragEnd.y - dragStart.y);
+    if (w < 4 || h < 4) { appendLog("框选区域太小，请重新拖"); return; }
+    const c = document.createElement("canvas");
+    c.width = w;
+    c.height = h;
+    c.getContext("2d")!.drawImage(canvas, x, y, w, h, 0, 0, w, h);
+    const base64 = (c.toDataURL("image/png").split(",")[1]) ?? "";
+    void gb!.writeRef(currentRecipe, refName.value.trim(), base64).then(() => {
+      appendLog("已保存参考图: " + refName.value.trim());
+      void refreshRefs();
+    });
+  });
+
+  startBtn?.addEventListener("click", async () => {
+    const r = await gb!.start();
+    appendLog(r.ok ? "代肝已启动" : "启动失败: " + (r.error ?? ""));
+  });
+  stopBtn?.addEventListener("click", () => { void gb!.stop(); appendLog("已请求停止"); });
+
+  gb.onProgress((info) => {
+    const i = info as { index: number; total: number; desc: string };
+    appendLog(i.desc + (i.index >= 0 ? " (" + (i.index + 1) + "/" + i.total + ")" : ""));
+  });
+
+  void refresh();
+}
+
+initGameBotPanel();
 void loadConfig();
 // 启动时读 URL hash 决定初始标签（main 通过 loadURL 带 #api 实现"切换模型按钮跳 API"）。
 // 无 hash 默认 general。
