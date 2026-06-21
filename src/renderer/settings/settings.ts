@@ -260,6 +260,8 @@ interface SettingsApi {
   rerankerSetMode?: (mode: string) => Promise<boolean>;
   setToolEnabled?: (id: string, enabled: boolean) => Promise<{ ok: boolean; error?: string }>;
   getToolEnabled?: () => Promise<Record<string, boolean>>;
+  listSkills?: () => Promise<Array<{ id: string; name: string; description: string; tools: string[]; enabled: boolean; source: string; version?: string; references: string[] }>>;
+  setSkillEnabled?: (id: string, enabled: boolean) => Promise<{ ok: boolean; error?: string }>;
   addMcpServer?: (config: unknown) => Promise<{ ok: boolean; toolIds?: string[]; error?: string }>;
   removeMcpServer?: (serverId: string) => Promise<{ ok: boolean; error?: string }>;
   listMcpServers?: () => Promise<Array<{ id: string; name: string; connected: boolean; toolCount: number; toolIds: string[] }>>;
@@ -382,6 +384,8 @@ if (!window.settings) {
     openStickerManager: async () => ({ ok: false, error: "settings api unavailable" }),
     setToolEnabled: async () => ({ ok: false, error: "settings api unavailable" }),
     getToolEnabled: async () => ({}),
+    listSkills: async () => [],
+    setSkillEnabled: async () => ({ ok: false, error: "settings api unavailable" }),
     addMcpServer: async () => ({ ok: false, error: "settings api unavailable" }),
     removeMcpServer: async () => ({ ok: false, error: "settings api unavailable" }),
     listMcpServers: async () => [],
@@ -464,7 +468,7 @@ const NAV_LABELS: Record<string, { emoji: string; title: string; hint: string }>
   user: { emoji: "👤", title: "用户信息", hint: "编辑你的个人资料" },
   tasks: { emoji: "⏰", title: "定时任务", hint: "管理定时提醒与日程" },
   identity: { emoji: "💼", title: "职位", hint: "自定义昔涟的身份定位与工作职责" },
-  skills: { emoji: "✨", title: "技能 Skill", hint: "管理昔涟的能力插件" },
+  skills: { emoji: "✨", title: "Skill", hint: "管理 agent 的 skill 指令（约束如何用工具）" },
   plugins: { emoji: "🔌", title: "插件", hint: "扩展功能与第三方集成" },
   general: { emoji: "⚙️", title: "设置", hint: "通用偏好与外观" },
   api: { emoji: "🔑", title: "API 设置", hint: "选择预设后只需要填写 API Key。" },
@@ -1244,6 +1248,7 @@ function switchSection(section: string): void {
   const isChat = section === "chat";
   const isIdentity = section === "identity";
   const isPlugins = section === "plugins";
+  const isSkills = section === "skills";
   const isTokens = section === "tokens";
   const isTts = section === "tts";
   apiForm.classList.toggle("is-hidden", !isApi);
@@ -1261,13 +1266,16 @@ function switchSection(section: string): void {
   const identityPanel = document.getElementById("identity-panel");
   if (identityPanel) identityPanel.classList.toggle("is-hidden", !isIdentity);
   pluginsPanel.classList.toggle("is-hidden", !isPlugins);
+  const skillsPanel = document.getElementById("skills-panel");
+  if (skillsPanel) skillsPanel.classList.toggle("is-hidden", !isSkills);
+  if (isSkills) void renderSkills();
   const tokenPanel = document.getElementById("token-panel");
   if (tokenPanel) tokenPanel.classList.toggle("is-hidden", !isTokens);
   const ttsPanel = document.getElementById("tts-panel");
   if (ttsPanel) ttsPanel.classList.toggle("is-hidden", !isTts);
-  placeholderPanel.classList.toggle("is-hidden", isApi || isGeneral || isCyrene || isDisclaimer || isMemory || isUser || isChat || isIdentity || isPlugins || isTokens || isTts);
+  placeholderPanel.classList.toggle("is-hidden", isApi || isGeneral || isCyrene || isDisclaimer || isMemory || isUser || isChat || isIdentity || isPlugins || isSkills || isTokens || isTts);
 
-  if (!isApi && !isGeneral && !isCyrene && !isDisclaimer && !isMemory && !isUser && !isChat && !isIdentity && !isPlugins && !isTokens && !isTts) {
+  if (!isApi && !isGeneral && !isCyrene && !isDisclaimer && !isMemory && !isUser && !isChat && !isIdentity && !isPlugins && !isSkills && !isTokens && !isTts) {
     placeholderIcon.textContent = label.emoji;
     placeholderTitle.textContent = label.title;
     placeholderCopy.textContent = "这个模块先占位，等核心聊天与 API 接通后再继续扩展。";
@@ -2059,6 +2067,59 @@ lifeToggle?.addEventListener("click", () => {
   lifeCard?.classList.toggle("is-expanded", !expanded);
   lifeBody?.classList.toggle("is-collapsed", expanded);
 });
+
+// ── Skill 面板：列 skill 开关 ──────────────────────────────
+async function renderSkills(): Promise<void> {
+  const listEl = document.getElementById("skills-list");
+  const emptyEl = document.getElementById("skills-empty");
+  if (!listEl || !window.settings?.listSkills) return;
+
+  let skills: Array<{ id: string; name: string; description: string; tools: string[]; enabled: boolean; source: string; version?: string; references: string[] }> = [];
+  try {
+    skills = await window.settings.listSkills();
+  } catch (err) {
+    console.warn("[settings] 加载 skill 列表失败:", err);
+  }
+
+  listEl.innerHTML = "";
+  if (skills.length === 0) {
+    if (emptyEl) emptyEl.classList.remove("is-hidden");
+    return;
+  }
+  if (emptyEl) emptyEl.classList.add("is-hidden");
+
+  for (const s of skills) {
+    const row = document.createElement("div");
+    row.className = "skill-row";
+    const label = document.createElement("div");
+    label.className = "skill-row__info";
+    const title = document.createElement("div");
+    title.className = "skill-row__title";
+    title.textContent = s.name + (s.source === "user" ? " （用户）" : "");
+    const desc = document.createElement("div");
+    desc.className = "skill-row__desc";
+    desc.textContent = s.description + (s.tools.length > 0 ? ` [tools: ${s.tools.join(", ")}]` : "");
+    label.appendChild(title);
+    label.appendChild(desc);
+
+    const toggle = document.createElement("input");
+    toggle.type = "checkbox";
+    toggle.className = "skill-toggle";
+    toggle.checked = s.enabled;
+    toggle.addEventListener("change", async () => {
+      try {
+        await window.settings?.setSkillEnabled?.(s.id, toggle.checked);
+      } catch (err) {
+        console.warn("[settings] 切换 skill 失败:", err);
+        toggle.checked = !toggle.checked;
+      }
+    });
+
+    row.appendChild(label);
+    row.appendChild(toggle);
+    listEl.appendChild(row);
+  }
+}
 
 
 
