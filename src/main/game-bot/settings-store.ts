@@ -29,7 +29,7 @@ function filePath(): string {
 }
 
 function normalize(input: Partial<GameBotSettings> | null | undefined): GameBotSettings {
-  const v = input?.vlm ?? {};
+  const v = (input?.vlm ?? {}) as { baseUrl?: string; apiKey?: string; model?: string };
   return {
     enabled: Boolean(input?.enabled),
     exePath: typeof input?.exePath === "string" ? input.exePath : "",

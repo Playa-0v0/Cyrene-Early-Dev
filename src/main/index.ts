@@ -31,6 +31,7 @@ import { registerRecallHistoryTool } from "./orchestrator/history-tools";
 import { registerDocumentTools } from "./orchestrator/document-tools";
 import { registerLifeTools, setTranslateConfig } from "./orchestrator/life-tools";
 import { initSkills, skillRegistry, buildSkillCatalog, parseSlashCommand, setSkillEnabled, listSkillsForUi } from "./skills";
+import { initGameBot } from "./game-bot";
 
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
@@ -2327,6 +2328,9 @@ app.whenReady().then(async () => {
 
   // Skill 系统：扫描双源 skills + 注册 meta-tool
   initSkills();
+
+  // 游戏代肝：IPC + game_bot_start 工具
+  initGameBot();
 
   // 任务清单（todo_write 工具的持久化 + 事件广播）：
   // - loadTodos 从磁盘恢复上次未完成的任务（跨重启延续）
