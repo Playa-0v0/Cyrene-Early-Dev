@@ -1085,17 +1085,76 @@ const fileInput = document.getElementById("file-input") as HTMLInputElement | nu
 const attachBtn = document.getElementById("attach-btn") as HTMLButtonElement | null;
 let attachedFiles: Array<{ name: string; chunks: number }> = [];
 
+// ── 拖放目录递归收集文件 ──
+// Electron 拖文件夹时 dataTransfer.files[0] 是指向目录的 File，直接 .text() 会触发
+// fs 读目录 → libuv ENOENT。用 webkitGetAsEntry 判断目录并递归取内部真实文件。
+function entryToFile(entry: FileSystemFileEntry): Promise<File | null> {
+  return new Promise((resolve) => entry.file(resolve, () => resolve(null)));
+}
+
+function readDirEntry(entry: FileSystemDirectoryEntry, prefix: string, out: File[]): Promise<void> {
+  return new Promise((resolve) => {
+    const reader = entry.createReader();
+    const readBatch = (): void => {
+      reader.readEntries(async (entries) => {
+        if (entries.length === 0) { resolve(); return; }
+        for (const e of entries) {
+          const name = prefix ? prefix + "/" + e.name : e.name;
+          if (e.isDirectory) {
+            await readDirEntry(e as FileSystemDirectoryEntry, name, out);
+          } else if (e.isFile) {
+            const f = await entryToFile(e as FileSystemFileEntry);
+            // 给目录内文件补上相对路径名，避免重名混淆
+            if (f) out.push(new File([f], name, { type: f.type, lastModified: f.lastModified }));
+          }
+        }
+        readBatch(); // readEntries 每次最多返回 100 条，循环读完
+      }, () => resolve());
+    };
+    readBatch();
+  });
+}
+
+function collectFilesFromDataTransfer(items: DataTransferItemList): Promise<File[]> {
+  return new Promise((resolve) => {
+    const out: File[] = [];
+    let pending = 0;
+    let settled = false;
+    const finish = (): void => { if (!settled && pending === 0) { settled = true; resolve(out); } };
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (item.kind !== "file") continue;
+      const entry = item.webkitGetAsEntry?.();
+      if (!entry) {
+        // 无 entry（老环境/部分 Electron）→ 直接拿 File
+        const f = item.getAsFile();
+        if (f) out.push(f);
+        continue;
+      }
+      pending += 1;
+      if (entry.isDirectory) {
+        readDirEntry(entry as FileSystemDirectoryEntry, entry.name, out).finally(() => { pending -= 1; finish(); });
+      } else if (entry.isFile) {
+        entryToFile(entry as FileSystemFileEntry).then((f) => { if (f) out.push(f); pending -= 1; finish(); });
+      } else {
+        pending -= 1;
+      }
+    }
+    finish();
+  });
+}
+
 attachBtn?.addEventListener("click", () => {
   fileInput?.click();
 });
 
-async function importFiles(fileList: FileList): Promise<void> {
-  if (fileList.length === 0) return;
+async function importFiles(fileList: File[] | FileList): Promise<void> {
+  const files = Array.from(fileList);
+  if (files.length === 0) return;
   attachBtn!.disabled = true;
   const imported: Array<{ name: string; chunks: number }> = [];
   let errors: string[] = [];
-  for (let i = 0; i < fileList.length; i++) {
-    const file = fileList[i];
+  for (const file of files) {
     try {
       const text = await file.text();
       const result = await window.chat?.importDocument(file.name, text);
@@ -1177,12 +1236,23 @@ document.addEventListener("dragleave", (e) => {
   }
 });
 
-document.addEventListener("drop", (e) => {
+document.addEventListener("drop", async (e) => {
   e.preventDefault();
   dragCounter = 0;
   chatEl?.classList.remove("chat--drag-over");
+  // 用 webkitGetAsEntry 识别目录：拖文件夹时 dataTransfer.files 会含指向目录的 File，
+  // 直接 file.text() 会触发 fs 读目录 → ENOENT。这里递归收集目录内的真实文件。
+  const items = e.dataTransfer?.items;
+  if (items && items.length > 0) {
+    const collected = await collectFilesFromDataTransfer(items);
+    if (collected.length > 0) void importFiles(collected);
+    else if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
+      void importFiles(Array.from(e.dataTransfer.files));
+    }
+    return;
+  }
   if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
-    void importFiles(e.dataTransfer.files);
+    void importFiles(Array.from(e.dataTransfer.files));
   }
 });
 
