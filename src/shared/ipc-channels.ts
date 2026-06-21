@@ -131,7 +131,6 @@ export const IPC = {
   GAME_BOT_SAVE_CONFIG: "game-bot:save-config",
   GAME_BOT_LIST_RECIPES: "game-bot:list-recipes",
   GAME_BOT_LIST_REFS: "game-bot:list-refs",
-  GAME_BOT_WRITE_REF: "game-bot:write-ref",
   GAME_BOT_REFS_DIR: "game-bot:refs-dir",
   GAME_BOT_START: "game-bot:start",
   GAME_BOT_STOP: "game-bot:stop",

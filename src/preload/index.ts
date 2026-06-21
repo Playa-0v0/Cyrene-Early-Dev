@@ -225,14 +225,12 @@ const ttsApi = {
 };
 contextBridge.exposeInMainWorld("tts", ttsApi);
 
-// 游戏代肝（设置面板 gamebot 分区用）
+// 游戏代肝（插件卡：配置 + 参考图只读展示 + 开始停止）
 const gameBotApi = {
   getConfig: () => ipcRenderer.invoke(IPC.GAME_BOT_GET_CONFIG),
   saveConfig: (config: unknown) => ipcRenderer.invoke(IPC.GAME_BOT_SAVE_CONFIG, config),
   listRecipes: () => ipcRenderer.invoke(IPC.GAME_BOT_LIST_RECIPES),
   listRefs: (recipeId: string) => ipcRenderer.invoke(IPC.GAME_BOT_LIST_REFS, recipeId),
-  writeRef: (recipeId: string, refName: string, base64Png: string) =>
-    ipcRenderer.invoke(IPC.GAME_BOT_WRITE_REF, { recipeId, refName, base64Png }),
   refsDir: (recipeId: string) => ipcRenderer.invoke(IPC.GAME_BOT_REFS_DIR, recipeId),
   start: () => ipcRenderer.invoke(IPC.GAME_BOT_START),
   stop: () => ipcRenderer.invoke(IPC.GAME_BOT_STOP),

@@ -36,10 +36,5 @@ export function readRef(recipeId: string, refName: string): { base64: string; mi
   }
 }
 
-/** 写入参考图（base64Png 为纯 base64 PNG 数据）。供红框编辑器调用。 */
-export function writeRef(recipeId: string, refName: string, base64Png: string): void {
-  const dir = refsDirPath(recipeId);
-  fs.mkdirSync(dir, { recursive: true });
-  const file = path.join(dir, refName + ".png");
-  fs.writeFileSync(file, Buffer.from(base64Png, "base64"));
-}
+// 说明：参考图由用户自行把裁好的小图（按 ref 命名 .png）放进 refsDirPath(recipeId) 目录。
+// 不提供前端写入入口——后端只读。

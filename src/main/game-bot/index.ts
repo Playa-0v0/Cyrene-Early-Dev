@@ -12,7 +12,7 @@ import { runRecipe } from "./engine";
 import type { BotTools } from "./bot-tools";
 import type { GameRecipe } from "./types";
 import { loadGameBotSettings, saveGameBotSettings, type GameBotSettings } from "./settings-store";
-import { listRefs, readRef, writeRef, refsDirPath } from "./refs-store";
+import { listRefs, readRef, refsDirPath } from "./refs-store";
 import { captureScreen } from "./screenshot";
 import * as input from "./input";
 import * as vlm from "./vlm-locator";
@@ -110,6 +110,7 @@ function broadcastProgress(info: { index: number; total: number; desc: string })
 export async function startGameBot(): Promise<{ ok: boolean; error?: string }> {
   if (runSignal) return { ok: false, error: "已有代肝任务在运行" };
   const settings = loadGameBotSettings();
+  if (!settings.enabled) return { ok: false, error: "代肝未启用（设置→插件→游戏代肝 开启开关）" };
   if (!settings.exePath) return { ok: false, error: "未配置游戏 exe 路径" };
   if (!settings.vlm.baseUrl || !settings.vlm.apiKey || !settings.vlm.model)
     return { ok: false, error: "未配置 VLM（baseUrl/apiKey/model）" };
@@ -147,28 +148,29 @@ export function stopGameBot(): { ok: boolean } {
 /** 注册 IPC + game_bot_start 工具。app.whenReady 后调一次。 */
 export function initGameBot(): void {
   ipcMain.handle(IPC.GAME_BOT_GET_CONFIG, () => loadGameBotSettings());
-  ipcMain.handle(IPC.GAME_BOT_SAVE_CONFIG, (_e, patch: unknown) =>
-    saveGameBotSettings(patch as Partial<GameBotSettings>));
+  ipcMain.handle(IPC.GAME_BOT_SAVE_CONFIG, (_e, patch: unknown) => {
+    const saved = saveGameBotSettings(patch as Partial<GameBotSettings>);
+    // enabled 开关同步到 agent 工具，关了 agent 就看不到/调不到
+    toolRegistry.setEnabled("game_bot_start", saved.enabled);
+    return saved;
+  });
   ipcMain.handle(IPC.GAME_BOT_LIST_RECIPES, () => listRecipes());
   ipcMain.handle(IPC.GAME_BOT_LIST_REFS, (_e, recipeId: string) => listRefs(recipeId));
-  ipcMain.handle(IPC.GAME_BOT_WRITE_REF, (_e, p: { recipeId: string; refName: string; base64Png: string }) => {
-    writeRef(p.recipeId, p.refName, p.base64Png);
-    return { ok: true };
-  });
   ipcMain.handle(IPC.GAME_BOT_REFS_DIR, (_e, recipeId: string) => refsDirPath(recipeId));
   ipcMain.handle(IPC.GAME_BOT_START, () => startGameBot());
   ipcMain.handle(IPC.GAME_BOT_STOP, () => stopGameBot());
 
-  // agent 触发工具：用户在聊天里要代肝时调用
+  // agent 触发工具：用户在聊天里要代肝时调用。enabled 跟随配置开关。
+  const initialSettings = loadGameBotSettings();
   toolRegistry.register({
     id: "game_bot_start",
     name: "游戏代肝",
     description:
       "启动游戏代肝，按预设脚本自动跑每日任务（如星穹铁道）。\n\n" +
       "何时用：\n- 用户说“帮我代肝”“跑一下日常”“清体力”“开始代肝”等\n\n" +
-      "不要用于：\n- 用户只是问代肝功能怎么配置（引导去 设置 → 游戏代肝）\n\n" +
+      "不要用于：\n- 用户只是问代肝功能怎么配置（引导去 设置 → 插件 → 游戏代肝）\n\n" +
       "无需参数。调用后引擎独立运行，进度实时回传。返回启动结果。",
-    enabled: true,
+    enabled: initialSettings.enabled,
     risk: "input-control",
     inputSchema: { type: "object", properties: {}, required: [] },
     execute: async () => {

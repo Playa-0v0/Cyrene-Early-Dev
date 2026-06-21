@@ -25,7 +25,6 @@
         <button type="button" class="nav-item" data-section="tasks"><span>⏰</span>定时任务</button>
         <button type="button" class="nav-item" data-section="identity"><span>💼</span>职位</button>
         <button type="button" class="nav-item" data-section="skills"><span>✨</span>技能 Skill</button>
-        <button type="button" class="nav-item" data-section="gamebot"><span>🎮</span>游戏代肝</button>
         <button type="button" class="nav-item" data-section="plugins"><span>🔌</span>插件</button>
         <hr class="nav-divider" />
         <button type="button" class="nav-item is-active" data-section="general"><span>⚙️</span>设置</button>
@@ -564,82 +563,6 @@
           </div>
         </section>
 
-        <section class="settings-panel is-hidden" id="gamebot-panel" data-panel="gamebot">
-          <h1>游戏代肝</h1>
-          <p class="panel-hint">配置好后点"开始代肝"，引擎自动跑预设脚本。视觉定位自适应分辨率，不绑死坐标。</p>
-
-          <div class="form-grid">
-            <label class="field field--full">
-              <span>游戏 exe 路径</span>
-              <input id="gamebot-exe" type="text" placeholder="C:/Games/StarRail/StarRail.exe" autocomplete="off" />
-            </label>
-          </div>
-
-          <hr class="api-section-divider" />
-
-          <div class="vision-config-heading">
-            <span class="vision-config-icon">🤖</span>
-            <div>
-              <h2>VLM 视觉模型（OpenAI 兼容）</h2>
-              <p>填一个支持视觉定位的多模态模型。免费的可填硅基流动 Qwen/Qwen3-VL-8B-Instruct。</p>
-            </div>
-          </div>
-          <div class="form-grid">
-            <label class="field field--full">
-              <span>Base URL</span>
-              <input id="gamebot-vlm-url" type="url" placeholder="https://api.siliconflow.cn/v1" autocomplete="off" />
-            </label>
-            <label class="field">
-              <span>API Key</span>
-              <input id="gamebot-vlm-key" type="password" placeholder="sk-..." autocomplete="off" />
-            </label>
-            <label class="field">
-              <span>模型名</span>
-              <input id="gamebot-vlm-model" type="text" placeholder="Qwen/Qwen3-VL-8B-Instruct" autocomplete="off" />
-            </label>
-          </div>
-
-          <div class="form-grid">
-            <label class="field">
-              <span>代肝脚本</span>
-              <select id="gamebot-recipe"></select>
-            </label>
-            <button type="button" id="gamebot-save-btn">保存配置</button>
-          </div>
-
-          <hr class="api-section-divider" />
-
-          <div class="vision-config-heading">
-            <span class="vision-config-icon">🖼️</span>
-            <div>
-              <h2>参考图（红框标记）</h2>
-              <p id="gamebot-refs-dir">参考图存放目录：未加载</p>
-              <p id="gamebot-refs-list" style="font-size:12px;"></p>
-            </div>
-          </div>
-          <div class="form-grid">
-            <label class="field field--full">
-              <span>上传参考图（在图上拖红框圈出目标元素）</span>
-              <input id="gamebot-ref-file" type="file" accept="image/*" />
-            </label>
-          </div>
-          <canvas id="gamebot-ref-canvas" style="max-width:100%;border:1px solid #444;display:none;cursor:crosshair;"></canvas>
-          <div class="form-grid">
-            <label class="field">
-              <span>参考图名称（ref，须与脚本一致）</span>
-              <input id="gamebot-ref-name" type="text" placeholder="如 download_btn" autocomplete="off" />
-            </label>
-            <button type="button" id="gamebot-ref-save-btn">保存裁剪</button>
-          </div>
-
-          <hr class="api-section-divider" />
-
-          <div>
-            <button type="button" id="gamebot-start-btn">▶ 开始代肝</button>
-            <button type="button" id="gamebot-stop-btn">⏹ 停止</button>
-          </div>
-          <pre id="gamebot-log" style="background:#1a1a1a;color:#0f0;padding:8px;max-height:220px;overflow:auto;font-size:12px;white-space:pre-wrap;"></pre>
-        </section>
         <section class="settings-panel is-hidden" id="skills-panel" data-panel="skills">
           <h1>Skill 管理</h1>
           <p class="panel-hint">Skill 约束 agent 如何使用工具。把含 SKILL.md 的目录放到用户数据目录的 skills/ 下即可扩展。</p>
@@ -805,6 +728,47 @@
                 <p>已注册的 MCP Server 工具，按需自动调用。</p>
               </div>
               <span class="plugin-always-on" title="常驻">●</span>
+            </article>
+
+            <article class="plugin-card" id="plugin-gamebot-card">
+              <div class="plugin-card__icon">🎮</div>
+              <div class="plugin-card__body">
+                <h2>游戏代肝</h2>
+                <p>按预设脚本自动跑每日任务，视觉定位自适应分辨率。参考图由后端存储，把小图按命名放进下方目录即可。</p>
+                <div class="plugin-config" id="plugin-gamebot-config">
+                  <div class="tts-field">
+                    <label for="gamebot-exe">游戏 exe 路径</label>
+                    <input id="gamebot-exe" type="text" placeholder="C:/Games/StarRail/StarRail.exe" autocomplete="off" />
+                  </div>
+                  <div class="tts-field">
+                    <label for="gamebot-vlm-url">VLM Base URL（OpenAI 兼容）</label>
+                    <input id="gamebot-vlm-url" type="url" placeholder="https://api.siliconflow.cn/v1" autocomplete="off" />
+                  </div>
+                  <div class="tts-field">
+                    <label for="gamebot-vlm-key">VLM API Key</label>
+                    <input id="gamebot-vlm-key" type="password" placeholder="sk-..." autocomplete="off" />
+                  </div>
+                  <div class="tts-field">
+                    <label for="gamebot-vlm-model">VLM 模型名</label>
+                    <input id="gamebot-vlm-model" type="text" placeholder="Qwen/Qwen3-VL-8B-Instruct" autocomplete="off" />
+                  </div>
+                  <div class="tts-field">
+                    <label for="gamebot-recipe">代肝脚本</label>
+                    <select id="gamebot-recipe"></select>
+                  </div>
+                  <p class="user-field-hint">参考图存放目录（自行把裁好的小图放进去）：<br /><code id="gamebot-refs-dir">未加载</code></p>
+                  <p class="user-field-hint" id="gamebot-refs-list" style="font-size:12px;"></p>
+                  <div class="tts-field">
+                    <button type="button" id="gamebot-start-btn">▶ 开始代肝</button>
+                    <button type="button" id="gamebot-stop-btn">⏹ 停止</button>
+                  </div>
+                  <pre id="gamebot-log" style="background:#1a1a1a;color:#0f0;padding:8px;max-height:180px;overflow:auto;font-size:12px;white-space:pre-wrap;"></pre>
+                </div>
+              </div>
+              <label class="plugin-switch" aria-label="启用游戏代肝">
+                <input type="checkbox" id="plugin-gamebot-enabled" />
+                <span></span>
+              </label>
             </article>
 
             <article class="plugin-card plugin-card--accordion" id="plugin-life-card">
