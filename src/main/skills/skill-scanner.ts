@@ -1,9 +1,9 @@
 // Skill 扫描器 —— frontmatter 解析 + 目录扫描。
-// 纯函数模块：parseSkillFrontmatter/scanSkills 不依赖 electron，便于单测。
+// 纯函数模块：parseSkillFrontmatter 不依赖 electron，便于单测。
 // electron 相关（app.getPath）由调用方 initSkills 注入路径。
 
 import matter from "gray-matter";
-import type { ParsedSkill, SkillEntry } from "./types";
+import type { ParsedSkill } from "./types";
 
 /** gray-matter 解析结果的最小结构（不依赖其类型导出，规避 export = 的类型访问问题）。 */
 interface MatterResult {
@@ -31,7 +31,7 @@ export function parseSkillFrontmatter(content: string): ParsedSkill | null {
     name: d.name,
     description: d.description,
     tools: Array.isArray(d.tools) ? d.tools.map(String) : undefined,
-    version: typeof d.version === "string" ? d.version : undefined,
+    version: d.version !== undefined ? String(d.version) : undefined,
     body: parsed.content.trim(),
   };
 }

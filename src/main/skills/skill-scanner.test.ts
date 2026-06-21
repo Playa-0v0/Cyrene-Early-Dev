@@ -54,6 +54,16 @@ name: x
     expect(parseSkillFrontmatter(md)).toBeNull();
   });
 
+  it("tools 非 array 返回 null", () => {
+    const md = `---
+name: x
+description: d
+tools: query_expense
+---
+正文`;
+    expect(parseSkillFrontmatter(md)).toBeNull();
+  });
+
   it("无 frontmatter 返回 null", () => {
     expect(parseSkillFrontmatter("纯正文无 frontmatter")).toBeNull();
   });
