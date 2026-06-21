@@ -2214,6 +2214,18 @@ ipcMain.handle(IPC.TOOL_GET_ENABLED, () => {
   return result;
 });
 
+ipcMain.handle(IPC.SKILL_LIST, () => {
+  return listSkillsForUi();
+});
+
+ipcMain.handle(IPC.SKILL_SET_ENABLED, (_event, payload: unknown) => {
+  const p = payload as { id?: string; enabled?: boolean };
+  if (!p.id) return { ok: false, error: "missing skill id" };
+  setSkillEnabled(p.id, p.enabled !== false);
+  console.log("[Skill] " + p.id + " enabled=" + (p.enabled !== false));
+  return { ok: true };
+});
+
 ipcMain.handle(IPC.EMBEDDING_DELETE, async (_event, payload: unknown) => {
   const p = payload as { model?: string };
   const model = p.model || "minilm";

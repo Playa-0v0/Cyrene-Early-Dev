@@ -122,6 +122,10 @@ export const IPC = {
   TOOL_SET_ENABLED: "tool:set-enabled",
   TOOL_GET_ENABLED: "tool:get-enabled",
 
+  // skill toggle
+  SKILL_LIST: "skill:list",
+  SKILL_SET_ENABLED: "skill:set-enabled",
+
   // token usage statistics
   TOKEN_USAGE_GET: "token-usage:get",
 
