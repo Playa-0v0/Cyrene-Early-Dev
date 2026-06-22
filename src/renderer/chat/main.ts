@@ -72,6 +72,10 @@ interface AguiApi {
   cancel: () => Promise<boolean>;
 }
 
+interface SchedulerEventsApi {
+  onEvent: (callback: (event: unknown) => void) => () => void;
+}
+
 /** AG-UI BaseEvent 的最小本地类型（只取我们关心的字段）。 */
 interface AguiBaseEvent {
   type: string;
@@ -81,6 +85,7 @@ interface AguiBaseEvent {
   toolCallId?: string;
   toolCallName?: string;
   content?: string;
+  error?: string;
   stepName?: string;
   name?: string;   // CUSTOM 事件的 name
   value?: unknown; // CUSTOM 事件的 value
@@ -113,6 +118,7 @@ declare global {
   interface Window {
     chat?: ChatApi;
     agui?: AguiApi;
+    schedulerEvents?: SchedulerEventsApi;
     modelConfig?: ModelConfigApi;
   }
 }
@@ -709,6 +715,64 @@ function render(): void {
   messagesEl.scrollTop = messagesEl.scrollHeight;
 }
 
+function installSchedulerEventListener(): void {
+  if (!window.schedulerEvents?.onEvent) return;
+
+  let streamMsgId = "";
+  let streamContent = "";
+
+  window.schedulerEvents.onEvent((rawEvent) => {
+    const event = rawEvent as AguiBaseEvent;
+    if (event.type === "CUSTOM" && event.name === "scheduler.started") {
+      const value = event.value as { taskId?: string; title?: string; firedAt?: string } | undefined;
+      messages.push({
+        id: `scheduler-system-${Date.now()}`,
+        role: "model",
+        content: `⏰ 定时任务「${value?.title ?? "未命名任务"}」已触发`,
+        at: Date.now(),
+      });
+      streamMsgId = `scheduler-model-${Date.now()}`;
+      streamContent = "";
+      messages.push({ id: streamMsgId, role: "model", content: "", at: Date.now(), thinking: true });
+      render();
+      void saveSession();
+      return;
+    }
+
+    const msg = messages.find(m => m.id === streamMsgId);
+    if (!msg) return;
+
+    if (event.type === "TOOL_CALL_START") {
+      msg.thinking = false;
+      msg.content = `🔧 调用中：${event.toolCallName ?? "工具"}`;
+      render();
+    } else if (event.type === "TEXT_MESSAGE_START") {
+      msg.thinking = false;
+      msg.content = "";
+      render();
+    } else if (event.type === "TEXT_MESSAGE_CONTENT" && event.delta) {
+      streamContent += event.delta;
+      msg.thinking = false;
+      msg.content = streamContent;
+      render();
+    } else if (event.type === "RUN_FINISHED") {
+      msg.thinking = false;
+      msg.content = streamContent || msg.content;
+      render();
+      void saveSession();
+      streamMsgId = "";
+      streamContent = "";
+    } else if (event.type === "RUN_ERROR") {
+      msg.thinking = false;
+      msg.content = "定时任务执行失败：" + (event.error ?? event.content ?? "未知错误");
+      render();
+      void saveSession();
+      streamMsgId = "";
+      streamContent = "";
+    }
+  });
+}
+
 // ── TTS 朗读 ──
 // 从主进程加载 TTS 配置，按当前引擎调用合成并播放。
 // 自动朗读（回复完成后触发）和手动 🔊 按钮共用此函数。
@@ -810,7 +874,7 @@ function waitForAudioMetadata(audio: HTMLAudioElement): Promise<number | null> {
     const timer = window.setTimeout(() => {
       cleanup();
       resolve(null);
-    }, 1500);
+    }, 3000);
     const cleanup = () => {
       window.clearTimeout(timer);
       audio.removeEventListener("loadedmetadata", onLoaded);

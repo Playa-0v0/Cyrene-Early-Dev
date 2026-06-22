@@ -1,6 +1,6 @@
 import type { Live2DModel } from "pixi-live2d-display/cubism4";
 
-const MAX_MOUTH_DURATION_MS = 30000;
+const MAX_MOUTH_DURATION_MS = 5 * 60 * 1000;
 const MOUTH_TICK_MS = 180;
 const MIN_MOUTH_VALUE = 0.15;
 const MAX_MOUTH_VALUE = 0.85;
