@@ -2196,7 +2196,9 @@ async function renderSkills(): Promise<void> {
     title.textContent = s.name + (s.source === "user" ? " （用户）" : "");
     const desc = document.createElement("div");
     desc.className = "skill-row__desc";
-    desc.textContent = s.description + (s.tools.length > 0 ? ` [tools: ${s.tools.join(", ")}]` : "");
+    const short = s.description.length > 120 ? s.description.slice(0, 120) + "…" : s.description;
+    const toolsStr = s.tools.length > 0 ? ` [tools: ${s.tools.join(", ")}]` : "";
+    desc.textContent = short + toolsStr;
     label.appendChild(title);
     label.appendChild(desc);
 
