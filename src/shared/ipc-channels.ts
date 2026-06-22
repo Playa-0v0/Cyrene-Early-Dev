@@ -94,6 +94,11 @@ export const IPC = {
   // runtime state updates (status / feeling / expression)
   RUNTIME_STATE_GET: "runtime-state:get",
   RUNTIME_STATE_CHANGED: "runtime-state:changed",
+
+  // Live2D speech / mouth sync
+  LIVE2D_SPEECH_PREPARE: "live2d:speech-prepare",
+  LIVE2D_MOUTH_START: "live2d:mouth-start",
+  LIVE2D_MOUTH_STOP: "live2d:mouth-stop",
   // embedding model status
   EMBEDDING_GET_STATUS: "embedding:get-status",
   EMBEDDING_DOWNLOAD: "embedding:download",

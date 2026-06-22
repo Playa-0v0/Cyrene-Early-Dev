@@ -1424,6 +1424,13 @@ function broadcastRuntimeStateChanged(): void {
   broadcastToAuxWindows(IPC.RUNTIME_STATE_CHANGED, runtimeState);
 }
 
+function sendToLive2DWindow(channel: string, payload?: unknown): void {
+  const win = mainWindow;
+  if (!win || win.isDestroyed()) return;
+  if (payload === undefined) win.webContents.send(channel);
+  else win.webContents.send(channel, payload);
+}
+
 function openExternalUrl(url: string): boolean {
   if (!url.startsWith("http://") && !url.startsWith("https://")) return false;
   if (isDev && url.startsWith("http://localhost:5173")) return false;
@@ -2279,6 +2286,16 @@ app.whenReady().then(async () => {
   // Token 用量查询 IPC
   ipcMain.handle(IPC.TOKEN_USAGE_GET, (_event, days: number) => {
     return getUsage(Math.max(1, Math.min(90, Number(days) || 7)));
+  });
+
+  ipcMain.on(IPC.LIVE2D_SPEECH_PREPARE, () => {
+    sendToLive2DWindow(IPC.LIVE2D_SPEECH_PREPARE);
+  });
+  ipcMain.on(IPC.LIVE2D_MOUTH_START, (_event, payload: { durationMs?: number }) => {
+    sendToLive2DWindow(IPC.LIVE2D_MOUTH_START, { durationMs: Number(payload?.durationMs ?? 0) });
+  });
+  ipcMain.on(IPC.LIVE2D_MOUTH_STOP, () => {
+    sendToLive2DWindow(IPC.LIVE2D_MOUTH_STOP);
   });
 
   // ── TTS IPC ──

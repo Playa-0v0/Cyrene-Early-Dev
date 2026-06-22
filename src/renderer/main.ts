@@ -2,6 +2,7 @@ import { Live2DManager } from "./live2d/manager";
 import { InteractionController } from "./live2d/interaction";
 import { MouseFocusController } from "./live2d/focus";
 import { ExpressionResetController } from "./live2d/expression-reset";
+import { MouthSyncController } from "./live2d/mouth-sync";
 
 const canvas = document.getElementById("live2d-canvas") as HTMLCanvasElement;
 if (!canvas) throw new Error("Canvas #live2d-canvas not found");
@@ -20,9 +21,21 @@ if (!window.cyrene) {
   };
 }
 
+declare global {
+  interface Window {
+    live2dSpeech?: {
+      onPrepare: (callback: () => void) => () => void;
+      onMouthStart: (callback: (payload: { durationMs: number }) => void) => () => void;
+      onMouthStop: (callback: () => void) => () => void;
+    };
+  }
+}
+
 let interaction: InteractionController | null = null;
 let focus: MouseFocusController | null = null;
 let expressionReset: ExpressionResetController | null = null;
+let mouthSync: MouthSyncController | null = null;
+let live2dSpeechOffs: Array<() => void> = [];
 
 const manager = new Live2DManager({
   canvas,
@@ -35,6 +48,19 @@ const manager = new Live2DManager({
     if (!model) return;
 
     expressionReset = new ExpressionResetController(model);
+    mouthSync = new MouthSyncController(model);
+    live2dSpeechOffs = [
+      window.live2dSpeech?.onPrepare(() => {
+        void expressionReset?.resetNow();
+        mouthSync?.stop();
+      }) ?? (() => {}),
+      window.live2dSpeech?.onMouthStart((payload) => {
+        mouthSync?.start(Number(payload.durationMs ?? 0));
+      }) ?? (() => {}),
+      window.live2dSpeech?.onMouthStop(() => {
+        mouthSync?.stop();
+      }) ?? (() => {}),
+    ];
     interaction = new InteractionController(canvas, model, manager.getHitAreaDefs(), {
       onTrigger: (area) => {
         expressionReset?.restart();
@@ -70,6 +96,10 @@ window.addEventListener("resize", () => {
 window.addEventListener("beforeunload", () => {
   expressionReset?.dispose();
   expressionReset = null;
+  for (const off of live2dSpeechOffs) off();
+  live2dSpeechOffs = [];
+  mouthSync?.dispose();
+  mouthSync = null;
   focus?.dispose();
   focus = null;
   interaction?.dispose();

@@ -713,6 +713,9 @@ function render(): void {
 // 从主进程加载 TTS 配置，按当前引擎调用合成并播放。
 // 自动朗读（回复完成后触发）和手动 🔊 按钮共用此函数。
 
+const TEXT_MODE_MOUTH_DURATION_MS = 8000;
+const AUDIO_MOUTH_DELAY_MS = 800;
+
 interface TtsSettings {
   ttsEngine: string;
   ttsAutoRead: boolean;
@@ -739,11 +742,35 @@ interface TtsApi {
 declare global {
   interface Window {
     tts?: TtsApi;
+    live2dSpeech?: {
+      prepare: () => void;
+      startMouth: (durationMs: number) => void;
+      stopMouth: () => void;
+    };
   }
 }
 
 // 当前正在播放的 TTS 音频实例（全局唯一）。点新朗读前先停这个，避免重叠。
 let currentTtsAudio: HTMLAudioElement | null = null;
+let speechToken = 0;
+let textMouthStarted = false;
+
+function nextSpeechToken(): number {
+  speechToken += 1;
+  return speechToken;
+}
+
+function stopLive2dMouth(): void {
+  speechToken += 1;
+  textMouthStarted = false;
+  window.live2dSpeech?.stopMouth();
+}
+
+function startTextModeMouth(): void {
+  if (textMouthStarted) return;
+  textMouthStarted = true;
+  window.live2dSpeech?.startMouth(TEXT_MODE_MOUTH_DURATION_MS);
+}
 
 /** 停止当前正在播放的 TTS 音频（如果有）。 */
 function stopCurrentTts(): void {
@@ -752,6 +779,7 @@ function stopCurrentTts(): void {
     currentTtsAudio.currentTime = 0;
     currentTtsAudio = null;
   }
+  stopLive2dMouth();
 }
 
 async function loadTtsSettings(): Promise<TtsSettings | null> {
@@ -773,18 +801,71 @@ async function loadTtsSettings(): Promise<TtsSettings | null> {
 }
 
 // 每次朗读前重新读取设置，确保设置页刚改的模型/音量/自动朗读开关即时生效。
+function waitForAudioMetadata(audio: HTMLAudioElement): Promise<number | null> {
+  return new Promise((resolve) => {
+    if (Number.isFinite(audio.duration) && audio.duration > 0) {
+      resolve(audio.duration);
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      cleanup();
+      resolve(null);
+    }, 1500);
+    const cleanup = () => {
+      window.clearTimeout(timer);
+      audio.removeEventListener("loadedmetadata", onLoaded);
+      audio.removeEventListener("error", onError);
+    };
+    const onLoaded = () => {
+      cleanup();
+      resolve(Number.isFinite(audio.duration) && audio.duration > 0 ? audio.duration : null);
+    };
+    const onError = () => {
+      cleanup();
+      resolve(null);
+    };
+    audio.addEventListener("loadedmetadata", onLoaded, { once: true });
+    audio.addEventListener("error", onError, { once: true });
+  });
+}
+
 function playTtsBase64(base64: string): void {
   stopCurrentTts();
+  const token = nextSpeechToken();
   const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
   const blob = new Blob([bytes], { type: "audio/mp3" });
   const url = URL.createObjectURL(blob);
   const audio = new Audio(url);
+  audio.preload = "auto";
+  audio.load();
   currentTtsAudio = audio;
-  audio.play().catch((err) => console.warn("[TTS] 播放失败:", err));
+
   audio.onended = () => {
     URL.revokeObjectURL(url);
     if (currentTtsAudio === audio) currentTtsAudio = null;
+    if (speechToken === token) stopLive2dMouth();
   };
+
+  void (async () => {
+    const durationSec = await waitForAudioMetadata(audio);
+    try {
+      await audio.play();
+    } catch (err) {
+      console.warn("[TTS] 播放失败:", err);
+      URL.revokeObjectURL(url);
+      if (currentTtsAudio === audio) currentTtsAudio = null;
+      if (speechToken === token) stopLive2dMouth();
+      return;
+    }
+
+    if (speechToken !== token) return;
+    window.live2dSpeech?.prepare();
+    const durationMs = durationSec === null ? 0 : Math.max(0, durationSec * 1000 - AUDIO_MOUTH_DELAY_MS);
+    window.setTimeout(() => {
+      if (speechToken !== token) return;
+      if (durationMs > 0) window.live2dSpeech?.startMouth(durationMs);
+    }, AUDIO_MOUTH_DELAY_MS);
+  })();
 }
 
 async function synthesizeAndPlayCached(
@@ -818,6 +899,8 @@ async function synthesizeAndPlayCached(
 }
 
 async function speakMessage(message: Message): Promise<void> {
+  stopLive2dMouth();
+  window.live2dSpeech?.prepare();
   const cache = await synthesizeAndPlayCached(message.content, message);
   if (cache) {
     message.ttsCacheKey = cache.cacheKey;
@@ -954,6 +1037,7 @@ async function send(): Promise<void> {
     let streamContent = "";
     let ttsContent = "";
     let autoSpeakTriggered = false;
+    textMouthStarted = false;
     let pendingTtsCachePromise: Promise<{ cacheKey: string } | null> | null = null;
     let sticker: StickerId | null = null;
     let pendingWeatherCard: Record<string, unknown> | null = null;
@@ -1054,6 +1138,13 @@ async function send(): Promise<void> {
             if (event.delta) {
               ttsContent += event.delta;
               deltaQueue.push(event.delta);
+              if (!textMouthStarted) {
+                void loadTtsSettings().then((settings) => {
+                  if (settings && !settings.ttsAutoRead) {
+                    startTextModeMouth();
+                  }
+                });
+              }
               if (msg) { msg.thinking = false; }
               startPlayback();
             }

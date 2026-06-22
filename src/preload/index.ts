@@ -168,6 +168,28 @@ contextBridge.exposeInMainWorld("user", userApi);
 contextBridge.exposeInMainWorld("memoryPanel", memoryPanelApi);
 contextBridge.exposeInMainWorld("runtimeState", runtimeStateApi);
 
+const live2dSpeechApi = {
+  prepare: () => ipcRenderer.send(IPC.LIVE2D_SPEECH_PREPARE),
+  startMouth: (durationMs: number) => ipcRenderer.send(IPC.LIVE2D_MOUTH_START, { durationMs }),
+  stopMouth: () => ipcRenderer.send(IPC.LIVE2D_MOUTH_STOP),
+  onPrepare: (callback: () => void) => {
+    const listener = () => callback();
+    ipcRenderer.on(IPC.LIVE2D_SPEECH_PREPARE, listener);
+    return () => ipcRenderer.removeListener(IPC.LIVE2D_SPEECH_PREPARE, listener);
+  },
+  onMouthStart: (callback: (payload: { durationMs: number }) => void) => {
+    const listener = (_event: Electron.IpcRendererEvent, payload: { durationMs: number }) => callback(payload);
+    ipcRenderer.on(IPC.LIVE2D_MOUTH_START, listener);
+    return () => ipcRenderer.removeListener(IPC.LIVE2D_MOUTH_START, listener);
+  },
+  onMouthStop: (callback: () => void) => {
+    const listener = () => callback();
+    ipcRenderer.on(IPC.LIVE2D_MOUTH_STOP, listener);
+    return () => ipcRenderer.removeListener(IPC.LIVE2D_MOUTH_STOP, listener);
+  },
+};
+contextBridge.exposeInMainWorld("live2dSpeech", live2dSpeechApi);
+
 // 聊天会话存储（多对话历史）
 const chatStoreApi = {
   list: () => ipcRenderer.invoke(IPC.CHATS_LIST),
