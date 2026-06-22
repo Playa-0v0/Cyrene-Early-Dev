@@ -1127,10 +1127,10 @@ body {
 
 /* ── 任务进度面板（todo_write 工具触发，左上角固定）── */
 .todo-panel {
-  position: fixed;
-  top: 50%;
+  position: absolute;
+  top: 66px;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%);
   width: 19rem;
   max-height: 60vh;
   overflow-y: auto;
@@ -1158,7 +1158,7 @@ body {
 
 .todo-panel.empty {
   opacity: 0;
-  transform: translate(-50%, -50%) scale(0.95);
+  transform: translateX(-50%) scale(0.95);
   transition: opacity 300ms ease, transform 300ms ease;
   pointer-events: none;
 }
@@ -1313,6 +1313,6 @@ body {
 }
 
 @keyframes todo-slide-in {
-  from { opacity: 0; transform: translate(-50%, -50%) scale(0.95); }
-  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  from { opacity: 0; transform: translateX(-50%) scale(0.95); }
+  to { opacity: 1; transform: translateX(-50%) scale(1); }
 }
