@@ -15,6 +15,7 @@ interface Message {
   at: number;
   sticker?: StickerId | null;
   thinking?: boolean;
+  ttsCacheKey?: string;
 }
 
 type StickerId = "playful" | "love-happy" | "confident" | "serious" | "calm" | "peek" | "clingy-confused" | "tired" | "love-calm" | "love" | "applause";
@@ -220,7 +221,14 @@ interface ChatStoreSession {
   id: string;
   title: string;
   identityId: string | null;
-  messages: Array<{ id: string; role: Role; content: string; at: number; sticker?: StickerId | null }>;
+  messages: Array<{
+    id: string;
+    role: Role;
+    content: string;
+    at: number;
+    sticker?: StickerId | null;
+    ttsCacheKey?: string;
+  }>;
   createdAt: number;
   updatedAt: number;
   schemaVersion: 1;
@@ -254,7 +262,7 @@ declare global {
 // - 过滤空 content / 渲染中的 thinking 占位（thinking=true 时通常 content 为空，但保险起见双重过滤）
 // - 丢弃 thinking 字段（持久化层不存这种瞬态状态）
 function toPersistableMessages(arr: Message[]): Array<{
-  id: string; role: Role; content: string; at: number; sticker?: StickerId | null;
+  id: string; role: Role; content: string; at: number; sticker?: StickerId | null; ttsCacheKey?: string;
 }> {
   return arr
     .filter((m) => m && (m.role === "user" || m.role === "model") && typeof m.content === "string" && m.content.trim() && !m.thinking)
@@ -264,6 +272,7 @@ function toPersistableMessages(arr: Message[]): Array<{
       content: m.content,
       at: m.at,
       sticker: m.sticker ?? null,
+      ttsCacheKey: m.ttsCacheKey,
     }));
 }
 
@@ -287,6 +296,7 @@ function loadSessionIntoUI(session: ChatStoreSession): void {
       content: m.content,
       at: m.at,
       sticker: m.sticker ?? null,
+      ttsCacheKey: m.ttsCacheKey,
     });
   }
   // 上报活跃 sessionId（设置面板"删除当前会话"差异化提示用）
@@ -684,7 +694,7 @@ function render(): void {
         if (currentTtsAudio) {
           stopCurrentTts();
         } else {
-          void speakText(m.content);
+          void speakMessage(m);
         }
       });
       body.appendChild(speakBtn);
@@ -718,6 +728,11 @@ interface TtsApi {
     apiKey: string; voiceId: string; text: string;
     speed?: number; volume?: number; model?: string; format?: "mp3" | "wav" | "pcm";
   }) => Promise<string>;
+  synthesizeCached: (payload: {
+    apiKey: string; voiceId: string; text: string;
+    speed?: number; volume?: number; model?: string; format?: "mp3" | "wav" | "pcm";
+    expectedCacheKey?: string;
+  }) => Promise<{ base64: string; cacheKey: string; cached: boolean }>;
   loadSettings: () => Promise<Record<string, unknown>>;
 }
 
@@ -762,46 +777,63 @@ async function loadTtsSettings(): Promise<TtsSettings | null> {
 
 // 清除缓存（用户在设置面板改了配置后，下次朗读会重新加载）
 // 通过监听 storage 事件或其他方式触发——简单起见每次启动加载一次
-async function speakText(text: string): Promise<void> {
-  if (!window.tts) return;
+function playTtsBase64(base64: string): void {
+  stopCurrentTts();
+  const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+  const blob = new Blob([bytes], { type: "audio/mp3" });
+  const url = URL.createObjectURL(blob);
+  const audio = new Audio(url);
+  currentTtsAudio = audio;
+  audio.play().catch((err) => console.warn("[TTS] 播放失败:", err));
+  audio.onended = () => {
+    URL.revokeObjectURL(url);
+    if (currentTtsAudio === audio) currentTtsAudio = null;
+  };
+}
+
+async function synthesizeAndPlayCached(
+  text: string,
+  existing?: { ttsCacheKey?: string },
+): Promise<{ cacheKey: string } | null> {
+  if (!window.tts) return null;
   const settings = await loadTtsSettings();
-  if (!settings || settings.ttsEngine === "off") return;
+  if (!settings || settings.ttsEngine === "off") return null;
 
   // 目前只接了 MiniMax，其他引擎后续加
-  if (settings.ttsEngine !== "minimax") return;
-  if (!settings.ttsMinimaxKey || !settings.ttsMinimaxVoiceId) return;
+  if (settings.ttsEngine !== "minimax") return null;
+  if (!settings.ttsMinimaxKey || !settings.ttsMinimaxVoiceId) return null;
 
   try {
-    const base64 = await window.tts.synthesize({
+    const result = await window.tts.synthesizeCached({
       apiKey: settings.ttsMinimaxKey,
       voiceId: settings.ttsMinimaxVoiceId,
       text,
       speed: settings.ttsSpeed,
       volume: settings.ttsVolume,
       model: settings.ttsMinimaxModel,
+      expectedCacheKey: existing?.ttsCacheKey,
     });
-    // base64 → 播放（先停旧的，避免重叠）
-    stopCurrentTts();
-    const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
-    const blob = new Blob([bytes], { type: "audio/mp3" });
-    const url = URL.createObjectURL(blob);
-    const audio = new Audio(url);
-    currentTtsAudio = audio;
-    audio.play().catch((err) => console.warn("[TTS] 播放失败:", err));
-    audio.onended = () => {
-      URL.revokeObjectURL(url);
-      if (currentTtsAudio === audio) currentTtsAudio = null;
-    };
+    playTtsBase64(result.base64);
+    return { cacheKey: result.cacheKey };
   } catch (err) {
     console.warn("[TTS] 合成失败:", err);
+    return null;
+  }
+}
+
+async function speakMessage(message: Message): Promise<void> {
+  const cache = await synthesizeAndPlayCached(message.content, message);
+  if (cache) {
+    message.ttsCacheKey = cache.cacheKey;
+    void saveSession();
   }
 }
 
 // 自动朗读：检查引擎是否开启 + autoRead 开关，满足条件才朗读
-async function autoSpeakIfEnabled(text: string): Promise<void> {
+async function autoSpeakIfEnabled(text: string): Promise<{ cacheKey: string } | null> {
   const settings = await loadTtsSettings();
-  if (!settings || settings.ttsEngine === "off" || !settings.ttsAutoRead) return;
-  void speakText(text);
+  if (!settings || settings.ttsEngine === "off" || !settings.ttsAutoRead) return null;
+  return await synthesizeAndPlayCached(text);
 }
 
 function autosize(): void {
@@ -924,6 +956,9 @@ async function send(): Promise<void> {
     render();
 
     let streamContent = "";
+    let ttsContent = "";
+    let autoSpeakTriggered = false;
+    let pendingTtsCachePromise: Promise<{ cacheKey: string } | null> | null = null;
     let sticker: StickerId | null = null;
     let pendingWeatherCard: Record<string, unknown> | null = null;
 
@@ -1021,16 +1056,18 @@ async function send(): Promise<void> {
             break;
           case "TEXT_MESSAGE_CONTENT":
             if (event.delta) {
+              ttsContent += event.delta;
               deltaQueue.push(event.delta);
               if (msg) { msg.thinking = false; }
               startPlayback();
             }
             break;
           case "TEXT_MESSAGE_END":
-            // 全文 delta 已收齐（streamContent 是完整文本），立刻触发 TTS 合成，
-            // 不等逐字渐显播完——方向A：声音来了就播，文字各走各的（不同步但来得早）。
-            if (streamContent.trim()) {
-              void autoSpeakIfEnabled(streamContent);
+            // 全文 delta 已收齐时，ttsContent 已经同步累加完整；UI 的 streamContent 仍按 40ms 逐字回放。
+            // 这样声音可尽早开始，且不受前端打字动画队列影响。
+            if (!autoSpeakTriggered && ttsContent.trim()) {
+              autoSpeakTriggered = true;
+              pendingTtsCachePromise = autoSpeakIfEnabled(ttsContent);
             }
             break;
           case "CUSTOM":
@@ -1086,6 +1123,14 @@ async function send(): Promise<void> {
       msg.sticker = sticker;
     }
     void saveSession();
+    const finishedMsgId = streamMsgId;
+    void pendingTtsCachePromise?.then((cache) => {
+      if (!cache) return;
+      const latestMsg = messages.find(m => m.id === finishedMsgId);
+      if (!latestMsg) return;
+      latestMsg.ttsCacheKey = cache.cacheKey;
+      void saveSession();
+    });
     render();
     // 天气卡片在 render 后追加到末尾（模型回复之后）
     if (pendingWeatherCard) {

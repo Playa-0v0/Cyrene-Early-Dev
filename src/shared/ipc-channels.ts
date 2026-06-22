@@ -143,6 +143,7 @@ export const IPC = {
   TTS_UPLOAD: "tts:upload",          // 上传音频文件 → file_id
   TTS_CLONE: "tts:clone",           // 音色快速复刻 → voice_id
   TTS_SYNTHESIZE: "tts:synthesize", // 语音合成 → audio buffer(base64)
+  TTS_SYNTHESIZE_CACHED: "tts:synthesize-cached", // 语音合成 + 本地音频缓存
   TTS_SAVE_SETTINGS: "tts:save-settings",   // 保存 TTS 配置
   TTS_LOAD_SETTINGS: "tts:load-settings",   // 加载 TTS 配置
   TTS_PICK_AUDIO: "tts:pick-audio",         // 选择音频文件（dialog）

@@ -3037,6 +3037,8 @@ document.getElementById("tts-minimax-test")?.addEventListener("click", async () 
   if (!window.tts) return;
   const apiKey = ttsEl("tts-minimax-key").value.trim();
   const voiceId = ttsEl("tts-minimax-voice").value.trim();
+  const modelSelect = ttsEl("tts-minimax-model") as HTMLSelectElement;
+  const model = modelSelect.value === "speech-2.8-hd" ? "speech-2.8-hd" : "speech-2.8-turbo";
   if (!apiKey) { window.alert("请先填写 MiniMax API Key"); return; }
   if (!voiceId) { window.alert("请先填写音色 ID（或下方复刻训练）"); return; }
 
@@ -3044,7 +3046,7 @@ document.getElementById("tts-minimax-test")?.addEventListener("click", async () 
   btn.disabled = true;
   btn.textContent = "合成中…";
   try {
-    const base64 = await window.tts.synthesize({ apiKey, voiceId, text: TTS_TEST_TEXT });
+    const base64 = await window.tts.synthesize({ apiKey, voiceId, text: TTS_TEST_TEXT, model });
     playTtsAudio(base64);
   } catch (err) {
     window.alert("测试失败: " + (err instanceof Error ? err.message : String(err)));

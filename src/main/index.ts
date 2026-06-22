@@ -2,6 +2,7 @@ import { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, screen, shell, di
 import * as path from "path";
 import * as fs from "fs";
 import * as os from "os";
+import { createHash } from "crypto";
 import { IPC } from "../shared/ipc-channels";
 import { STATUS_KEYWORDS, STICKER_EXPLICIT_TRIGGERS, STICKER_CONTENT_TRIGGERS, STICKER_MAP } from "./status-keywords";
 import { initRAG, buildMemoryContext, addMemory, importDocument, switchEmbeddingModel, deleteImportedDoc } from "./rag";
@@ -46,6 +47,60 @@ let stickerManagerWindow: BrowserWindow | null = null;
 let activeChatSessionId: string | null = null;
 
 const isDev = process.env.VITE_DEV === "1";
+
+function appendMinimaxTtsLog(entry: Record<string, unknown>): void {
+  try {
+    const logDir = path.join(app.getPath("userData"), "logs");
+    fs.mkdirSync(logDir, { recursive: true });
+    const logFile = path.join(logDir, "minimax-tts.log");
+    fs.appendFileSync(logFile, JSON.stringify(entry, null, 2) + "\n", "utf8");
+    if (entry.phase === "request.begin") {
+      console.log("[TTS MiniMax] 诊断日志:", logFile);
+    }
+  } catch (err) {
+    console.warn("[TTS MiniMax] 写诊断日志失败:", err);
+  }
+}
+
+function getTtsCacheDir(): string {
+  return path.join(app.getPath("userData"), "cyrene-tts-cache");
+}
+
+function assertTtsCacheKey(cacheKey: string): string {
+  if (!/^minimax-[a-f0-9]{64}$/.test(cacheKey)) {
+    throw new Error("非法 TTS 缓存 key");
+  }
+  return cacheKey;
+}
+
+function buildTtsCacheKey(payload: {
+  voiceId: string;
+  text: string;
+  speed?: number;
+  volume?: number;
+  pitch?: number;
+  model?: string;
+  format?: "mp3" | "wav" | "pcm";
+}): string {
+  const source = JSON.stringify({
+    version: 1,
+    engine: "minimax",
+    model: payload.model ?? "speech-2.8-hd",
+    voiceId: payload.voiceId,
+    speed: payload.speed ?? 1,
+    volume: payload.volume ?? 1,
+    pitch: payload.pitch ?? 0,
+    format: payload.format ?? "mp3",
+    text: payload.text,
+  });
+  return "minimax-" + createHash("sha256").update(source, "utf8").digest("hex");
+}
+
+function getTtsCachePath(cacheKey: string, format: "mp3" | "wav" | "pcm" = "mp3"): string {
+  const safeKey = assertTtsCacheKey(cacheKey);
+  const ext = format === "wav" ? "wav" : format === "pcm" ? "pcm" : "mp3";
+  return path.join(getTtsCacheDir(), `${safeKey}.${ext}`);
+}
 
 // 单个厂商的可缓存配置：用户切到别的厂商再切回来，这三个字段从这里恢复。
 interface ProviderProfile {
@@ -2285,9 +2340,76 @@ app.whenReady().then(async () => {
     if (!payload?.apiKey || !payload?.voiceId || !payload?.text) {
       throw new Error("缺少必要参数（apiKey/voiceId/text）");
     }
-    const audioBuffer = await ttsSynthesize(payload);
+    const audioBuffer = await ttsSynthesize({
+      ...payload,
+      debugLog: appendMinimaxTtsLog,
+    });
     // Buffer → base64 传给渲染进程（渲染进程用 atob 解码再播）
     return audioBuffer.toString("base64");
+  });
+
+  ipcMain.handle(IPC.TTS_SYNTHESIZE_CACHED, async (_event, payload: {
+    apiKey: string; voiceId: string; text: string;
+    speed?: number; volume?: number; pitch?: number;
+    model?: string; format?: "mp3" | "wav" | "pcm";
+    expectedCacheKey?: string;
+  }) => {
+    if (!payload?.apiKey || !payload?.voiceId || !payload?.text) {
+      throw new Error("缺少必要参数（apiKey/voiceId/text）");
+    }
+
+    const format = payload.format ?? "mp3";
+    const cacheKey = buildTtsCacheKey(payload);
+    const audioPath = getTtsCachePath(cacheKey, format);
+    fs.mkdirSync(path.dirname(audioPath), { recursive: true });
+
+    if (payload.expectedCacheKey && payload.expectedCacheKey !== cacheKey) {
+      appendMinimaxTtsLog({
+        requestId: `tts-cache-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        ts: new Date().toISOString(),
+        phase: "cache.key_mismatch",
+        expectedCacheKey: payload.expectedCacheKey,
+        actualCacheKey: cacheKey,
+        textChars: Array.from(payload.text).length,
+      });
+    }
+
+    if (fs.existsSync(audioPath)) {
+      const cachedBuffer = fs.readFileSync(audioPath);
+      appendMinimaxTtsLog({
+        requestId: `tts-cache-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        ts: new Date().toISOString(),
+        phase: "cache.hit",
+        cacheKey,
+        audioBytes: cachedBuffer.length,
+        textChars: Array.from(payload.text).length,
+      });
+      return {
+        base64: cachedBuffer.toString("base64"),
+        cacheKey,
+        cached: true,
+      };
+    }
+
+    const audioBuffer = await ttsSynthesize({
+      ...payload,
+      format,
+      debugLog: appendMinimaxTtsLog,
+    });
+    fs.writeFileSync(audioPath, audioBuffer);
+    appendMinimaxTtsLog({
+      requestId: `tts-cache-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      ts: new Date().toISOString(),
+      phase: "cache.write",
+      cacheKey,
+      audioBytes: audioBuffer.length,
+      textChars: Array.from(payload.text).length,
+    });
+    return {
+      base64: audioBuffer.toString("base64"),
+      cacheKey,
+      cached: false,
+    };
   });
 
   // 聊天会话存储 IPC（chats-store.initialize 会建好 cyrene-chats 目录并加载 index）

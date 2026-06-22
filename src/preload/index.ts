@@ -232,6 +232,12 @@ const ttsApi = {
     speed?: number; volume?: number; pitch?: number;
     model?: string; format?: "mp3" | "wav" | "pcm";
   }) => ipcRenderer.invoke(IPC.TTS_SYNTHESIZE, payload),
+  synthesizeCached: (payload: {
+    apiKey: string; voiceId: string; text: string;
+    speed?: number; volume?: number; pitch?: number;
+    model?: string; format?: "mp3" | "wav" | "pcm";
+    expectedCacheKey?: string;
+  }) => ipcRenderer.invoke(IPC.TTS_SYNTHESIZE_CACHED, payload),
   saveSettings: (tts: Record<string, unknown>) => ipcRenderer.invoke(IPC.TTS_SAVE_SETTINGS, tts),
   loadSettings: () => ipcRenderer.invoke(IPC.TTS_LOAD_SETTINGS),
 };

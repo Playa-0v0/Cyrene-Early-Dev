@@ -29,6 +29,8 @@ export interface ChatMessage {
   content: string;
   at: number;
   sticker?: ChatStickerId | null;
+  /** TTS 缓存 key。只存 key，不存绝对路径，避免 userData 路径变化后 session JSON 失效。 */
+  ttsCacheKey?: string;
 }
 
 export interface ChatSession {

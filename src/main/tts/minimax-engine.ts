@@ -159,6 +159,7 @@ export interface SynthesizeOptions {
   model?: string;        // 默认 speech-2.8-hd
   format?: "mp3" | "wav" | "pcm";  // 默认 mp3
   sampleRate?: number;   // 默认 32000
+  debugLog?: (entry: Record<string, unknown>) => void; // 本地诊断日志（不上传）
 }
 
 /**
@@ -169,12 +170,51 @@ export interface SynthesizeOptions {
 export async function synthesize(opts: SynthesizeOptions): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     const audioChunks: Buffer[] = [];
+    const requestId = `tts-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const startedAt = Date.now();
+    let audioHexChars = 0;
+    let audioChunkCount = 0;
     let resolved = false;
+
+    const log = (entry: Record<string, unknown>) => {
+      try { opts.debugLog?.({ requestId, ts: new Date().toISOString(), ...entry }); } catch { /* ignore */ }
+    };
+
+    log({
+      phase: "request.begin",
+      endpoint: WS_URL,
+      textChars: Array.from(opts.text).length,
+      textUtf8Bytes: Buffer.byteLength(opts.text, "utf8"),
+      request: {
+        task_start: {
+          event: "task_start",
+          model: opts.model ?? "speech-2.8-hd",
+          voice_setting: {
+            voice_id: opts.voiceId,
+            speed: opts.speed ?? 1,
+            vol: opts.volume ?? 1,
+            pitch: opts.pitch ?? 0,
+            english_normalization: false,
+          },
+          audio_setting: {
+            sample_rate: opts.sampleRate ?? 32000,
+            bitrate: 128000,
+            format: opts.format ?? "mp3",
+            channel: 1,
+          },
+        },
+        task_continue: {
+          event: "task_continue",
+          text: opts.text,
+        },
+      },
+    });
 
     const timeout = setTimeout(() => {
       if (!resolved) {
         resolved = true;
         try { ws.close(); } catch { /* ignore */ }
+        log({ phase: "error", error: "语音合成超时（30秒）", durationMs: Date.now() - startedAt });
         reject(new Error("语音合成超时（30秒）"));
       }
     }, 30000);
@@ -184,6 +224,7 @@ export async function synthesize(opts: SynthesizeOptions): Promise<Buffer> {
     });
 
     ws.on("open", () => {
+      log({ phase: "ws.open" });
       // 连接建立后等 MiniMax 回 connected_success
     });
 
@@ -198,6 +239,7 @@ export async function synthesize(opts: SynthesizeOptions): Promise<Buffer> {
 
         // 连接成功 → 发 task_start
         if (msg.event === "connected_success") {
+          log({ phase: "response.event", event: msg.event, base_resp: msg.base_resp ?? null });
           const startMsg = {
             event: "task_start",
             model: opts.model ?? "speech-2.8-hd",
@@ -216,18 +258,24 @@ export async function synthesize(opts: SynthesizeOptions): Promise<Buffer> {
             },
           };
           ws.send(JSON.stringify(startMsg));
+          log({ phase: "request.sent", event: "task_start" });
           return;
         }
 
         // task 启动成功 → 发 task_continue(发文本)
         if (msg.event === "task_started") {
+          log({ phase: "response.event", event: msg.event, base_resp: msg.base_resp ?? null });
           ws.send(JSON.stringify({ event: "task_continue", text: opts.text }));
+          log({ phase: "request.sent", event: "task_continue", textChars: Array.from(opts.text).length });
           return;
         }
 
-        // 收到音频块 → hex 解码拼接
+        // 收到音频块 → hex 解码拼接。音频内容很大，只记长度，不把 hex 全量写日志。
         if (msg.data?.audio) {
           audioChunks.push(Buffer.from(msg.data.audio, "hex"));
+          audioChunkCount += 1;
+          audioHexChars += msg.data.audio.length;
+          log({ phase: "response.audio_chunk", hexChars: msg.data.audio.length, chunkIndex: audioChunkCount });
         }
 
         // 合成完成
@@ -236,8 +284,17 @@ export async function synthesize(opts: SynthesizeOptions): Promise<Buffer> {
             resolved = true;
             clearTimeout(timeout);
             try { ws.send(JSON.stringify({ event: "task_finish" })); } catch { /* ignore */ }
+            const audioBuffer = Buffer.concat(audioChunks);
+            log({
+              phase: "response.final",
+              base_resp: msg.base_resp ?? null,
+              durationMs: Date.now() - startedAt,
+              audioChunkCount,
+              audioHexChars,
+              audioBytes: audioBuffer.length,
+            });
             ws.close();
-            resolve(Buffer.concat(audioChunks));
+            resolve(audioBuffer);
           }
           return;
         }
@@ -248,11 +305,13 @@ export async function synthesize(opts: SynthesizeOptions): Promise<Buffer> {
             resolved = true;
             clearTimeout(timeout);
             ws.close();
+            log({ phase: "error", base_resp: msg.base_resp, durationMs: Date.now() - startedAt });
             reject(new Error(`合成失败: ${msg.base_resp.status_msg} (code: ${msg.base_resp.status_code})`));
           }
         }
-      } catch {
+      } catch (err) {
         // 单条消息解析失败不影响整体流程
+        log({ phase: "response.parse_error", error: err instanceof Error ? err.message : String(err), rawPreview: raw.toString().slice(0, 500) });
       }
     });
 
@@ -260,18 +319,23 @@ export async function synthesize(opts: SynthesizeOptions): Promise<Buffer> {
       if (!resolved) {
         resolved = true;
         clearTimeout(timeout);
+        log({ phase: "error", error: `WebSocket 连接失败: ${err.message}`, durationMs: Date.now() - startedAt });
         reject(new Error(`WebSocket 连接失败: ${err.message}`));
       }
     });
 
     ws.on("close", () => {
+      log({ phase: "ws.close", resolved, durationMs: Date.now() - startedAt });
       if (!resolved) {
         resolved = true;
         clearTimeout(timeout);
         // 连接关闭时如果已有音频块，返回；否则报错
         if (audioChunks.length > 0) {
-          resolve(Buffer.concat(audioChunks));
+          const audioBuffer = Buffer.concat(audioChunks);
+          log({ phase: "response.close_with_audio", audioChunkCount, audioHexChars, audioBytes: audioBuffer.length });
+          resolve(audioBuffer);
         } else {
+          log({ phase: "error", error: "连接已关闭，未收到音频数据", durationMs: Date.now() - startedAt });
           reject(new Error("连接已关闭，未收到音频数据"));
         }
       }
