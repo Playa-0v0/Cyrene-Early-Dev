@@ -742,7 +742,6 @@ declare global {
   }
 }
 
-let ttsSettingsCache: TtsSettings | null = null;
 // 当前正在播放的 TTS 音频实例（全局唯一）。点新朗读前先停这个，避免重叠。
 let currentTtsAudio: HTMLAudioElement | null = null;
 
@@ -756,11 +755,10 @@ function stopCurrentTts(): void {
 }
 
 async function loadTtsSettings(): Promise<TtsSettings | null> {
-  if (ttsSettingsCache) return ttsSettingsCache;
   if (!window.tts) return null;
   try {
     const raw = await window.tts.loadSettings();
-    ttsSettingsCache = {
+    return {
       ttsEngine: String(raw.ttsEngine ?? "off"),
       ttsAutoRead: Boolean(raw.ttsAutoRead),
       ttsSpeed: Number(raw.ttsSpeed ?? 1),
@@ -769,14 +767,12 @@ async function loadTtsSettings(): Promise<TtsSettings | null> {
       ttsMinimaxVoiceId: String(raw.ttsMinimaxVoiceId ?? ""),
       ttsMinimaxModel: raw.ttsMinimaxModel === "speech-2.8-hd" ? "speech-2.8-hd" : "speech-2.8-turbo",
     };
-    return ttsSettingsCache;
   } catch {
     return null;
   }
 }
 
-// 清除缓存（用户在设置面板改了配置后，下次朗读会重新加载）
-// 通过监听 storage 事件或其他方式触发——简单起见每次启动加载一次
+// 每次朗读前重新读取设置，确保设置页刚改的模型/音量/自动朗读开关即时生效。
 function playTtsBase64(base64: string): void {
   stopCurrentTts();
   const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
