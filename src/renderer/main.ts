@@ -3,6 +3,7 @@ import { InteractionController } from "./live2d/interaction";
 import { MouseFocusController } from "./live2d/focus";
 import { ExpressionResetController } from "./live2d/expression-reset";
 import { MouthSyncController } from "./live2d/mouth-sync";
+import { SpeakingMotionController } from "./live2d/speaking-motion";
 
 const canvas = document.getElementById("live2d-canvas") as HTMLCanvasElement;
 if (!canvas) throw new Error("Canvas #live2d-canvas not found");
@@ -35,6 +36,7 @@ let interaction: InteractionController | null = null;
 let focus: MouseFocusController | null = null;
 let expressionReset: ExpressionResetController | null = null;
 let mouthSync: MouthSyncController | null = null;
+let speakingMotion: SpeakingMotionController | null = null;
 let live2dSpeechOffs: Array<() => void> = [];
 
 const manager = new Live2DManager({
@@ -49,16 +51,20 @@ const manager = new Live2DManager({
 
     expressionReset = new ExpressionResetController(model);
     mouthSync = new MouthSyncController(model);
+    speakingMotion = new SpeakingMotionController(model);
     live2dSpeechOffs = [
       window.live2dSpeech?.onPrepare(() => {
         void expressionReset?.resetNow();
         mouthSync?.stop();
+        speakingMotion?.stop();
       }) ?? (() => {}),
       window.live2dSpeech?.onMouthStart((payload) => {
         mouthSync?.start(Number(payload.durationMs ?? 0));
+        speakingMotion?.start();
       }) ?? (() => {}),
       window.live2dSpeech?.onMouthStop(() => {
         mouthSync?.stop();
+        speakingMotion?.stop();
       }) ?? (() => {}),
     ];
     interaction = new InteractionController(canvas, model, manager.getHitAreaDefs(), {
@@ -100,6 +106,8 @@ window.addEventListener("beforeunload", () => {
   live2dSpeechOffs = [];
   mouthSync?.dispose();
   mouthSync = null;
+  speakingMotion?.dispose();
+  speakingMotion = null;
   focus?.dispose();
   focus = null;
   interaction?.dispose();
