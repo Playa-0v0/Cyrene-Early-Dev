@@ -1892,6 +1892,7 @@ function initGameBotPluginCard(): void {
 
 initGameBotPluginCard();
 void loadConfig();
+void loadGeneralSettings();
 // 启动时读 URL hash 决定初始标签（main 通过 loadURL 带 #api 实现"切换模型按钮跳 API"）。
 // 无 hash 默认 general。
 const initialSection = (window.location.hash || "#general").slice(1);
