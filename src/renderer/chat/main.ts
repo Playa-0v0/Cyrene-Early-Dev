@@ -750,6 +750,11 @@ function render(): void {
         sticker.src = stickerSrc;
         sticker.alt = m.role === "user" ? "用户表情" : "昔涟表情";
         sticker.draggable = false;
+        // <img> 高度异步加载，render() 末尾的滚动会在图片撑开前就执行，
+        // 导致 sticker 底部被输入框挡住。加载完成后再补一次滚到底。
+        sticker.addEventListener("load", () => {
+          messagesEl.scrollTop = messagesEl.scrollHeight;
+        });
         body.appendChild(sticker);
       }
     }
