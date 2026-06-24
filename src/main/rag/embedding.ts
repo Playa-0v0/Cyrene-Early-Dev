@@ -23,7 +23,8 @@ const LOCAL_MODELS: Record<string, ModelConfig> = {
 const DEFAULT_MODEL_KEY = "minilm";
 
 // ── 本地 Pipeline ──
-let localPipeline: any = null;
+// 每个模型 key 独立缓存 pipeline，支持多模型同时运行（minilm 管文档/记忆，bgem3 管场景识别）
+const localPipelines: Map<string, any> = new Map();
 let currentModelKey: string = DEFAULT_MODEL_KEY;
 
 const importEsm = new Function("moduleName", "return import(moduleName)") as (moduleName: string) => Promise<any>;
@@ -33,16 +34,17 @@ async function getLocalPipeline(modelKey?: string): Promise<any> {
   const config = LOCAL_MODELS[key];
   if (!config) throw new Error("Unknown embedding model: " + key);
 
-  if (!localPipeline || currentModelKey !== key) {
+  let pipe = localPipelines.get(key);
+  if (!pipe) {
     const { pipeline, env } = await importEsm("@xenova/transformers");
     env.allowLocalModels = true;
     env.allowRemoteModels = false;
     env.useBrowserCache = false;
     env.localModelPath = require("path").join(require("os").homedir(), ".cache", "huggingface");
-    localPipeline = await pipeline("feature-extraction", config.hfName);
-    currentModelKey = key;
+    pipe = await pipeline("feature-extraction", config.hfName);
+    localPipelines.set(key, pipe);
   }
-  return localPipeline;
+  return pipe;
 }
 
 export function createLocalEmbeddingProvider(modelKey?: string): EmbeddingProvider {
@@ -153,12 +155,26 @@ export function switchEmbeddingModel(modelKey: string): void {
   const config = LOCAL_MODELS[modelKey];
   if (!config) throw new Error("Unknown embedding model: " + modelKey);
   cachedProvider = null;
-  localPipeline = null;
+  localPipelines.delete(currentModelKey);
   currentModelKey = modelKey;
 }
 
 export function resetEmbeddingProvider(): void {
   cachedProvider = null;
-  localPipeline = null;
+  localPipelines.clear();
   currentModelKey = DEFAULT_MODEL_KEY;
+}
+
+// ── 场景识别专用 provider（固定 bge-m3，不受 RAG 模型切换影响）──
+let sceneProvider: EmbeddingProvider | null = null;
+
+/**
+ * 获取场景识别专用的 embedding provider（固定 bge-m3）。
+ * 和文档/记忆的 provider 独立——RAG 切换模型不影响场景识别。
+ */
+export function getSceneEmbeddingProvider(): EmbeddingProvider {
+  if (!sceneProvider) {
+    sceneProvider = createLocalEmbeddingProvider("bgem3");
+  }
+  return sceneProvider;
 }

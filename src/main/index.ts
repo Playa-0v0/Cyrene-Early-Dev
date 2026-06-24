@@ -7,7 +7,7 @@ import { pathToFileURL } from "url";
 import { IPC } from "../shared/ipc-channels";
 import { STATUS_KEYWORDS } from "./status-keywords";
 import { initRAG, buildMemoryContext, addMemory, importDocument, switchEmbeddingModel, deleteImportedDoc } from "./rag";
-import { getEmbeddingProvider } from "./rag/embedding";
+import { getEmbeddingProvider, getSceneEmbeddingProvider } from "./rag/embedding";
 import { ingestPaths } from "./rag/file-ingest";
 import { buildAlwaysOnContext, runFunctionCallingLoop, scheduleMemoryWrite } from "./orchestrator";
 import { buildToneInjection } from "./orchestrator/tone-injector";
@@ -27,6 +27,8 @@ import { getEmbeddingStatus, downloadEmbeddingModel, deleteEmbeddingModel } from
 import { BUILT_IN_STICKER_DESCRIPTIONS } from "./sticker-descriptions";
 import { buildStickerEmbeddingIndex, matchSticker } from "./sticker-embedder";
 import type { StickerEmbeddingEntry } from "./sticker-embedder";
+import { buildSceneIndex } from "./scene-embedder";
+import type { SceneIndex } from "./scene-embedder";
 import { loadUserStickerManifest, addUserSticker, deleteUserSticker, getAllStickerConfig, isStickerIdTaken, getUserStickerFilePath } from "./sticker-storage";
 import type { StickerConfigItem } from "../shared/sticker-types";
 import { initReranker } from "./rag/reranker";
@@ -295,6 +297,7 @@ let runtimeState: RuntimeState = {
     updatedAt: Date.now(),
   };
 let stickerEmbeddingIndex: StickerEmbeddingEntry[] | null = null;
+let sceneEmbeddingIndex: SceneIndex | null = null;
 const DEFAULT_MODEL_SETTINGS: ModelSettings = {
   mode: "auto",
   // 默认厂商改为 MiniMax（v1 vendor adapter 第一个落地的），DeepSeek 已从 v1 清单移除。
@@ -1296,9 +1299,15 @@ async function requestModelReply(inputMessages: unknown, styleFile = "01_default
   // /命令拦截：命中 /skill-id 则当轮 system 注入 skill 正文（user message 原样，不污染 memory）
   const skillCatalog = buildSkillCatalog(skillRegistry.getEnabled());
   const skillActivation = resolveSlashActivation(messages);
-  // 语气硬注入：检测场景，强制注入语气规则 + 场景参考样本（必须遵守，优先级最高）
-  const recentTexts = messages.filter(m => m.role === "user" || m.role === "assistant").slice(-6).map(m => m.content);
-  const toneInjection = buildToneInjection(latestUserText, recentTexts);
+  // 语气硬注入：embedding 匹配场景，强制注入语气规则 + 场景参考样本（必须遵守，优先级最高）
+  let toneInjection = "";
+  if (sceneEmbeddingIndex) {
+    try {
+      toneInjection = await buildToneInjection(latestUserText, messages, getSceneEmbeddingProvider(), sceneEmbeddingIndex);
+    } catch (err) {
+      console.warn("[Cyrene] tone injection failed:", err);
+    }
+  }
   const systemContent =
     (environmentContext ? environmentContext + "\n\n" : "") +
     (alwaysOnContext ? alwaysOnContext + "\n\n" : "") +
@@ -2629,9 +2638,15 @@ app.whenReady().then(async () => {
       // 事实层在前，人格层在后，skill 清单 + /命令激活放最后
       const skillCatalog = buildSkillCatalog(skillRegistry.getEnabled());
       const skillActivation = resolveSlashActivation(messages);
-      // 语气硬注入
-      const recentTexts = messages.filter(m => m.role === "user" || m.role === "assistant").slice(-6).map(m => m.content);
-      const toneInjection = buildToneInjection(latestUserText, recentTexts);
+      // 语气硬注入：embedding 匹配场景
+      let toneInjection = "";
+      if (sceneEmbeddingIndex) {
+        try {
+          toneInjection = await buildToneInjection(latestUserText, messages, getSceneEmbeddingProvider(), sceneEmbeddingIndex);
+        } catch (err) {
+          console.warn("[Cyrene] tone injection failed:", err);
+        }
+      }
       // 附件内容（本轮临时注入，不存历史）
       let attachmentContext = "";
       const atts = input.attachments;
@@ -2745,6 +2760,15 @@ app.whenReady().then(async () => {
     }
   } catch (err) {
     console.error("[stickers] embedding index init FAILED:", err);
+  }
+
+  // 初始化场景 embedding 索引（语气注入用，替代关键词匹配）
+  // 用 bge-m3（多语言，中文效果好），和文档/记忆的 minilm 独立
+  try {
+    const sceneProvider = getSceneEmbeddingProvider();
+    sceneEmbeddingIndex = await buildSceneIndex(sceneProvider);
+  } catch (err) {
+    console.error("[scene] embedding index init FAILED:", err);
   }
 
   schedulerEngine.start();

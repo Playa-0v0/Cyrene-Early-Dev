@@ -1,4 +1,4 @@
-// 语气注入器 —— 硬约束：代码检测场景，强制注入语气规则到 system prompt。
+// 语气注入器 —— 硬约束：embedding 匹配场景，强制注入语气规则到 system prompt。
 // 不依赖 LLM 主动调用 invoke_skill，不需要模型判断是否需要查风格。
 // 注入的语气规则以「必须遵守」的指令形式出现在 system prompt 末尾。
 // 场景样本仅作参考，模型按昔涟的语气表达相同意思。
@@ -6,40 +6,22 @@
 import * as fs from "fs";
 import * as path from "path";
 import { app } from "electron";
+import { matchScene, type SceneId, type SceneIndex } from "../scene-embedder";
+import { type EmbeddingProvider } from "../rag/embedding";
 
-type SceneId =
-  | "greeting"
-  | "comfort"
-  | "encourage"
-  | "praised"
-  | "playful"
-  | "farewell"
-  | "boundary"
-  | "gratitude"
-  | "concern"
-  | ""; // 无匹配时
+/** 场景匹配阈值——贴着 farewell 最低分 0.722 收紧，所有正确命中都能过。 */
+const SCENE_MATCH_THRESHOLD = 0.72;
 
-/** 检测场景：基于用户当前输入 + 最近对话上下文的关键词匹配。 */
-function detectScene(userInput: string, recentMessages: string[]): SceneId {
-  const text = [userInput, ...recentMessages.slice(-4)].join("\n").toLowerCase();
-
-  // 优先级从高到低
-  if (matchAny(text, ["谢谢", "感谢", "多谢", "感激"])) return "gratitude";
-  if (matchAny(text, ["晚安", "拜拜", "再见", "走了", "下次", "道别", "告别"])) return "farewell";
-  if (matchAny(text, ["难过", "伤心", "累", "疲惫", "烦躁", "焦虑", "压力", "迷茫", "孤独", "寂寞", "emo"])) return "comfort";
-  if (matchAny(text, ["害怕", "怕", "不敢", "不确定", "坚持不住", "撑不住", "做不到", "没信心"])) return "encourage";
-  if (matchAny(text, ["夸", "厉害", "好看", "漂亮", "可爱", "喜欢", "棒", "优秀", "真好"])) return "praised";
-  if (matchAny(text, ["哈哈", "嘻嘻", "开玩笑", "笑死", "有趣", "幽默"])) return "playful";
-  if (matchAny(text, ["关心", "注意", "担心", "还好吗", "没事吧", "怎么样"])) return "concern";
-  if (matchAny(text, ["不知道", "未来", "答案", "什么意思", "为什么", "你是"])) return "boundary";
-  if (matchAny(text, ["嗨", "你好", "在吗", "hi", "hello"])) return "greeting";
-
-  return "";
-}
-
-function matchAny(text: string, keywords: string[]): boolean {
-  return keywords.some((k) => text.includes(k));
-}
+/** 每个场景的展示名（注入 prompt 时用）。 */
+const SCENE_NAMES: Record<string, string> = {
+  greeting: "打招呼/相遇",
+  comfort: "安慰/陪伴",
+  praised: "被夸奖/被喜欢",
+  playful: "轻松俏皮",
+  farewell: "告别/道别",
+  concern: "表达关心",
+  daily: "日常闲聊",
+};
 
 // 通用语气规则（无论哪个场景都注入）—— 从 prompts/tone-rules.md 读取
 const DEFAULT_RULES = `## 句式禁止
@@ -109,33 +91,39 @@ function buildSampleInstruction(samples: string, scene: SceneId): string {
     .map((l) => l.replace(/^> 「/, "").replace(/」$/, ""))
     .filter(Boolean);
   if (lines.length === 0) return "";
-  return `\n### 当前场景：${sceneName(scene)}\n参考昔涟在这个场景下的表达方式（不要原封不动复述，按她的语气表达同样的意思）：\n` + lines.map((l) => `- ${l}`).join("\n");
-}
-
-function sceneName(s: SceneId): string {
-  const names: Record<string, string> = {
-    greeting: "打招呼/相遇",
-    comfort: "安慰/陪伴",
-    encourage: "鼓励/支持",
-    praised: "被夸奖/被喜欢",
-    playful: "轻松俏皮",
-    farewell: "告别/道别",
-    boundary: "边界/不知道",
-    gratitude: "表达感谢",
-    concern: "表达关心",
-  };
-  return names[s] || s;
+  return `\n### 当前场景：${SCENE_NAMES[scene] || scene}\n参考昔涟在这个场景下的表达方式（不要原封不动复述，按她的语气表达同样的意思）：\n` + lines.map((l) => `- ${l}`).join("\n");
 }
 
 /**
  * 主入口：构建语气注入段。
+ *
  * @param userInput 用户本轮输入
- * @param recentMessages 最近几轮对话的文本
+ * @param recentMessages 最近几轮消息（{ role, content }[]），用于拼上下文（方案 A）
+ * @param provider embedding provider
+ * @param sceneIndex 启动时建好的场景索引
  * @returns 注入 system prompt 末尾的不可选指令段（空串表示无匹配场景）
  */
-export function buildToneInjection(userInput: string, recentMessages: string[]): string {
-  const scene = detectScene(userInput, recentMessages);
-  if (!scene) return "";
+export async function buildToneInjection(
+  userInput: string,
+  recentMessages: Array<{ role: string; content: string }>,
+  provider: EmbeddingProvider,
+  sceneIndex: SceneIndex,
+): Promise<string> {
+  // embedding 匹配场景（拼最近 3 轮上下文）
+  const match = await matchScene(
+    userInput,
+    provider,
+    sceneIndex,
+    SCENE_MATCH_THRESHOLD,
+    recentMessages,
+  );
+  const scene: SceneId = match?.scene ?? "";
+  if (!scene) {
+    // 没命中任何场景，只注入通用语气规则
+    return loadToneRules();
+  }
+
+  console.log("[ToneInjector] 场景命中: " + scene + " (score=" + (match?.score.toFixed(3) ?? "?") + ")");
 
   const samples = loadSceneSamples(scene);
   const sampleInstruction = buildSampleInstruction(samples, scene);

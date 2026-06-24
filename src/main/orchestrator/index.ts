@@ -1,15 +1,11 @@
 // Orchestrator — unified entry point
 // Function Calling 模式下，Orchestrator 只负责构建 always-on 上下文（世界书 + L0/L1）
 // 工具的选择和执行由 function-calling.ts 的 runFunctionCallingLoop 处理
-import { RuleContext } from "./types";
 import { searchWorldbook, getPermanentWorldbookEntries, getAllWorldbookTriggerWords } from "../rag";
 import { memoryStore } from "../memory/memory-store";
-import { memoryJudge } from "../memory/memory-judge";
-import { memoryManager } from "../memory/memory-manager";
 import { toolRegistry } from "./tool-registry";
 
-export { RuleContext, Rule, ToolCallResult } from "./types";
-export { registerRule, clearRules } from "./rule-router";
+export { ToolCallResult } from "./types";
 export { scheduleMemoryWrite } from "./context-builder";
 export { buildToneInjection } from "./tone-injector";
 export { runFunctionCallingLoop } from "./function-calling";
