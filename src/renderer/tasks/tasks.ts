@@ -1,35 +1,301 @@
 import "../ui/base.css";
 import "./tasks.css";
 
-/**
- * 任务窗口是纯展示：标题栏的最小化/关闭是窗口级控件，
- * 不算对任务数据的交互，所以保留；正文区完全只读。
- */
-interface TasksApi {
-  minimize: () => void;
-  close: () => void;
+// ── 类型（后端契约） ──────────────────────────────────────────
+interface TokenDayData {
+  date: string;       // "06-24"
+  weekday: string;   // "周三"
+  input: number;
+  output: number;
+  hit: number;
+  miss: number;
+  requests: number;
 }
 
+interface ScheduleConfig {
+  kind: "once" | "daily" | "weekly" | "interval";
+  runAt?: string;
+  timeOfDay?: string;
+  dayOfWeek?: number;
+  every?: number;
+  unit?: "minutes" | "hours";
+}
+
+interface ScheduledTask {
+  id: string;
+  title: string;
+  prompt: string;
+  enabled: boolean;
+  schedule: ScheduleConfig;
+  nextFireAt: string | null;
+  lastFiredAt?: string;
+}
+
+// ── preload 桥接（全部由共享 preload 暴露） ─────────────────
 declare global {
   interface Window {
-    tasks?: TasksApi;
+    tasks?: { minimize: () => void; close: () => void };
+    tokenUsage?: { get: (days: number) => Promise<TokenDayData[]> };
+    cyreneScheduler?: { list: () => Promise<{ ok: boolean; value?: ScheduledTask[]; error?: string }> };
+    schedulerEvents?: { onEvent: (cb: (event: unknown) => void) => () => void };
+    sidebar?: { openSettings: (section?: string) => void };
   }
 }
 
+// 安全兜底：preload 未注入时不崩
 if (!window.tasks) {
-  (window as unknown as { tasks: TasksApi }).tasks = {
+  (window as unknown as { tasks: { minimize: () => void; close: () => void } }).tasks = {
     minimize: () => {},
     close: () => {},
   };
 }
 
-const minBtn = document.getElementById("min-btn") as HTMLButtonElement;
-const closeBtn = document.getElementById("close-btn") as HTMLButtonElement;
+// ── 常量 ──────────────────────────────────────────────────────
+const WEEKDAYS = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+const CHART_HEIGHT_PX = 76;          // mini-chart 可用柱高（与 settings 页一致）
+const MIN_BAR_PX = 6;                 // 无数据柱最低高度，避免完全消失
+const TASK_REFRESH_MS = 30_000;       // 任务列表轮询
+const TOKEN_REFRESH_MS = 60_000;      // token 用量轮询
 
-minBtn.addEventListener("click", () => {
-  window.tasks?.minimize();
-});
+// ── DOM ───────────────────────────────────────────────────────
+const $ = <T extends HTMLElement = HTMLElement>(id: string): T | null =>
+  document.getElementById(id) as T | null;
 
-closeBtn.addEventListener("click", () => {
-  window.tasks?.close();
-});
+const minBtn = $("min-btn") as HTMLButtonElement;
+const closeBtn = $("close-btn") as HTMLButtonElement;
+const settingsBtn = $("settings-btn") as HTMLButtonElement;
+
+minBtn?.addEventListener("click", () => window.tasks?.minimize());
+closeBtn?.addEventListener("click", () => window.tasks?.close());
+settingsBtn?.addEventListener("click", () => window.sidebar?.openSettings("tasks"));
+
+// ── 工具函数 ──────────────────────────────────────────────────
+/** 生成 YYYY-MM-DD（本地时区），用作数据键 */
+function dateKey(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+/** token 数字短格式：1240 -> 1.2K */
+function formatTokenShort(n: number): string {
+  if (n >= 1000) return (n / 1000).toFixed(1) + "K";
+  return String(Math.round(n));
+}
+
+/** 千分位格式：1280 -> 1,280 */
+function formatThousands(n: number): string {
+  return Math.round(n).toLocaleString("en-US");
+}
+
+// ── 渲染：日期 ────────────────────────────────────────────────
+function renderDate(): void {
+  const now = new Date();
+  const el = $("schedule-date");
+  if (!el) return;
+  el.textContent = `📅 ${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日 · ${WEEKDAYS[now.getDay()]}`;
+}
+
+// ── 渲染：今日 Token 用量 + 进度条（拉满+电流感） ────────────
+function renderTodayUsage(data7: TokenDayData[]): void {
+  const todayKey = dateKey(new Date()).slice(5); // "06-24"
+  const today = data7.find(d => d.date === todayKey);
+  const todayTotal = (today?.input ?? 0) + (today?.output ?? 0);
+
+  const numEl = $("usage-number");
+  if (numEl) numEl.textContent = formatThousands(todayTotal);
+
+  // 进度条永远拉满（无预算概念），电流感由 CSS 动画驱动
+  const fill = $("usage-bar__fill");
+  if (fill) fill.style.width = "100%";
+}
+
+// ── 渲染：7 天柱状图（周日起算，今日之后留空柱） ────────────
+function renderWeeklyBars(data7: TokenDayData[]): void {
+  const container = $("mini-chart__bars");
+  if (!container) return;
+  container.innerHTML = "";
+
+  const now = new Date();
+  const todayDow = now.getDay(); // 0=周日 ... 6=周六
+  const weekSunday = new Date(now);
+  weekSunday.setDate(now.getDate() - todayDow); // 本周日
+
+  // 按日期键建索引：06-24 -> TokenDayData
+  const byDate = new Map<string, TokenDayData>();
+  for (const d of data7) byDate.set(d.date, d);
+
+  // 本周 7 天（周日→周六），收集已有数据
+  const weekSlots: Array<{ date: string; weekday: string; total: number | null; isToday: boolean; isFuture: boolean }> = [];
+  for (let i = 0; i < 7; i++) {
+    const day = new Date(weekSunday);
+    day.setDate(weekSunday.getDate() + i);
+    const key = `${String(day.getMonth() + 1).padStart(2, "0")}-${String(day.getDate()).padStart(2, "0")}`;
+    const data = byDate.get(key);
+    const isToday = i === todayDow;
+    const isFuture = i > todayDow;
+    weekSlots.push({
+      date: key,
+      weekday: WEEKDAYS[day.getDay()],
+      total: data && !isFuture ? (data.input + data.output) : (isFuture ? null : 0),
+      isToday,
+      isFuture,
+    });
+  }
+
+  // 峰值（仅在已发生的天里找）
+  const pastSlots = weekSlots.filter(s => !s.isFuture);
+  const maxVal = Math.max(...pastSlots.map(s => s.total ?? 0), 1);
+  // 直接拿到峰值 slot 对象，避免跨数组下标比较出错
+  let peakSlot: typeof weekSlots[number] | null = null;
+  for (const s of pastSlots) {
+    if (!peakSlot || (s.total ?? 0) > (peakSlot.total ?? 0)) peakSlot = s;
+  }
+
+  for (const slot of weekSlots) {
+    const bar = document.createElement("div");
+    bar.className = "chart-bar";
+
+    if (slot.isFuture) {
+      bar.classList.add("chart-bar--future");
+    } else {
+      bar.classList.add("chart-bar--has");
+      const total = slot.total ?? 0;
+      const barH = Math.max(MIN_BAR_PX, Math.round((total / maxVal) * CHART_HEIGHT_PX));
+      const fill = document.createElement("div");
+      fill.className = "chart-bar__fill";
+      fill.style.height = barH + "px";
+      bar.appendChild(fill);
+    }
+
+    const label = document.createElement("span");
+    label.textContent = slot.weekday;
+    bar.appendChild(label);
+
+    container.appendChild(bar);
+  }
+
+  // 日均（仅已发生天）+ 峰值说明
+  const avgEl = $("mini-chart__avg");
+  const noteEl = $("schedule-note");
+  const pastTotals = pastSlots.map(s => s.total ?? 0);
+  const sum = pastTotals.reduce((a, b) => a + b, 0);
+  const avg = pastSlots.length ? Math.round(sum / pastSlots.length) : 0;
+  if (avgEl) {
+    const span = avgEl.querySelector("span");
+    if (span) span.textContent = `日均 ${formatTokenShort(avg)}`;
+  }
+  if (noteEl && peakSlot) {
+    noteEl.textContent = `📊 本周 Token 消耗趋势 ｜ 峰值 ${formatTokenShort(peakSlot.total ?? 0)}（${peakSlot.weekday}）`;
+  }
+}
+
+// ── 渲染：今日定时任务列表 ────────────────────────────────────
+function renderTasks(tasks: ScheduledTask[]): void {
+  const listEl = $("task-list");
+  const countEl = $("schedule-count");
+  if (!listEl) return;
+
+  const todayStr = new Date().toDateString();
+  const now = Date.now();
+  const todayRemaining = tasks
+    .filter(t => t.enabled && t.nextFireAt)
+    .filter(t => new Date(t.nextFireAt!).toDateString() === todayStr)
+    .filter(t => new Date(t.nextFireAt!).getTime() >= now);
+  const todayTasks = todayRemaining
+    .sort((a, b) => String(a.nextFireAt).localeCompare(String(b.nextFireAt)))
+    .slice(0, 3);
+
+  if (countEl) countEl.textContent = String(todayRemaining.length);
+
+  listEl.innerHTML = "";
+  if (todayTasks.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "task-empty";
+    empty.textContent = "今日暂无定时任务";
+    listEl.appendChild(empty);
+    return;
+  }
+
+  for (const task of todayTasks) {
+    const item = document.createElement("div");
+    item.className = "task-item";
+
+    const fire = new Date(task.nextFireAt!);
+    const hh = String(fire.getHours()).padStart(2, "0");
+    const mm = String(fire.getMinutes()).padStart(2, "0");
+    // 一次性任务带日期，周期任务只显示时间
+    const isOnce = task.schedule.kind === "once";
+    const timeText = isOnce
+      ? `${String(fire.getMonth() + 1).padStart(2, "0")}-${String(fire.getDate()).padStart(2, "0")} ${hh}:${mm}`
+      : `${hh}:${mm}`;
+
+    const time = document.createElement("div");
+    time.className = "task-time";
+    time.textContent = timeText;
+
+    const desc = document.createElement("div");
+    desc.className = "task-desc";
+    desc.textContent = task.title;
+
+    item.appendChild(time);
+    item.appendChild(desc);
+    listEl.appendChild(item);
+  }
+}
+
+// ── 数据拉取 ──────────────────────────────────────────────────
+async function fetchTokenData(): Promise<TokenDayData[]> {
+  try {
+    return (await window.tokenUsage?.get(7)) ?? [];
+  } catch (err) {
+    console.warn("[tasks] 拉取 Token 用量失败:", err);
+    return [];
+  }
+}
+
+async function fetchTasks(): Promise<ScheduledTask[]> {
+  try {
+    const res = await window.cyreneScheduler?.list();
+    if (res?.ok && Array.isArray(res.value)) return res.value;
+    return [];
+  } catch (err) {
+    console.warn("[tasks] 拉取定时任务失败:", err);
+    return [];
+  }
+}
+
+// ── 刷新（节流合并） ──────────────────────────────────────────
+let refreshPending = false;
+async function refreshAll(): Promise<void> {
+  if (refreshPending) return;
+  refreshPending = true;
+  try {
+    const [data7, tasks] = await Promise.all([fetchTokenData(), fetchTasks()]);
+    renderTodayUsage(data7);
+    renderWeeklyBars(data7);
+    renderTasks(tasks);
+  } finally {
+    refreshPending = false;
+  }
+}
+
+// ── 启动 ──────────────────────────────────────────────────────
+function init(): void {
+  renderDate();
+  void refreshAll();
+
+  // 轮询：任务列表每 30s，token 每 60s
+  setInterval(() => void fetchTasks().then(renderTasks), TASK_REFRESH_MS);
+  setInterval(() => {
+    void fetchTokenData().then(data => {
+      renderTodayUsage(data);
+      renderWeeklyBars(data);
+    });
+  }, TOKEN_REFRESH_MS);
+
+  // 事件驱动：scheduler 触发后立即刷新（用量和任务都会变）
+  window.schedulerEvents?.onEvent((_event) => {
+    void refreshAll();
+  });
+}
+
+init();

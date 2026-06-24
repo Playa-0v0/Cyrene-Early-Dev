@@ -143,7 +143,7 @@ export function getAllStickerConfig(
       src: getLocalStickerUrl(meta.file),
       enabled: stickerSettings[id] !== false,
       builtIn: false,
-      description: meta.description,
+      description: meta.phrases.length > 0 ? meta.phrases.join("，") : meta.description,
     });
   }
 

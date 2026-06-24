@@ -4,10 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>昔涟 · 今日日程</title>
-  <script type="module" crossorigin src="../assets/tasks-t1kNeXV2.js"></script>
+  <script type="module" crossorigin src="../assets/tasks-M1Aa4Kkh.js"></script>
   <link rel="modulepreload" crossorigin href="../assets/base-CVzNOcnc.js">
   <link rel="stylesheet" crossorigin href="../assets/base-BTHABN_A.css">
-  <link rel="stylesheet" crossorigin href="../assets/tasks-Bp8eZ_ue.css">
+  <link rel="stylesheet" crossorigin href="../assets/tasks-DTbmd_0s.css">
 </head>
 <body>
   <div class="tasks">
@@ -34,63 +34,42 @@
       <section class="schedule-panel" aria-label="今日日程概览">
 
         <div class="schedule-count">
-          <span class="schedule-count__value">6</span>
+          <span class="schedule-count__value" id="schedule-count">0</span>
           <span class="schedule-count__unit">个待办日程</span>
         </div>
 
-        <div class="schedule-date">📅 2026年6月12日 · 周四</div>
+        <div class="schedule-date" id="schedule-date">📅 —</div>
 
         <div class="schedule-usage">
           <div class="usage-info">
             <span class="usage-label">⚡ Token 用量</span>
-            <span class="usage-number">2,470</span>
-            <span class="usage-total">/ 5,000</span>
+            <span class="usage-number" id="usage-number">0</span>
           </div>
           <div class="usage-bar" aria-hidden="true">
-            <div class="usage-bar__fill" style="width: 49.4%;"></div>
+            <div class="usage-bar__fill" id="usage-bar__fill"></div>
           </div>
         </div>
 
         <div class="mini-chart" aria-hidden="true">
-          <div class="mini-chart__avg"><span>日均 2.8K</span></div>
-          <div class="mini-chart__bars">
-            <div class="chart-bar chart-bar--mo"><span>Mo</span></div>
-            <div class="chart-bar chart-bar--tu chart-bar--peak"><span>Tu</span></div>
-            <div class="chart-bar chart-bar--we"><span>We</span></div>
-            <div class="chart-bar chart-bar--th"><span>Th</span></div>
-            <div class="chart-bar chart-bar--fr"><span>Fr</span></div>
-            <div class="chart-bar chart-bar--sa"><span>Sa</span></div>
-            <div class="chart-bar chart-bar--su"><span>Su</span></div>
-          </div>
+          <div class="mini-chart__avg" id="mini-chart__avg"><span>日均 0</span></div>
+          <div class="mini-chart__bars" id="mini-chart__bars"></div>
         </div>
 
-        <div class="schedule-note">📊 本周 Token 消耗趋势 ｜ 峰值 4.8K（周二）</div>
+        <div class="schedule-note" id="schedule-note">📊 本周 Token 消耗趋势</div>
 
         <section class="task-section" aria-label="定时任务列表">
           <div class="task-section__header">⏰ 定时任务</div>
-          <div class="task-list">
-            <div class="task-item">
-              <div class="task-time">09:30 - 10:15</div>
-              <div class="task-desc">✨ 团队站会 + 同步本周里程碑</div>
-            </div>
-            <div class="task-item">
-              <div class="task-time">14:00 - 15:30</div>
-              <div class="task-desc">⚙️ 后端 API 联调 & Token 优化方案讨论</div>
-            </div>
-            <div class="task-item">
-              <div class="task-time">17:00 - 17:45</div>
-              <div class="task-desc">📝 撰写周报 & 复盘今日 Token 消耗</div>
-            </div>
-          </div>
+          <div class="task-list" id="task-list"></div>
         </section>
-        <footer class="schedule-footer">
-          <button type="button" class="schedule-settings-btn" aria-label="任务设置">
-            <span class="schedule-settings-btn__icon" aria-hidden="true">⚙️</span>
-            <span>任务设置</span>
-          </button>
-          <hr class="schedule-footer__divider" />
-          <div class="schedule-footer__version">昔涟 v0.1.1</div>
-        </footer>      </section>
+      </section>
+      <footer class="schedule-footer">
+        <button type="button" class="schedule-settings-btn" id="settings-btn" aria-label="任务设置">
+          <span class="schedule-settings-btn__icon" aria-hidden="true">⚙️</span>
+          <span>任务设置</span>
+        </button>
+        <hr class="schedule-footer__divider" />
+        <div class="schedule-footer__version">昔涟 v0.1.1</div>
+      </footer>
     </main>
   </div>
 </body>
