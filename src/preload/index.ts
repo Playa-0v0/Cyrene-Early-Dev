@@ -47,7 +47,7 @@ contextBridge.exposeInMainWorld("chat", chatApi);
 // AG-UI 事件流：发起一次 agent run，通过 onEvent 回调收 AG-UI 标准事件，
 // 返回 Promise<{success,error}> 表示整轮结束。onEvent 返回的取消订阅函数用于停止监听。
 const aguiApi = {
-  run: (input: { messages: unknown[]; style: string; sessionId?: string }) =>
+  run: (input: { messages: unknown[]; style: string; sessionId?: string; attachments?: { name: string; text: string }[] }) =>
     ipcRenderer.invoke(IPC.AGUI_RUN, input) as Promise<{ success: boolean; error?: string }>,
   onEvent: (callback: (event: unknown) => void) => {
     const listener = (_e: unknown, event: unknown) => {
@@ -64,6 +64,22 @@ const aguiApi = {
 };
 
 contextBridge.exposeInMainWorld("agui", aguiApi);
+
+const schedulerEventsApi = {
+  onEvent: (callback: (event: unknown) => void) => {
+    const listener = (_e: unknown, event: unknown) => {
+      try {
+        callback(event);
+      } catch (err) {
+        console.error("[Preload] scheduler listener抛错:", err);
+      }
+    };
+    ipcRenderer.on(IPC.SCHEDULER_EVENT, listener);
+    return () => ipcRenderer.off(IPC.SCHEDULER_EVENT, listener);
+  },
+};
+
+contextBridge.exposeInMainWorld("schedulerEvents", schedulerEventsApi);
 
 const sidebarApi = {
   minimize: () => ipcRenderer.send(IPC.SIDEBAR_MINIMIZE),
@@ -103,6 +119,8 @@ const settingsApi = {
   setPetVisible: (value: boolean) => ipcRenderer.send(IPC.SETTINGS_SET_PET_VISIBLE, value),
   previewRuntimeSync: (value: "off" | "local" | "llm") => ipcRenderer.send(IPC.SETTINGS_PREVIEW_RUNTIME_SYNC, value),
   openStickerManager: () => ipcRenderer.invoke(IPC.SETTINGS_OPEN_STICKER_MANAGER),
+  stickerPickFile: () => ipcRenderer.invoke(IPC.STICKERS_PICK_FILE),
+  stickerAdd: (payload: { sourcePath: string; id: string; description: string; phrases: string[] }) => ipcRenderer.invoke(IPC.STICKERS_ADD, payload),
   getEmbeddingStatus: () => ipcRenderer.invoke(IPC.EMBEDDING_GET_STATUS),
   downloadEmbeddingModel: (model: string, mirror: string) => ipcRenderer.invoke(IPC.EMBEDDING_DOWNLOAD, { model, mirror }),
   deleteEmbeddingModel: (model: string) => ipcRenderer.invoke(IPC.EMBEDDING_DELETE, { model }),
@@ -122,12 +140,29 @@ const settingsApi = {
 
 contextBridge.exposeInMainWorld("settings", settingsApi);
 
-const stickerManagerApi = {
-  minimize: () => ipcRenderer.send(IPC.STICKERS_MINIMIZE),
-  close: () => ipcRenderer.send(IPC.STICKERS_CLOSE),
-  getConfig: () => ipcRenderer.invoke(IPC.STICKERS_GET_CONFIG),
-  setEnabled: (id: string, enabled: boolean) => ipcRenderer.invoke(IPC.STICKERS_SET_ENABLED, { id, enabled }),
+const schedulerApi = {
+  list: () => ipcRenderer.invoke(IPC.SCHEDULER_LIST),
+  add: (input: unknown) => ipcRenderer.invoke(IPC.SCHEDULER_ADD, input),
+  update: (id: string, patch: unknown) => ipcRenderer.invoke(IPC.SCHEDULER_UPDATE, id, patch),
+  delete: (id: string) => ipcRenderer.invoke(IPC.SCHEDULER_DELETE, id),
+  toggle: (id: string, enabled: boolean) => ipcRenderer.invoke(IPC.SCHEDULER_TOGGLE, id, enabled),
+  fireNow: (id: string) => ipcRenderer.invoke(IPC.SCHEDULER_FIRE_NOW, id),
+  getHistory: (taskId: string, limit?: number) => ipcRenderer.invoke(IPC.SCHEDULER_GET_HISTORY, taskId, limit),
+  getTools: () => ipcRenderer.invoke(IPC.SCHEDULER_GET_TOOLS),
 };
+
+contextBridge.exposeInMainWorld("cyreneScheduler", schedulerApi);
+
+const stickerManagerApi = {
+	  minimize: () => ipcRenderer.send(IPC.STICKERS_MINIMIZE),
+	  close: () => ipcRenderer.send(IPC.STICKERS_CLOSE),
+	  getConfig: () => ipcRenderer.invoke(IPC.STICKERS_GET_CONFIG),
+	  setEnabled: (id: string, enabled: boolean) => ipcRenderer.invoke(IPC.STICKERS_SET_ENABLED, { id, enabled }),
+	  pickFile: () => ipcRenderer.invoke(IPC.STICKERS_PICK_FILE),
+	  addSticker: (payload: { sourcePath: string; id: string; description: string; phrases: string[] }) =>
+	    ipcRenderer.invoke(IPC.STICKERS_ADD, payload),
+	  deleteSticker: (id: string) => ipcRenderer.invoke(IPC.STICKERS_DELETE, id),
+	};
 
 contextBridge.exposeInMainWorld("stickerManager", stickerManagerApi);
 

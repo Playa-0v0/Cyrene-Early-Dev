@@ -44,6 +44,8 @@ export interface CyreneRunOptions {
   /** 已经拼好 system prompt 的完整消息（含 system + user/assistant）。 */
   messages: ChatMessage[];
   timeoutMs: number;
+  /** 可选：本次 run 的工具集合。未传时使用当前所有已启用工具。 */
+  tools?: ToolDefinition[];
 }
 
 /** FC 循环最终结果（供桥层做副作用用）。 */
@@ -54,8 +56,8 @@ export interface CyreneRunResult {
 }
 
 /** 把 ToolRegistry 里的工具转成统一 ToolSpec（与 wire 格式解耦）。 */
-function buildToolSpecs(): ToolSpec[] {
-  return toolRegistry.getEnabledTools().map(t => ({
+function buildToolSpecs(tools: ToolDefinition[] = toolRegistry.getEnabledTools()): ToolSpec[] {
+  return tools.filter(t => t.enabled).map(t => ({
     name: t.id,
     description: t.description,
     parameters: {
@@ -104,7 +106,9 @@ async function runFcLoopWithEvents(
 ): Promise<CyreneRunResult> {
   const { settings, messages, timeoutMs } = options;
   const adapter = getAdapter(settings.provider);
-  const tools = buildToolSpecs();
+  const runTools = options.tools ?? toolRegistry.getEnabledTools();
+  const tools = buildToolSpecs(runTools);
+  const runnableToolIds = new Set(runTools.filter(t => t.enabled).map(t => t.id));
   const allToolResults: ToolCallResult[] = [];
   const startTime = Date.now();
   let accInput = 0;
@@ -188,12 +192,12 @@ async function runFcLoopWithEvents(
       const execResults: ToolExecutionResult[] = [];
       for (const tc of chat.toolCalls) {
         const toolCallId = tc.id || `${tc.name}-${Date.now()}`;
-        const tool = toolRegistry.getById(tc.name);
+        const displayTool = toolRegistry.getById(tc.name);
         // 工具调用开始事件（toolCallName 用显示名，找不到工具则用 id 兜底）
         observer.next({
           type: EventType.TOOL_CALL_START,
           toolCallId,
-          toolCallName: tool?.name ?? tc.name,
+          toolCallName: displayTool?.name ?? tc.name,
         });
 
         let args: Record<string, unknown> = {};
@@ -206,6 +210,7 @@ async function runFcLoopWithEvents(
         console.log(LOG_PREFIX, "执行工具:", tc.name, JSON.stringify(args).slice(0, 200));
 
         let output: string;
+        const tool = runnableToolIds.has(tc.name) ? toolRegistry.getById(tc.name) : undefined;
         if (!tool || !tool.enabled) {
           output = "[错误] 工具不可用: " + tc.name;
           console.warn(LOG_PREFIX, output);

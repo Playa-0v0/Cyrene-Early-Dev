@@ -1,0 +1,24 @@
+[    1040ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ https://wiki.biligame.com/sr/%E8%90%BD%E8%8B%B1%E5%95%8A%EF%BC%8C%E6%AE%8B%E8%8A%B3%E7%BA%B7%E9%A3%9E%E7%95%99%E5%BD%92%E8%BA%9D:0
+[    1172ms] [LOG] undefined @ https://wiki.biligame.com/sr/load.php?lang=zh-cn&modules=jquery%7Cmediawiki.extra.bili&skin=vector&version=n4cjy:1012
+[    1197ms] [LOG] loaded ReporterPb - metaScript @ https://wiki.biligame.com/sr/load.php?lang=zh-cn&modules=jquery%7Cmediawiki.extra.bili&skin=vector&version=n4cjy:1008
+[    1709ms] [LOG] Start report... @ https://wiki.biligame.com/sr/load.php?lang=zh-cn&modules=jquery%7Cmediawiki.extra.bili&skin=vector&version=n4cjy:1008
+[    1710ms] [LOG] Report PV @ https://wiki.biligame.com/sr/load.php?lang=zh-cn&modules=jquery%7Cmediawiki.extra.bili&skin=vector&version=n4cjy:1008
+[    1710ms] TypeError: window.onLoginInfoLoaded is not a function
+    at https://wiki.biligame.com/sr/load.php?lang=zh-cn&modules=jquery%7Cmediawiki.extra.bili&skin=vector&version=n4cjy:1009:600
+[    2036ms] [LOG] widget:Bugfix 250107.1版载入 @ https://wiki.biligame.com/sr/%E8%90%BD%E8%8B%B1%E5%95%8A%EF%BC%8C%E6%AE%8B%E8%8A%B3%E7%BA%B7%E9%A3%9E%E7%95%99%E5%BD%92%E8%BA%9D:1694
+[    2086ms] [LOG] Exception in module-execute in module ext.flowthread: @ https://wiki.biligame.com/sr/load.php?lang=zh-cn&modules=startup&only=scripts&raw=1&skin=vector:0
+[    2086ms] [WARNING] TypeError: Cannot read properties of null (reading 'FlowThreadAdmin')
+    at mw.loader.implement.css (<anonymous>:1:226)
+    at runScript (https://wiki.biligame.com/sr/load.php?lang=zh-cn&modules=startup&only=scripts&raw=1&skin=vector:12:318)
+    at Array.<anonymous> (https://wiki.biligame.com/sr/load.php?lang=zh-cn&modules=startup&only=scripts&raw=1&skin=vector:13:232)
+    at flushCssBuffer (https://wiki.biligame.com/sr/load.php?lang=zh-cn&modules=startup&only=scripts&raw=1&skin=vector:4:935) @ https://wiki.biligame.com/sr/load.php?lang=zh-cn&modules=startup&only=scripts&raw=1&skin=vector:0
+[    2399ms] [LOG] %c BwikiTune %c https://wiki.biligame.com/tools/BwikiTune color: #fff; padding: 5px 0; background: #aaa; padding: 5px 5px 5px 0; background: #fff; @ https://wiki.biligame.com/tools/index.php?title=MediaWiki:BwikiTune.js&action=raw&ctype=text/javascript:4
+[    2840ms] [LOG] %c 动态加载 %c v.0.6 https://wiki.biligame.com/tools/?curid=2366 background: #4a5366;padding:4px 8px;color:#fff  background: #d3bc8e;padding:4px 8px; @ https://wiki.biligame.com/wiki/MediaWiki:Asyncloader.js?action=raw&ctype=text/javascript:0
+[    3462ms] [LOG] %c BilibiliVideo %c https://wiki.biligame.com/wiki/?curid=2342 color: #fff; padding: 5px 0; background: #9dbafc; padding: 5px 5px 5px 0; background: #e5e5ff; @ https://wiki.biligame.com/wiki/User:123855714/BilibiliVideo.js?action=raw&ctype=text/javascript&r=6:52
+[    3939ms] [LOG] %c 评论区头像框 %c v_bate0.19 https://wiki.biligame.com/tools/AvatarFrame background: #4a5366;padding:4px 8px;color:#fff  background: #d3bc8e;padding:4px 8px; @ https://wiki.biligame.com/tools/MediaWiki:AvatarFrame.js?action=raw&ctype=text/javascript:413
+[    4946ms] [LOG] 评论区头衔：寻找评论区框架 1次。 @ https://wiki.biligame.com/tools/MediaWiki:AvatarFrame.js?action=raw&ctype=text/javascript:111
+[    5954ms] [LOG] 评论区头衔：寻找评论区框架 2次。 @ https://wiki.biligame.com/tools/MediaWiki:AvatarFrame.js?action=raw&ctype=text/javascript:111
+[    6944ms] [LOG] 评论区头衔：寻找评论区框架 3次。 @ https://wiki.biligame.com/tools/MediaWiki:AvatarFrame.js?action=raw&ctype=text/javascript:111
+[    7943ms] [LOG] 评论区头衔：寻找评论区框架 4次。 @ https://wiki.biligame.com/tools/MediaWiki:AvatarFrame.js?action=raw&ctype=text/javascript:111
+[    8066ms] [WARNING] The resource https://wiki.biligame.com/resources/assets/wiki.png was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ https://wiki.biligame.com/sr/%E8%90%BD%E8%8B%B1%E5%95%8A%EF%BC%8C%E6%AE%8B%E8%8A%B3%E7%BA%B7%E9%A3%9E%E7%95%99%E5%BD%92%E8%BA%9D:0
+[    8942ms] [LOG] 评论区头衔：搜索评论区，超过最大等待时间，放弃。 @ https://wiki.biligame.com/tools/MediaWiki:AvatarFrame.js?action=raw&ctype=text/javascript:107

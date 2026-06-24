@@ -137,19 +137,47 @@ export class WorldbookManager {
     return entries;
   }
 
-  // Keyword-based retrieval (pure BM25, no vector)
+  // Keyword-based retrieval with recursive triggering
   async retrieveByKeywords(userInput: string): Promise<string[]> {
-    const matched = this.entries.filter((entry) => {
-      if (!entry.enabled) return false;
-      if (entry.keywords.length === 0) return false;
-      return entry.keywords.some((kw) => userInput.includes(kw));
-    });
+    const MAX_DEPTH = 3;
+    const MAX_RESULTS = 8;
+    const selected = new Set<string>();
+    let currentInput = userInput;
 
-    if (matched.length === 0) return [];
+    for (let depth = 0; depth < MAX_DEPTH; depth++) {
+      const newlyMatched = this.entries.filter((entry) => {
+        if (!entry.enabled) return false;
+        if (entry.keywords.length === 0) return false;
+        if (selected.has(entry.id)) return false;
+        // Skip permanent entries (always already injected by getPermanentEntries)
+        if (entry.permanent) return false;
+        return entry.keywords.some((kw) => currentInput.includes(kw));
+      });
 
-    // Sort by priority (higher first), then take top 3
-    matched.sort((a, b) => b.priority - a.priority);
-    return matched.slice(0, 3).map((e) => e.content);
+      if (newlyMatched.length === 0) break;
+
+      // Sort by priority (higher first), take remaining budget
+      newlyMatched.sort((a, b) => b.priority - a.priority);
+      const budget = MAX_RESULTS - selected.size;
+      const take = newlyMatched.slice(0, budget);
+
+      for (const e of take) {
+        selected.add(e.id);
+        // Feed content back into matching for recursive triggering
+        currentInput += " " + e.content;
+      }
+
+      if (selected.size >= MAX_RESULTS) break;
+    }
+
+    if (selected.size === 0) return [];
+
+    // Re-sort by priority for final output
+    const resultEntries = this.entries
+      .filter((e) => selected.has(e.id))
+      .sort((a, b) => b.priority - a.priority);
+
+    return resultEntries.map((e) => e.content);
   }
 
   // Get permanent entries (常驻) — always included

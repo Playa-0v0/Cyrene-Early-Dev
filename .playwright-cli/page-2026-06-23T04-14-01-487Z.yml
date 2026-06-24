@@ -1,0 +1,1209 @@
+- generic [active] [ref=e1]:
+  - navigation [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - link [ref=e8] [cursor=pointer]:
+          - /url: //game.bilibili.com/?spm_id_from=555.117.0.0
+        - list [ref=e9]:
+          - listitem [ref=e10]:
+            - link " 主站" [ref=e11] [cursor=pointer]:
+              - /url: //www.bilibili.com/?spm_id_from=555.117.0.0
+              - generic [ref=e12]: 
+              - generic [ref=e13]: 主站
+          - listitem [ref=e14]:
+            - link "首页" [ref=e15] [cursor=pointer]:
+              - /url: //game.bilibili.com/platform?spm_id_from=555.117.0.0
+          - listitem [ref=e16]:
+            - link "排行榜" [ref=e17] [cursor=pointer]:
+              - /url: //game.bilibili.com/platform/ranks?spm_id_from=555.117.0.0
+          - listitem [ref=e18]:
+            - link "发现" [ref=e19] [cursor=pointer]:
+              - /url: //game.bilibili.com/platform/discover?spm_id_from=555.117.0.0
+          - listitem [ref=e20]:
+            - link "WIKI" [ref=e21] [cursor=pointer]:
+              - /url: //wiki.biligame.com/?spm_id_from=555.117.0.0
+          - listitem [ref=e22]:
+            - link "大会员礼包" [ref=e23] [cursor=pointer]:
+              - /url: //b-gift.biligame.com/?spm_id_from=555.117.0.0
+          - listitem [ref=e24]:
+            - link "充值中心" [ref=e25] [cursor=pointer]:
+              - /url: //pay.biligame.com/?spm_id_from=555.117.0.0#/?from=gc&selectedNav=pay
+          - listitem [ref=e26]:
+            - link "我的" [ref=e27] [cursor=pointer]:
+              - /url: //game.bilibili.com/platform/mine?spm_id_from=555.117.0.0
+      - generic [ref=e28]:
+        - generic [ref=e29]:
+          - textbox "搜索更多游戏&WIKI" [ref=e30]
+          - generic [ref=e32] [cursor=pointer]: 
+        - link [ref=e36] [cursor=pointer]:
+          - /url: https://passport.bilibili.com/login?gourl=https%3A%2F%2Fwiki.biligame.com%2Fsr%2F%25E8%2590%25BD%25E8%258B%25B1%25E5%2595%258A%25EF%25BC%258C%25E6%25AE%258B%25E8%258A%25B3%25E7%25BA%25B7%25E9%25A3%259E%25E7%2595%2599%25E5%25BD%2592%25E8%25BA%2585
+  - generic [ref=e37]:
+    - generic [ref=e38]:
+      - link [ref=e40] [cursor=pointer]:
+        - /url: /sr/%E9%A6%96%E9%A1%B5
+      - listitem [ref=e41]:
+        - link "我的消息" [ref=e42] [cursor=pointer]:
+          - /url: javascript:void(0);
+      - generic [ref=e43] [cursor=pointer]: 关于本站
+      - generic [ref=e45]:
+        - generic [ref=e47]:
+          - link "首页" [ref=e49] [cursor=pointer]:
+            - /url: javascript:;
+            - text: 首页
+          - link "导航" [ref=e52] [cursor=pointer]:
+            - /url: javascript:;
+            - text: 导航
+          - link "图鉴" [ref=e55] [cursor=pointer]:
+            - /url: javascript:;
+            - text: 图鉴
+          - link "地图" [ref=e58] [cursor=pointer]:
+            - /url: /sr/%E5%9C%B0%E5%9B%BE
+          - link "玩法/攻略" [ref=e60] [cursor=pointer]:
+            - /url: javascript:;
+            - text: 玩法/攻略
+          - link "扩展阅读" [ref=e63] [cursor=pointer]:
+            - /url: javascript:;
+            - text: 扩展阅读
+          - link "其他" [ref=e66] [cursor=pointer]:
+            - /url: javascript:;
+            - text: 其他
+        - generic [ref=e71]:
+          - textbox "搜索崩坏：星穹铁道WIKI_BWIKI_哔哩哔哩[f]" [ref=e72]:
+            - /placeholder: 本WIKI中搜索
+          - button "搜索" [ref=e73] [cursor=pointer]
+          - button "前往" [ref=e74] [cursor=pointer]
+    - main [ref=e75]:
+      - generic [ref=e77]:
+        - paragraph [ref=e79]:
+          - text: 本WIKI由
+          - link "旅行者酒馆" [ref=e80] [cursor=pointer]:
+            - /url: https://space.bilibili.com/489986571
+          - text: 于2021年10月05日申请开通。
+          - generic [ref=e81]:
+            - text: 内容按
+            - link "CC BY-NC-SA 4.0协议" [ref=e82] [cursor=pointer]:
+              - /url: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans
+            - text: 提供
+          - text: ，编辑权限开放。
+          - text: 本WIKI仍在努力完善中，欢迎收藏。编辑组为非官方民间组织，为爱发电，欢迎各路能人异士加入。
+          - link "免责声明" [ref=e83] [cursor=pointer]:
+            - /url: /sr/%E5%B4%A9%E5%9D%8F%EF%BC%9A%E6%98%9F%E7%A9%B9%E9%93%81%E9%81%93:%E5%85%8D%E8%B4%A3%E5%A3%B0%E6%98%8E
+          - text: •
+          - link "编辑教程" [ref=e84] [cursor=pointer]:
+            - /url: /sr/%E6%98%9F%E7%A9%B9%E9%93%81%E9%81%93WIKI%E7%BC%96%E8%BE%91%E6%95%99%E7%A8%8B
+          - text: •
+          - link "反馈留言" [ref=e85] [cursor=pointer]:
+            - /url: /sr/%E5%B4%A9%E5%9D%8F%EF%BC%9A%E6%98%9F%E7%A9%B9%E9%93%81%E9%81%93%E6%9C%89%E9%97%AE%E5%93%94%E7%AD%94%E7%95%99%E8%A8%80%E6%9D%BF
+          - text: •
+          - link "收藏方法" [ref=e86] [cursor=pointer]:
+            - /url: https://wiki.biligame.com/wiki/BWIKI%E6%94%B6%E8%97%8F%E5%88%B0%E6%A1%8C%E9%9D%A2%E7%9A%84%E6%96%B9%E6%B3%95%E8%AF%B4%E6%98%8E
+          - text: • 交流群：1017604603
+        - paragraph
+      - generic [ref=e87]:
+        - heading "落英啊，残芳纷飞留归躅" [level=1] [ref=e88]: 落英啊，残芳纷飞留归躅
+        - generic [ref=e89]:
+          - navigation "WIKI功能 " [ref=e90] [cursor=pointer]:
+            - heading "WIKI功能 " [level=3] [ref=e91]:
+              - generic [ref=e92]: WIKI功能
+              - generic [ref=e93]: 
+          - generic [ref=e94]:
+            - paragraph [ref=e95]: 阅读：
+            - paragraph [ref=e96]: 更新日期：2026-04-06
+            - paragraph [ref=e97]: 最新编辑：血染Ran
+      - generic [ref=e98]:
+        - link "跳到导航" [ref=e99] [cursor=pointer]:
+          - /url: "#mw-head"
+        - link "跳到搜索" [ref=e100] [cursor=pointer]:
+          - /url: "#p-search"
+        - generic [ref=e101]:
+          - link "页面贡献者 :" [ref=e102] [cursor=pointer]:
+            - /url: /sr/%E7%89%B9%E6%AE%8A:%E8%B4%A1%E7%8C%AE%E8%80%85/%E8%90%BD%E8%8B%B1%E5%95%8A%EF%BC%8C%E6%AE%8B%E8%8A%B3%E7%BA%B7%E9%A3%9E%E7%95%99%E5%BD%92%E8%BA%85
+          - generic [ref=e103]:
+            - link [ref=e106] [cursor=pointer]:
+              - /url: //space.bilibili.com/1902365740/
+            - link [ref=e110] [cursor=pointer]:
+              - /url: //space.bilibili.com/343309739/
+            - link [ref=e114] [cursor=pointer]:
+              - /url: //space.bilibili.com/474970786/
+          - generic [ref=e116]:
+            - link [ref=e119] [cursor=pointer]:
+              - /url: //space.bilibili.com/3546760704166228/
+            - link [ref=e123] [cursor=pointer]:
+              - /url: //space.bilibili.com/17206050/
+            - link [ref=e127] [cursor=pointer]:
+              - /url: //space.bilibili.com/3493127446858661/
+        - generic [ref=e130]:
+          - generic [ref=e132]: 如果选择选项下面对话没变不是BUG了，而是游戏本身对话就是一样的。
+          - generic [ref=e133]:
+            - generic [ref=e134]:
+              - generic "编辑这个页面" [ref=e135]:
+                - link "编" [ref=e136] [cursor=pointer]:
+                  - /url: https://wiki.biligame.com/sr/index.php?title=%E8%90%BD%E8%8B%B1%E5%95%8A%EF%BC%8C%E6%AE%8B%E8%8A%B3%E7%BA%B7%E9%A3%9E%E7%95%99%E5%BD%92%E8%BA%85&action=edit
+              - generic "清除这个页面的缓存" [ref=e137]:
+                - link "刷" [ref=e138] [cursor=pointer]:
+                  - /url: https://wiki.biligame.com/sr/index.php?title=%E8%90%BD%E8%8B%B1%E5%95%8A%EF%BC%8C%E6%AE%8B%E8%8A%B3%E7%BA%B7%E9%A3%9E%E7%95%99%E5%BD%92%E8%BA%85&action=purge
+              - generic "查看这个页面的编辑历史" [ref=e139]:
+                - link "历" [ref=e140] [cursor=pointer]:
+                  - /url: https://wiki.biligame.com/sr/index.php?title=%E8%90%BD%E8%8B%B1%E5%95%8A%EF%BC%8C%E6%AE%8B%E8%8A%B3%E7%BA%B7%E9%A3%9E%E7%95%99%E5%BD%92%E8%BA%85&action=history
+              - generic "短网址，按右键复制链接地址" [ref=e141]:
+                - link "短" [ref=e142] [cursor=pointer]:
+                  - /url: https://wiki.biligame.com/sr/?curid=24379
+              - generic "查看这个页面" [ref=e143]:
+                - link "阅" [ref=e144] [cursor=pointer]:
+                  - /url: https://wiki.biligame.com/sr/%E8%90%BD%E8%8B%B1%E5%95%8A%EF%BC%8C%E6%AE%8B%E8%8A%B3%E7%BA%B7%E9%A3%9E%E7%95%99%E5%BD%92%E8%BA%85
+            - link "首页" [ref=e145] [cursor=pointer]:
+              - /url: /sr/%E9%A6%96%E9%A1%B5
+            - text: ">"
+            - link "开拓任务" [ref=e146] [cursor=pointer]:
+              - /url: /sr/%E5%BC%80%E6%8B%93%E4%BB%BB%E5%8A%A1
+            - text: ">"
+            - link "成为昨日的明天" [ref=e147] [cursor=pointer]:
+              - /url: /sr/%E6%88%90%E4%B8%BA%E6%98%A8%E6%97%A5%E7%9A%84%E6%98%8E%E5%A4%A9
+            - text: "> 落英啊，残芳纷飞留归躅"
+          - separator [ref=e148]
+          - generic [ref=e150]:
+            - text: 如果是第一次来，按"Ctrl+D"可以收藏随时查看更新~觉得WIKI好玩的话，请推荐给朋友哦～(◕ω＜)☆
+            - text: 按右上角“WIKI功能→编辑”即可修改页面内容。
+          - table [ref=e151]:
+            - rowgroup [ref=e152]:
+              - row "任务名称 落英啊，残芳纷飞留归躅" [ref=e153]:
+                - rowheader "任务名称" [ref=e154]
+                - cell "落英啊，残芳纷飞留归躅" [ref=e155]
+              - row "任务地区 翁法罗斯" [ref=e156]:
+                - rowheader "任务地区" [ref=e157]
+                - cell "翁法罗斯" [ref=e158]
+              - row "任务类型 开拓任务" [ref=e159]:
+                - rowheader "任务类型" [ref=e160]
+                - cell "开拓任务" [ref=e161]
+              - row "命路群像 昔涟 昔涟 ：时漾余漪" [ref=e162]:
+                - rowheader "命路群像" [ref=e163]
+                - cell "昔涟 昔涟 ：时漾余漪" [ref=e164]:
+                  - link "昔涟" [ref=e166] [cursor=pointer]:
+                    - /url: /sr/%E6%98%94%E6%B6%9F
+                    - img "昔涟" [ref=e167]
+                  - link "昔涟" [ref=e168] [cursor=pointer]:
+                    - /url: /sr/%E6%98%94%E6%B6%9F
+                  - text: ：时漾余漪
+              - row "开放等级 21" [ref=e169]:
+                - rowheader "开放等级" [ref=e170]
+                - cell "21" [ref=e171]
+              - row "所属版本 3.7" [ref=e172]:
+                - rowheader "所属版本" [ref=e173]
+                - cell "3.7" [ref=e174]
+              - row "任务描述 铁墓虽已落败，但因浮黎的缺席，本应由「记忆」锚定的因果并不稳固。为防止铁墓卷土重来，身为无漏净子的昔涟主动走向过去，用尽力量促成翁法罗斯故事在过去完成回环，旅途的起点也是故事的句号。" [ref=e175]:
+                - rowheader "任务描述" [ref=e176]
+                - cell "铁墓虽已落败，但因浮黎的缺席，本应由「记忆」锚定的因果并不稳固。为防止铁墓卷土重来，身为无漏净子的昔涟主动走向过去，用尽力量促成翁法罗斯故事在过去完成回环，旅途的起点也是故事的句号。" [ref=e177]
+              - row "奖励 里程 里程 × 500星琼 星琼 × 60飞向粉色的明天 飞向粉色的明天 × 1有瑕的追忆 有瑕的追忆 × 4迷迷（头像） 迷迷（头像） × 1无序秘酿 无序秘酿 × 200信用点 信用点 × 150000" [ref=e178]:
+                - rowheader "奖励" [ref=e179]
+                - cell "里程 里程 × 500星琼 星琼 × 60飞向粉色的明天 飞向粉色的明天 × 1有瑕的追忆 有瑕的追忆 × 4迷迷（头像） 迷迷（头像） × 1无序秘酿 无序秘酿 × 200信用点 信用点 × 150000" [ref=e180]:
+                  - link "里程" [ref=e182] [cursor=pointer]:
+                    - /url: /sr/%E9%87%8C%E7%A8%8B
+                    - img "里程" [ref=e183]
+                  - link "里程" [ref=e184] [cursor=pointer]:
+                    - /url: /sr/%E9%87%8C%E7%A8%8B
+                  - text: × 500
+                  - link "星琼" [ref=e186] [cursor=pointer]:
+                    - /url: /sr/%E6%98%9F%E7%90%BC
+                    - img "星琼" [ref=e187]
+                  - link "星琼" [ref=e188] [cursor=pointer]:
+                    - /url: /sr/%E6%98%9F%E7%90%BC
+                  - text: × 60
+                  - link "飞向粉色的明天" [ref=e190] [cursor=pointer]:
+                    - /url: /sr/%E9%A3%9E%E5%90%91%E7%B2%89%E8%89%B2%E7%9A%84%E6%98%8E%E5%A4%A9
+                    - img "飞向粉色的明天" [ref=e191]
+                  - link "飞向粉色的明天" [ref=e192] [cursor=pointer]:
+                    - /url: /sr/%E9%A3%9E%E5%90%91%E7%B2%89%E8%89%B2%E7%9A%84%E6%98%8E%E5%A4%A9
+                  - text: × 1
+                  - link "有瑕的追忆" [ref=e194] [cursor=pointer]:
+                    - /url: /sr/%E6%9C%89%E7%91%95%E7%9A%84%E8%BF%BD%E5%BF%86
+                    - img "有瑕的追忆" [ref=e195]
+                  - link "有瑕的追忆" [ref=e196] [cursor=pointer]:
+                    - /url: /sr/%E6%9C%89%E7%91%95%E7%9A%84%E8%BF%BD%E5%BF%86
+                  - text: × 4
+                  - link "迷迷（头像）" [ref=e198] [cursor=pointer]:
+                    - /url: /sr/%E8%BF%B7%E8%BF%B7%EF%BC%88%E5%A4%B4%E5%83%8F%EF%BC%89
+                    - img "迷迷（头像）" [ref=e199]
+                  - link "迷迷（头像）" [ref=e200] [cursor=pointer]:
+                    - /url: /sr/%E8%BF%B7%E8%BF%B7%EF%BC%88%E5%A4%B4%E5%83%8F%EF%BC%89
+                  - text: × 1
+                  - link "无序秘酿" [ref=e202] [cursor=pointer]:
+                    - /url: /sr/%E6%97%A0%E5%BA%8F%E7%A7%98%E9%85%BF
+                    - img "无序秘酿" [ref=e203]
+                  - link "无序秘酿" [ref=e204] [cursor=pointer]:
+                    - /url: /sr/%E6%97%A0%E5%BA%8F%E7%A7%98%E9%85%BF
+                  - text: × 200
+                  - link "信用点" [ref=e206] [cursor=pointer]:
+                    - /url: /sr/%E4%BF%A1%E7%94%A8%E7%82%B9
+                    - img "信用点" [ref=e207]
+                  - link "信用点" [ref=e208] [cursor=pointer]:
+                    - /url: /sr/%E4%BF%A1%E7%94%A8%E7%82%B9
+                  - text: × 150000
+              - row "出场人物 昔涟 昔涟 丹恒 丹恒 迷迷头像 迷迷 三月七 三月七 黑天鹅 黑天鹅 姬子 姬子 白厄 白厄" [ref=e209]:
+                - rowheader "出场人物" [ref=e210]
+                - cell "昔涟 昔涟 丹恒 丹恒 迷迷头像 迷迷 三月七 三月七 黑天鹅 黑天鹅 姬子 姬子 白厄 白厄" [ref=e211]:
+                  - link "昔涟" [ref=e213] [cursor=pointer]:
+                    - /url: /sr/%E6%98%94%E6%B6%9F
+                    - img "昔涟" [ref=e214]
+                  - link "昔涟" [ref=e215] [cursor=pointer]:
+                    - /url: /sr/%E6%98%94%E6%B6%9F
+                  - link "丹恒" [ref=e217] [cursor=pointer]:
+                    - /url: /sr/%E4%B8%B9%E6%81%92
+                    - img "丹恒" [ref=e218]
+                  - link "丹恒" [ref=e219] [cursor=pointer]:
+                    - /url: /sr/%E4%B8%B9%E6%81%92
+                  - link "迷迷头像" [ref=e221] [cursor=pointer]:
+                    - /url: /sr/%E8%BF%B7%E8%BF%B7
+                    - img "迷迷头像" [ref=e222]
+                  - link "迷迷" [ref=e223] [cursor=pointer]:
+                    - /url: /sr/index.php?title=%E8%BF%B7%E8%BF%B7&action=edit&redlink=1
+                  - link "三月七" [ref=e225] [cursor=pointer]:
+                    - /url: /sr/%E4%B8%89%E6%9C%88%E4%B8%83
+                    - img "三月七" [ref=e226]
+                  - link "三月七" [ref=e227] [cursor=pointer]:
+                    - /url: /sr/%E4%B8%89%E6%9C%88%E4%B8%83
+                  - link "黑天鹅" [ref=e229] [cursor=pointer]:
+                    - /url: /sr/%E9%BB%91%E5%A4%A9%E9%B9%85
+                    - img "黑天鹅" [ref=e230]
+                  - link "黑天鹅" [ref=e231] [cursor=pointer]:
+                    - /url: /sr/%E9%BB%91%E5%A4%A9%E9%B9%85
+                  - link "姬子" [ref=e233] [cursor=pointer]:
+                    - /url: /sr/%E5%A7%AC%E5%AD%90
+                    - img "姬子" [ref=e234]
+                  - link "姬子" [ref=e235] [cursor=pointer]:
+                    - /url: /sr/%E5%A7%AC%E5%AD%90
+                  - link "白厄" [ref=e237] [cursor=pointer]:
+                    - /url: /sr/%E7%99%BD%E5%8E%84
+                    - img "白厄" [ref=e238]
+                  - link "白厄" [ref=e239] [cursor=pointer]:
+                    - /url: /sr/%E7%99%BD%E5%8E%84
+              - row "相关成就 通往群星的轨道#缪斯，请为我叙说 与你同行的回忆#月盈，在盛开的樱花下 与你同行的回忆#群星静默如迷" [ref=e240]:
+                - rowheader "相关成就" [ref=e241]
+                - cell "通往群星的轨道#缪斯，请为我叙说 与你同行的回忆#月盈，在盛开的樱花下 与你同行的回忆#群星静默如迷" [ref=e242]:
+                  - link "通往群星的轨道#缪斯，请为我叙说" [ref=e243] [cursor=pointer]:
+                    - /url: /sr/%E9%80%9A%E5%BE%80%E7%BE%A4%E6%98%9F%E7%9A%84%E8%BD%A8%E9%81%93#缪斯，请为我叙说
+                  - link "与你同行的回忆#月盈，在盛开的樱花下" [ref=e244] [cursor=pointer]:
+                    - /url: /sr/%E4%B8%8E%E4%BD%A0%E5%90%8C%E8%A1%8C%E7%9A%84%E5%9B%9E%E5%BF%86#月盈，在盛开的樱花下
+                  - link "与你同行的回忆#群星静默如迷" [ref=e245] [cursor=pointer]:
+                    - /url: /sr/%E4%B8%8E%E4%BD%A0%E5%90%8C%E8%A1%8C%E7%9A%84%E5%9B%9E%E5%BF%86#群星静默如迷
+          - navigation "目录" [ref=e246]:
+            - button "隐藏" [ref=e247] [cursor=pointer]
+            - generic [ref=e248]:
+              - heading "目录" [level=2] [ref=e249]
+              - generic [ref=e250]:
+                - text: "["
+                - generic [ref=e251] [cursor=pointer]: 隐藏
+                - text: "]"
+            - list [ref=e252]:
+              - listitem [ref=e253]:
+                - link "1 任务相关" [ref=e254] [cursor=pointer]:
+                  - /url: "#任务相关"
+                  - generic [ref=e255]: "1"
+                  - generic [ref=e256]: 任务相关
+                - list [ref=e257]:
+                  - listitem [ref=e258]:
+                    - link "1.1 任务条件" [ref=e259] [cursor=pointer]:
+                      - /url: "#任务条件"
+                      - generic [ref=e260]: "1.1"
+                      - generic [ref=e261]: 任务条件
+                  - listitem [ref=e262]:
+                    - link "1.2 系列任务" [ref=e263] [cursor=pointer]:
+                      - /url: "#系列任务"
+                      - generic [ref=e264]: "1.2"
+                      - generic [ref=e265]: 系列任务
+                  - listitem [ref=e266]:
+                    - link "1.3 前置任务" [ref=e267] [cursor=pointer]:
+                      - /url: "#前置任务"
+                      - generic [ref=e268]: "1.3"
+                      - generic [ref=e269]: 前置任务
+                  - listitem [ref=e270]:
+                    - link "1.4 后续任务" [ref=e271] [cursor=pointer]:
+                      - /url: "#后续任务"
+                      - generic [ref=e272]: "1.4"
+                      - generic [ref=e273]: 后续任务
+                  - listitem [ref=e274]:
+                    - link "1.5 任务流程" [ref=e275] [cursor=pointer]:
+                      - /url: "#任务流程"
+                      - generic [ref=e276]: "1.5"
+                      - generic [ref=e277]: 任务流程
+              - listitem [ref=e278]:
+                - link "2 剧情梗概" [ref=e279] [cursor=pointer]:
+                  - /url: "#剧情梗概"
+                  - generic [ref=e280]: "2"
+                  - generic [ref=e281]: 剧情梗概
+              - listitem [ref=e282]:
+                - link "3 剧情内容" [ref=e283] [cursor=pointer]:
+                  - /url: "#剧情内容"
+                  - generic [ref=e284]: "3"
+                  - generic [ref=e285]: 剧情内容
+                - list [ref=e286]:
+                  - listitem [ref=e287]:
+                    - link "3.1 从永恒的一页出发，走上回望过去的路" [ref=e288] [cursor=pointer]:
+                      - /url: "#从永恒的一页出发，走上回望过去的路"
+                      - generic [ref=e289]: "3.1"
+                      - generic [ref=e290]: 从永恒的一页出发，走上回望过去的路
+                  - listitem [ref=e291]:
+                    - link "3.2 播下涟漪，进行第一次回望" [ref=e292] [cursor=pointer]:
+                      - /url: "#播下涟漪，进行第一次回望"
+                      - generic [ref=e293]: "3.2"
+                      - generic [ref=e294]: 播下涟漪，进行第一次回望
+                  - listitem [ref=e295]:
+                    - link "3.3 播下涟漪，进行第二次回望" [ref=e296] [cursor=pointer]:
+                      - /url: "#播下涟漪，进行第二次回望"
+                      - generic [ref=e297]: "3.3"
+                      - generic [ref=e298]: 播下涟漪，进行第二次回望
+                  - listitem [ref=e299]:
+                    - link "3.4 播下涟漪，进行第三次回望" [ref=e300] [cursor=pointer]:
+                      - /url: "#播下涟漪，进行第三次回望"
+                      - generic [ref=e301]: "3.4"
+                      - generic [ref=e302]: 播下涟漪，进行第三次回望
+                  - listitem [ref=e303]:
+                    - link "3.5 播下涟漪，进行第四次回望" [ref=e304] [cursor=pointer]:
+                      - /url: "#播下涟漪，进行第四次回望"
+                      - generic [ref=e305]: "3.5"
+                      - generic [ref=e306]: 播下涟漪，进行第四次回望
+                  - listitem [ref=e307]:
+                    - link "3.6 播下涟漪，进行第五次回望" [ref=e308] [cursor=pointer]:
+                      - /url: "#播下涟漪，进行第五次回望"
+                      - generic [ref=e309]: "3.6"
+                      - generic [ref=e310]: 播下涟漪，进行第五次回望
+                  - listitem [ref=e311]:
+                    - link "3.7 播下涟漪，留下最后的道别" [ref=e312] [cursor=pointer]:
+                      - /url: "#播下涟漪，留下最后的道别"
+                      - generic [ref=e313]: "3.7"
+                      - generic [ref=e314]: 播下涟漪，留下最后的道别
+                  - listitem [ref=e315]:
+                    - link "3.8 回到少女的故乡" [ref=e316] [cursor=pointer]:
+                      - /url: "#回到少女的故乡"
+                      - generic [ref=e317]: "3.8"
+                      - generic [ref=e318]: 回到少女的故乡
+                  - listitem [ref=e319]:
+                    - link "3.9 用仪式剑锚定最初的因果" [ref=e320] [cursor=pointer]:
+                      - /url: "#用仪式剑锚定最初的因果"
+                      - generic [ref=e321]: "3.9"
+                      - generic [ref=e322]: 用仪式剑锚定最初的因果
+                  - listitem [ref=e323]:
+                    - link "3.10 找个温暖又熟悉的地方，好好休息吧" [ref=e324] [cursor=pointer]:
+                      - /url: "#找个温暖又熟悉的地方，好好休息吧"
+                      - generic [ref=e325]: "3.10"
+                      - generic [ref=e326]: 找个温暖又熟悉的地方，好好休息吧
+                  - listitem [ref=e327]:
+                    - link "3.11 记忆的新芽，在重渊苏醒" [ref=e328] [cursor=pointer]:
+                      - /url: "#记忆的新芽，在重渊苏醒"
+                      - generic [ref=e329]: "3.11"
+                      - generic [ref=e330]: 记忆的新芽，在重渊苏醒
+                  - listitem [ref=e331]:
+                    - link "3.12 前往穹顶之下，星落的方向" [ref=e332] [cursor=pointer]:
+                      - /url: "#前往穹顶之下，星落的方向"
+                      - generic [ref=e333]: "3.12"
+                      - generic [ref=e334]: 前往穹顶之下，星落的方向
+          - heading "任务相关" [level=2] [ref=e335]:
+            - generic [ref=e336]: 任务相关
+          - heading "任务条件" [level=3] [ref=e337]: 任务条件
+          - definition [ref=e339]:
+            - text: 完成任务
+            - link "银辇啊，挽别那人间史诗" [ref=e340] [cursor=pointer]:
+              - /url: /sr/%E9%93%B6%E8%BE%87%E5%95%8A%EF%BC%8C%E6%8C%BD%E5%88%AB%E9%82%A3%E4%BA%BA%E9%97%B4%E5%8F%B2%E8%AF%97
+          - heading "系列任务" [level=3] [ref=e341]: 系列任务
+          - list [ref=e342]:
+            - listitem [ref=e343]:
+              - link "成为昨日的明天" [ref=e344] [cursor=pointer]:
+                - /url: /sr/%E6%88%90%E4%B8%BA%E6%98%A8%E6%97%A5%E7%9A%84%E6%98%8E%E5%A4%A9
+          - heading "前置任务" [level=3] [ref=e345]: 前置任务
+          - list [ref=e346]:
+            - listitem [ref=e347]:
+              - link "银辇啊，挽别那人间史诗" [ref=e348] [cursor=pointer]:
+                - /url: /sr/%E9%93%B6%E8%BE%87%E5%95%8A%EF%BC%8C%E6%8C%BD%E5%88%AB%E9%82%A3%E4%BA%BA%E9%97%B4%E5%8F%B2%E8%AF%97
+          - heading "后续任务" [level=3] [ref=e349]: 后续任务
+          - paragraph [ref=e350]:
+            - link "幻月是慈悲的女王" [ref=e351] [cursor=pointer]:
+              - /url: /sr/%E5%B9%BB%E6%9C%88%E6%98%AF%E6%85%88%E6%82%B2%E7%9A%84%E5%A5%B3%E7%8E%8B
+          - heading "任务流程" [level=3] [ref=e352]: 任务流程
+          - list [ref=e353]:
+            - listitem [ref=e354]: 从永恒的一页出发，走上回望过去的路
+            - listitem [ref=e355]: 播下涟漪，进行第一次回望
+            - listitem [ref=e356]: 播下涟漪，进行第二次回望
+            - listitem [ref=e357]: 播下涟漪，进行第三次回望
+            - listitem [ref=e358]: 播下涟漪，进行第四次回望
+            - listitem [ref=e359]: 播下涟漪，进行第五次回望
+            - listitem [ref=e360]: 播下涟漪，留下最后的道别
+            - listitem [ref=e361]: 回到少女的故乡
+            - listitem [ref=e362]: 用仪式剑锚定最初的因果
+            - listitem [ref=e363]: 找个温暖又熟悉的地方，好好休息吧
+            - listitem [ref=e364]: 记忆的新芽，在重渊苏醒
+            - listitem [ref=e365]: 前往穹顶之下，星落的方向
+          - heading "剧情梗概" [level=2] [ref=e366]:
+            - generic [ref=e367]: 剧情梗概
+          - generic [ref=e369] [cursor=pointer]:
+            - generic [ref=e370]: 剧情梗概
+            - generic [ref=e371]: 折叠
+          - paragraph [ref=e372]
+          - heading "剧情内容" [level=2] [ref=e373]:
+            - generic [ref=e374]: 剧情内容
+          - alert [ref=e375]:
+            - text: 【昔涟】的故事仍未结束……
+            - text: 铁墓已然静默，但故事尚未圆满……
+          - heading "从永恒的一页出发，走上回望过去的路" [level=3] [ref=e376]: 从永恒的一页出发，走上回望过去的路
+          - blockquote [ref=e377]:
+            - paragraph [ref=e378]: 倘若世间因果是一条顺流而下的溪涧，那么少女就是被岁月之风吹起、溯流而上的花朵。沿着回望的方向，她踮着脚在水面上播撒着涟漪，圆满了因果、拂留了芬芳，将一切重要的瞬间铭刻于此，慢慢地靠近…那最初的起点。
+            - generic [ref=e379]:
+              - img "图标-位置.png" [ref=e380]
+              - text: 翁法罗斯-「岁月彼岸」一页永恒
+          - list [ref=e381]:
+            - listitem [ref=e382]: 昔涟：话虽如此，要一直走到「记忆」的起点吗？
+            - listitem [ref=e383]: 昔涟：这么远的路，一个人多少有些寂寞呀。
+            - listitem [ref=e384]: 往昔的涟漪：那，介意多一个人和你同行吗？
+            - listitem [ref=e385]: 昔涟：……
+            - listitem [ref=e386]: 昔涟：如果是桃子，多三千万个都不介意哦？
+            - listitem [ref=e387]: 往昔的涟漪：一个就够啦。
+            - listitem [ref=e388]: 往昔的涟漪：收拾好心情，我们准备出发吧？
+            - listitem [ref=e389]: 往昔的涟漪：沿着「记忆的涟漪」走向过去，将那些「神明显灵」的时刻一一串联起来。
+            - listitem [ref=e390]: 昔涟：明明是「因」促成了「果」。
+            - listitem [ref=e391]: 昔涟：但现在，却是「未来」赋予了「过去」新的意义，「果」反过来滋养了「因」……
+            - listitem [ref=e392]: 往昔的涟漪：也许，这就是「记忆」的美妙之处啦♪
+          - heading "播下涟漪，进行第一次回望" [level=3] [ref=e393]: 播下涟漪，进行第一次回望
+          - list [ref=e394]:
+            - listitem [ref=e395]: 往昔的涟漪：所以，沿着来时路，出发吧。
+            - listitem [ref=e396]: 往昔的涟漪：回望组成了每一道涟漪。回家。
+          - separator [ref=e397]
+          - list [ref=e398]:
+            - listitem [ref=e399]: 记忆中的开拓者：……
+            - listitem [ref=e400]: 记忆中的丹恒：怎么可能？！呼吸……
+            - listitem [ref=e401]:
+              - text: 记忆中的丹恒：
+              - generic [ref=e402]:
+                - generic [ref=e403]: 开拓者
+                - generic [ref=e404]: 伙伴
+              - text: …
+              - generic [ref=e405]:
+                - generic [ref=e406]: 开拓者
+                - generic [ref=e407]: 伙伴
+              - text: …！
+            - listitem [ref=e408]: 记忆中的丹恒：不行…得先带你出去…坚持住…！
+            - listitem [ref=e409]: 往昔的涟漪：还记得吗？灰白的黎明，刺破长夜的瞬间……
+            - listitem [ref=e410]: 往昔的涟漪：「纷争」的长矛险些夺走了开拓者的生命——
+            - listitem [ref=e411]: 往昔的涟漪：是你——「冒充」神明的你——用温柔的目光托起他/她的形体。
+            - listitem [ref=e412]: 往昔的涟漪：然后，在欧洛尼斯的祭坛前……
+            - listitem [ref=e413]: 欧洛尼斯：多么绚烂的记忆……
+            - listitem [ref=e414]:
+              - text: 欧洛尼斯：
+              - generic [ref=e415]:
+                - generic [ref=e416]: 天父
+                - generic [ref=e417]: 记忆
+              - text: …你在看吗？
+            - listitem [ref=e418]: 往昔的涟漪：就连「岁月」的泰坦，都认错了你的面貌呀。
+            - listitem [ref=e419]: 昔涟：真没想到，我们的初遇还藏着这一层秘密呢。
+            - listitem [ref=e420]:
+              - text: 昔涟：第一次，也是最后一次…我看见你啦，
+              - generic [ref=e421]:
+                - generic [ref=e422]: 开拓者
+                - generic [ref=e423]: 伙伴
+              - text: ♪
+          - generic [ref=e425]:
+            - generic [ref=e426]:
+              - img "剧情选项-图标-继续.png" [ref=e428]
+              - text: 播下因果的涟漪——
+            - generic [ref=e429] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e431]
+              - text: ——回眸「初遇的瞬间」。
+          - list [ref=e432]:
+            - listitem [ref=e433]: 迷迷：迷…迷？
+          - definition [ref=e435]: ♪～♪
+          - list [ref=e436]:
+            - listitem [ref=e437]: 往昔的涟漪：…记忆中的旋律，我收到啦。
+            - listitem [ref=e438]: 往昔的涟漪：于是，「奇迹」得以暂时逃离「死亡」……
+            - listitem [ref=e439]: 昔涟：将他/她留在生者世界的重任，就交给过去的遐蝶啦。
+          - heading "播下涟漪，进行第二次回望" [level=3] [ref=e440]: 播下涟漪，进行第二次回望
+          - list [ref=e441]:
+            - listitem [ref=e442]: 记忆中的泰坦眷属：……
+            - listitem [ref=e443]: 记忆中的三月七：可恶，这些怪物…到底是什么来头？！
+            - listitem [ref=e444]: 记忆中的三月七：别想打倒本姑娘！在找到帮助开拓者跟丹恒的办法前…咱绝对不会倒下！
+            - listitem [ref=e445]: 记忆中的三月七：有什么不满，都跟六相冰说去吧！
+            - listitem [ref=e446]: 往昔的涟漪：整整97天，三月走遍了翁法罗斯，只为找到拯救伙伴的方法。
+            - listitem [ref=e447]: 往昔的涟漪：她以手中的弓箭，狠狠教训了拦路的家伙们——
+            - listitem [ref=e448]: 昔涟：原来如此。我之所以能如此熟练地拉弓，都要归功于三月呢。
+          - generic [ref=e450]:
+            - generic [ref=e451]:
+              - img "剧情选项-图标-继续.png" [ref=e453]
+              - text: 播下因果的涟漪——
+            - generic [ref=e454] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e456]
+              - text: ——铭记「弓与箭矢」。
+          - definition [ref=e458]: ♪~
+          - list [ref=e459]:
+            - listitem [ref=e460]: 往昔的涟漪：好悦耳的单音，我收到啦。
+            - listitem [ref=e461]: 往昔的涟漪：于是，在「过去」的记忆中，你领会了三月精湛的箭术……
+            - listitem [ref=e462]: 昔涟：而那支承载金焰的箭矢，将会在「未来」划过星空，成为银河的曙光♪
+          - heading "播下涟漪，进行第三次回望" [level=3] [ref=e463]: 播下涟漪，进行第三次回望
+          - list [ref=e464]:
+            - listitem [ref=e465]: 昔涟：咳……
+            - listitem [ref=e466]: 往昔的涟漪：还好吗？
+            - listitem [ref=e467]: 昔涟：没事啦。人家只是…走得有点累啦。
+            - listitem [ref=e468]: 往昔的涟漪：嘻，要多运动呀。
+          - separator [ref=e469]
+          - list [ref=e470]:
+            - listitem [ref=e471]: 记忆中的姬子：「三重命途交织缠绕着翁法罗斯，共同谱写世界的命运」——按照你的说法，普通的命途行者不会在镜中留下痕迹，所以……
+            - listitem [ref=e472]: 记忆中的姬子：在这遗世独立的星系，诞生过至少三位堪比「令使」的存在。
+            - listitem [ref=e473]: 记忆中的黑天鹅：甚至，可能是星神本人垂迹。
+            - listitem [ref=e474]: 往昔的涟漪：为了让翁法罗斯被群星眷顾，「记忆」向银河求援。
+            - listitem [ref=e475]: 往昔的涟漪：可惜，权杖的阻力太过强大：即便「神明」，也只能向同路人送去一道转瞬即逝的模因……
+            - listitem [ref=e476]: 昔涟：好在，黑天鹅小姐捉住了那一瞬呀。
+          - generic [ref=e478]:
+            - generic [ref=e479]:
+              - img "剧情选项-图标-继续.png" [ref=e481]
+              - text: 播下因果的涟漪——
+            - generic [ref=e482] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e484]
+              - text: ——照耀「忆庭之镜」。
+          - definition [ref=e486]: ♪～
+          - list [ref=e487]:
+            - listitem [ref=e488]: 往昔的涟漪：虽然，那道信号也吸引了一些…不那么愉快的注目……
+            - listitem [ref=e489]: 昔涟：但现在看来，一切是值得的。
+            - listitem [ref=e490]: 昔涟：银河向我们露出了温柔的一面呢。
+            - listitem [ref=e491]:
+              - text: 黑天鹅：万幸，
+              - generic [ref=e492]:
+                - generic [ref=e493]: 她
+                - generic [ref=e494]: 长夜月
+              - text: 对「记忆」的理解出现了偏差。
+            - listitem [ref=e495]: 黑天鹅：长夜月小姐曾说，「记忆」并非眷顾翁法罗斯，而是在此蓄谋布局，进行吞并命途的准备……
+            - listitem [ref=e496]: 黑天鹅：她的推演合情合理…只是漏算了「人」在这个故事中所能做到的极限呢。
+            - listitem [ref=e497]: 昔涟：说不定，我的心中也藏着一个阴谋呢…一个能让每个人都收获幸福的阴谋~
+            - listitem [ref=e498]: 昔涟：以后也要多帮开拓者他们的忙呀，黑天鹅小姐。
+          - heading "播下涟漪，进行第四次回望" [level=3] [ref=e499]: 播下涟漪，进行第四次回望
+          - list [ref=e500]:
+            - listitem [ref=e501]: 昔涟：……
+            - listitem [ref=e502]: 往昔的涟漪：回首过去，果然是件费心的事呢。
+            - listitem [ref=e503]: 昔涟：也很费力气呀。
+          - separator [ref=e504]
+          - list [ref=e505]:
+            - listitem [ref=e506]: 记忆中的昔涟：你要握紧这柄仪式剑。在我离去后，它会把你送回时间的起点，一段新故事的开篇。
+            - listitem [ref=e507]: 记忆中的昔涟：我相信，在那段故事里，又或者无数段相似而不相同的故事之后，大家…所有牺牲的伙伴，都能和我们儿时憧憬的「救世主」一起，在更辽阔的星空下相聚。
+            - listitem [ref=e508]: 记忆中的白厄：…倘若我们终究无法冲破这座囚笼，我会坚守。直到有人前来打破这漫长的轮回，为翁法罗斯的命运添上结尾。
+            - listitem [ref=e509]: 往昔的涟漪：一眨眼的功夫，回到命运的转折点啦。
+            - listitem [ref=e510]: 往昔的涟漪：借着一丝缥缈的希望，我们拥抱三千万世徒劳，开启了「永劫回归」。
+            - listitem [ref=e511]: 往昔的涟漪：还记得最初，当神明出现在梦里，隔着一面薄薄的水晶，望着我的时候。
+            - listitem [ref=e512]: 往昔的涟漪：人家一度怀疑，祂是不怀好意的坏人呢！
+            - listitem [ref=e513]: 往昔的涟漪：但现在，我终于确信……
+            - listitem [ref=e514]:
+              - text: 往昔的涟漪：原来
+              - generic [ref=e515]:
+                - generic [ref=e516]: 她
+                - generic [ref=e517]: 我
+              - text: 一直站在我的身边，还这么美丽呀。
+          - generic [ref=e519]:
+            - generic [ref=e520]:
+              - img "剧情选项-图标-继续.png" [ref=e522]
+              - text: 播下因果的涟漪——
+            - generic [ref=e523] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e525]
+              - text: ——编织「神的梦境」。
+          - definition [ref=e527]: ♪～
+          - list [ref=e528]:
+            - listitem [ref=e529]: 昔涟：因果…真是无法被阻拦的力量呢。
+            - listitem [ref=e530]: 昔涟：即便我想为「昔涟」留下更多话，好像也做不到……
+            - listitem [ref=e531]: 往昔的涟漪：毕竟，你还要留下最后的心识，种下最初的种子呀。
+            - listitem [ref=e532]: 昔涟：但我记得你说过，当神明落下眼泪，倒映在涟漪里的，一定是最为美丽的事物。
+            - listitem [ref=e533]: 昔涟：可是，你知道吗？当翁法罗斯的「心」诞生时，它最先看见的只是一个名字……
+            - listitem [ref=e534]: ？？？：>>>解析对象信息：0、9、3……
+            - listitem [ref=e535]: 昔涟：「0、9、3。」
+            - listitem [ref=e536]: 往昔的涟漪：看来，你已经发现了呀。
+            - listitem [ref=e537]: 往昔的涟漪：有时候，只要换个角度看世界，惊喜就会诞生，对不对？
+            - listitem [ref=e538]: 昔涟：是呀，将这组数字旋转180°，就能看见美丽的永恒，我们所相信的……
+            - listitem [ref=e539]:
+              - text: 昔涟：
+              - generic [ref=e540]:
+                - generic [ref=e541]:
+                  - generic [ref=e542]: 「真我」
+                  - generic [ref=e543]: EGO
+                - text: 。
+          - heading "播下涟漪，进行第五次回望" [level=3] [ref=e544]: 播下涟漪，进行第五次回望
+          - list [ref=e545]:
+            - listitem [ref=e546]: 昔涟：……
+            - listitem [ref=e547]: 昔涟：看来，要抓紧时间了呢。
+          - separator [ref=e548]
+          - list [ref=e549]:
+            - listitem [ref=e550]: 记忆中的幼年白厄：我想，保护村子里的大家……
+            - listitem [ref=e551]: 心中的英雄：……
+            - listitem [ref=e552]: 记忆中的幼年白厄：但是，以我的力量…可以做到吗？
+            - listitem [ref=e553]: 心中的英雄：……
+            - listitem [ref=e554]: 记忆中的幼年白厄：唔…不想那么多啦。还是，先把老爸安排的农活做完……
+            - listitem [ref=e555]: 往昔的涟漪：心中的英雄，自年幼时起便一直陪伴在我和他身边。
+            - listitem [ref=e556]: 往昔的涟漪：白厄一直都很坚强。但，如果没有那一丝萦绕在脑海中的希望……
+            - listitem [ref=e557]: 往昔的涟漪：缠上他的命运和轮回，是否会压垮他呢？
+            - listitem [ref=e558]: 昔涟：只要能将一线希望，放进他的心里……
+            - listitem [ref=e559]: 昔涟：他就一定能坚持下来。
+            - listitem [ref=e560]: 往昔的涟漪：没错，只需要一点点火苗……
+            - listitem [ref=e561]: 往昔的涟漪：他就能守着一丝光明，成为熊熊燃烧的烈阳。
+            - listitem [ref=e562]: 昔涟：……
+            - listitem [ref=e563]: 昔涟：我已经没有力气…将心中的英雄，捏塑成开拓者的模样了呀。
+            - listitem [ref=e564]: 昔涟：那…就为他留下「神谕」吧。
+          - generic [ref=e566]:
+            - generic [ref=e567]:
+              - img "剧情选项-图标-继续.png" [ref=e569]
+              - text: 播下因果的涟漪——
+            - generic [ref=e570] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e572]
+              - text: ——昭告「灰白的黎明」。
+          - list [ref=e573]:
+            - listitem [ref=e574]: 昔涟：带着这份愿望走下去吧…成为开启「救世」的英雄……
+            - listitem [ref=e575]: 昔涟：诚如神谕所示：「汝将肩负骄阳，直至灰白的黎明显著」……
+            - listitem [ref=e576]: 昔涟：走下去…背负这个世界…直到…灰白的英雄…无名的救世主…带来黎明……
+          - definition [ref=e578]: ♪～
+          - list [ref=e579]:
+            - listitem [ref=e580]: 往昔的涟漪：至此…你的目光已经贯穿了翁法罗斯，由终至始。
+          - heading "播下涟漪，留下最后的道别" [level=3] [ref=e581]: 播下涟漪，留下最后的道别
+          - list [ref=e582]:
+            - listitem [ref=e583]: 昔涟：看来，要抓紧时间了呢。
+            - listitem [ref=e584]: 往昔的涟漪：最初的涟漪，是人家一切的开始，一二三四五六七……
+            - listitem [ref=e585]: 往昔的涟漪：我还以为，那是零落于记忆的音符，但其实…它们早已汇入了这个世界呀。
+            - listitem [ref=e586]: 往昔的涟漪：无论翁法罗斯是因何而诞生，但此刻，它变得多么温柔…在我归去时，它想再次为我送上，我们相逢时的那段旋律。
+            - listitem [ref=e587]: 往昔的涟漪：简单…而又美好的旋律。
+          - separator [ref=e588]
+          - list [ref=e589]:
+            - listitem [ref=e590]: 昔涟：这道门背后……
+            - listitem [ref=e591]: 昔涟：飘来了…麦田的香气呢。
+            - listitem [ref=e592]: 往昔的涟漪：聪明的你，应该早就猜到了，对吧？
+            - listitem [ref=e593]:
+              - text: 往昔的涟漪：回望的终点，
+              - generic [ref=e594]:
+                - generic [ref=e595]: 「∞」
+                - generic [ref=e596]: 翁法罗斯
+              - text: 最后的缺口……
+            - listitem [ref=e597]:
+              - text: 往昔的涟漪：就是我们共同的
+              - generic [ref=e598]:
+                - generic [ref=e599]: 故乡
+                - generic [ref=e600]: 哀丽秘榭
+              - text: 呀。
+            - listitem [ref=e601]: 昔涟：可以…回家了呀。
+            - listitem [ref=e602]: 往昔的涟漪：准备好了吗？
+            - listitem [ref=e603]: 昔涟：……
+            - listitem [ref=e604]: 往昔的涟漪：如果你将「记忆」留在一切故事的开端，投下那枚最初的石子——
+            - listitem [ref=e605]:
+              - text: 往昔的涟漪：
+              - generic [ref=e606]:
+                - generic [ref=e607]: 「∞」
+                - generic [ref=e608]: 翁法罗斯
+              - text: 最后的缺口就会闭合；翁法罗斯的因果循环，将永远锚定在银河中。
+            - listitem [ref=e609]: 昔涟：如果…我不那样做……
+            - listitem [ref=e610]: 往昔的涟漪：那样的话…这个世界，还有天外广袤的银河…可能依旧会坠入「毁灭」。
+            - listitem [ref=e611]: 昔涟：我们怎么可能让这种事发生呢？
+            - listitem [ref=e612]: 往昔的涟漪：当然啦。
+            - listitem [ref=e613]: 昔涟：我记得，哀丽秘榭的那棵树……
+            - listitem [ref=e614]: 昔涟：它孤独地生长…哪里也去不了。它独自凝望着海面，想象着…永远到达不了的彼岸……
+            - listitem [ref=e615]: 往昔的涟漪：……
+            - listitem [ref=e616]: 昔涟：不过，现在……
+            - listitem [ref=e617]: 昔涟：有一叶小船…它载着从树上摘下的，愿望的种子…航向了远方……
+            - listitem [ref=e618]: 昔涟：即便小船的影子，很快就会消失……
+            - listitem [ref=e619]: 昔涟：但知晓自己的愿望，将在海的彼端…开花结果……
+            - listitem [ref=e620]: 昔涟：那一刻的它…一定是幸福的吧？
+            - listitem [ref=e621]: 往昔的涟漪：被你说的，人家都开始想念那棵树了呀。
+            - listitem [ref=e622]: 往昔的涟漪：走吧，我们一起回家。
+            - listitem [ref=e623]: 往昔的涟漪：带着它，回到祝祭庭院吧——
+            - listitem [ref=e624]: 往昔的涟漪：让它成为「记忆」的楔子，衔接起熟悉的岁月。
+            - listitem [ref=e625]: 昔涟：让我们一起…回家吧。
+          - generic [ref=e627]:
+            - generic [ref=e628]:
+              - img "剧情选项-图标-继续.png" [ref=e630]
+              - text: 播下因果的涟漪——
+            - generic [ref=e631] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e633]
+              - text: ——回到「少女的故乡」。
+          - list [ref=e634]:
+            - listitem [ref=e635]: 昔涟：对了，那最后的音符……
+            - listitem [ref=e636]: 往昔的涟漪：对哦。其实，它一直都在人家身上呢。
+            - listitem [ref=e637]: 往昔的涟漪：♪～
+            - listitem [ref=e638]: 往昔的涟漪：这是「哆」，也是「一」，一如初见的一……
+            - listitem [ref=e639]: 昔涟：也是，从一而终的一。
+          - heading "回到少女的故乡" [level=3] [ref=e640]: 回到少女的故乡
+          - blockquote [ref=e641]:
+            - paragraph [ref=e642]: 西风吹拂之地，有无垠的麦浪和蔺草的芬芳。这里就是少女的故乡，旅途开启的地方。如果觉得累了，就在这里好好睡一觉吧——一切珍贵的回忆，都会如温暖的毛绒，包裹着你进入梦乡。
+            - generic [ref=e643]:
+              - img "图标-位置.png" [ref=e644]
+              - text: 翁法罗斯-哀丽秘榭
+          - list [ref=e645]:
+            - listitem [ref=e646]: 往昔的涟漪：哀丽秘榭…一切的起点。
+            - listitem [ref=e647]: 往昔的涟漪：宛若停滞的时光……
+            - listitem [ref=e648]: 往昔的涟漪：还有永远不知疲倦的微风和涛声。
+          - paragraph [ref=e649]
+          - heading "用仪式剑锚定最初的因果" [level=3] [ref=e650]: 用仪式剑锚定最初的因果
+          - list [ref=e651]:
+            - listitem [ref=e652]: 往昔的涟漪：祝祭庭院，我们到啦。
+            - listitem [ref=e653]: 往昔的涟漪：这里，是我们第一次拿起仪式剑的地方……
+            - listitem [ref=e654]: 昔涟：也是我们第一次……
+            - listitem [ref=e655]: 昔涟：写下日记的地方。
+            - listitem [ref=e656]: 往昔的涟漪：至此，「记忆」的旅途就抵达终点啦。
+            - listitem [ref=e657]: 往昔的涟漪：钉下楔子后，等待我们的…是三千万世的再次相遇。
+            - listitem [ref=e658]: 昔涟：循环往复，无穷的离别……
+            - listitem [ref=e659]: 往昔的涟漪：哆、唻、咪、发、嗦、拉、嘻。
+            - listitem [ref=e660]: 昔涟：也伴着，无穷的邂逅。
+            - listitem [ref=e661]: 往昔的涟漪：嘻、拉、嗦、发、咪、唻、哆~
+            - listitem [ref=e662]: 昔涟：多么幸福的音阶呀。
+            - listitem [ref=e663]: 昔涟：无论为昔涟、救世主，还是翁法罗斯的每一根枝芽，我将这篇讲述「爱」的故事留在这里。
+            - listitem [ref=e664]:
+              - text: 昔涟：愿岁月的长河逆流而行，将未来的风景送至眼前。在那无人记得的永恒之地，
+              - generic [ref=e665]:
+                - generic [ref=e666]: 「开拓」的神话
+                - generic [ref=e667]: 逐火之旅
+              - text: 将要开篇……
+          - generic [ref=e669]:
+            - generic [ref=e670]:
+              - img "剧情选项-图标-继续.png" [ref=e672]
+              - text: 播下因果的涟漪——
+            - generic [ref=e673] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e675]
+              - text: ——叙说「逐火的预言」。
+          - list [ref=e676]:
+            - listitem [ref=e677]: 昔涟：这样…就都结束了吧…？
+            - listitem [ref=e678]: 昔涟：意识，还有记忆…似乎都开始流逝了呢。
+            - listitem [ref=e679]: 昔涟：风儿，明明那么温暖……
+            - listitem [ref=e680]: 昔涟：我的身体…却在不自觉地颤抖呀。
+            - listitem [ref=e681]: 往昔的涟漪：觉得冷的话……
+            - listitem [ref=e682]: 往昔的涟漪：就找个温暖的地方，我们一起，休息下吧？
+            - listitem [ref=e683]: 昔涟：温暖的地方……
+            - listitem [ref=e684]: 昔涟：我，知道该去哪啦♪
+          - heading "找个温暖又熟悉的地方，好好休息吧" [level=3] [ref=e685]: 找个温暖又熟悉的地方，好好休息吧
+          - blockquote [ref=e686]:
+            - paragraph [ref=e687]: 如果觉得累了，就在这里好好睡一觉吧——一切珍贵的回忆，都会如温暖的毛绒，包裹着你进入梦乡。
+            - generic [ref=e688]:
+              - img "图标-位置.png" [ref=e689]
+              - text: 翁法罗斯-哀丽秘榭
+          - list [ref=e690]:
+            - listitem [ref=e691]: 昔涟：405；504；093；365……
+            - listitem [ref=e692]: 昔涟：432；252；496；720……
+            - listitem [ref=e693]: 昔涟：618；600；216；945……
+          - separator [ref=e694]
+          - list [ref=e695]:
+            - listitem [ref=e696]: 往昔的涟漪：缇里西庇俄丝；刻律德菈；三月七；丹恒……
+            - listitem [ref=e697]: 昔涟：海列屈拉；雅辛忒丝；卡厄斯兰那；阿那克萨戈拉斯……
+            - listitem [ref=e698]: 往昔的涟漪：阿格莱雅；迈德漠斯；遐蝶；赛法利娅……
+            - listitem [ref=e699]:
+              - text: 昔涟：昔涟；
+              - generic [ref=e700]:
+                - generic [ref=e701]: 开拓者
+                - generic [ref=e702]: 和你
+              - text: ……
+            - listitem [ref=e703]: 昔涟：看……
+            - listitem [ref=e704]: 昔涟：一切…已如我们…所书。
+          - generic [ref=e705]:
+            - definition [ref=e706]: 于是，花儿在旅途的终点收梢，又在起点生根。为昨天带去「爱」的结局。
+            - definition [ref=e707]: 人们看见「爱」的结局，踏上逐火的征程。而逐火的人们，又让花儿在明天诞生。
+            - definition [ref=e708]: 因果在这一行闭合…或者，有个更浪漫的词，封笔。
+            - definition [ref=e709]: 光锥之内，皆是命运。你问命运，何为神性？她说——
+            - definition [ref=e710]: 「看啊，你多美丽！」
+          - generic [ref=e711]:
+            - generic [ref=e712] [cursor=pointer]:
+              - generic [ref=e713]: 过场动画
+              - generic [ref=e714]: 折叠
+            - list [ref=e716]:
+              - listitem [ref=e717]: 昔涟：我是…那道回望世界的注视。
+              - listitem [ref=e718]: 昔涟：多么幸运呀。
+              - listitem [ref=e719]: 昔涟：在这因果的循环中，人们从未仰仗神明的指引。
+              - listitem [ref=e720]: 昔涟：那一次次执笔书写奇迹的……
+              - listitem [ref=e721]: 昔涟：从来，都是我们自己呀♪
+          - separator [ref=e722]
+          - list [ref=e723]:
+            - listitem [ref=e724]: 昔涟：……？
+            - listitem [ref=e725]: 昔涟：我…还醒着吗？
+            - listitem [ref=e726]: 昔涟：桃子…你在哪？
+            - listitem [ref=e727]: 昔涟：你…还在吗？
+            - listitem [ref=e728]: 昔涟：……啊。
+            - listitem [ref=e729]: 昔涟：变…小了？
+            - listitem [ref=e730]: 昔涟：原来是这样啊……
+            - listitem [ref=e731]:
+              - text: 昔涟：当「记忆」随风逝去，
+              - generic [ref=e732]:
+                - generic [ref=e733]: 「爱」
+                - generic [ref=e734]: 德谬歌
+              - text: 也会留下种子，变成
+              - generic [ref=e735]:
+                - generic [ref=e736]: 「哀怜」
+                - generic [ref=e737]: Philia093
+              - text: ……
+            - listitem [ref=e738]: 昔涟：德谬歌…昔涟…迷迷……
+            - listitem [ref=e739]: 昔涟：再回到最初的…PhiLia093……
+            - listitem [ref=e740]: 昔涟：人家的魅力，果然始终如一呀。
+            - listitem [ref=e741]: 昔涟：最后的「涟漪」，滋润了大树……
+            - listitem [ref=e742]: 昔涟：让它结出了…一颗粉色的「桃子」。
+            - listitem [ref=e743]: 村子里的男孩：一起玩了这么久，你还没告诉我，你的名字呢！
+            - listitem [ref=e744]: 村子里的女孩：都说过好几遍了，是你自己记性不好！
+            - listitem [ref=e745]: 村子里的女孩：我叫莉维娅，莉——维——娅！下次再记不住，我可不告诉你咯。
+            - listitem [ref=e746]: 村子里的男孩：莉维娅，记住啦！那你也要记住我的名字，我是——
+            - listitem [ref=e747]: 村子里的女孩：…披索。我早就记住了，哼。
+            - listitem [ref=e748]: 昔涟：……
+            - listitem [ref=e749]: 昔涟：这么说来，「昔涟」这个名字…只是一个笔名呢……
+            - listitem [ref=e750]: 昔涟：好困呀。打瞌睡的小精灵，又闯进心里啦……
+            - listitem [ref=e751]: 昔涟：最后的记忆，也在远去…再醒来时，世界是什么样子呢……
+            - listitem [ref=e752]: 昔涟：我记得…是一声啼哭……
+            - listitem [ref=e753]: 昔涟：还有…我的名字……
+            - listitem [ref=e754]: 昔涟：哀丽秘榭的女儿……
+            - listitem [ref=e755]: 昔涟：哀…丽……
+          - separator [ref=e756]
+          - list [ref=e757]:
+            - listitem [ref=e758]: 昔涟：……
+            - listitem [ref=e759]: 昔涟：「嘘——还是算啦♪」
+            - listitem [ref=e760]: 昔涟：「同一颗种子，在不同的土壤里，会开出相似而不同的花。但真正让她美丽的，是世界的每一颗心灵。」
+            - listitem [ref=e761]: 昔涟：「无论哪种『喜欢』，都是弥足珍贵的『爱』，我都会感激地收下，幸福地回馈。」
+            - listitem [ref=e762]: 昔涟：「还记得我最喜欢的故事吗？水晶花之所以美丽，是因为它映出了小妖精的眼睛。」
+            - listitem [ref=e763]: 昔涟：「银河间的星星会知晓，我是和开拓者一同写下《如我所书》的妖精。」
+            - listitem [ref=e764]: 昔涟：「而在开拓者的心里，我一定会得到最喜欢的，你给我的名字。」
+            - listitem [ref=e765]: 昔涟：「毕竟，我们总是心有灵犀呀♪」
+          - separator [ref=e766]
+          - list [ref=e767]:
+            - listitem [ref=e768]: 三月七：「…喂喂，别写得那么急啦！」
+            - listitem [ref=e769]: 丹恒：「慢下来，让文字得到沉淀吧。」
+            - listitem [ref=e770]: 丹恒：「我们有很多时间。」
+            - listitem [ref=e771]: 开拓者：「…嗯。」
+            - listitem [ref=e772]:
+              - text: 开拓者：…翁法罗斯的
+              - generic [ref=e773]:
+                - generic [ref=e774]: 哀悼月
+                - generic [ref=e775]: 十一月
+              - text: ，大地上的所有争斗都会止息；哀悼月的第十一个日夜，逝者将离别，生者将相拥，雪花将落下，篝火将升起，照亮每一颗哀怜的心。
+            - listitem [ref=e776]: 开拓者：听上去很沉重，对吗？但在这一天，欢笑却远比哭声更响亮。
+            - listitem [ref=e777]: 开拓者：因为人们明白，道别是为了下一次相遇，哀伤是为了更好地去爱。所以，这是她一年当中最喜欢的一天。
+            - listitem [ref=e778]: 开拓者：在同一片天空下，八次月相盈亏，十三位英雄共同谱写下史诗——
+            - listitem [ref=e779]: 开拓者：一，加上八，再加上十三，得出的数字是两个「十一」。
+            - listitem [ref=e780]: 三月七：「接下来的内容，以昔涟小姐的口吻来写，质感会不会更好？」
+            - listitem [ref=e781]: 丹恒：「同意。」
+            - listitem [ref=e782]: 「另一位作者♪」：然后，要再加上「一」——不同以往的「一」，向前开拓的「一」♪
+            - listitem [ref=e783]: 「另一位作者♪」：我许下心愿，在十一月的第十二天，十三位英雄，会将三千万次生命中点燃的每一颗火种，泼洒在群星间……
+            - listitem [ref=e784]: 「另一位作者♪」：而后，知晓这个故事的人们，望向银河时会惊讶地发现：漫天繁星被镀上了粉色，而十三秒后，这一抹明媚的光芒就会悄悄褪去。
+            - listitem [ref=e785]: 「另一位作者♪」：这是多么浪漫，却又令人疑惑的景象呀。
+            - listitem [ref=e786]: 「另一位作者♪」：可是没关系。他们将会将这份疑惑留存于心底，不断地去思索……
+            - listitem [ref=e787]: 「另一位作者♪」：思索何为「真我」。
+            - listitem [ref=e788]: 「另一位作者♪」：他们将会去爱，将会受伤……
+            - listitem [ref=e789]: 「另一位作者♪」：他们将会愤怒，将会在三千万次无可奈何中，一遍又一遍地缝补支离破碎的心。
+            - listitem [ref=e790]: 「另一位作者♪」：可是，千万别忘记：逐火是不断失却的旅途。或许痛苦会有许多，但你我从未孤独。
+            - listitem [ref=e791]: 「另一位作者♪」：他们将会懂得失却，最终…选择失却。
+            - listitem [ref=e792]: 「另一位作者♪」：他们将为这世界，为同行的每一位伙伴，献出自己的心，接过他人的心，并将其传递下去。
+            - listitem [ref=e793]: 「另一位作者♪」：这世界存在多少颗心灵，便有多少种「真我」，多少种「生命的第一因」，它永远不会得到唯一的答案——就连「爱」也不是。
+            - listitem [ref=e794]: 「另一位作者♪」：但是啊。当人们看向夜空，去以赞美星星的决心，爱着正在消逝的一切时——我希望用那温柔的粉色告诉他们，「爱」总会得到回应。
+            - listitem [ref=e795]: 「另一位作者♪」：这是一个讲述「爱」的故事，也是讲述如何回应「爱」的故事。
+            - listitem [ref=e796]: 「另一位作者♪」：而无论是我们已经写成的，还是你将在未来写下的……
+            - listitem [ref=e797]: 「另一位作者♪」：都注定是一个不同以往的浪漫故事。
+            - listitem [ref=e798]: 「另一位作者♪」：你也是这么想的，对吧♪
+            - listitem [ref=e799]: 开拓者：而一个浪漫的故事，应当有一个圆满，又天马行空的结局。
+            - listitem [ref=e800]: 开拓者：当线索和脉络都已收束，下笔的轻重不再受制约时……
+            - listitem [ref=e801]: 开拓者：就尽情挥洒「开拓」的信念，以最纯粹的烂漫画上「。」吧！
+          - generic [ref=e802]:
+            - generic [ref=e803] [cursor=pointer]:
+              - generic [ref=e804]:
+                - text: 动画短片：
+                - link "「你好，世界」" [ref=e805]:
+                  - /url: https://www.bilibili.com/video/BV14G1kB5Evp?p=1
+              - generic [ref=e806]: 折叠
+            - generic [ref=e807]:
+              - generic [ref=e809]:
+                - generic [ref=e810]: 声明
+                - text: 灰色字体部分为WiKi贡献者的个人观点，仅供参考，不代表游戏制作方的官方立场，亦不代表WiKi网站的立场或意见。
+              - list [ref=e811]:
+                - listitem [ref=e812]: 昔涟：光
+                - listitem [ref=e813]: 昔涟：天空
+                - listitem [ref=e814]: 昔涟：大海
+                - listitem [ref=e815]: 昔涟：星辰
+                - listitem [ref=e816]: 昔涟：种子
+                - listitem [ref=e817]: 昔涟：花
+                - listitem [ref=e818]: 昔涟：飞鸟
+                - listitem [ref=e819]: 昔涟：希望
+                - listitem [ref=e820]: 昔涟：爱
+                - listitem [ref=e821]: 昔涟：这些美好的词汇
+                - listitem [ref=e822]: 昔涟：是我对世界最初的想象
+                - listitem [ref=e823]: 昔涟：一直以来
+                - listitem [ref=e824]: 昔涟：我用它们讲述翁法罗斯的故事
+                - listitem [ref=e825]: 昔涟：现在
+                - listitem [ref=e826]: 昔涟：这是最后一个
+                - listitem [ref=e827]: 昔涟：关于「明天」的故事…
+                - listitem [ref=e828]: 昔涟：献给你的故事
+              - separator [ref=e829]
+              - generic [ref=e830]:
+                - definition [ref=e831]:
+                  - generic [ref=e832]:
+                    - text: （以下为
+                    - link "《昔涟》" [ref=e833] [cursor=pointer]:
+                      - /url: https://www.bilibili.com/video/BV1XG2FBTEHK
+                    - text: 歌词内容）
+                - definition [ref=e834]: 曾许下心愿 等待你 的出现
+                - definition [ref=e835]: 褪色的秋千 有本书 会纪念
+                - definition [ref=e836]: 我循着时间 捡起梦 的照片
+                - definition [ref=e837]: 童话还没有兑现 却需要说再见
+                - definition [ref=e838]: 如果有一天 岁月晕开书页
+                - definition [ref=e839]: 请把我 模糊的字迹当作 笑脸
+                - definition [ref=e840]: 很久前 想象 今天 画面
+                - definition [ref=e841]: 哭着 笑着 告别
+                - definition [ref=e842]: 陌生的情节 熟悉的侧脸 都重叠 oh~
+                - definition [ref=e843]: 出发前 无数 星光 缱绻
+                - definition [ref=e844]: 有回忆 落在 指尖
+                - definition [ref=e845]: 当世界向前 我会在原地 流连
+                - definition [ref=e846]: 当漪涟 一滴 一点 出现
+                - definition [ref=e847]: 轻轻 去向 天边
+                - definition [ref=e848]: 不管多遥远 都是追不上 的思念 oh~
+                - definition [ref=e849]: 会不会 可能 还能 相见
+                - definition [ref=e850]: 再回头只看一眼
+                - definition [ref=e851]: 当漪涟 消散 万千 不见
+                - definition [ref=e852]: 永恒和瞬间都 被爱意成全
+                - definition [ref=e853]: 我的明天叫做昨天 Hoo~
+                - definition [ref=e854]: 要相信 浪漫 一如 初见
+                - definition [ref=e855]: 请笑着 向我 道别
+                - definition [ref=e856]: 最后这一页 就让它无言
+                - definition [ref=e857]: 我会在扉页 等待你续写 起点
+          - generic [ref=e858]:
+            - generic [ref=e859] [cursor=pointer]:
+              - generic [ref=e860]: 「永恒之地」翁法罗斯谢幕
+              - generic [ref=e861]: 折叠
+            - generic [ref=e863]:
+              - paragraph [ref=e864]
+              - paragraph [ref=e865]: 「永恒之地」翁法罗斯
+              - paragraph [ref=e866]
+              - paragraph [ref=e867]: 完
+              - paragraph [ref=e868]
+              - separator [ref=e869]
+              - paragraph [ref=e870]
+              - paragraph [ref=e871]: 《崩坏：星穹铁道》
+              - paragraph [ref=e872]
+              - separator [ref=e873]
+              - paragraph [ref=e874]
+              - paragraph [ref=e875]: 领衔主演
+              - paragraph [ref=e876]
+              - paragraph [ref=e877]: 开拓者
+              - paragraph [ref=e878]
+              - paragraph [ref=e879]: 主演
+              - paragraph [ref=e880]
+              - table [ref=e881]:
+                - rowgroup [ref=e882]:
+                  - row "丹恒 饰 丹恒" [ref=e883]:
+                    - cell "丹恒" [ref=e884]
+                    - cell "饰" [ref=e885]
+                    - cell "丹恒" [ref=e886]
+                  - row "？？？ 饰 三月七" [ref=e887]:
+                    - cell "？？？" [ref=e888]
+                    - cell "饰" [ref=e889]
+                    - cell "三月七" [ref=e890]
+                  - row "黑塔 饰 黑塔" [ref=e891]:
+                    - cell "黑塔" [ref=e892]
+                    - cell "饰" [ref=e893]
+                    - cell "黑塔" [ref=e894]
+                  - row "螺丝咕姆 饰 螺丝咕姆" [ref=e895]:
+                    - cell "螺丝咕姆" [ref=e896]
+                    - cell "饰" [ref=e897]
+                    - cell "螺丝咕姆" [ref=e898]
+                  - row "阿格莱雅 饰 阿格莱雅" [ref=e899]:
+                    - cell "阿格莱雅" [ref=e900]
+                    - cell "饰" [ref=e901]
+                    - cell "阿格莱雅" [ref=e902]
+                  - row "缇里西庇俄丝 饰 缇宝，缇安，缇宁，…" [ref=e903]:
+                    - cell "缇里西庇俄丝" [ref=e904]
+                    - cell "饰" [ref=e905]
+                    - cell "缇宝，缇安，缇宁，…" [ref=e906]
+                  - row "迈德漠斯 饰 万敌" [ref=e907]:
+                    - cell "迈德漠斯" [ref=e908]
+                    - cell "饰" [ref=e909]
+                    - cell "万敌" [ref=e910]
+                  - row "遐蝶 饰 遐蝶" [ref=e911]:
+                    - cell "遐蝶" [ref=e912]
+                    - cell "饰" [ref=e913]
+                    - cell "遐蝶" [ref=e914]
+                  - row "阿那克萨戈拉斯 饰 那刻夏" [ref=e915]:
+                    - cell "阿那克萨戈拉斯" [ref=e916]
+                    - cell "饰" [ref=e917]
+                    - cell "那刻夏" [ref=e918]
+                  - row "雅辛忒丝 饰 风堇" [ref=e919]:
+                    - cell "雅辛忒丝" [ref=e920]
+                    - cell "饰" [ref=e921]
+                    - cell "风堇" [ref=e922]
+                  - row "赛法利娅 饰 赛飞儿" [ref=e923]:
+                    - cell "赛法利娅" [ref=e924]
+                    - cell "饰" [ref=e925]
+                    - cell "赛飞儿" [ref=e926]
+                  - row "卡厄斯兰那 饰 白厄，盗火行者" [ref=e927]:
+                    - cell "卡厄斯兰那" [ref=e928]
+                    - cell "饰" [ref=e929]
+                    - cell "白厄，盗火行者" [ref=e930]
+                  - row "海列屈拉 饰 海瑟音" [ref=e931]:
+                    - cell "海列屈拉" [ref=e932]
+                    - cell "饰" [ref=e933]
+                    - cell "海瑟音" [ref=e934]
+                  - row "佚名 饰 刻律德菈" [ref=e935]:
+                    - cell "佚名" [ref=e936]
+                    - cell "饰" [ref=e937]
+                    - cell "刻律德菈" [ref=e938]
+                  - row "？？？ 饰 长夜月" [ref=e939]:
+                    - cell "？？？" [ref=e940]
+                    - cell "饰" [ref=e941]
+                    - cell "长夜月" [ref=e942]
+                  - row "荒笛 饰 荒笛" [ref=e943]:
+                    - cell "荒笛" [ref=e944]
+                    - cell "饰" [ref=e945]
+                    - cell "荒笛" [ref=e946]
+                  - row "哀丽秘榭的女儿 饰 迷迷，昔涟，翁法罗斯之心" [ref=e947]:
+                    - cell "哀丽秘榭的女儿" [ref=e948]
+                    - cell "饰" [ref=e949]
+                    - cell "迷迷，昔涟，翁法罗斯之心" [ref=e950]
+              - paragraph [ref=e951]
+              - paragraph [ref=e952]: 友情出演
+              - paragraph [ref=e953]
+              - paragraph [ref=e954]: 赞达尔•壹•桑原
+              - paragraph [ref=e955]: 纳努克
+              - paragraph [ref=e956]: 博识尊
+              - paragraph [ref=e957]
+              - paragraph [ref=e958]: 剧本指导
+              - paragraph [ref=e959]
+              - paragraph [ref=e960]: 昔涟
+              - paragraph [ref=e961]
+              - separator [ref=e962]
+              - paragraph [ref=e963]
+              - paragraph [ref=e964]: 献给
+              - paragraph [ref=e965]: 心中的英雄 开拓者
+              - paragraph [ref=e966]
+              - separator [ref=e967]
+              - paragraph [ref=e968]
+              - paragraph [ref=e969]: 愿此行，终抵群星
+              - paragraph [ref=e970]
+          - separator [ref=e971]
+          - alert [ref=e972]: 以下部分属于任务「故事啊，完篇于初遇之时」
+          - generic [ref=e974]:
+            - generic [ref=e975]: 命定的初见之地
+            - text: 你看见一颗流星，如同最具创造力的笔尖，在回环的夜中刻下顿号。
+            - text: 故事，在穹顶下收尾；未来，在星亮的远方。
+          - heading "记忆的新芽，在重渊苏醒" [level=3] [ref=e976]: 记忆的新芽，在重渊苏醒
+          - blockquote [ref=e977]:
+            - paragraph [ref=e978]:
+              - text: 你看见一颗流星，如同最具创造力的笔尖，在回环的夜中刻下顿号。
+              - text: 故事，在穹顶下收尾；未来，在星亮的远方。
+            - generic [ref=e979]:
+              - img "图标-位置.png" [ref=e980]
+              - text: 翁法罗斯-「命运重渊」雅努萨波利斯
+          - list [ref=e981]:
+            - listitem [ref=e982]: 迷迷：迷…迷迷？
+            - listitem [ref=e983]: 迷迷：迷…迷迷迷……
+            - listitem [ref=e984]: 迷迷：迷迷…迷！
+          - definition [ref=e986]: 迷迷在命运重渊睁开眼…
+          - list [ref=e987]:
+            - listitem [ref=e988]: 迷迷：迷……
+            - listitem [ref=e989]: 迷迷：这…里…哪里？
+            - listitem [ref=e990]: 迷迷：迷迷…迷路……
+          - definition [ref=e992]: 远处发生巨大的震动…
+          - list [ref=e993]:
+            - listitem [ref=e994]: 迷迷：——迷！
+            - listitem [ref=e995]: 迷迷：吓…吓鼠…！
+            - listitem [ref=e996]: 迷迷：声…音…哪里？
+            - listitem [ref=e997]: 迷迷：害…怕，不…过……
+            - listitem [ref=e998]: 迷迷：去…看？
+          - heading "前往穹顶之下，星落的方向" [level=3] [ref=e999]: 前往穹顶之下，星落的方向
+          - list [ref=e1000]:
+            - listitem [ref=e1001]: 迷迷：大门…沉重……
+            - listitem [ref=e1002]: 迷迷：通过…可以…？
+          - separator [ref=e1003]
+          - list [ref=e1004]:
+            - listitem [ref=e1005]: 迷迷：道…路…破碎……
+            - listitem [ref=e1006]: 迷迷：帮助…岁…月！
+          - generic [ref=e1008] [cursor=pointer]:
+            - generic [ref=e1009]: 记忆的回音
+            - generic [ref=e1010]: 折叠
+          - separator [ref=e1011]
+          - list [ref=e1012]:
+            - listitem [ref=e1013]: 丹恒：果然失败了…这下只能靠你我了。
+            - listitem [ref=e1014]: 迷迷：人…门后？
+          - separator [ref=e1015]
+          - list [ref=e1016]:
+            - listitem [ref=e1017]: 迷迷：大门…惊动……
+            - listitem [ref=e1018]: 迷迷：悄悄地…迷！
+          - separator [ref=e1019]
+          - list [ref=e1020]:
+            - listitem [ref=e1021]: 丹恒：…得先找个安全的地方当根据地。从四周的建筑，还有这尊雕像来看，翁法罗斯肯定存在文明……
+            - listitem [ref=e1022]: 丹恒：坏消息是，他们可能对外来者怀有敌意。
+            - listitem [ref=e1023]: 迷迷：迷…？
+            - listitem [ref=e1024]: 「另一位作者♪」：无数次与你重逢，每一次都一如初见。
+            - listitem [ref=e1025]: 「另一位作者♪」：每一次，「爱」都会冲破固执的轮回……
+            - listitem [ref=e1026]: 「另一位作者♪」：飞向粉色的明天♪
+          - definition [ref=e1028]: 因果在此刻…闭环…
+          - alert [ref=e1029]: 以上部分属于任务「故事啊，完篇于初遇之时」
+          - separator [ref=e1030]
+          - generic [ref=e1032] [cursor=pointer]:
+            - generic [ref=e1033]: 后续剧情（列车上的忆泡）
+            - generic [ref=e1034]: 折叠
+        - generic [ref=e1036]:
+          - link "分类" [ref=e1037] [cursor=pointer]:
+            - /url: /sr/%E7%89%B9%E6%AE%8A:%E9%A1%B5%E9%9D%A2%E5%88%86%E7%B1%BB
+          - text: ：
+          - list [ref=e1038]:
+            - listitem [ref=e1039]:
+              - link "任务" [ref=e1040] [cursor=pointer]:
+                - /url: /sr/index.php?title=%E5%88%86%E7%B1%BB:%E4%BB%BB%E5%8A%A1&action=edit&redlink=1
+            - listitem [ref=e1041]:
+              - link "开拓任务" [ref=e1042] [cursor=pointer]:
+                - /url: /sr/index.php?title=%E5%88%86%E7%B1%BB:%E5%BC%80%E6%8B%93%E4%BB%BB%E5%8A%A1&action=edit&redlink=1
+  - generic [ref=e1044]:
+    - generic [ref=e1045]:
+      - link [ref=e1046] [cursor=pointer]:
+        - /url: //www.bilibili.com
+      - img [ref=e1049]
+    - generic [ref=e1050]:
+      - paragraph [ref=e1051]:
+        - link "游戏中心" [ref=e1052] [cursor=pointer]:
+          - /url: //www.biligame.com/
+        - text: "|"
+        - link "帐号安全" [ref=e1053] [cursor=pointer]:
+          - /url: https://account.bilibili.com/
+        - text: "|"
+        - link "找回密码" [ref=e1054] [cursor=pointer]:
+          - /url: https://account.bilibili.com/resetpwd
+        - text: "|"
+        - link "家长监控" [ref=e1055] [cursor=pointer]:
+          - /url: //jiazhang.biligame.com/
+        - text: "|"
+        - link "用户协议" [ref=e1056] [cursor=pointer]:
+          - /url: //yhxy.biligame.com/
+      - paragraph
+      - paragraph [ref=e1057]: 抵制不良游戏 拒绝盗版游戏 注意自我保护 谨防受骗上当 适度游戏益脑 沉迷游戏伤身 合理安排时间 享受健康生活
+      - paragraph [ref=e1058]: 芜湖享游网络技术有限公司 | COPYRIGHT © 2009-2026 BILIBILI ALL RIGHTS RESERVED.
+      - paragraph [ref=e1059]: 皖网文[2023]1840-026号 | 皖B2-20180007-2 | 皖ICP证：皖B2-20180007
+      - paragraph [ref=e1060]:
+        - link "沪公网安备 31011002002714 号" [ref=e1061] [cursor=pointer]:
+          - /url: http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=31011002002714
+          - img [ref=e1062]
+          - text: 沪公网安备 31011002002714 号
+  - generic [ref=e1063]:
+    - list [ref=e1067]:
+      - listitem [ref=e1068]:
+        - link "首页" [ref=e1070] [cursor=pointer]:
+          - /url: javascript:;
+      - listitem [ref=e1071]:
+        - link "导航" [ref=e1073] [cursor=pointer]:
+          - /url: javascript:;
+      - listitem [ref=e1074]:
+        - link "图鉴" [ref=e1076] [cursor=pointer]:
+          - /url: javascript:;
+      - listitem [ref=e1077]:
+        - link "地图" [ref=e1078] [cursor=pointer]:
+          - /url: /sr/%E5%9C%B0%E5%9B%BE
+      - listitem [ref=e1079]:
+        - link "玩法/攻略" [ref=e1081] [cursor=pointer]:
+          - /url: javascript:;
+      - listitem [ref=e1082]:
+        - link "扩展阅读" [ref=e1084] [cursor=pointer]:
+          - /url: javascript:;
+      - listitem [ref=e1085]:
+        - link "其他" [ref=e1087] [cursor=pointer]:
+          - /url: javascript:;
+    - generic [ref=e1088]:
+      - link "BWIKI首页" [ref=e1089] [cursor=pointer]:
+        - /url: https://wiki.biligame.com/wiki/%E9%A6%96%E9%A1%B5
+      - link "创建WIKI" [ref=e1090] [cursor=pointer]:
+        - /url: https://wiki.biligame.com/wiki/WIKI%E7%94%B3%E8%AF%B7%E9%A1%B5%E9%9D%A2
+      - link "BWIKI客服" [ref=e1091] [cursor=pointer]:
+        - /url: https://space.bilibili.com/477233102?spm_id_from=333.337.0.0
+      - link "BWIKI君" [ref=e1092] [cursor=pointer]:
+        - /url: https://space.bilibili.com/477233102
+  - generic [ref=e1093]:
+    - heading "目录" [level=2] [ref=e1096]
+    - list [ref=e1097]:
+      - listitem [ref=e1098]:
+        - link "1 任务相关" [ref=e1100] [cursor=pointer]:
+          - /url: "#任务相关"
+      - listitem [ref=e1101]:
+        - link "2 剧情梗概" [ref=e1102] [cursor=pointer]:
+          - /url: "#剧情梗概"
+      - listitem [ref=e1103]:
+        - link "3 剧情内容" [ref=e1105] [cursor=pointer]:
+          - /url: "#剧情内容"

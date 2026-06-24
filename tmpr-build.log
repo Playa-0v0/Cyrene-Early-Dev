@@ -1,0 +1,36 @@
+
+> live2d-cyrene@0.1.0 build:renderer
+> vite build
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+[36mvite v5.4.21 [32mbuilding for production...[36m[39m
+transforming...
+[32m✓[39m 498 modules transformed.
+rendering chunks...
+computing gzip size...
+[2m../../dist/renderer/[22m[32mindex.html                    [39m[1m[2m  0.90 kB[22m[1m[22m[2m │ gzip:   0.50 kB[22m
+[2m../../dist/renderer/[22m[32msticker-manager/index.html    [39m[1m[2m  0.97 kB[22m[1m[22m[2m │ gzip:   0.50 kB[22m
+[2m../../dist/renderer/[22m[32msidebar/index.html            [39m[1m[2m  3.83 kB[22m[1m[22m[2m │ gzip:   1.20 kB[22m
+[2m../../dist/renderer/[22m[32mtasks/index.html              [39m[1m[2m  4.18 kB[22m[1m[22m[2m │ gzip:   1.44 kB[22m
+[2m../../dist/renderer/[22m[32mchat/index.html               [39m[1m[2m  6.23 kB[22m[1m[22m[2m │ gzip:   1.92 kB[22m
+[2m../../dist/renderer/[22m[32msettings/index.html           [39m[1m[2m 53.89 kB[22m[1m[22m[2m │ gzip:  13.12 kB[22m
+[2m../../dist/renderer/[22m[35massets/stickers-Dj4pux-t.css  [39m[1m[2m  2.44 kB[22m[1m[22m[2m │ gzip:   0.98 kB[22m
+[2m../../dist/renderer/[22m[35massets/base-BTHABN_A.css      [39m[1m[2m  3.34 kB[22m[1m[22m[2m │ gzip:   1.23 kB[22m
+[2m../../dist/renderer/[22m[35massets/sidebar-C0QhhRHI.css   [39m[1m[2m  7.36 kB[22m[1m[22m[2m │ gzip:   1.97 kB[22m
+[2m../../dist/renderer/[22m[35massets/tasks-Bp8eZ_ue.css     [39m[1m[2m  8.10 kB[22m[1m[22m[2m │ gzip:   2.10 kB[22m
+[2m../../dist/renderer/[22m[35massets/chat-DbYDYooW.css      [39m[1m[2m 21.55 kB[22m[1m[22m[2m │ gzip:   5.10 kB[22m
+[2m../../dist/renderer/[22m[35massets/settings-wrVYfvbJ.css  [39m[1m[2m 38.76 kB[22m[1m[22m[2m │ gzip:   7.51 kB[22m
+[2m../../dist/renderer/[22m[36massets/tasks-t1kNeXV2.js      [39m[1m[2m  0.32 kB[22m[1m[22m[2m │ gzip:   0.19 kB[22m
+[2m../../dist/renderer/[22m[36massets/base-CVzNOcnc.js       [39m[1m[2m  0.71 kB[22m[1m[22m[2m │ gzip:   0.40 kB[22m
+[2m../../dist/renderer/[22m[36massets/chat-ui-kPmAHPjl.js    [39m[1m[2m  0.72 kB[22m[1m[22m[2m │ gzip:   0.41 kB[22m
+[2m../../dist/renderer/[22m[36massets/stickers-C-uk3SG1.js   [39m[1m[2m  1.18 kB[22m[1m[22m[2m │ gzip:   0.52 kB[22m
+[2m../../dist/renderer/[22m[36massets/sidebar-Dr6cTAtt.js    [39m[1m[2m  2.70 kB[22m[1m[22m[2m │ gzip:   1.24 kB[22m
+[2m../../dist/renderer/[22m[36massets/chat-C889pimx.js       [39m[1m[2m 21.03 kB[22m[1m[22m[2m │ gzip:   7.80 kB[22m
+[2m../../dist/renderer/[22m[36massets/settings-BXVTSC2A.js   [39m[1m[2m267.00 kB[22m[1m[22m[2m │ gzip:  90.00 kB[22m
+[2m../../dist/renderer/[22m[36massets/renderer-GowutYs8.js   [39m[1m[33m620.28 kB[39m[22m[2m │ gzip: 177.81 kB[22m
+[33m
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.[39m
+[32m✓ built in 1.97s[39m

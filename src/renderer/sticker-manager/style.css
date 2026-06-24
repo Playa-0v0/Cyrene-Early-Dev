@@ -54,9 +54,8 @@ body {
 .sticker-grid {
   height: calc(100% - 52px);
   overflow-y: auto;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
-  gap: 12px;
+  column-count: 4;
+  column-gap: 14px;
   padding: 4px 6px 8px;
 }
 
@@ -66,7 +65,8 @@ body {
 
 .sticker-card {
   position: relative;
-  aspect-ratio: 1 / 1;
+  break-inside: avoid;
+  margin-bottom: 14px;
   border-radius: 20px;
   overflow: hidden;
   display: grid;
@@ -77,8 +77,8 @@ body {
 }
 
 .sticker-card img {
-  max-width: 88%;
-  max-height: 88%;
+  width: 100%;
+  max-height: 140px;
   object-fit: contain;
   transition: opacity 160ms ease, filter 160ms ease, transform 160ms ease;
   -webkit-user-drag: none;

@@ -1,0 +1,867 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2] [cursor=pointer]: 半隐黑幕
+  - navigation [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - link [ref=e9] [cursor=pointer]:
+          - /url: //game.bilibili.com/?spm_id_from=555.117.0.0
+        - list [ref=e10]:
+          - listitem [ref=e11]:
+            - link " 主站" [ref=e12] [cursor=pointer]:
+              - /url: //www.bilibili.com/?spm_id_from=555.117.0.0
+              - generic [ref=e13]: 
+              - generic [ref=e14]: 主站
+          - listitem [ref=e15]:
+            - link "首页" [ref=e16] [cursor=pointer]:
+              - /url: //game.bilibili.com/platform?spm_id_from=555.117.0.0
+          - listitem [ref=e17]:
+            - link "排行榜" [ref=e18] [cursor=pointer]:
+              - /url: //game.bilibili.com/platform/ranks?spm_id_from=555.117.0.0
+          - listitem [ref=e19]:
+            - link "发现" [ref=e20] [cursor=pointer]:
+              - /url: //game.bilibili.com/platform/discover?spm_id_from=555.117.0.0
+          - listitem [ref=e21]:
+            - link "WIKI" [ref=e22] [cursor=pointer]:
+              - /url: //wiki.biligame.com/?spm_id_from=555.117.0.0
+          - listitem [ref=e23]:
+            - link "大会员礼包" [ref=e24] [cursor=pointer]:
+              - /url: //b-gift.biligame.com/?spm_id_from=555.117.0.0
+          - listitem [ref=e25]:
+            - link "充值中心" [ref=e26] [cursor=pointer]:
+              - /url: //pay.biligame.com/?spm_id_from=555.117.0.0#/?from=gc&selectedNav=pay
+          - listitem [ref=e27]:
+            - link "我的" [ref=e28] [cursor=pointer]:
+              - /url: //game.bilibili.com/platform/mine?spm_id_from=555.117.0.0
+      - generic [ref=e29]:
+        - generic [ref=e30]:
+          - textbox "搜索更多游戏&WIKI" [ref=e31]
+          - generic [ref=e33] [cursor=pointer]: 
+        - link [ref=e37] [cursor=pointer]:
+          - /url: https://passport.bilibili.com/login?gourl=https%3A%2F%2Fwiki.biligame.com%2Fsr%2F%25E9%2587%258D%25E9%2580%25A2%25E5%2595%258A%25EF%25BC%258C%25E7%25AC%2591%25E6%25B3%25AA%25E7%259B%25B8%25E6%258B%25A5%25E7%259A%2584%25E7%25BA%25A6%25E5%25AE%259A
+  - generic [ref=e38]:
+    - generic [ref=e39]:
+      - link [ref=e41] [cursor=pointer]:
+        - /url: /sr/%E9%A6%96%E9%A1%B5
+      - listitem [ref=e42]:
+        - link "我的消息" [ref=e43] [cursor=pointer]:
+          - /url: javascript:void(0);
+      - generic [ref=e44] [cursor=pointer]: 关于本站
+      - generic [ref=e46]:
+        - generic [ref=e48]:
+          - link "首页" [ref=e50] [cursor=pointer]:
+            - /url: javascript:;
+            - text: 首页
+          - link "导航" [ref=e53] [cursor=pointer]:
+            - /url: javascript:;
+            - text: 导航
+          - link "图鉴" [ref=e56] [cursor=pointer]:
+            - /url: javascript:;
+            - text: 图鉴
+          - link "地图" [ref=e59] [cursor=pointer]:
+            - /url: /sr/%E5%9C%B0%E5%9B%BE
+          - link "玩法/攻略" [ref=e61] [cursor=pointer]:
+            - /url: javascript:;
+            - text: 玩法/攻略
+          - link "扩展阅读" [ref=e64] [cursor=pointer]:
+            - /url: javascript:;
+            - text: 扩展阅读
+          - link "其他" [ref=e67] [cursor=pointer]:
+            - /url: javascript:;
+            - text: 其他
+        - generic [ref=e72]:
+          - textbox "搜索崩坏：星穹铁道WIKI_BWIKI_哔哩哔哩[alt-shift-f]" [ref=e73]:
+            - /placeholder: 本WIKI中搜索
+          - button "搜索" [ref=e74] [cursor=pointer]
+          - button "前往" [ref=e75] [cursor=pointer]
+    - main [ref=e76]:
+      - generic [ref=e78]:
+        - paragraph [ref=e80]:
+          - text: 本WIKI由
+          - link "旅行者酒馆" [ref=e81] [cursor=pointer]:
+            - /url: https://space.bilibili.com/489986571
+          - text: 于2021年10月05日申请开通。
+          - generic [ref=e82]:
+            - text: 内容按
+            - link "CC BY-NC-SA 4.0协议" [ref=e83] [cursor=pointer]:
+              - /url: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans
+            - text: 提供
+          - text: ，编辑权限开放。
+          - text: 本WIKI仍在努力完善中，欢迎收藏。编辑组为非官方民间组织，为爱发电，欢迎各路能人异士加入。
+          - link "免责声明" [ref=e84] [cursor=pointer]:
+            - /url: /sr/%E5%B4%A9%E5%9D%8F%EF%BC%9A%E6%98%9F%E7%A9%B9%E9%93%81%E9%81%93:%E5%85%8D%E8%B4%A3%E5%A3%B0%E6%98%8E
+          - text: •
+          - link "编辑教程" [ref=e85] [cursor=pointer]:
+            - /url: /sr/%E6%98%9F%E7%A9%B9%E9%93%81%E9%81%93WIKI%E7%BC%96%E8%BE%91%E6%95%99%E7%A8%8B
+          - text: •
+          - link "反馈留言" [ref=e86] [cursor=pointer]:
+            - /url: /sr/%E5%B4%A9%E5%9D%8F%EF%BC%9A%E6%98%9F%E7%A9%B9%E9%93%81%E9%81%93%E6%9C%89%E9%97%AE%E5%93%94%E7%AD%94%E7%95%99%E8%A8%80%E6%9D%BF
+          - text: •
+          - link "收藏方法" [ref=e87] [cursor=pointer]:
+            - /url: https://wiki.biligame.com/wiki/BWIKI%E6%94%B6%E8%97%8F%E5%88%B0%E6%A1%8C%E9%9D%A2%E7%9A%84%E6%96%B9%E6%B3%95%E8%AF%B4%E6%98%8E
+          - text: • 交流群：1017604603
+        - paragraph
+      - generic [ref=e88]:
+        - heading "重逢啊，笑泪相拥的约定" [level=1] [ref=e89]: 重逢啊，笑泪相拥的约定
+        - generic [ref=e90]:
+          - navigation "WIKI功能 " [ref=e91] [cursor=pointer]:
+            - heading "WIKI功能 " [level=3] [ref=e92]:
+              - generic [ref=e93]: WIKI功能
+              - generic [ref=e94]: 
+          - generic [ref=e95]:
+            - paragraph [ref=e96]: 阅读：6033
+            - paragraph [ref=e97]: 更新日期：2026-02-13
+            - paragraph [ref=e98]: 最新编辑：QWERTY_770
+      - generic [ref=e99]:
+        - link "跳到导航" [ref=e100] [cursor=pointer]:
+          - /url: "#mw-head"
+        - link "跳到搜索" [ref=e101] [cursor=pointer]:
+          - /url: "#p-search"
+        - generic [ref=e102]:
+          - link "页面贡献者 :" [ref=e103] [cursor=pointer]:
+            - /url: /sr/%E7%89%B9%E6%AE%8A:%E8%B4%A1%E7%8C%AE%E8%80%85/%E9%87%8D%E9%80%A2%E5%95%8A%EF%BC%8C%E7%AC%91%E6%B3%AA%E7%9B%B8%E6%8B%A5%E7%9A%84%E7%BA%A6%E5%AE%9A
+          - generic [ref=e104]:
+            - link [ref=e107] [cursor=pointer]:
+              - /url: //space.bilibili.com/1902365740/
+            - link [ref=e111] [cursor=pointer]:
+              - /url: //space.bilibili.com/343309739/
+        - generic [ref=e114]:
+          - generic [ref=e116]: 如果选择选项下面对话没变不是BUG了，而是游戏本身对话就是一样的。
+          - generic [ref=e117]:
+            - generic [ref=e118]:
+              - generic "编辑这个页面" [ref=e119]:
+                - link "编" [ref=e120] [cursor=pointer]:
+                  - /url: https://wiki.biligame.com/sr/index.php?title=%E9%87%8D%E9%80%A2%E5%95%8A%EF%BC%8C%E7%AC%91%E6%B3%AA%E7%9B%B8%E6%8B%A5%E7%9A%84%E7%BA%A6%E5%AE%9A&action=edit
+              - generic "清除这个页面的缓存" [ref=e121]:
+                - link "刷" [ref=e122] [cursor=pointer]:
+                  - /url: https://wiki.biligame.com/sr/index.php?title=%E9%87%8D%E9%80%A2%E5%95%8A%EF%BC%8C%E7%AC%91%E6%B3%AA%E7%9B%B8%E6%8B%A5%E7%9A%84%E7%BA%A6%E5%AE%9A&action=purge
+              - generic "查看这个页面的编辑历史" [ref=e123]:
+                - link "历" [ref=e124] [cursor=pointer]:
+                  - /url: https://wiki.biligame.com/sr/index.php?title=%E9%87%8D%E9%80%A2%E5%95%8A%EF%BC%8C%E7%AC%91%E6%B3%AA%E7%9B%B8%E6%8B%A5%E7%9A%84%E7%BA%A6%E5%AE%9A&action=history
+              - generic "短网址，按右键复制链接地址" [ref=e125]:
+                - link "短" [ref=e126] [cursor=pointer]:
+                  - /url: https://wiki.biligame.com/sr/?curid=24078
+              - generic "查看这个页面" [ref=e127]:
+                - link "阅" [ref=e128] [cursor=pointer]:
+                  - /url: https://wiki.biligame.com/sr/%E9%87%8D%E9%80%A2%E5%95%8A%EF%BC%8C%E7%AC%91%E6%B3%AA%E7%9B%B8%E6%8B%A5%E7%9A%84%E7%BA%A6%E5%AE%9A
+            - link "首页" [ref=e129] [cursor=pointer]:
+              - /url: /sr/%E9%A6%96%E9%A1%B5
+            - text: ">"
+            - link "开拓任务" [ref=e130] [cursor=pointer]:
+              - /url: /sr/%E5%BC%80%E6%8B%93%E4%BB%BB%E5%8A%A1
+            - text: ">"
+            - link "于长夜重返大地" [ref=e131] [cursor=pointer]:
+              - /url: /sr/%E4%BA%8E%E9%95%BF%E5%A4%9C%E9%87%8D%E8%BF%94%E5%A4%A7%E5%9C%B0
+            - text: "> 重逢啊，笑泪相拥的约定"
+          - separator [ref=e132]
+          - generic [ref=e134]:
+            - text: 如果是第一次来，按"Ctrl+D"可以收藏随时查看更新~觉得WIKI好玩的话，请推荐给朋友哦～(◕ω＜)☆
+            - text: 按右上角“WIKI功能→编辑”即可修改页面内容。
+          - table [ref=e135]:
+            - rowgroup [ref=e136]:
+              - row "任务名称 重逢啊，笑泪相拥的约定" [ref=e137]:
+                - rowheader "任务名称" [ref=e138]
+                - cell "重逢啊，笑泪相拥的约定" [ref=e139]
+              - row "任务地区 翁法罗斯" [ref=e140]:
+                - rowheader "任务地区" [ref=e141]
+                - cell "翁法罗斯" [ref=e142]
+              - row "任务类型 开拓任务" [ref=e143]:
+                - rowheader "任务类型" [ref=e144]
+                - cell "开拓任务" [ref=e145]
+              - row "开放等级 21" [ref=e146]:
+                - rowheader "开放等级" [ref=e147]
+                - cell "21" [ref=e148]
+              - row "所属版本 3.6" [ref=e149]:
+                - rowheader "所属版本" [ref=e150]
+                - cell "3.6" [ref=e151]
+              - row "任务描述 与「长夜月」的交涉并不顺利，在千钧一发之际，三月的相机成功将「长夜月」拖入到哀丽秘榭的记忆迷宫中。小三月也得以与长夜月有一番面对面的交谈，「长夜月」将继续沉睡，而三月七得以醒来，并与你们再次重逢。" [ref=e152]:
+                - rowheader "任务描述" [ref=e153]
+                - cell "与「长夜月」的交涉并不顺利，在千钧一发之际，三月的相机成功将「长夜月」拖入到哀丽秘榭的记忆迷宫中。小三月也得以与长夜月有一番面对面的交谈，「长夜月」将继续沉睡，而三月七得以醒来，并与你们再次重逢。" [ref=e154]
+              - row "奖励 里程 里程 × 400星琼 星琼 × 50漫游指南 漫游指南 × 4提纯以太 提纯以太 × 4无序秘酿 无序秘酿 × 160信用点 信用点 × 50000" [ref=e155]:
+                - rowheader "奖励" [ref=e156]
+                - cell "里程 里程 × 400星琼 星琼 × 50漫游指南 漫游指南 × 4提纯以太 提纯以太 × 4无序秘酿 无序秘酿 × 160信用点 信用点 × 50000" [ref=e157]:
+                  - link "里程" [ref=e159] [cursor=pointer]:
+                    - /url: /sr/%E9%87%8C%E7%A8%8B
+                    - img "里程" [ref=e160]
+                  - link "里程" [ref=e161] [cursor=pointer]:
+                    - /url: /sr/%E9%87%8C%E7%A8%8B
+                  - text: × 400
+                  - link "星琼" [ref=e163] [cursor=pointer]:
+                    - /url: /sr/%E6%98%9F%E7%90%BC
+                    - img "星琼" [ref=e164]
+                  - link "星琼" [ref=e165] [cursor=pointer]:
+                    - /url: /sr/%E6%98%9F%E7%90%BC
+                  - text: × 50
+                  - link "漫游指南" [ref=e167] [cursor=pointer]:
+                    - /url: /sr/%E6%BC%AB%E6%B8%B8%E6%8C%87%E5%8D%97
+                    - img "漫游指南" [ref=e168]
+                  - link "漫游指南" [ref=e169] [cursor=pointer]:
+                    - /url: /sr/%E6%BC%AB%E6%B8%B8%E6%8C%87%E5%8D%97
+                  - text: × 4
+                  - link "提纯以太" [ref=e171] [cursor=pointer]:
+                    - /url: /sr/%E6%8F%90%E7%BA%AF%E4%BB%A5%E5%A4%AA
+                    - img "提纯以太" [ref=e172]
+                  - link "提纯以太" [ref=e173] [cursor=pointer]:
+                    - /url: /sr/%E6%8F%90%E7%BA%AF%E4%BB%A5%E5%A4%AA
+                  - text: × 4
+                  - link "无序秘酿" [ref=e175] [cursor=pointer]:
+                    - /url: /sr/%E6%97%A0%E5%BA%8F%E7%A7%98%E9%85%BF
+                    - img "无序秘酿" [ref=e176]
+                  - link "无序秘酿" [ref=e177] [cursor=pointer]:
+                    - /url: /sr/%E6%97%A0%E5%BA%8F%E7%A7%98%E9%85%BF
+                  - text: × 160
+                  - link "信用点" [ref=e179] [cursor=pointer]:
+                    - /url: /sr/%E4%BF%A1%E7%94%A8%E7%82%B9
+                    - img "信用点" [ref=e180]
+                  - link "信用点" [ref=e181] [cursor=pointer]:
+                    - /url: /sr/%E4%BF%A1%E7%94%A8%E7%82%B9
+                  - text: × 50000
+              - row "出场人物 长夜月 长夜月 三月七 三月七 昔涟 昔涟 丹恒 丹恒 大黑塔 大黑塔 黑天鹅 黑天鹅 星期日 星期日" [ref=e182]:
+                - rowheader "出场人物" [ref=e183]
+                - cell "长夜月 长夜月 三月七 三月七 昔涟 昔涟 丹恒 丹恒 大黑塔 大黑塔 黑天鹅 黑天鹅 星期日 星期日" [ref=e184]:
+                  - link "长夜月" [ref=e186] [cursor=pointer]:
+                    - /url: /sr/%E9%95%BF%E5%A4%9C%E6%9C%88
+                    - img "长夜月" [ref=e187]
+                  - link "长夜月" [ref=e188] [cursor=pointer]:
+                    - /url: /sr/%E9%95%BF%E5%A4%9C%E6%9C%88
+                  - link "三月七" [ref=e190] [cursor=pointer]:
+                    - /url: /sr/%E4%B8%89%E6%9C%88%E4%B8%83
+                    - img "三月七" [ref=e191]
+                  - link "三月七" [ref=e192] [cursor=pointer]:
+                    - /url: /sr/%E4%B8%89%E6%9C%88%E4%B8%83
+                  - link "昔涟" [ref=e194] [cursor=pointer]:
+                    - /url: /sr/%E6%98%94%E6%B6%9F
+                    - img "昔涟" [ref=e195]
+                  - link "昔涟" [ref=e196] [cursor=pointer]:
+                    - /url: /sr/%E6%98%94%E6%B6%9F
+                  - link "丹恒" [ref=e198] [cursor=pointer]:
+                    - /url: /sr/%E4%B8%B9%E6%81%92
+                    - img "丹恒" [ref=e199]
+                  - link "丹恒" [ref=e200] [cursor=pointer]:
+                    - /url: /sr/%E4%B8%B9%E6%81%92
+                  - link "大黑塔" [ref=e202] [cursor=pointer]:
+                    - /url: /sr/%E5%A4%A7%E9%BB%91%E5%A1%94
+                    - img "大黑塔" [ref=e203]
+                  - link "大黑塔" [ref=e204] [cursor=pointer]:
+                    - /url: /sr/%E5%A4%A7%E9%BB%91%E5%A1%94
+                  - link "黑天鹅" [ref=e206] [cursor=pointer]:
+                    - /url: /sr/%E9%BB%91%E5%A4%A9%E9%B9%85
+                    - img "黑天鹅" [ref=e207]
+                  - link "黑天鹅" [ref=e208] [cursor=pointer]:
+                    - /url: /sr/%E9%BB%91%E5%A4%A9%E9%B9%85
+                  - link "星期日" [ref=e210] [cursor=pointer]:
+                    - /url: /sr/%E6%98%9F%E6%9C%9F%E6%97%A5
+                    - img "星期日" [ref=e211]
+                  - link "星期日" [ref=e212] [cursor=pointer]:
+                    - /url: /sr/%E6%98%9F%E6%9C%9F%E6%97%A5
+              - row "相关成就 通往群星的轨道#于是，金色的血流淌而出 通往群星的轨道#你永远不会独行" [ref=e213]:
+                - rowheader "相关成就" [ref=e214]
+                - cell "通往群星的轨道#于是，金色的血流淌而出 通往群星的轨道#你永远不会独行" [ref=e215]:
+                  - link "通往群星的轨道#于是，金色的血流淌而出" [ref=e216] [cursor=pointer]:
+                    - /url: /sr/%E9%80%9A%E5%BE%80%E7%BE%A4%E6%98%9F%E7%9A%84%E8%BD%A8%E9%81%93#于是，金色的血流淌而出
+                  - link "通往群星的轨道#你永远不会独行" [ref=e217] [cursor=pointer]:
+                    - /url: /sr/%E9%80%9A%E5%BE%80%E7%BE%A4%E6%98%9F%E7%9A%84%E8%BD%A8%E9%81%93#你永远不会独行
+          - heading "任务相关" [level=2] [ref=e218]:
+            - generic [ref=e219]: 任务相关
+          - heading "任务条件" [level=3] [ref=e220]: 任务条件
+          - definition [ref=e222]:
+            - text: 完成任务
+            - link "大墓啊，深藏轮回的秘密" [ref=e223] [cursor=pointer]:
+              - /url: /sr/%E5%A4%A7%E5%A2%93%E5%95%8A%EF%BC%8C%E6%B7%B1%E8%97%8F%E8%BD%AE%E5%9B%9E%E7%9A%84%E7%A7%98%E5%AF%86
+          - heading "系列任务" [level=3] [ref=e224]: 系列任务
+          - list [ref=e225]:
+            - listitem [ref=e226]:
+              - link "于长夜重返大地" [ref=e227] [cursor=pointer]:
+                - /url: /sr/%E4%BA%8E%E9%95%BF%E5%A4%9C%E9%87%8D%E8%BF%94%E5%A4%A7%E5%9C%B0
+          - heading "前置任务" [level=3] [ref=e228]: 前置任务
+          - list [ref=e229]:
+            - listitem [ref=e230]:
+              - link "大墓啊，深藏轮回的秘密" [ref=e231] [cursor=pointer]:
+                - /url: /sr/%E5%A4%A7%E5%A2%93%E5%95%8A%EF%BC%8C%E6%B7%B1%E8%97%8F%E8%BD%AE%E5%9B%9E%E7%9A%84%E7%A7%98%E5%AF%86
+          - heading "后续任务" [level=3] [ref=e232]: 后续任务
+          - list [ref=e233]:
+            - listitem [ref=e234]:
+              - link "诸神啊，奏响创世的凯歌" [ref=e235] [cursor=pointer]:
+                - /url: /sr/%E8%AF%B8%E7%A5%9E%E5%95%8A%EF%BC%8C%E5%A5%8F%E5%93%8D%E5%88%9B%E4%B8%96%E7%9A%84%E5%87%AF%E6%AD%8C
+          - heading "任务流程" [level=3] [ref=e236]: 任务流程
+          - list [ref=e237]:
+            - listitem [ref=e238]: 与长夜月交谈
+            - listitem [ref=e239]: 前往水边，寻找三月七
+          - heading "剧情梗概" [level=2] [ref=e240]:
+            - generic [ref=e241]: 剧情梗概
+          - generic [ref=e243] [cursor=pointer]:
+            - generic [ref=e244]: 剧情梗概
+            - generic [ref=e245]: 折叠
+          - paragraph [ref=e246]
+          - heading "剧情内容" [level=2] [ref=e247]:
+            - generic [ref=e248]: 剧情内容
+          - list [ref=e249]:
+            - listitem [ref=e250]: 丹恒：——该结束了。
+            - listitem [ref=e251]: 丹恒：把「三月七」还给我们，停止这场无意义的争端。
+            - listitem [ref=e252]: 「长夜月」：……
+          - generic [ref=e254]:
+            - generic [ref=e255]:
+              - img "剧情选项-图标-继续.png" [ref=e257]
+              - text: 你还要旁观到什么时候？
+            - generic [ref=e258] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e260]
+              - text: 无名客从来都是自己上阵。
+          - list [ref=e261]:
+            - listitem [ref=e262]: 「长夜月」：别想多了。我只是需要一点时间，来解决不必要的麻烦……
+            - listitem [ref=e263]: 「长夜月」：天才们编写的密钥——现在已经失效了哦♭
+            - listitem [ref=e264]: 「长夜月」：先来玩个游戏吧，亲爱的开拓者？
+            - listitem [ref=e265]: 「长夜月」：放心，用不了多长时间。只是一道简单的选择题，A或者B。
+            - listitem [ref=e266]: 「长夜月」：我能理解，将黄金裔们当作演算的数据，对你而言太过困难。那不妨先假设他们是活生生的人……
+            - listitem [ref=e267]: 「长夜月」：现在，银河将要面临一场空前的浩劫，你的选择关乎无数星球的存亡。
+            - listitem [ref=e268]: 「长夜月」：一边是与你同舟共济的伙伴：他们竭力抗争，争取到1%的胜算。但如果选择那1%，无论结果如何，都将伴随巨大的牺牲。
+            - listitem [ref=e269]: 「长夜月」：另一边，则是一个简单的按钮：「忘却」会烧尽他们存在的痕迹，你对这段旅途全部的记忆。但它能令酝酿中的灾祸骤停，让宇宙免于「毁灭」。
+            - listitem [ref=e270]: 「长夜月」：对于你要做出的决定，被牺牲的人们将完全知情，不掺杂任何隐瞒或欺骗……
+            - listitem [ref=e271]: 「长夜月」：告诉我，你会如何选择？
+          - generic [ref=e273]:
+            - generic [ref=e274]:
+              - img "剧情选项-图标-继续.png" [ref=e276]
+              - text: 别想用电车难题糊弄我。
+            - generic [ref=e277] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e279]
+              - text: 过时的话题，没必要讨论！
+            - generic [ref=e280] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e282]
+              - text: 凭什么只有1%？
+            - generic [ref=e283] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e285]
+              - text: 你偷换的概念可不止一条。
+          - list [ref=e286]:
+            - listitem [ref=e287]: 「长夜月」：你说得对。这个选择没有意义，也不重要。唯一有趣的……
+            - listitem [ref=e288]: 「长夜月」：是做出选择的人数。
+            - listitem [ref=e289]: 「长夜月」：与此同时，我向丹恒提出了同样的问题。答案无关紧要，让我瞧瞧——「开拓」的精神，是否真如你们声称的那般一心同体。
+            - listitem [ref=e290]: 「长夜月」：现在，证明给我看吧？
+          - separator [ref=e291]
+          - list [ref=e292]:
+            - listitem [ref=e293]: 昔涟：等一下——！
+            - listitem [ref=e294]: 开拓者：昔涟？
+            - listitem [ref=e295]: 昔涟：激动人心的「英雄救美」…再度上演！
+            - listitem [ref=e296]: 「长夜月」：还觉得自己能做什么吗，粉色的小忆灵？
+            - listitem [ref=e297]: 「长夜月」：除了还算伶俐的口齿，你有什么能和我抗衡的武器？
+            - listitem [ref=e298]: 昔涟：可别把人家看扁了呀？除了口才和魅力——
+            - listitem [ref=e299]: 昔涟：「——激起往昔的涟漪！」
+            - listitem [ref=e300]: 「长夜月」：这是……
+            - listitem [ref=e301]: 昔涟：关键时刻，我们才不会滔滔不绝呢！
+          - generic [ref=e303]:
+            - generic [ref=e304]:
+              - img "剧情选项-图标-继续.png" [ref=e306]
+              - text: 大意是你的软肋，长夜月。
+            - generic [ref=e307] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e309]
+              - text: 这些忆灵是？
+            - generic [ref=e310] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e312]
+              - text: 不讲武德，干得好啊！
+          - list [ref=e313]:
+            - listitem [ref=e314]: 昔涟：快，开拓者！拿上这个——
+            - listitem [ref=e315]: 昔涟：按下快门！人家——坚持不了太久！
+          - generic [ref=e317]:
+            - generic [ref=e318]:
+              - img "剧情选项-图标-继续.png" [ref=e320]
+              - text: 拍你吗？
+            - generic [ref=e321] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e323]
+              - text: 拍她吗？
+            - list [ref=e325]:
+              - listitem [ref=e326]: 昔涟：怎么可能！当然是…「长夜月」小姐！
+          - list [ref=e327]:
+            - listitem [ref=e328]: 昔涟：没时间解释了——快！
+            - listitem [ref=e329]: 昔涟：干得好，开拓者！
+            - listitem [ref=e330]: 昔涟：接下来，就交给「我们」吧！
+          - heading "与长夜月交谈" [level=3] [ref=e331]: 与长夜月交谈
+          - blockquote [ref=e332]:
+            - paragraph [ref=e333]: 说起来，长夜月已经帮了三月七很多了…她究竟是敌是友，或许最好的方式是面对面谈谈。
+            - generic [ref=e334]:
+              - img "图标-位置.png" [ref=e335]
+              - text: 翁法罗斯-相机里的世界
+          - list [ref=e336]:
+            - listitem [ref=e337]: 「长夜月」：……
+            - listitem [ref=e338]: 「长夜月」：这里是，用某人的「记忆」制成的光锥……？
+            - listitem [ref=e339]: 「长夜月」：啊，还有谐乐盘绕其中。
+            - listitem [ref=e340]: 「长夜月」：看来，有人在我看不见的角落付出了许多努力呀……
+            - listitem [ref=e341]: 「长夜月」：又见面了，天真的「我」。
+            - listitem [ref=e342]: 「三月七」：虽然知道你是诚心诚意在夸我……
+            - listitem [ref=e343]: 「三月七」：但「天真」这两个字，还是还给你吧？
+            - listitem [ref=e344]:
+              - text: 昔涟：欢迎来到哀丽秘榭，
+              - generic [ref=e345]:
+                - generic [ref=e346]: 永夜之帷
+                - generic [ref=e347]: 岁月之泰坦
+              - text: 包围的小村庄。现在，这道回忆也属于你……
+            - listitem [ref=e348]: 昔涟：以彼之道，还治彼身。我以故乡为灵感打造的「迷宫」，长夜月小姐，希望你喜欢。
+            - listitem [ref=e349]: 「长夜月」：悟性很高呢，小忆灵。但只凭你和「同谐」的小鸟——想困住我，多少有些勉强了呀？
+            - listitem [ref=e350]: 「长夜月」：所以，和我说说吧，「你」又在其中发挥了什么作用？
+            - listitem [ref=e351]: 「三月七」：是啊，真没想到…另一个「我」居然强得这么不像话……
+            - listitem [ref=e352]: 「三月七」：还好还好，至少在「头脑」方面，咱还算占了上风！本姑娘的绝妙计策，完全超出你的想象。
+            - listitem [ref=e353]: 「长夜月」：……
+            - listitem [ref=e354]: 「长夜月」：喔…是那个时候？
+            - listitem [ref=e355]: 「长夜月」：在你我易换身体的瞬间，你用稍纵即逝的最后一丝心识……
+            - listitem [ref=e356]:
+              - text: 「长夜月」：将
+              - generic [ref=e358]:
+                - generic [ref=e359]: 自己
+                - generic [ref=e360]: 空无的精魄
+              - text: 藏进了泰坦的帷幕啊。
+            - listitem [ref=e361]: 「三月七」：呀，怎么一下子就被猜出来了…真没悬念！
+            - listitem [ref=e362]: 「三月七」：但我的计划可一点也不脆弱！没人比我更懂开拓者和丹恒。既然约好了，他俩就不会食言——
+            - listitem [ref=e363]: 丹恒：……
+            - listitem [ref=e364]: 昔涟：无论史书、日记，还是留影石机，都是「记忆」绝佳的触媒。
+            - listitem [ref=e365]: 「三月七」：没错！当我听见开拓者按下快门的声音，就算精神只留下一点点残余……
+            - listitem [ref=e366]: 「三月七」：也会「咻」地一下，自己钻进相机里去！
+            - listitem [ref=e367]: 昔涟：可这样看来，巧合的成分…是不是还挺大的？
+            - listitem [ref=e368]: 「三月七」：怎么会！既然说了要给我拍照，开拓者肯定会在翁法罗斯四处按下快门。我总有机会等到他/她。
+            - listitem [ref=e369]: 昔涟：你确实很了解他/她呀。
+            - listitem [ref=e370]: 昔涟：「长夜月」小姐，以我现学现卖的本事，想困住你当然不现实。
+            - listitem [ref=e371]: 昔涟：但如果「三月七」也在场，局面就不一样了……
+            - listitem [ref=e372]: 昔涟：因为你无论如何都无法忽视她，对吧？
+            - listitem [ref=e373]: 「长夜月」：……
+            - listitem [ref=e374]: 「长夜月」：可以，那让我拭目以待。绕了这么远的路，你接下来打算怎么做？
+            - listitem [ref=e375]: 「三月七」：首先，我要谢谢你保护了开拓者和丹恒。但后来，你做的事就太过火了……
+            - listitem [ref=e376]: 「三月七」：趁一切还来得及，我必须让你回心转意才行！
+            - listitem [ref=e377]: 「长夜月」：有一件事的确令我困惑……
+            - listitem [ref=e378]: 「长夜月」：在献出一切「记忆」，化作空无的精魄后，你是如何找回自我的？
+            - listitem [ref=e379]: 「三月七」：看来你也不是全知全能嘛？
+            - listitem [ref=e380]: 「三月七」：答案很简单：这一路上，「我」一直沉睡在相机里，陪着开拓者走完了全程。
+            - listitem [ref=e381]: 「三月七」：而这一世，在他/她和昔涟讲述星际旅行的时候，那些与列车同行的回忆也钻入了我的脑海……
+            - listitem [ref=e382]: 「三月七」：虽然还远远称不上「完整的三月七」，但用来和你对峙…这些「记忆」足够了。
+            - listitem [ref=e383]: 「长夜月」：…呵。
+            - listitem [ref=e384]: 「长夜月」：所以，前因后果你都知道，对吗？
+            - listitem [ref=e385]: 「长夜月」：那就说说看吧，你有信心说服我的理由。
+            - listitem [ref=e386]: 「三月七」：理由什么的，不是再简单不过了吗？
+            - listitem [ref=e387]: 「三月七」：哪怕只是透过镜头，我也知道，发生在翁法罗斯的爱、恨、挣扎，跟活生生的人没有区别。
+            - listitem [ref=e388]: 「长夜月」：话题又绕回了原点呢，我已经让开拓者做过一次选择了。
+            - listitem [ref=e389]: 「长夜月」：天秤两端的配重，相差太过悬殊。在「毁灭」的威胁面前，追求两全其美…只会两害得兼。
+            - listitem [ref=e390]: 「三月七」：可是，在提出这个问题前……
+            - listitem [ref=e391]: 「三月七」：你有想过吗？我们…有什么资格替别人做出决定呢？
+            - listitem [ref=e392]: 「三月七」：假如银河是一座更大的奥赫玛，里头住着一位「凯撒」，那她也许可以替所有人做主，称量天秤两端的重量。
+            - listitem [ref=e393]: 「三月七」：但别忘了，我们只是一群「无名客」——
+            - listitem [ref=e394]: 「三月七」：就算被人口口声声「救世主」、「救世主」地叫着，我相信开拓者也没有忘记过……
+            - listitem [ref=e395]: 「三月七」：「开拓」的意义是「探索、了解、建立、连结」，是与无数世界同行，而不是高高在上的「拯救银河」。
+            - listitem [ref=e396]: 「长夜月」：……
+            - listitem [ref=e397]: 「三月七」：所以，别想用什么「牺牲在所难免」来绑架我，列车组对这些毫无根据的指责是免疫的！
+            - listitem [ref=e398]: 「三月七」：况且——我只是打个比方——只要黑塔女士愿意，她随时可以掏出虚数武器，把这台「权杖」炸个灰飞烟灭。
+            - listitem [ref=e399]: 「三月七」：用你的话说，跟一位绝灭大君可能造成的威胁相比，区区几个无名客的命又算得上什么呢？
+            - listitem [ref=e400]: 「三月七」：但她没有这么做，而你，也不会同意这件事，对吧？我早就发现了，你也有一项致命的弱点……
+            - listitem [ref=e401]: 「三月七」：那就是「我」。
+            - listitem [ref=e402]: 「三月七」：明明拥有这么蛮不讲理的力量，却还是遵守了对我的承诺。我只能认为……
+            - listitem [ref=e403]: 「三月七」：你所有行动的「原动力」，只是为了让「我」能继续旅行下去。
+            - listitem [ref=e404]: 「长夜月」：呵……
+            - listitem [ref=e405]: 「长夜月」：你好像，确实没有那么天真呢。
+            - listitem [ref=e406]: 「三月七」：既然如此，我可以向你证明。
+            - listitem [ref=e407]: 「三月七」：不是替别人——而是替「自己」给出回答。
+          - separator [ref=e408]
+          - list [ref=e409]:
+            - listitem [ref=e410]: 「三月七」：来——抱着它。
+            - listitem [ref=e411]: 「长夜月」：空无的精魄……
+            - listitem [ref=e412]: 「三月七」：细究的话，现在它才算是我的本体。
+            - listitem [ref=e413]: 「三月七」：构成它的记忆，全部来自相机中的照片，也就是我一路以来的「开拓」。
+            - listitem [ref=e414]: 「三月七」：我醒着的时候，你一直都在沉睡。泛泛而谈，在你听来多半没有实感……
+            - listitem [ref=e415]: 「三月七」：所以现在，我带你重新回忆一遍吧？
+            - listitem [ref=e416]: 「长夜月」：精魄，变成了一本手账？
+            - listitem [ref=e417]: 「三月七」：没错，这就是「记忆」。
+            - listitem [ref=e418]: 「三月七」：你不清楚它存在于哪里，也不知道留下的是哪些。但在最需要它的时候，那些改变过你心灵的力量……
+            - listitem [ref=e419]: 「三月七」：一定会再度浮现。
+          - separator [ref=e420]
+          - definition [ref=e422]: 跃迁仙舟「罗浮」前夜 星穹列车
+          - list [ref=e423]:
+            - listitem [ref=e424]: 三月七：…怎么样，开拓者？第一次「开拓」之旅，感觉如何？
+            - listitem [ref=e425]: 开拓者：……
+            - listitem [ref=e426]: 开拓者：很有趣。
+            - listitem [ref=e427]: 丹恒：以后还是得注意安全。
+            - listitem [ref=e428]: 三月七：哎呀，丹恒老师，咱们今晚是来给开拓者庆祝的，就别说这种扫兴话啦。
+            - listitem [ref=e429]: 三月七：别听他吓唬人。跟你讲，本姑娘也算半个「开拓」专家——跟着咱走，准没事～
+            - listitem [ref=e430]: 丹恒：你管这趟叫「没事」吗？
+            - listitem [ref=e431]: 三月七：那、那还不是因为网上只能搜到七百年前的攻略！
+            - listitem [ref=e432]: 开拓者：看来…你们去过很多地方了？
+            - listitem [ref=e433]: 三月七：那是当然：热夜之都、凯尔萨斯星、泰科铵…掰掰手指，这该是我的第六站啦。
+            - listitem [ref=e434]: 三月七：纪念品都在房间里呢，不过没来得及收拾。回头整理好了，再给你好好炫耀吧。
+            - listitem [ref=e435]: 三月七：看——贝洛伯格的笔记本，我特地问布洛妮娅要的纪念品！
+            - listitem [ref=e436]: 三月七：她给咱们准备了好些礼物呢：地髓原矿、大守护者奖章…不过，我只要了这个小本本。
+            - listitem [ref=e437]: 开拓者：它有什么特别的？
+            - listitem [ref=e438]: 三月七：先前几次「开拓」，去的尽是些高科技世界——别说纸书了，就连全息投影都算老古董。
+            - listitem [ref=e439]: 三月七：雅利洛就很不一样，看着大家用纸笔记录生活，我才明白为什么会有人还在坚持制作手账。
+            - listitem [ref=e440]: 丹恒：就像「书法」。深藏于人心底的感动，只有靠这种看似吃力不讨好的方式才能唤醒。
+            - listitem [ref=e441]: 三月七：丹恒老师…还真是心有猛虎，细嗅蔷薇！
+            - listitem [ref=e442]:
+              - text: 三月七：但咱也这么想的。相机只能拍下瞬间的
+              - generic [ref=e443]:
+                - generic [ref=e444]: 风景
+                - generic [ref=e445]: 「记忆」
+              - text: ，但要把那些切片连缀成人生，还是得靠
+              - generic [ref=e446]:
+                - generic [ref=e447]: 自己的双手
+                - generic [ref=e448]: 「开拓」
+              - text: 才行……
+            - listitem [ref=e449]: 三月七：简单来说，光拍照不行，相片总要有个地方供人展示嘛~
+            - listitem [ref=e450]: 开拓者：有照片墙还不够吗？
+            - listitem [ref=e451]: 三月七：都说了不一样。而且，这个小本本是咱和开拓者第一次共同「开拓」的纪念品！意义可就更重大了，嘿嘿。
+            - listitem [ref=e452]: 三月七：这么说来，下一站就是传说中大名鼎鼎的「盛会之星」，匹诺康尼……
+            - listitem [ref=e453]: 三月七：到时候，我可要使劲拉着你们合影，把储存卡都塞满！
+            - listitem [ref=e454]: 丹恒：我没意见。
+            - listitem [ref=e455]: 三月七：还有——以后要是哪一站，咱忙别的下不了车，这台照相机就交给你们了。
+            - listitem [ref=e456]: 三月七：我可不想错过任何一次「开拓」——你们得好好练习技术，争取拍得有我八成好，听到没？
+          - separator [ref=e457]
+          - list [ref=e458]:
+            - listitem [ref=e459]: 「三月七」：当时，我也只是半开玩笑。没想到才过两站，咱就真的缺席了……
+            - listitem [ref=e460]: 「三月七」：独自度过的那97天，可把我紧张得不行，以为这辈子都要交代在这儿了……
+            - listitem [ref=e461]: 「三月七」：还好，本姑娘胆大心细、足智多谋，才没落在开拓者和丹恒身后……
+            - listitem [ref=e462]: 「长夜月」：以藏在相机里的形式？
+            - listitem [ref=e463]: 「三月七」：那怎么啦？那也算是「开拓」！
+            - listitem [ref=e464]: 「三月七」：「照相机才是我的本体」——这句玩笑话，这次不就成真了嘛？
+            - listitem [ref=e465]: 「三月七」：虽然是很不方便啦：遇见危险没法出手；有人说怪话没法吐槽；看见开拓者拍烂片，我甚至都没法控制快门……
+            - listitem [ref=e466]: 「三月七」：但无论如何，我还是和他们一路走到了现在——
+            - listitem [ref=e467]:
+              - text: 「三月七」：
+              - generic [ref=e468]:
+                - generic [ref=e469]: 和大家一起认识这个濒毁却美丽的世界，为逐火之旅夺得第一枚火种——
+                - generic [ref=e470]: 「探索」
+            - listitem [ref=e471]:
+              - text: 「三月七」：
+              - generic [ref=e472]:
+                - generic [ref=e473]: 和新的伙伴相遇，又与新的伙伴离别——
+                - generic [ref=e474]: 「了解」
+            - listitem [ref=e475]:
+              - text: 「三月七」：
+              - generic [ref=e476]:
+                - generic [ref=e477]: 继承大家的决心，将其带向他们为之牺牲了一切，却又无缘看见的未来——
+                - generic [ref=e478]: 「建立」
+            - listitem [ref=e479]:
+              - text: 「三月七」：
+              - generic [ref=e480]:
+                - generic [ref=e481]: 直到和这个世界的命运融为一体，改写注定走向悲剧的结局，和所有人一起重返真正的星空——
+                - generic [ref=e482]: 「连结」
+            - listitem [ref=e483]: 「三月七」：只有这样，我才能在这场名为「翁法罗斯」的英雄之旅中……
+            - listitem [ref=e484]: 「三月七」：在这场前所未有的伟大「开拓」中，也写下「三月七」的名字！
+          - generic [ref=e485]:
+            - definition [ref=e486]: 第 33550336 次永劫回归 光历4932年
+            - definition [ref=e487]: 征讨艾格勒前 某日
+          - list [ref=e488]:
+            - listitem [ref=e489]: 丹恒：看来，我们在翁法罗斯的「开拓」，也要临近尾声了。
+            - listitem [ref=e490]: 开拓者：趁还有时间，一起挑挑吧？给三月做手账的素材。
+            - listitem [ref=e491]: 开拓者：啊！这个必须得有——
+            - listitem [ref=e492]: 丹恒：这…你什么时候拍的，储存卡不是满了么？
+            - listitem [ref=e493]: 开拓者：不是还有手机吗？怕了吧，好玩到不行的「豹豹碰碰大作战」幽灵头号种子选手——豹子头•丹恒？
+            - listitem [ref=e494]: 丹恒：…我不同意，但你请便。我只是觉得，手账还是该以记录风土人情为主。
+            - listitem [ref=e495]: 丹恒：奥赫玛、悬锋城、树庭…这几张都不错。不得不说，你的技术快赶上三月了。
+            - listitem [ref=e496]:
+              - text: 开拓者：不愧是我！啊对了，这张如何：
+              - generic [ref=e497]:
+                - generic [ref=e498]: 永夜之帷，欧洛尼斯
+                - generic [ref=e499]: 岁月之泰坦
+              - text: ，藏在迷雾背后的泰坦…够震撼吧？
+            - listitem [ref=e500]: 丹恒：这是真迷雾…还是你手抖导致的重影？
+            - listitem [ref=e501]: 开拓者：哎呀，当时那场面多紧张，我只能抓拍，有就不错了。
+            - listitem [ref=e502]: 「三月七」：……
+            - listitem [ref=e503]: 开拓者：咦…？
+            - listitem [ref=e504]: 开拓者：刚才，是不是有什么声音？
+            - listitem [ref=e505]: 丹恒：…三月七？
+            - listitem [ref=e506]: 丹恒：兴许是照片捕捉到了一丝「岁月」的神力，给你重放了回忆中的幻听。
+            - listitem [ref=e507]: 开拓者：呃…行吧，那咱们继续……
+            - listitem [ref=e508]: 开拓者：要是三月在，肯定能提供不少好点子。
+            - listitem [ref=e509]: 丹恒：嗯……
+            - listitem [ref=e510]: 「三月七」：他们就这么你一言我一语，商量了好几个小时。
+            - listitem [ref=e511]: 「三月七」：就像在争玩什么游戏，怎么背着帕姆从餐车偷夜宵，谁来洗姬子姐姐的咖啡杯——就像列车上的每一个夜晚。
+            - listitem [ref=e512]: 「三月七」：他们一直都在我身边。没人知道我被遗忘的过去，也没人会心有芥蒂。因为……
+            - listitem [ref=e513]: 丹恒：我们无法回到过去，做出更好的选择。
+            - listitem [ref=e514]: 开拓者：但至少，我们会在未来做得更好。
+            - listitem [ref=e515]: 「三月七」：你说，对吧？
+            - listitem [ref=e516]: 「长夜月」：……
+          - separator [ref=e517]
+          - list [ref=e518]:
+            - listitem [ref=e519]: 「长夜月」：我没有忘记，你第一次换上这身衣服，看向镜子的那天。
+            - listitem [ref=e520]: 「长夜月」：你的眼睛很清澈。当一切过去，我希望镜子映出的，依旧是那双眼眸。
+            - listitem [ref=e521]: 「三月七」：看吧，你也很天真啊。总是希望镜子映出最美的一面……
+            - listitem [ref=e522]: 「三月七」：可是你又不愿相信镜中的自己，如果总是想要替我扛下所有……那咱可真要变成花瓶，永远等不来主场啦？
+            - listitem [ref=e523]: 「长夜月」：……
+            - listitem [ref=e524]: 「长夜月」：是啊，我完全能理解，三月七。
+            - listitem [ref=e525]: 「长夜月」：我只拥有「你」的记忆，而你…一直是「我」想被世界看见的样子。
+            - listitem [ref=e526]: 「三月七」：能从你口中听见这句话，我已经心满意足了呀。
+            - listitem [ref=e527]: 「三月七」：动之以情的部分，我做到了。至于晓之以理……
+            - listitem [ref=e528]: 「三月七」：就麻烦昔涟姑娘啦？
+            - listitem [ref=e529]: 昔涟：我在呢。终于轮到人家了呀？
+            - listitem [ref=e530]: 昔涟：长夜月小姐，你的目光一直紧盯着自己的目标，恐怕都没有意识到……
+            - listitem [ref=e531]: 昔涟：这一世，翁法罗斯出现了一个巨大的变数。
+            - listitem [ref=e532]: 刻律德菈：翁法罗斯濒临毁灭，已容不下无意义的争辩。
+            - listitem [ref=e533]: 刻律德菈：为了这场救世之战，我要倾覆的「律法」只有一条，要献上的半神也只有一位——
+          - separator [ref=e534]
+          - list [ref=e535]:
+            - listitem [ref=e536]: 昔涟：凯撒以自己的性命为代价，为最后的「再创世」添加了一道规则：如此，刻律德菈才能确保翁法罗斯不会成为银河对垒的牺牲品——
+            - listitem [ref=e537]: 昔涟：就算只能以铁墓的形式，这个世界也能如她所想那样，自立于星间。
+            - listitem [ref=e538]: 「长夜月」：…哦？有意思，她要怎么做？
+            - listitem [ref=e539]: 昔涟：很简单：「如果『再创世』过程中发生任何异常，立即剔除所有外来因素——无论『记忆』，还是『开拓』——十二枚火种将以最纯粹的『毁灭』完成最后的『再创世』。」
+            - listitem [ref=e540]: 「长夜月」：孤注一掷么…狠毒的凯撒，莫非她早就察觉到了「记忆」在暗中布局？
+            - listitem [ref=e541]: 昔涟：你骗过了所有人，她更不可能知道你的计划。修改这条律令只是出于保险：防止星穹列车和天才们在她陨落后背叛翁法罗斯。
+            - listitem [ref=e542]: 昔涟：但现在，如果你执意要这么做，银河无疑会落入最糟糕的结局……
+            - listitem [ref=e543]:
+              - text: 昔涟：
+              - generic [ref=e544]:
+                - generic [ref=e545]: 开拓者
+                - generic [ref=e546]: 伙伴
+              - text: 、丹恒，还有三月七，都将与权杖合为一体，坠入「毁灭」。
+            - listitem [ref=e547]: 「长夜月」：呵……
+            - listitem [ref=e548]: 「长夜月」：你…一直都知道？
+            - listitem [ref=e549]: 「三月七」：嗯。但我还是决定，要先和你把心里话说开才行。
+            - listitem [ref=e550]: 「三月七」：即便内在是一片「长夜」，我也不会害怕。
+            - listitem [ref=e551]: 「三月七」：因为此行的终点是群星，我相信，前方的风景足以将昨天照亮。
+            - listitem [ref=e552]: 「三月七」：谢谢你的…溺爱。但现在，请安心把它交给我吧。无论是我的过去，还是那道「忘却」的执念……
+            - listitem [ref=e553]: 「三月七」：它们都能帮助我，变得比开拓者和丹恒更强！
+            - listitem [ref=e554]: 「长夜月」：成为你旅途上的一道阻碍，我很抱歉。
+            - listitem [ref=e555]: 「三月七」：别道歉呀，「长夜月」。
+            - listitem [ref=e556]: 「三月七」：我们本就是同一面镜子映出的表里，对吧？
+            - listitem [ref=e557]: 「三月七」：所以，当我们告别分裂，合二为一……
+            - listitem [ref=e558]: 三月七：「记忆」只会变得更加美丽。
+          - separator [ref=e559]
+          - list [ref=e560]:
+            - listitem [ref=e561]: 丹恒：感激不尽，星期日先生。
+            - listitem [ref=e562]: 丹恒：她们…就在这片忆域中么？
+          - generic [ref=e564]:
+            - generic [ref=e565]:
+              - img "剧情选项-图标-继续.png" [ref=e567]
+              - text: 相信三月七和昔涟。
+            - generic [ref=e568] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e570]
+              - text: 千万不能放松警惕。
+            - list [ref=e572]:
+              - listitem [ref=e573]: 丹恒：嗯，但不能放松警惕。
+          - list [ref=e574]:
+            - listitem [ref=e575]: 丹恒：走吧，去找到她们。
+          - heading "前往水边，寻找三月七" [level=3] [ref=e576]: 前往水边，寻找三月七
+          - blockquote [ref=e577]:
+            - paragraph [ref=e578]: 小三月到底会怎么样…坐在那里的，究竟是小三月，还是长夜月？
+            - generic [ref=e579]:
+              - img "图标-位置.png" [ref=e580]
+              - text: 翁法罗斯-相机里的世界
+          - list [ref=e581]:
+            - listitem [ref=e582]: 丹恒：这里，安静得有些异常……
+            - listitem [ref=e583]: 开拓者：三月七不在……
+          - separator [ref=e584]
+          - list [ref=e585]:
+            - listitem [ref=e586]: 「长夜月」？：……
+            - listitem [ref=e587]: 丹恒：准备好。这一次，决不能给她任何机会……
+            - listitem [ref=e588]: 开拓者：观隅反三……
+            - listitem [ref=e589]: 丹恒：君命无二……
+            - listitem [ref=e590]: 开拓者：凭城……
+            - listitem [ref=e591]: 「长夜月」？：借一？
+          - generic [ref=e592]:
+            - generic [ref=e593] [cursor=pointer]:
+              - generic [ref=e594]: 过场动画
+              - generic [ref=e595]: 折叠
+            - list [ref=e597]:
+              - listitem [ref=e598]: 丹恒：三月？
+              - listitem [ref=e599]: 三月七：当然是我啦。
+              - listitem [ref=e600]: 三月七：好久不见。
+              - listitem [ref=e601]: 开拓者：三月，欢迎回家！
+              - listitem [ref=e602]: 三月七：嗯，我回来啦。
+          - listitem [ref=e603]: 三月七：终于……
+          - listitem [ref=e604]: 三月七：终于，能和你们说上话了呀！
+          - generic [ref=e606]:
+            - generic [ref=e607]:
+              - img "剧情选项-图标-继续.png" [ref=e609]
+              - text: 是你保护了我们…
+            - generic [ref=e610] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e612]
+              - text: 「长夜月」…她消失了？
+            - generic [ref=e613] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e615]
+              - text: 别哭啊，再哭我要讲笑话了。
+            - list [ref=e617]:
+              - listitem [ref=e618]: 丹恒：你拯救了我们，三月。
+              - listitem [ref=e619]: 三月七：真的吗？那…真是太好了。
+          - list [ref=e620]:
+            - listitem [ref=e621]: 三月七：咱明明都想好了那么多重逢的方式…本来准备趁你们不注意，在后面偷袭，一人肩膀拍一下，再各给一个脑瓜崩……
+            - listitem [ref=e622]: 三月七：还要大声说：「怎么让我等了那么久！不知道要走快一点嘛？」
+          - generic [ref=e624]:
+            - generic [ref=e625]:
+              - img "剧情选项-图标-继续.png" [ref=e627]
+              - text: 无论如何，我们都会重逢。
+            - generic [ref=e628] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e630]
+              - text: 明明…是我们先来的…呜呜…
+            - list [ref=e632]:
+              - listitem [ref=e633]: 三月七：不许这么正经…！
+          - list [ref=e634]:
+            - listitem [ref=e635]: 三月七：我…真的好开心……
+            - listitem [ref=e636]: 丹恒：我和开拓者都知道了，这一路上…你一直就在我们身边。
+            - listitem [ref=e637]: 丹恒：这场「开拓」，有你在才算完整。
+            - listitem [ref=e638]: 开拓者：我们不止要一起开拓未来，拯救世界……
+            - listitem [ref=e639]: 开拓者：还要一起回到列车，走向下一站。
+            - listitem [ref=e640]: 三月七：——嗯，在完成这场「开拓」以后，手拉手一起回家！
+            - listitem [ref=e641]: 「长夜月」：……
+            - listitem [ref=e642]: 「长夜月」：「新的生命若要萌芽，它的种子须是死的」……
+            - listitem [ref=e643]: 「长夜月」：三月七，在你告别过去，从六相冰中诞生的时候……
+            - listitem [ref=e644]: 「长夜月」：你想过，该映出一个怎样的自己吗？
+            - listitem [ref=e645]: 「长夜月」：如今，我无意代你做出选择，因为你已决定自己的下一站。所以，让我最后一次行使「忘却」……
+            - listitem [ref=e646]: 「长夜月」：让「无漏净子」这个名字，从你脑海中褪去吧。
+            - listitem [ref=e647]: 「长夜月」：我只拥有「你」的记忆，是为保护你而存在的执念。
+            - listitem [ref=e648]: 「长夜月」：所以，我唯独能确信：流光忆庭是你的敌人。
+            - listitem [ref=e649]: 「长夜月」：「记忆」的命途，绝不止于世人表面的理解。而在这场破碎的阴谋中……
+            - listitem [ref=e650]: 「长夜月」：我绝对不能，让你成为下一个牺牲品。
+            - listitem [ref=e651]: 「长夜月」：来日若有需要，就随时唤醒「我」的力量吧。必要的时候也可以决绝一些，去吞噬、烧毁那些烦心的障碍……
+            - listitem [ref=e652]: 「长夜月」：代我在黑暗中「开拓」，一如既往……
+            - listitem [ref=e653]:
+              - text: 「长夜月」：
+              - generic [ref=e654]:
+                - generic [ref=e656]: 「忘却」
+                - generic [ref=e658]: 「神秘」
+              - text: 会守望你的来路，如长夜般隐秘，永远安宁♭。
+        - generic [ref=e660]:
+          - link "分类" [ref=e661] [cursor=pointer]:
+            - /url: /sr/%E7%89%B9%E6%AE%8A:%E9%A1%B5%E9%9D%A2%E5%88%86%E7%B1%BB
+          - text: ：
+          - list [ref=e662]:
+            - listitem [ref=e663]:
+              - link "任务" [ref=e664] [cursor=pointer]:
+                - /url: /sr/index.php?title=%E5%88%86%E7%B1%BB:%E4%BB%BB%E5%8A%A1&action=edit&redlink=1
+            - listitem [ref=e665]:
+              - link "开拓任务" [ref=e666] [cursor=pointer]:
+                - /url: /sr/index.php?title=%E5%88%86%E7%B1%BB:%E5%BC%80%E6%8B%93%E4%BB%BB%E5%8A%A1&action=edit&redlink=1
+      - generic [ref=e667]:
+        - text: 评论
+        - generic [ref=e668]:
+          - img [ref=e671] [cursor=pointer]
+          - generic [ref=e673]: 请先登录后发表评论 (・ω・)
+        - generic [ref=e676]:
+          - img [ref=e678]
+          - generic [ref=e679]:
+            - generic [ref=e680]:
+              - link "L1ngry" [ref=e682] [cursor=pointer]:
+                - /url: https://space.bilibili.com/284440415
+              - text: "回复 :"
+              - generic [ref=e685]: 1楼
+            - generic [ref=e686]: 点赞
+            - generic [ref=e688]: 2025年11月10日, 23:20:36
+  - generic [ref=e690]:
+    - generic [ref=e691]:
+      - link [ref=e692] [cursor=pointer]:
+        - /url: //www.bilibili.com
+      - img [ref=e695]
+    - generic [ref=e696]:
+      - paragraph [ref=e697]:
+        - link "游戏中心" [ref=e698] [cursor=pointer]:
+          - /url: //www.biligame.com/
+        - text: "|"
+        - link "帐号安全" [ref=e699] [cursor=pointer]:
+          - /url: https://account.bilibili.com/
+        - text: "|"
+        - link "找回密码" [ref=e700] [cursor=pointer]:
+          - /url: https://account.bilibili.com/resetpwd
+        - text: "|"
+        - link "家长监控" [ref=e701] [cursor=pointer]:
+          - /url: //jiazhang.biligame.com/
+        - text: "|"
+        - link "用户协议" [ref=e702] [cursor=pointer]:
+          - /url: //yhxy.biligame.com/
+      - paragraph
+      - paragraph [ref=e703]: 抵制不良游戏 拒绝盗版游戏 注意自我保护 谨防受骗上当 适度游戏益脑 沉迷游戏伤身 合理安排时间 享受健康生活
+      - paragraph [ref=e704]: 芜湖享游网络技术有限公司 | COPYRIGHT © 2009-2026 BILIBILI ALL RIGHTS RESERVED.
+      - paragraph [ref=e705]: 皖网文[2023]1840-026号 | 皖B2-20180007-2 | 皖ICP证：皖B2-20180007
+      - paragraph [ref=e706]:
+        - link "沪公网安备 31011002002714 号" [ref=e707] [cursor=pointer]:
+          - /url: http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=31011002002714
+          - img [ref=e708]
+          - text: 沪公网安备 31011002002714 号
+  - generic [ref=e709]:
+    - list [ref=e713]:
+      - listitem [ref=e714]:
+        - link "首页" [ref=e716] [cursor=pointer]:
+          - /url: javascript:;
+      - listitem [ref=e717]:
+        - link "导航" [ref=e719] [cursor=pointer]:
+          - /url: javascript:;
+      - listitem [ref=e720]:
+        - link "图鉴" [ref=e722] [cursor=pointer]:
+          - /url: javascript:;
+      - listitem [ref=e723]:
+        - link "地图" [ref=e724] [cursor=pointer]:
+          - /url: /sr/%E5%9C%B0%E5%9B%BE
+      - listitem [ref=e725]:
+        - link "玩法/攻略" [ref=e727] [cursor=pointer]:
+          - /url: javascript:;
+      - listitem [ref=e728]:
+        - link "扩展阅读" [ref=e730] [cursor=pointer]:
+          - /url: javascript:;
+      - listitem [ref=e731]:
+        - link "其他" [ref=e733] [cursor=pointer]:
+          - /url: javascript:;
+    - generic [ref=e734]:
+      - link "BWIKI首页" [ref=e735] [cursor=pointer]:
+        - /url: https://wiki.biligame.com/wiki/%E9%A6%96%E9%A1%B5
+      - link "创建WIKI" [ref=e736] [cursor=pointer]:
+        - /url: https://wiki.biligame.com/wiki/WIKI%E7%94%B3%E8%AF%B7%E9%A1%B5%E9%9D%A2
+      - link "BWIKI客服" [ref=e737] [cursor=pointer]:
+        - /url: https://space.bilibili.com/477233102?spm_id_from=333.337.0.0
+      - link "BWIKI君" [ref=e738] [cursor=pointer]:
+        - /url: https://space.bilibili.com/477233102
+  - generic [ref=e739]:
+    - heading "目录" [level=2] [ref=e742]
+    - list [ref=e743]:
+      - listitem [ref=e744]:
+        - link "1 任务相关" [ref=e746] [cursor=pointer]:
+          - /url: "#任务相关"
+      - listitem [ref=e747]:
+        - link "2 剧情梗概" [ref=e748] [cursor=pointer]:
+          - /url: "#剧情梗概"
+      - listitem [ref=e749]:
+        - link "3 剧情内容" [ref=e751] [cursor=pointer]:
+          - /url: "#剧情内容"
+  - navigation "目录" [ref=e752]:
+    - generic [ref=e753] [cursor=pointer]:
+      - heading "目录" [level=2] [ref=e754]
+      - text: "[ 隐藏 ]"
+    - list [ref=e755]:
+      - listitem [ref=e756]:
+        - link "1 任务相关" [ref=e757] [cursor=pointer]:
+          - /url: "#任务相关"
+          - generic [ref=e758]: "1"
+          - generic [ref=e759]: 任务相关
+        - list [ref=e760]:
+          - listitem [ref=e761]:
+            - link "1.1 任务条件" [ref=e762] [cursor=pointer]:
+              - /url: "#任务条件"
+              - generic [ref=e763]: "1.1"
+              - generic [ref=e764]: 任务条件
+          - listitem [ref=e765]:
+            - link "1.2 系列任务" [ref=e766] [cursor=pointer]:
+              - /url: "#系列任务"
+              - generic [ref=e767]: "1.2"
+              - generic [ref=e768]: 系列任务
+          - listitem [ref=e769]:
+            - link "1.3 前置任务" [ref=e770] [cursor=pointer]:
+              - /url: "#前置任务"
+              - generic [ref=e771]: "1.3"
+              - generic [ref=e772]: 前置任务
+          - listitem [ref=e773]:
+            - link "1.4 后续任务" [ref=e774] [cursor=pointer]:
+              - /url: "#后续任务"
+              - generic [ref=e775]: "1.4"
+              - generic [ref=e776]: 后续任务
+          - listitem [ref=e777]:
+            - link "1.5 任务流程" [ref=e778] [cursor=pointer]:
+              - /url: "#任务流程"
+              - generic [ref=e779]: "1.5"
+              - generic [ref=e780]: 任务流程
+      - listitem [ref=e781]:
+        - link "2 剧情梗概" [ref=e782] [cursor=pointer]:
+          - /url: "#剧情梗概"
+          - generic [ref=e783]: "2"
+          - generic [ref=e784]: 剧情梗概
+      - listitem [ref=e785]:
+        - link "3 剧情内容" [ref=e786] [cursor=pointer]:
+          - /url: "#剧情内容"
+          - generic [ref=e787]: "3"
+          - generic [ref=e788]: 剧情内容
+        - list [ref=e789]:
+          - listitem [ref=e790]:
+            - link "3.1 与长夜月交谈" [ref=e791] [cursor=pointer]:
+              - /url: "#与长夜月交谈"
+              - generic [ref=e792]: "3.1"
+              - generic [ref=e793]: 与长夜月交谈
+          - listitem [ref=e794]:
+            - link "3.2 前往水边，寻找三月七" [ref=e795] [cursor=pointer]:
+              - /url: "#前往水边，寻找三月七"
+              - generic [ref=e796]: "3.2"
+              - generic [ref=e797]: 前往水边，寻找三月七
+    - text: 显示目录>

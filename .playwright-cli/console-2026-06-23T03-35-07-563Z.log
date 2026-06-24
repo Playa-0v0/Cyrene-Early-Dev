@@ -1,0 +1,16 @@
+[     608ms] [LOG] undefined @ https://wiki.biligame.com/sr/load.php?lang=zh-cn&modules=jquery%7Cmediawiki.extra.bili&skin=vector&version=n4cjy:1012
+[     741ms] [LOG] loaded ReporterPb - metaScript @ https://wiki.biligame.com/sr/load.php?lang=zh-cn&modules=jquery%7Cmediawiki.extra.bili&skin=vector&version=n4cjy:1008
+[    1255ms] [LOG] Start report... @ https://wiki.biligame.com/sr/load.php?lang=zh-cn&modules=jquery%7Cmediawiki.extra.bili&skin=vector&version=n4cjy:1008
+[    1255ms] [LOG] Report PV @ https://wiki.biligame.com/sr/load.php?lang=zh-cn&modules=jquery%7Cmediawiki.extra.bili&skin=vector&version=n4cjy:1008
+[    1254ms] TypeError: window.onLoginInfoLoaded is not a function
+    at https://wiki.biligame.com/sr/load.php?lang=zh-cn&modules=jquery%7Cmediawiki.extra.bili&skin=vector&version=n4cjy:1009:600
+[    1294ms] [LOG] widget:Bugfix 250107.1版载入 @ https://wiki.biligame.com/sr/%E9%93%B6%E8%BE%87%E5%95%8A%EF%BC%8C%E6%8C%BD%E5%88%AB%E9%82%A3%E4%BA%BA%E9%97%B4%E5%8F%B2%E8%AF%97:1731
+[    1988ms] [LOG] %c BwikiTune %c https://wiki.biligame.com/tools/BwikiTune color: #fff; padding: 5px 0; background: #aaa; padding: 5px 5px 5px 0; background: #fff; @ https://wiki.biligame.com/tools/index.php?title=MediaWiki:BwikiTune.js&action=raw&ctype=text/javascript:4
+[    2417ms] [LOG] ResourceLoader: 加载MediaWiki:PlotOptions.js @ https://wiki.biligame.com/sr/%E9%93%B6%E8%BE%87%E5%95%8A%EF%BC%8C%E6%8C%BD%E5%88%AB%E9%82%A3%E4%BA%BA%E9%97%B4%E5%8F%B2%E8%AF%97:2082
+[    2417ms] [LOG] ResourceLoader: 加载MediaWiki:MailOptions.js @ https://wiki.biligame.com/sr/%E9%93%B6%E8%BE%87%E5%95%8A%EF%BC%8C%E6%8C%BD%E5%88%AB%E9%82%A3%E4%BA%BA%E9%97%B4%E5%8F%B2%E8%AF%97:2082
+[    2418ms] [LOG] %c BilibiliVideo %c https://wiki.biligame.com/wiki/?curid=2342 color: #fff; padding: 5px 0; background: #9dbafc; padding: 5px 5px 5px 0; background: #e5e5ff; @ https://wiki.biligame.com/wiki/User:123855714/BilibiliVideo.js?action=raw&ctype=text/javascript&r=5:52
+[    2419ms] [LOG] %c 滚动监听目录 %c v.2.6 https://wiki.biligame.com/tools/?curid=3776 color: #000; padding: 5px 0; background: #D1DBF3; padding: 5px 5px 5px 0; background: #efefff; @ https://wiki.biligame.com/tools/index.php?title=MediaWiki:ScrollToc.js&action=raw&ctype=text/javascript:36
+[    3142ms] [LOG] %c 动态加载 %c v.0.6 https://wiki.biligame.com/tools/?curid=2366 background: #4a5366;padding:4px 8px;color:#fff  background: #d3bc8e;padding:4px 8px; @ https://wiki.biligame.com/wiki/MediaWiki:Asyncloader.js?action=raw&ctype=text/javascript:0
+[    3732ms] [LOG] %c 评论区头像框 %c v_bate0.19 https://wiki.biligame.com/tools/AvatarFrame background: #4a5366;padding:4px 8px;color:#fff  background: #d3bc8e;padding:4px 8px; @ https://wiki.biligame.com/tools/MediaWiki:AvatarFrame.js?action=raw&ctype=text/javascript:413
+[    4756ms] [LOG] 评论区头衔：使用缓存数据 @ https://wiki.biligame.com/tools/MediaWiki:AvatarFrame.js?action=raw&ctype=text/javascript:82
+[    8795ms] [WARNING] The resource https://wiki.biligame.com/resources/assets/wiki.png was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ https://wiki.biligame.com/sr/%E9%93%B6%E8%BE%87%E5%95%8A%EF%BC%8C%E6%8C%BD%E5%88%AB%E9%82%A3%E4%BA%BA%E9%97%B4%E5%8F%B2%E8%AF%97:0

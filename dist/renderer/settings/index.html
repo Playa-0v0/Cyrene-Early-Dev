@@ -4,11 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>昔涟 · 设置</title>
-  <script type="module" crossorigin src="../assets/settings-BWxwt70f.js"></script>
+  <script type="module" crossorigin src="../assets/settings-BAGgM9j7.js"></script>
   <link rel="modulepreload" crossorigin href="../assets/base-CVzNOcnc.js">
   <link rel="modulepreload" crossorigin href="../assets/chat-ui-kPmAHPjl.js">
   <link rel="stylesheet" crossorigin href="../assets/base-BTHABN_A.css">
-  <link rel="stylesheet" crossorigin href="../assets/settings-ibOVM9qi.css">
+  <link rel="stylesheet" crossorigin href="../assets/settings-B5hEn9dG.css">
 </head>
 <body>
   <div class="settings-shell">
@@ -278,7 +278,7 @@
           </div>
 
           <div class="agent-settings-grid">
-            <article class="agent-setting-card">
+            <article class="agent-setting-card agent-setting-card--full">
               <div class="agent-setting-card__head">
                 <span>💗</span>
                 <div>
@@ -294,7 +294,7 @@
               <em class="field-note is-hidden" id="runtime-sync-note">LLM 模式每轮会额外调用一次模型，产生额外 Token 用量。</em>
             </article>
 
-            <article class="agent-setting-card">
+            <article class="agent-setting-card agent-setting-card--full">
               <div class="agent-setting-card__head">
                 <span>🎭</span>
                 <div>
@@ -316,10 +316,21 @@
                   <button type="button" class="option-block" data-value="large" aria-pressed="false">大图</button>
                 </div>
               </div>
-              <button type="button" class="ghost-btn" id="open-sticker-manager-btn">管理表情包</button>
+              <div class="agent-setting-subgroup">
+                <strong>相似度阈值</strong>
+                <div class="range-row">
+                  <input type="range" id="sticker-threshold" min="0.3" max="0.9" step="0.05" value="0.55" />
+                  <span class="range-val" id="sticker-threshold-val">0.55</span>
+                </div>
+                <em class="field-note">值越低越容易触发表情包，值越高匹配越精准</em>
+              </div>
+              <div class="agent-actions-row">
+                <button type="button" class="ghost-btn" id="open-sticker-manager-btn">管理表情包</button>
+                <button type="button" class="ghost-btn" id="add-sticker-btn">＋ 添加表情包</button>
+              </div>
             </article>
 
-            <article class="agent-setting-card agent-setting-card--rag">
+            <article class="agent-setting-card agent-setting-card--rag agent-setting-card--full">
               <div class="agent-setting-card__head">
                 <span>📚</span>
                 <div>
@@ -376,7 +387,7 @@
                 <button type="button" class="ghost-btn" id="embedding-update-btn">检查更新</button>
               </div>
 
-                            <div class="agent-setting-subgroup" style="margin-top:12px">
+              <div class="agent-setting-subgroup" style="margin-top:12px">
                 <strong>下载镜像源</strong>
                 <div class="option-blocks option-blocks--wide" id="embedding-mirror" role="radiogroup" aria-label="镜像源">
                   <button type="button" class="option-block is-active" data-value="official" aria-pressed="true">官方源</button>
@@ -385,21 +396,6 @@
               </div>
 
               <p class="agent-setting-card__note">按钮暂为界面预留；后续会接入安装包可选模型、模型状态检测和文档导入检索。</p>
-            </article>
-
-            <article class="agent-setting-card">
-              <div class="agent-setting-card__head">
-                <span>🧠</span>
-                <div>
-                  <h2>记忆与调度</h2>
-                  <p>Memory Judge、Query Rewrite、世界书召回等能力。</p>
-                </div>
-              </div>
-              <div class="agent-toggle-list">
-                <span>记忆写入 <em>待开发</em></span>
-                <span>问句重写 <em>待开发</em></span>
-                <span>世界书召回 <em>待开发</em></span>
-              </div>
             </article>
           </div>
 
@@ -562,6 +558,117 @@
           </div>
         </section>
 
+        <section class="settings-panel is-hidden" id="tasks-panel" data-panel="tasks">
+          <div class="panel-heading">
+            <div class="panel-heading__icon">⏰</div>
+            <div>
+              <h1>定时任务</h1>
+              <p>管理自动触发的 agent 任务。到点后会根据提示词调用当前允许的工具。</p>
+            </div>
+          </div>
+
+          <div class="scheduler-toolbar">
+            <div class="scheduler-toolbar__copy">
+              <strong>任务列表</strong>
+              <span>任务修改会立即保存，不需要点击全局保存按钮。</span>
+            </div>
+            <button type="button" class="save-btn" id="scheduler-new-btn">+ 新建任务</button>
+          </div>
+
+          <div class="scheduler-empty" id="scheduler-empty">
+            还没有定时任务。新建一个任务，让昔涟按时间自动执行提示词。
+          </div>
+
+          <div class="scheduler-list" id="scheduler-list"></div>
+
+          <div class="scheduler-editor is-hidden" id="scheduler-editor">
+            <div class="scheduler-editor__card">
+              <div class="scheduler-editor__header">
+                <h2 id="scheduler-editor-title">新建定时任务</h2>
+                <button type="button" class="ghost-btn" id="scheduler-editor-close">关闭</button>
+              </div>
+
+              <label class="field">
+                <span>标题</span>
+                <input id="scheduler-title" type="text" placeholder="例如：早安信息整理" />
+              </label>
+
+              <label class="field">
+                <span>提示词</span>
+                <textarea id="scheduler-prompt" rows="5" placeholder="到点后发给 LLM 的提示词"></textarea>
+              </label>
+
+              <label class="setting-row">
+                <div>
+                  <strong>启用</strong>
+                  <span>关闭后不会自动触发，但仍可手动立即运行。</span>
+                </div>
+                <input id="scheduler-enabled" type="checkbox" class="switch-input" checked />
+              </label>
+
+              <div class="form-grid scheduler-form-grid">
+                <label class="field">
+                  <span>频率</span>
+                  <select id="scheduler-kind">
+                    <option value="once">仅一次</option>
+                    <option value="daily">每天</option>
+                    <option value="weekly">每周</option>
+                    <option value="interval">每隔一段时间</option>
+                  </select>
+                </label>
+                <label class="field scheduler-once-field">
+                  <span>运行时间</span>
+                  <input id="scheduler-once-run-at" type="datetime-local" />
+                </label>
+                <label class="field scheduler-time-field">
+                  <span>时间</span>
+                  <input id="scheduler-time-of-day" type="time" value="08:00" />
+                </label>
+                <label class="field scheduler-weekly-field">
+                  <span>星期</span>
+                  <select id="scheduler-day-of-week">
+                    <option value="1">周一</option>
+                    <option value="2">周二</option>
+                    <option value="3">周三</option>
+                    <option value="4">周四</option>
+                    <option value="5">周五</option>
+                    <option value="6">周六</option>
+                    <option value="0">周日</option>
+                  </select>
+                </label>
+                <label class="field scheduler-interval-field">
+                  <span>间隔数值</span>
+                  <input id="scheduler-interval-every" type="number" min="1" value="1" />
+                </label>
+                <label class="field scheduler-interval-field">
+                  <span>间隔单位</span>
+                  <select id="scheduler-interval-unit">
+                    <option value="minutes">分钟</option>
+                    <option value="hours">小时</option>
+                  </select>
+                </label>
+              </div>
+
+              <label class="setting-row">
+                <div>
+                  <strong>高级工具限制</strong>
+                  <span>开启后，只允许调用下方选择的工具；仍不会绕过插件全局开关。</span>
+                </div>
+                <input id="scheduler-tool-limit" type="checkbox" class="switch-input" />
+              </label>
+
+              <div class="scheduler-tool-picker is-hidden" id="scheduler-tool-picker"></div>
+              <div class="scheduler-tool-hint is-hidden" id="scheduler-tool-empty-hint">未选择工具时，任务只能使用模型自身能力，不会调用任何工具。</div>
+
+              <div class="form-actions">
+                <div class="save-status" id="scheduler-save-status">等待操作</div>
+                <button type="button" class="ghost-btn" id="scheduler-cancel-btn">取消</button>
+                <button type="button" class="save-btn" id="scheduler-save-btn">保存任务</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section class="settings-panel is-hidden" id="identity-panel" data-panel="identity">
           <div class="panel-heading">
             <div class="panel-heading__icon">💼</div>
@@ -577,6 +684,13 @@
               <p class="placeholder-hint">此功能将在后续版本更新加入多 agent 协作后开启</p>
             </div>
           </div>
+        </section>
+
+        <section class="settings-panel is-hidden" id="skills-panel" data-panel="skills">
+          <h1>Skill 管理</h1>
+          <p class="panel-hint">Skill 约束 agent 如何使用工具。把含 SKILL.md 的目录放到用户数据目录的 skills/ 下即可扩展。</p>
+          <div id="skills-list"></div>
+          <p id="skills-empty" class="empty-hint is-hidden">还没有可用的 skill。</p>
         </section>
 
         <section class="settings-panel is-hidden" id="plugins-panel" data-panel="plugins">
@@ -737,6 +851,47 @@
                 <p>已注册的 MCP Server 工具，按需自动调用。</p>
               </div>
               <span class="plugin-always-on" title="常驻">●</span>
+            </article>
+
+            <article class="plugin-card" id="plugin-gamebot-card">
+              <div class="plugin-card__icon">🎮</div>
+              <div class="plugin-card__body">
+                <h2>游戏代肝</h2>
+                <p>按预设脚本自动跑每日任务，视觉定位自适应分辨率。参考图由后端存储，把小图按命名放进下方目录即可。</p>
+                <div class="plugin-config" id="plugin-gamebot-config">
+                  <div class="tts-field">
+                    <label for="gamebot-exe">游戏 exe 路径</label>
+                    <input id="gamebot-exe" type="text" placeholder="C:/Games/StarRail/StarRail.exe" autocomplete="off" />
+                  </div>
+                  <div class="tts-field">
+                    <label for="gamebot-vlm-url">VLM Base URL（OpenAI 兼容）</label>
+                    <input id="gamebot-vlm-url" type="url" placeholder="https://api.siliconflow.cn/v1" autocomplete="off" />
+                  </div>
+                  <div class="tts-field">
+                    <label for="gamebot-vlm-key">VLM API Key</label>
+                    <input id="gamebot-vlm-key" type="password" placeholder="sk-..." autocomplete="off" />
+                  </div>
+                  <div class="tts-field">
+                    <label for="gamebot-vlm-model">VLM 模型名</label>
+                    <input id="gamebot-vlm-model" type="text" placeholder="Qwen/Qwen3-VL-8B-Instruct" autocomplete="off" />
+                  </div>
+                  <div class="tts-field">
+                    <label for="gamebot-recipe">代肝脚本</label>
+                    <select id="gamebot-recipe"></select>
+                  </div>
+                  <p class="user-field-hint">参考图存放目录（自行把裁好的小图放进去）：<br /><code id="gamebot-refs-dir">未加载</code></p>
+                  <p class="user-field-hint" id="gamebot-refs-list" style="font-size:12px;"></p>
+                  <div class="tts-field">
+                    <button type="button" id="gamebot-start-btn">▶ 开始代肝</button>
+                    <button type="button" id="gamebot-stop-btn">⏹ 停止</button>
+                  </div>
+                  <pre id="gamebot-log" style="background:#1a1a1a;color:#0f0;padding:8px;max-height:180px;overflow:auto;font-size:12px;white-space:pre-wrap;"></pre>
+                </div>
+              </div>
+              <label class="plugin-switch" aria-label="启用游戏代肝">
+                <input type="checkbox" id="plugin-gamebot-enabled" />
+                <span></span>
+              </label>
             </article>
 
             <article class="plugin-card plugin-card--accordion" id="plugin-life-card">
@@ -956,38 +1111,20 @@
                   <span class="tts-engine__icon">🔇</span>
                   <span class="tts-engine__name">关闭</span>
                 </button>
-                <button type="button" class="tts-engine" data-engine="volcano" role="radio" aria-checked="false">
-                  <span class="tts-engine__icon">🌋</span>
-                  <span class="tts-engine__name">火山引擎</span>
-                  <span class="tts-engine__tag">云端</span>
-                </button>
                 <button type="button" class="tts-engine" data-engine="minimax" role="radio" aria-checked="false">
                   <span class="tts-engine__icon">✨</span>
                   <span class="tts-engine__name">MiniMax</span>
                   <span class="tts-engine__tag">云端</span>
                 </button>
-                <button type="button" class="tts-engine" data-engine="gptsovits" role="radio" aria-checked="false">
-                  <span class="tts-engine__icon">🤖</span>
-                  <span class="tts-engine__name">GPT-SoVITS</span>
-                  <span class="tts-engine__tag">本地</span>
-                </button>
-                <button type="button" class="tts-engine" data-engine="vits2" role="radio" aria-checked="false">
-                  <span class="tts-engine__icon">🎵</span>
-                  <span class="tts-engine__name">VITS2</span>
+                <button type="button" class="tts-engine" data-engine="voxcpm2" role="radio" aria-checked="false">
+                  <span class="tts-engine__icon">🗣️</span>
+                  <span class="tts-engine__name">Voxcpm2</span>
                   <span class="tts-engine__tag">本地</span>
                 </button>
               </div>
             </div>
 
             <!-- 引擎配置表单（选中哪个显示哪个） -->
-            <div class="tts-config" id="tts-config-volcano" hidden>
-              <h2 class="tts-section__title">🌋 火山引擎配置</h2>
-              <div class="tts-field"><label>App ID</label><input type="text" id="tts-volcano-appid" placeholder="火山引擎语音 App ID" /></div>
-              <div class="tts-field"><label>Access Token</label><input type="password" id="tts-volcano-token" placeholder="访问令牌" /></div>
-              <div class="tts-field"><label>音色 ID</label><input type="text" id="tts-volcano-voice" placeholder="训练好的音色 ID" /></div>
-              <button type="button" class="ghost-btn" id="tts-volcano-test">🔊 测试发音</button>
-            </div>
-
             <div class="tts-config" id="tts-config-minimax" hidden>
               <h2 class="tts-section__title">✨ MiniMax 配置</h2>
               <div class="tts-field"><label>API Key</label><input type="password" id="tts-minimax-key" placeholder="MiniMax API Key" /></div>
@@ -1005,7 +1142,6 @@
               <div class="tts-clone-section">
                 <h3 class="tts-clone-title">🎙️ 音色快速复刻</h3>
                 <p class="tts-clone-hint">上传昔涟配音（mp3/m4a/wav，10秒~5分钟，≤20MB），训练专属音色</p>
-
                 <div class="tts-field">
                   <label>配音文件</label>
                   <input type="text" id="tts-clone-file" placeholder="点击右侧选择音频文件" readonly />
@@ -1033,21 +1169,14 @@
               </div>
             </div>
 
-            <div class="tts-config" id="tts-config-gptsovits" hidden>
-              <h2 class="tts-section__title">🤖 GPT-SoVITS 配置</h2>
-              <div class="tts-field"><label>API 地址</label><input type="text" id="tts-gptsovits-url" placeholder="http://localhost:9880" value="http://localhost:9880" /></div>
-              <div class="tts-field"><label>模型路径</label><input type="text" id="tts-gptsovits-model" placeholder="训练好的模型文件路径（可选）" /></div>
-              <button type="button" class="ghost-btn" id="tts-gptsovits-test">🔊 测试发音</button>
+            <div class="tts-config" id="tts-config-voxcpm2" hidden>
+              <h2 class="tts-section__title">🗣️ Voxcpm2 配置</h2>
+              <div class="tts-field"><label>API 地址</label><input type="text" id="tts-voxcpm2-url" placeholder="http://localhost:5000" value="http://localhost:5000" /></div>
+              <div class="tts-field"><label>预设名</label><input type="text" id="tts-voxcpm2-preset" placeholder="音色预设名称（可选）" /></div>
+              <button type="button" class="ghost-btn" id="tts-voxcpm2-test">🔊 测试发音</button>
             </div>
 
-            <div class="tts-config" id="tts-config-vits2" hidden>
-              <h2 class="tts-section__title">🎵 VITS2 配置</h2>
-              <div class="tts-field"><label>API 地址</label><input type="text" id="tts-vits2-url" placeholder="http://localhost:9880" value="http://localhost:9880" /></div>
-              <div class="tts-field"><label>模型路径</label><input type="text" id="tts-vits2-model" placeholder="训练好的模型文件路径（可选）" /></div>
-              <button type="button" class="ghost-btn" id="tts-vits2-test">🔊 测试发音</button>
-            </div>
-
-            <p class="tts-hint">💡 云端引擎需在各平台控制台用昔涟配音素材训练音色，拿到音色 ID 填入上方。本地引擎需自行安装 GPT-SoVITS / VITS2 并起 HTTP 服务。</p>
+            <p class="tts-hint">💡 云端引擎需在 MiniMax 控制台用昔涟配音素材训练音色，拿到音色 ID 填入上方。本地引擎需自行安装 Voxcpm2 并起 HTTP 服务。</p>
           </div>
         </section>
 
@@ -1061,7 +1190,41 @@
         </section>
       </section>
     </main>
-  </div>
+  </div>
+
+  <!-- 添加表情包弹窗 -->
+  <div class="sticker-add-overlay is-hidden" id="sticker-add-overlay">
+    <div class="sticker-add-modal">
+      <div class="sticker-add-modal__title">＋ 添加表情包</div>
+      <div class="sticker-add-modal__body">
+        <div class="sticker-field">
+          <label>图片</label>
+          <div class="sticker-file-row">
+            <button type="button" class="sticker-file-btn" id="sticker-add-pick-btn">选择文件</button>
+            <span class="sticker-file-name" id="sticker-add-file-name">未选择</span>
+          </div>
+        </div>
+        <div class="sticker-field">
+          <label>英文名称</label>
+          <input type="text" id="sticker-add-id" placeholder="mycat" autocomplete="off" />
+        </div>
+        <div class="sticker-field">
+          <label>图片描述</label>
+          <input type="text" id="sticker-add-desc" placeholder="可爱的小猫表情" autocomplete="off" />
+        </div>
+        <div class="sticker-field">
+          <label>相近语义（一行一个）</label>
+          <textarea id="sticker-add-phrases" rows="4" placeholder="可爱的小猫&#10;想rua一下&#10;猫咪好乖"></textarea>
+        </div>
+        <div class="sticker-add-modal__error is-hidden" id="sticker-add-error"></div>
+      </div>
+      <div class="sticker-add-modal__actions">
+        <button type="button" class="ghost-btn" id="sticker-add-cancel">取消</button>
+        <button type="button" class="btn-primary" id="sticker-add-confirm">确认添加</button>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>
 

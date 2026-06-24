@@ -289,7 +289,8 @@ body {
 }
 
 .field input,
-.field select {
+.field select,
+.field textarea {
   width: 100%;
   padding: 11px 12px;
   border-radius: 14px;
@@ -305,12 +306,20 @@ body {
   background: #2b1e3d;
 }
 
-.field input::placeholder {
+.field input::placeholder,
+.field textarea::placeholder {
   color: rgba(235, 229, 245, 0.34);
 }
 
+.field textarea {
+  min-height: 120px;
+  resize: vertical;
+  font: var(--rb-text-body);
+}
+
 .field input:focus,
-.field select:focus {
+.field select:focus,
+.field textarea:focus {
   background: rgba(255, 255, 255, 0.10);
   border-color: rgba(255, 182, 220, 0.46);
   box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.08);
@@ -2337,3 +2346,338 @@ body {
 .skill-group__body.is-open { display: block; }
 .panel-hint { font-size: 13px; color: rgba(235, 229, 245, 0.6); margin: 4px 0 16px; }
 .empty-hint { font-size: 13px; color: rgba(235, 229, 245, 0.5); padding: 24px 0; text-align: center; }
+
+
+/* ============================================================
+   Scheduler / scheduled tasks panel
+   ============================================================ */
+
+.scheduler-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+  padding: 14px 16px;
+  border: 1px solid rgba(255, 182, 220, 0.16);
+  background: rgba(255, 255, 255, 0.060);
+  border-radius: 18px;
+}
+
+.scheduler-toolbar__copy {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.scheduler-toolbar__copy strong {
+  color: var(--rb-text-strong);
+  font: var(--rb-text-small-em);
+}
+
+.scheduler-toolbar__copy span,
+.scheduler-empty,
+.scheduler-card__meta,
+.scheduler-editor .setting-row span {
+  color: rgba(235, 229, 245, 0.56);
+  font: var(--rb-text-micro);
+}
+
+.scheduler-empty {
+  padding: 32px;
+  text-align: center;
+  border: 1px dashed rgba(255, 182, 220, 0.20);
+  border-radius: 20px;
+  color: rgba(235, 229, 245, 0.48);
+  font: var(--rb-text-small);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.scheduler-list {
+  display: grid;
+  gap: 10px;
+}
+
+.scheduler-card {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid rgba(255, 182, 220, 0.14);
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(255, 110, 199, 0.10), transparent 50%),
+    rgba(255, 255, 255, 0.055);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.10);
+}
+
+.scheduler-card__head,
+.scheduler-card__actions,
+.scheduler-editor__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.scheduler-card__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: var(--rb-text-body-em);
+  color: var(--rb-text-strong);
+}
+
+.scheduler-card__title span {
+  filter: drop-shadow(0 0 5px rgba(236, 72, 153, 0.35));
+}
+
+.scheduler-card__meta {
+  line-height: 1.5;
+}
+
+.scheduler-badge {
+  border-radius: 999px;
+  padding: 3px 9px;
+  background: rgba(120, 220, 160, 0.14);
+  color: #86efac;
+  font: var(--rb-text-micro);
+  border: 1px solid rgba(134, 239, 172, 0.15);
+}
+
+.scheduler-badge.is-disabled {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(235, 229, 245, 0.46);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.scheduler-card__actions {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+
+.scheduler-history {
+  border-top: 1px solid rgba(255, 182, 220, 0.12);
+  padding-top: 10px;
+  margin-top: 4px;
+  display: grid;
+  gap: 5px;
+  font: var(--rb-text-micro);
+  color: rgba(235, 229, 245, 0.60);
+  line-height: 1.6;
+}
+
+.scheduler-editor {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.45);
+  padding: 24px;
+}
+
+.scheduler-empty.is-hidden,
+.scheduler-editor.is-hidden,
+.scheduler-tool-picker.is-hidden,
+.scheduler-tool-hint.is-hidden,
+.scheduler-once-field.is-hidden,
+.scheduler-time-field.is-hidden,
+.scheduler-weekly-field.is-hidden,
+.scheduler-interval-field.is-hidden {
+  display: none;
+}
+
+.scheduler-editor__card {
+  width: min(760px, 96vw);
+  max-height: 90vh;
+  overflow: auto;
+  display: grid;
+  gap: 16px;
+  padding: 24px;
+  border: 1px solid rgba(255, 182, 220, 0.22);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(255, 110, 199, 0.18), transparent 40%),
+    radial-gradient(circle at 86% 18%, rgba(168, 85, 247, 0.14), transparent 42%),
+    rgba(30, 22, 50, 0.98);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(255, 182, 220, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.10);
+}
+
+.scheduler-editor__card::-webkit-scrollbar { width: 5px; }
+.scheduler-editor__card::-webkit-scrollbar-track { background: transparent; }
+.scheduler-editor__card::-webkit-scrollbar-thumb {
+  background: rgba(236, 72, 153, 0.40);
+  border-radius: 3px;
+}
+
+.scheduler-editor__header h2 {
+  margin: 0;
+  color: var(--rb-text-strong);
+  font: var(--rb-text-title);
+}
+
+.scheduler-form-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.scheduler-tool-picker {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.scheduler-tool-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.050);
+  border: 1px solid rgba(255, 182, 220, 0.10);
+  font: var(--rb-text-small);
+  color: rgba(235, 229, 245, 0.78);
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+
+.scheduler-tool-option:hover {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 182, 220, 0.22);
+}
+
+.scheduler-tool-option input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  accent-color: #ec4899;
+  cursor: pointer;
+}
+
+.scheduler-tool-hint {
+  padding: 10px 14px;
+  border-radius: 14px;
+  color: rgba(255, 218, 238, 0.80);
+  background: rgba(255, 192, 230, 0.07);
+  border: 1px solid rgba(255, 182, 220, 0.16);
+  font: var(--rb-text-small);
+  line-height: 1.5;
+}
+
+.scheduler-form-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.scheduler-tool-picker {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.scheduler-tool-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.scheduler-tool-hint {
+  padding: 10px 12px;
+  border-radius: 12px;
+  color: rgba(255, 218, 238, 0.82);
+  background: rgba(255, 192, 230, 0.08);
+  border: 1px solid rgba(255, 182, 220, 0.18);
+  font-size: 13px;
+}
+
+/* ── 添加表情包弹窗 ── */
+.sticker-add-overlay {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.38);
+  backdrop-filter: blur(4px);
+  transition: opacity 180ms ease;
+}
+.sticker-add-overlay.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+.sticker-add-modal {
+  width: min(340px, 88vw);
+  max-height: 86vh;
+  overflow-y: auto;
+  padding: 16px;
+  border-radius: 18px;
+  background: radial-gradient(circle at 20% 8%, rgba(255, 110, 199, 0.18), transparent 60%), linear-gradient(145deg, rgba(38, 28, 60, 0.96), rgba(22, 18, 40, 0.94));
+  border: 1px solid rgba(255, 182, 220, 0.22);
+  box-shadow: 0 28px 60px rgba(0, 0, 0, 0.40), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+.sticker-add-modal__title {
+  color: rgba(254, 247, 255, 0.94);
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+.sticker-field { margin-bottom: 10px; }
+.sticker-field label {
+  display: block;
+  color: rgba(254, 247, 255, 0.58);
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+.sticker-field input,
+.sticker-field textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 7px 10px;
+  border-radius: 10px;
+  background: rgba(15, 13, 28, 0.6);
+  border: 1px solid rgba(255, 182, 220, 0.16);
+  color: rgba(254, 247, 255, 0.9);
+  font-size: 13px;
+  font-family: inherit;
+  resize: vertical;
+}
+.sticker-field input:focus,
+.sticker-field textarea:focus {
+  outline: none;
+  border-color: rgba(255, 110, 199, 0.5);
+}
+.sticker-file-row { display: flex; align-items: center; gap: 8px; }
+.sticker-file-btn {
+  padding: 5px 12px;
+  border-radius: 999px;
+  color: rgba(254, 247, 255, 0.88);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 182, 220, 0.18);
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.sticker-file-btn:hover { background: rgba(255, 255, 255, 0.14); }
+.sticker-file-name {
+  color: rgba(254, 247, 255, 0.46);
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sticker-add-modal__error {
+  color: rgba(248, 113, 113, 0.92);
+  font-size: 12px;
+  margin-top: 4px;
+}
+.sticker-add-modal__error.is-hidden { display: none; }
+.sticker-add-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 14px;
+}

@@ -1,0 +1,1377 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2] [cursor=pointer]: 半隐黑幕
+  - navigation [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - link [ref=e9] [cursor=pointer]:
+          - /url: //game.bilibili.com/?spm_id_from=555.117.0.0
+        - list [ref=e10]:
+          - listitem [ref=e11]:
+            - link " 主站" [ref=e12] [cursor=pointer]:
+              - /url: //www.bilibili.com/?spm_id_from=555.117.0.0
+              - generic [ref=e13]: 
+              - generic [ref=e14]: 主站
+          - listitem [ref=e15]:
+            - link "首页" [ref=e16] [cursor=pointer]:
+              - /url: //game.bilibili.com/platform?spm_id_from=555.117.0.0
+          - listitem [ref=e17]:
+            - link "排行榜" [ref=e18] [cursor=pointer]:
+              - /url: //game.bilibili.com/platform/ranks?spm_id_from=555.117.0.0
+          - listitem [ref=e19]:
+            - link "发现" [ref=e20] [cursor=pointer]:
+              - /url: //game.bilibili.com/platform/discover?spm_id_from=555.117.0.0
+          - listitem [ref=e21]:
+            - link "WIKI" [ref=e22] [cursor=pointer]:
+              - /url: //wiki.biligame.com/?spm_id_from=555.117.0.0
+          - listitem [ref=e23]:
+            - link "大会员礼包" [ref=e24] [cursor=pointer]:
+              - /url: //b-gift.biligame.com/?spm_id_from=555.117.0.0
+          - listitem [ref=e25]:
+            - link "充值中心" [ref=e26] [cursor=pointer]:
+              - /url: //pay.biligame.com/?spm_id_from=555.117.0.0#/?from=gc&selectedNav=pay
+          - listitem [ref=e27]:
+            - link "我的" [ref=e28] [cursor=pointer]:
+              - /url: //game.bilibili.com/platform/mine?spm_id_from=555.117.0.0
+      - generic [ref=e29]:
+        - generic [ref=e30]:
+          - textbox "搜索更多游戏&WIKI" [ref=e31]
+          - generic [ref=e33] [cursor=pointer]: 
+        - link [ref=e37] [cursor=pointer]:
+          - /url: https://passport.bilibili.com/login?gourl=https%3A%2F%2Fwiki.biligame.com%2Fsr%2F%25E9%2593%25B6%25E8%25BE%2587%25E5%2595%258A%25EF%25BC%258C%25E6%258C%25BD%25E5%2588%25AB%25E9%2582%25A3%25E4%25BA%25BA%25E9%2597%25B4%25E5%258F%25B2%25E8%25AF%2597
+  - generic [ref=e38]:
+    - generic [ref=e39]:
+      - link [ref=e41] [cursor=pointer]:
+        - /url: /sr/%E9%A6%96%E9%A1%B5
+      - listitem [ref=e42]:
+        - link "我的消息" [ref=e43] [cursor=pointer]:
+          - /url: javascript:void(0);
+      - generic [ref=e44] [cursor=pointer]: 关于本站
+      - generic [ref=e46]:
+        - generic [ref=e48]:
+          - link "首页" [ref=e50] [cursor=pointer]:
+            - /url: javascript:;
+            - text: 首页
+          - link "导航" [ref=e53] [cursor=pointer]:
+            - /url: javascript:;
+            - text: 导航
+          - link "图鉴" [ref=e56] [cursor=pointer]:
+            - /url: javascript:;
+            - text: 图鉴
+          - link "地图" [ref=e59] [cursor=pointer]:
+            - /url: /sr/%E5%9C%B0%E5%9B%BE
+          - link "玩法/攻略" [ref=e61] [cursor=pointer]:
+            - /url: javascript:;
+            - text: 玩法/攻略
+          - link "扩展阅读" [ref=e64] [cursor=pointer]:
+            - /url: javascript:;
+            - text: 扩展阅读
+          - link "其他" [ref=e67] [cursor=pointer]:
+            - /url: javascript:;
+            - text: 其他
+        - generic [ref=e72]:
+          - textbox "搜索崩坏：星穹铁道WIKI_BWIKI_哔哩哔哩[alt-shift-f]" [ref=e73]:
+            - /placeholder: 本WIKI中搜索
+          - button "搜索" [ref=e74] [cursor=pointer]
+          - button "前往" [ref=e75] [cursor=pointer]
+    - main [ref=e76]:
+      - generic [ref=e78]:
+        - paragraph [ref=e80]:
+          - text: 本WIKI由
+          - link "旅行者酒馆" [ref=e81] [cursor=pointer]:
+            - /url: https://space.bilibili.com/489986571
+          - text: 于2021年10月05日申请开通。
+          - generic [ref=e82]:
+            - text: 内容按
+            - link "CC BY-NC-SA 4.0协议" [ref=e83] [cursor=pointer]:
+              - /url: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans
+            - text: 提供
+          - text: ，编辑权限开放。
+          - text: 本WIKI仍在努力完善中，欢迎收藏。编辑组为非官方民间组织，为爱发电，欢迎各路能人异士加入。
+          - link "免责声明" [ref=e84] [cursor=pointer]:
+            - /url: /sr/%E5%B4%A9%E5%9D%8F%EF%BC%9A%E6%98%9F%E7%A9%B9%E9%93%81%E9%81%93:%E5%85%8D%E8%B4%A3%E5%A3%B0%E6%98%8E
+          - text: •
+          - link "编辑教程" [ref=e85] [cursor=pointer]:
+            - /url: /sr/%E6%98%9F%E7%A9%B9%E9%93%81%E9%81%93WIKI%E7%BC%96%E8%BE%91%E6%95%99%E7%A8%8B
+          - text: •
+          - link "反馈留言" [ref=e86] [cursor=pointer]:
+            - /url: /sr/%E5%B4%A9%E5%9D%8F%EF%BC%9A%E6%98%9F%E7%A9%B9%E9%93%81%E9%81%93%E6%9C%89%E9%97%AE%E5%93%94%E7%AD%94%E7%95%99%E8%A8%80%E6%9D%BF
+          - text: •
+          - link "收藏方法" [ref=e87] [cursor=pointer]:
+            - /url: https://wiki.biligame.com/wiki/BWIKI%E6%94%B6%E8%97%8F%E5%88%B0%E6%A1%8C%E9%9D%A2%E7%9A%84%E6%96%B9%E6%B3%95%E8%AF%B4%E6%98%8E
+          - text: • 交流群：1017604603
+        - paragraph
+      - generic [ref=e88]:
+        - heading "银辇啊，挽别那人间史诗" [level=1] [ref=e89]: 银辇啊，挽别那人间史诗
+        - generic [ref=e90]:
+          - navigation "WIKI功能 " [ref=e91] [cursor=pointer]:
+            - heading "WIKI功能 " [level=3] [ref=e92]:
+              - generic [ref=e93]: WIKI功能
+              - generic [ref=e94]: 
+          - generic [ref=e95]:
+            - paragraph [ref=e96]: 阅读：8982
+            - paragraph [ref=e97]: 更新日期：2026-02-13
+            - paragraph [ref=e98]: 最新编辑：QWERTY_770
+      - generic [ref=e99]:
+        - link "跳到导航" [ref=e100] [cursor=pointer]:
+          - /url: "#mw-head"
+        - link "跳到搜索" [ref=e101] [cursor=pointer]:
+          - /url: "#p-search"
+        - generic [ref=e102]:
+          - link "页面贡献者 :" [ref=e103] [cursor=pointer]:
+            - /url: /sr/%E7%89%B9%E6%AE%8A:%E8%B4%A1%E7%8C%AE%E8%80%85/%E9%93%B6%E8%BE%87%E5%95%8A%EF%BC%8C%E6%8C%BD%E5%88%AB%E9%82%A3%E4%BA%BA%E9%97%B4%E5%8F%B2%E8%AF%97
+          - generic [ref=e104]:
+            - link [ref=e107] [cursor=pointer]:
+              - /url: //space.bilibili.com/1902365740/
+            - link [ref=e111] [cursor=pointer]:
+              - /url: //space.bilibili.com/474970786/
+            - link [ref=e115] [cursor=pointer]:
+              - /url: //space.bilibili.com/343309739/
+        - generic [ref=e118]:
+          - generic [ref=e120]: 如果选择选项下面对话没变不是BUG了，而是游戏本身对话就是一样的。
+          - generic [ref=e121]:
+            - generic [ref=e122]:
+              - generic "编辑这个页面" [ref=e123]:
+                - link "编" [ref=e124] [cursor=pointer]:
+                  - /url: https://wiki.biligame.com/sr/index.php?title=%E9%93%B6%E8%BE%87%E5%95%8A%EF%BC%8C%E6%8C%BD%E5%88%AB%E9%82%A3%E4%BA%BA%E9%97%B4%E5%8F%B2%E8%AF%97&action=edit
+              - generic "清除这个页面的缓存" [ref=e125]:
+                - link "刷" [ref=e126] [cursor=pointer]:
+                  - /url: https://wiki.biligame.com/sr/index.php?title=%E9%93%B6%E8%BE%87%E5%95%8A%EF%BC%8C%E6%8C%BD%E5%88%AB%E9%82%A3%E4%BA%BA%E9%97%B4%E5%8F%B2%E8%AF%97&action=purge
+              - generic "查看这个页面的编辑历史" [ref=e127]:
+                - link "历" [ref=e128] [cursor=pointer]:
+                  - /url: https://wiki.biligame.com/sr/index.php?title=%E9%93%B6%E8%BE%87%E5%95%8A%EF%BC%8C%E6%8C%BD%E5%88%AB%E9%82%A3%E4%BA%BA%E9%97%B4%E5%8F%B2%E8%AF%97&action=history
+              - generic "短网址，按右键复制链接地址" [ref=e129]:
+                - link "短" [ref=e130] [cursor=pointer]:
+                  - /url: https://wiki.biligame.com/sr/?curid=24378
+              - generic "查看这个页面" [ref=e131]:
+                - link "阅" [ref=e132] [cursor=pointer]:
+                  - /url: https://wiki.biligame.com/sr/%E9%93%B6%E8%BE%87%E5%95%8A%EF%BC%8C%E6%8C%BD%E5%88%AB%E9%82%A3%E4%BA%BA%E9%97%B4%E5%8F%B2%E8%AF%97
+            - link "首页" [ref=e133] [cursor=pointer]:
+              - /url: /sr/%E9%A6%96%E9%A1%B5
+            - text: ">"
+            - link "开拓任务" [ref=e134] [cursor=pointer]:
+              - /url: /sr/%E5%BC%80%E6%8B%93%E4%BB%BB%E5%8A%A1
+            - text: ">"
+            - link "成为昨日的明天" [ref=e135] [cursor=pointer]:
+              - /url: /sr/%E6%88%90%E4%B8%BA%E6%98%A8%E6%97%A5%E7%9A%84%E6%98%8E%E5%A4%A9
+            - text: "> 银辇啊，挽别那人间史诗"
+          - separator [ref=e136]
+          - generic [ref=e138]:
+            - text: 如果是第一次来，按"Ctrl+D"可以收藏随时查看更新~觉得WIKI好玩的话，请推荐给朋友哦～(◕ω＜)☆
+            - text: 按右上角“WIKI功能→编辑”即可修改页面内容。
+          - table [ref=e139]:
+            - rowgroup [ref=e140]:
+              - row "任务名称 银辇啊，挽别那人间史诗" [ref=e141]:
+                - rowheader "任务名称" [ref=e142]
+                - cell "银辇啊，挽别那人间史诗" [ref=e143]
+              - row "任务地区 翁法罗斯" [ref=e144]:
+                - rowheader "任务地区" [ref=e145]
+                - cell "翁法罗斯" [ref=e146]
+              - row "任务类型 开拓任务" [ref=e147]:
+                - rowheader "任务类型" [ref=e148]
+                - cell "开拓任务" [ref=e149]
+              - row "开放等级 21" [ref=e150]:
+                - rowheader "开放等级" [ref=e151]
+                - cell "21" [ref=e152]
+              - row "所属版本 3.7" [ref=e153]:
+                - rowheader "所属版本" [ref=e154]
+                - cell "3.7" [ref=e155]
+              - row "任务描述 铁墓之战后，你在自己的房间苏醒，却惊奇地发现黄金裔们都出现在星穹列车上。也许，这就是史诗落幕前，铭记、并告别这些伙伴们的最后机会吧。" [ref=e156]:
+                - rowheader "任务描述" [ref=e157]
+                - cell "铁墓之战后，你在自己的房间苏醒，却惊奇地发现黄金裔们都出现在星穹列车上。也许，这就是史诗落幕前，铭记、并告别这些伙伴们的最后机会吧。" [ref=e158]
+              - row "奖励 里程 里程 × 600星琼 星琼 × 80提纯以太 提纯以太 × 6遗失晶块 遗失晶块 × 6无序秘酿 无序秘酿 × 240信用点 信用点 × 80000" [ref=e159]:
+                - rowheader "奖励" [ref=e160]
+                - cell "里程 里程 × 600星琼 星琼 × 80提纯以太 提纯以太 × 6遗失晶块 遗失晶块 × 6无序秘酿 无序秘酿 × 240信用点 信用点 × 80000" [ref=e161]:
+                  - link "里程" [ref=e163] [cursor=pointer]:
+                    - /url: /sr/%E9%87%8C%E7%A8%8B
+                    - img "里程" [ref=e164]
+                  - link "里程" [ref=e165] [cursor=pointer]:
+                    - /url: /sr/%E9%87%8C%E7%A8%8B
+                  - text: × 600
+                  - link "星琼" [ref=e167] [cursor=pointer]:
+                    - /url: /sr/%E6%98%9F%E7%90%BC
+                    - img "星琼" [ref=e168]
+                  - link "星琼" [ref=e169] [cursor=pointer]:
+                    - /url: /sr/%E6%98%9F%E7%90%BC
+                  - text: × 80
+                  - link "提纯以太" [ref=e171] [cursor=pointer]:
+                    - /url: /sr/%E6%8F%90%E7%BA%AF%E4%BB%A5%E5%A4%AA
+                    - img "提纯以太" [ref=e172]
+                  - link "提纯以太" [ref=e173] [cursor=pointer]:
+                    - /url: /sr/%E6%8F%90%E7%BA%AF%E4%BB%A5%E5%A4%AA
+                  - text: × 6
+                  - link "遗失晶块" [ref=e175] [cursor=pointer]:
+                    - /url: /sr/%E9%81%97%E5%A4%B1%E6%99%B6%E5%9D%97
+                    - img "遗失晶块" [ref=e176]
+                  - link "遗失晶块" [ref=e177] [cursor=pointer]:
+                    - /url: /sr/%E9%81%97%E5%A4%B1%E6%99%B6%E5%9D%97
+                  - text: × 6
+                  - link "无序秘酿" [ref=e179] [cursor=pointer]:
+                    - /url: /sr/%E6%97%A0%E5%BA%8F%E7%A7%98%E9%85%BF
+                    - img "无序秘酿" [ref=e180]
+                  - link "无序秘酿" [ref=e181] [cursor=pointer]:
+                    - /url: /sr/%E6%97%A0%E5%BA%8F%E7%A7%98%E9%85%BF
+                  - text: × 240
+                  - link "信用点" [ref=e183] [cursor=pointer]:
+                    - /url: /sr/%E4%BF%A1%E7%94%A8%E7%82%B9
+                    - img "信用点" [ref=e184]
+                  - link "信用点" [ref=e185] [cursor=pointer]:
+                    - /url: /sr/%E4%BF%A1%E7%94%A8%E7%82%B9
+                  - text: × 80000
+              - row "出场人物 赛飞儿 赛飞儿 遐蝶 遐蝶 风堇 风堇 阿格莱雅 阿格莱雅 万敌 万敌 刻律德菈 刻律德菈 缇宝 缇宝 缇安头像 缇安 缇宁头像 缇宁 那刻夏 那刻夏 海瑟音 海瑟音 白厄 白厄 昔涟 昔涟 三月七 三月七 丹恒 丹恒 瓦尔特 瓦尔特 帕姆 帕姆 姬子 姬子 大黑塔 大黑塔 昔涟 昔涟" [ref=e186]:
+                - rowheader "出场人物" [ref=e187]
+                - cell "赛飞儿 赛飞儿 遐蝶 遐蝶 风堇 风堇 阿格莱雅 阿格莱雅 万敌 万敌 刻律德菈 刻律德菈 缇宝 缇宝 缇安头像 缇安 缇宁头像 缇宁 那刻夏 那刻夏 海瑟音 海瑟音 白厄 白厄 昔涟 昔涟 三月七 三月七 丹恒 丹恒 瓦尔特 瓦尔特 帕姆 帕姆 姬子 姬子 大黑塔 大黑塔 昔涟 昔涟" [ref=e188]:
+                  - link "赛飞儿" [ref=e190] [cursor=pointer]:
+                    - /url: /sr/%E8%B5%9B%E9%A3%9E%E5%84%BF
+                    - img "赛飞儿" [ref=e191]
+                  - link "赛飞儿" [ref=e192] [cursor=pointer]:
+                    - /url: /sr/%E8%B5%9B%E9%A3%9E%E5%84%BF
+                  - link "遐蝶" [ref=e194] [cursor=pointer]:
+                    - /url: /sr/%E9%81%90%E8%9D%B6
+                    - img "遐蝶" [ref=e195]
+                  - link "遐蝶" [ref=e196] [cursor=pointer]:
+                    - /url: /sr/%E9%81%90%E8%9D%B6
+                  - link "风堇" [ref=e198] [cursor=pointer]:
+                    - /url: /sr/%E9%A3%8E%E5%A0%87
+                    - img "风堇" [ref=e199]
+                  - link "风堇" [ref=e200] [cursor=pointer]:
+                    - /url: /sr/%E9%A3%8E%E5%A0%87
+                  - link "阿格莱雅" [ref=e202] [cursor=pointer]:
+                    - /url: /sr/%E9%98%BF%E6%A0%BC%E8%8E%B1%E9%9B%85
+                    - img "阿格莱雅" [ref=e203]
+                  - link "阿格莱雅" [ref=e204] [cursor=pointer]:
+                    - /url: /sr/%E9%98%BF%E6%A0%BC%E8%8E%B1%E9%9B%85
+                  - link "万敌" [ref=e206] [cursor=pointer]:
+                    - /url: /sr/%E4%B8%87%E6%95%8C
+                    - img "万敌" [ref=e207]
+                  - link "万敌" [ref=e208] [cursor=pointer]:
+                    - /url: /sr/%E4%B8%87%E6%95%8C
+                  - link "刻律德菈" [ref=e210] [cursor=pointer]:
+                    - /url: /sr/%E5%88%BB%E5%BE%8B%E5%BE%B7%E8%8F%88
+                    - img "刻律德菈" [ref=e211]
+                  - link "刻律德菈" [ref=e212] [cursor=pointer]:
+                    - /url: /sr/%E5%88%BB%E5%BE%8B%E5%BE%B7%E8%8F%88
+                  - link "缇宝" [ref=e214] [cursor=pointer]:
+                    - /url: /sr/%E7%BC%87%E5%AE%9D
+                    - img "缇宝" [ref=e215]
+                  - link "缇宝" [ref=e216] [cursor=pointer]:
+                    - /url: /sr/%E7%BC%87%E5%AE%9D
+                  - link "缇安头像" [ref=e218] [cursor=pointer]:
+                    - /url: /sr/%E7%BC%87%E5%AE%89
+                    - img "缇安头像" [ref=e219]
+                  - link "缇安" [ref=e220] [cursor=pointer]:
+                    - /url: /sr/index.php?title=%E7%BC%87%E5%AE%89&action=edit&redlink=1
+                  - link "缇宁头像" [ref=e222] [cursor=pointer]:
+                    - /url: /sr/%E7%BC%87%E5%AE%81
+                    - img "缇宁头像" [ref=e223]
+                  - link "缇宁" [ref=e224] [cursor=pointer]:
+                    - /url: /sr/index.php?title=%E7%BC%87%E5%AE%81&action=edit&redlink=1
+                  - link "那刻夏" [ref=e226] [cursor=pointer]:
+                    - /url: /sr/%E9%82%A3%E5%88%BB%E5%A4%8F
+                    - img "那刻夏" [ref=e227]
+                  - link "那刻夏" [ref=e228] [cursor=pointer]:
+                    - /url: /sr/%E9%82%A3%E5%88%BB%E5%A4%8F
+                  - link "海瑟音" [ref=e230] [cursor=pointer]:
+                    - /url: /sr/%E6%B5%B7%E7%91%9F%E9%9F%B3
+                    - img "海瑟音" [ref=e231]
+                  - link "海瑟音" [ref=e232] [cursor=pointer]:
+                    - /url: /sr/%E6%B5%B7%E7%91%9F%E9%9F%B3
+                  - link "白厄" [ref=e234] [cursor=pointer]:
+                    - /url: /sr/%E7%99%BD%E5%8E%84
+                    - img "白厄" [ref=e235]
+                  - link "白厄" [ref=e236] [cursor=pointer]:
+                    - /url: /sr/%E7%99%BD%E5%8E%84
+                  - link "昔涟" [ref=e238] [cursor=pointer]:
+                    - /url: /sr/%E6%98%94%E6%B6%9F
+                    - img "昔涟" [ref=e239]
+                  - link "昔涟" [ref=e240] [cursor=pointer]:
+                    - /url: /sr/%E6%98%94%E6%B6%9F
+                  - link "三月七" [ref=e242] [cursor=pointer]:
+                    - /url: /sr/%E4%B8%89%E6%9C%88%E4%B8%83
+                    - img "三月七" [ref=e243]
+                  - link "三月七" [ref=e244] [cursor=pointer]:
+                    - /url: /sr/%E4%B8%89%E6%9C%88%E4%B8%83
+                  - link "丹恒" [ref=e246] [cursor=pointer]:
+                    - /url: /sr/%E4%B8%B9%E6%81%92
+                    - img "丹恒" [ref=e247]
+                  - link "丹恒" [ref=e248] [cursor=pointer]:
+                    - /url: /sr/%E4%B8%B9%E6%81%92
+                  - link "瓦尔特" [ref=e250] [cursor=pointer]:
+                    - /url: /sr/%E7%93%A6%E5%B0%94%E7%89%B9
+                    - img "瓦尔特" [ref=e251]
+                  - link "瓦尔特" [ref=e252] [cursor=pointer]:
+                    - /url: /sr/%E7%93%A6%E5%B0%94%E7%89%B9
+                  - link "帕姆" [ref=e254] [cursor=pointer]:
+                    - /url: /sr/%E5%B8%95%E5%A7%86
+                    - img "帕姆" [ref=e255]
+                  - link "帕姆" [ref=e256] [cursor=pointer]:
+                    - /url: /sr/%E5%B8%95%E5%A7%86
+                  - link "姬子" [ref=e258] [cursor=pointer]:
+                    - /url: /sr/%E5%A7%AC%E5%AD%90
+                    - img "姬子" [ref=e259]
+                  - link "姬子" [ref=e260] [cursor=pointer]:
+                    - /url: /sr/%E5%A7%AC%E5%AD%90
+                  - link "大黑塔" [ref=e262] [cursor=pointer]:
+                    - /url: /sr/%E5%A4%A7%E9%BB%91%E5%A1%94
+                    - img "大黑塔" [ref=e263]
+                  - link "大黑塔" [ref=e264] [cursor=pointer]:
+                    - /url: /sr/%E5%A4%A7%E9%BB%91%E5%A1%94
+                  - link "昔涟" [ref=e266] [cursor=pointer]:
+                    - /url: /sr/%E6%98%94%E6%B6%9F
+                    - img "昔涟" [ref=e267]
+                  - link "昔涟" [ref=e268] [cursor=pointer]:
+                    - /url: /sr/%E6%98%94%E6%B6%9F
+          - heading "任务相关" [level=2] [ref=e269]:
+            - generic [ref=e270]: 任务相关
+          - heading "任务条件" [level=3] [ref=e271]: 任务条件
+          - definition [ref=e273]:
+            - text: 完成任务
+            - link "纸页啊，镌留记忆的涟漪" [ref=e274] [cursor=pointer]:
+              - /url: /sr/%E7%BA%B8%E9%A1%B5%E5%95%8A%EF%BC%8C%E9%95%8C%E7%95%99%E8%AE%B0%E5%BF%86%E7%9A%84%E6%B6%9F%E6%BC%AA
+          - heading "系列任务" [level=3] [ref=e275]: 系列任务
+          - list [ref=e276]:
+            - listitem [ref=e277]:
+              - link "成为昨日的明天" [ref=e278] [cursor=pointer]:
+                - /url: /sr/%E6%88%90%E4%B8%BA%E6%98%A8%E6%97%A5%E7%9A%84%E6%98%8E%E5%A4%A9
+          - heading "前置任务" [level=3] [ref=e279]: 前置任务
+          - list [ref=e280]:
+            - listitem [ref=e281]:
+              - link "纸页啊，镌留记忆的涟漪" [ref=e282] [cursor=pointer]:
+                - /url: /sr/%E7%BA%B8%E9%A1%B5%E5%95%8A%EF%BC%8C%E9%95%8C%E7%95%99%E8%AE%B0%E5%BF%86%E7%9A%84%E6%B6%9F%E6%BC%AA
+          - heading "后续任务" [level=3] [ref=e283]: 后续任务
+          - list [ref=e284]:
+            - listitem [ref=e285]:
+              - link "落英啊，残芳纷飞留归躅" [ref=e286] [cursor=pointer]:
+                - /url: /sr/%E8%90%BD%E8%8B%B1%E5%95%8A%EF%BC%8C%E6%AE%8B%E8%8A%B3%E7%BA%B7%E9%A3%9E%E7%95%99%E5%BD%92%E8%BA%85
+          - heading "任务流程" [level=3] [ref=e287]: 任务流程
+          - list [ref=e288]:
+            - listitem [ref=e289]: 铁墓的危机已经解除，但故事尚未结束
+            - listitem [ref=e290]: 回到列车，寻找伙伴们的踪迹
+            - listitem [ref=e291]: 列车为何空无一人？必须要弄清楚……
+            - listitem [ref=e292]: 调查发出异响的浴室
+            - listitem [ref=e293]: 揪出藏在浴缸里的遐蝶
+            - listitem [ref=e294]: 前往派对车厢，与其他黄金裔伙伴打声招呼
+            - listitem [ref=e295]: 和在场的黄金裔们说说话
+            - listitem [ref=e296]: 前往观景车厢，寻找白厄
+            - listitem [ref=e297]: 找海瑟音、那刻夏聊聊
+            - listitem [ref=e298]: 找白厄聊几句
+            - listitem [ref=e299]: 告别翁法罗斯这趟史诗的旅途
+            - listitem [ref=e300]: 铁墓陨落后，昔涟的选择
+          - heading "剧情梗概" [level=2] [ref=e301]:
+            - generic [ref=e302]: 剧情梗概
+          - generic [ref=e304] [cursor=pointer]:
+            - generic [ref=e305]: 剧情梗概
+            - generic [ref=e306]: 折叠
+          - paragraph [ref=e307]
+          - heading "剧情内容" [level=2] [ref=e308]:
+            - generic [ref=e309]: 剧情内容
+          - heading "铁墓的危机已经解除，但故事尚未结束" [level=3] [ref=e310]: 铁墓的危机已经解除，但故事尚未结束
+          - blockquote [ref=e311]:
+            - paragraph [ref=e312]: 铁墓之战，以「毁灭」的落败告终。我在熟悉的车厢中醒来，只是列车似乎不同往日，似有稀客到访……
+            - generic [ref=e313]:
+              - img "图标-位置.png" [ref=e314]
+              - text: 星穹列车-排队车厢
+          - heading "回到列车，寻找伙伴们的踪迹" [level=3] [ref=e315]: 回到列车，寻找伙伴们的踪迹
+          - generic [ref=e317]:
+            - generic [ref=e318]: 镌刻史诗的银辇
+            - text: 请翻到《落木逐火英雄纪》的最后一页。在这部史诗的结尾，所有为翁法罗斯奉献一切的英雄们都登上了一辆壮丽的银色长辇。他们会在车厢中欢笑、打闹、思考未来，然后在下一个明天，驶向属于他们每一个人的天外境界之海。
+          - list [ref=e319]:
+            - listitem [ref=e320]: 开拓者：……！
+            - listitem [ref=e321]: 开拓者：这里…我……
+            - listitem [ref=e322]: 开拓者：我…回到列车上了？
+          - generic [ref=e324]:
+            - generic [ref=e325]:
+              - img "剧情选项-图标-继续.png" [ref=e327]
+              - text: 呼唤三月和丹恒。
+            - generic [ref=e328] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e330]
+              - text: 呼唤姬子和瓦尔特。
+            - generic [ref=e331] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e333]
+              - text: 呼唤帕姆。
+            - list [ref=e335]:
+              - listitem [ref=e336]: 开拓者：三月——丹恒！
+          - list [ref=e337]:
+            - listitem [ref=e338]: 开拓者：（没人回应……）
+            - listitem [ref=e339]: 开拓者：（我…是第一个回到列车上的吗？）
+          - generic [ref=e342]:
+            - img "剧情选项-图标-继续.png" [ref=e344]
+            - text: 试着给他们发个消息吧。
+          - generic [ref=e345]:
+            - generic [ref=e347]: 星穹列车一家人
+            - generic [ref=e348]:
+              - generic [ref=e349]:
+                - generic [ref=e350]: 开拓者
+                - generic [ref=e351]: 大家
+              - generic [ref=e352]:
+                - img "开拓者头像-1.png" [ref=e353]
+                - img "开拓者头像-2.png" [ref=e354]
+            - generic [ref=e355]:
+              - generic [ref=e356]:
+                - generic [ref=e357]: 开拓者
+                - generic [ref=e358]: 战斗结束了
+              - generic [ref=e359]:
+                - img "开拓者头像-1.png" [ref=e360]
+                - img "开拓者头像-2.png" [ref=e361]
+            - generic [ref=e362]:
+              - generic [ref=e363]:
+                - generic [ref=e364]: 开拓者
+                - generic [ref=e365]: 你们回到车上了吗？
+              - generic [ref=e366]:
+                - img "开拓者头像-1.png" [ref=e367]
+                - img "开拓者头像-2.png" [ref=e368]
+            - generic [ref=e370]:
+              - generic [ref=e371]: 谁来给我个大大的拥抱
+              - generic [ref=e372] [cursor=pointer]: 你们约好了整我？
+              - generic [ref=e373]:
+                - generic [ref=e374]:
+                  - generic [ref=e375]:
+                    - generic [ref=e376]: 开拓者
+                    - generic [ref=e377]: 我现在需要一个大大的拥抱
+                  - generic [ref=e378]:
+                    - img "开拓者头像-1.png" [ref=e379]
+                    - img "开拓者头像-2.png" [ref=e380]
+                - generic [ref=e381]:
+                  - generic [ref=e382]:
+                    - generic [ref=e383]: 开拓者
+                    - generic [ref=e384]: 谁懂？
+                  - generic [ref=e385]:
+                    - img "开拓者头像-1.png" [ref=e386]
+                    - img "开拓者头像-2.png" [ref=e387]
+          - paragraph [ref=e388]
+          - heading "列车为何空无一人？必须要弄清楚……" [level=3] [ref=e389]: 列车为何空无一人？必须要弄清楚……
+          - list [ref=e390]:
+            - listitem [ref=e391]: 开拓者：……
+            - listitem [ref=e392]: 开拓者：（都不在吗…真让人担心。）
+            - listitem [ref=e393]: 开拓者：（我们真的…胜利了么？为什么，没有一点实感……）
+            - listitem [ref=e394]: ？？？：开拓者阁下，好像醒了……
+            - listitem [ref=e395]: ？？？：嘘！哎呀，都说了别说话！
+            - listitem [ref=e396]: 开拓者：……！
+            - listitem [ref=e397]: 开拓者：（浴室里，有人？！）
+            - listitem [ref=e398]: 开拓者：（是闯入者么？小心点，去看看情况……）
+          - heading "调查发出异响的浴室" [level=3] [ref=e399]: 调查发出异响的浴室
+          - list [ref=e400]:
+            - listitem [ref=e401]: ？？？：坏了，他/她要过来了！
+            - listitem [ref=e402]: ？？？：快点，你藏这里！
+          - separator [ref=e403]
+          - list [ref=e404]:
+            - listitem [ref=e405]: 开拓者：……
+            - listitem [ref=e406]: 开拓者：（…没人？）
+            - listitem [ref=e407]: 开拓者：（难道是错觉……）
+            - listitem [ref=e408]: ？？？：咕嘟咕嘟……
+            - listitem [ref=e409]: 开拓者：……！
+            - listitem [ref=e410]: ？？？：咕嘟…咕嘟……
+            - listitem [ref=e411]: 开拓者：（哼…抓到你了。）
+          - heading "揪出藏在浴缸里的遐蝶" [level=3] [ref=e412]: 揪出藏在浴缸里的遐蝶
+          - generic [ref=e414] [cursor=pointer]:
+            - generic [ref=e415]: 额外对话（调查淋浴间）
+            - generic [ref=e416]: 折叠
+          - listitem [ref=e417]: 开拓者：……
+          - generic [ref=e418]:
+            - definition [ref=e419]: 不知为何，浴缸中的水体变成了浓稠且不透明的金色。
+            - definition [ref=e420]: 结合你过去一段时间里的经历，「黄金色的液体」会让你联想到许多触目惊心的片段……
+            - definition [ref=e421]: 不过，至少现在…它只是某些人用来藏身的掩体罢了。
+          - list [ref=e422]:
+            - listitem [ref=e423]: ？？？：咕嘟咕嘟……
+          - generic [ref=e425]:
+            - generic [ref=e426]:
+              - img "剧情选项-图标-继续.png" [ref=e428]
+              - text: 别藏了。
+            - generic [ref=e429] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e431]
+              - text: 肺活量不错。
+            - generic [ref=e432] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e434]
+              - text: 继续，我帮你掐表。
+          - list [ref=e435]:
+            - listitem [ref=e436]: ？？？：咕…咕嘟……
+            - listitem [ref=e437]: ？？？：我…我不行了……
+            - listitem [ref=e438]: 开拓者：……
+            - listitem [ref=e439]: 遐蝶：……
+            - listitem [ref=e440]: 开拓者：……
+            - listitem [ref=e441]: 遐蝶：阁、阁下……
+          - generic [ref=e443]:
+            - generic [ref=e444]:
+              - img "剧情选项-图标-继续.png" [ref=e446]
+              - text: 果然是梦，走了。
+            - generic [ref=e447] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e449]
+              - text: （狠狠掐一下自己）
+          - list [ref=e450]:
+            - listitem [ref=e451]: 遐蝶：请、请等等！阁下，这不是你想的那样……
+            - listitem [ref=e452]: 赛飞儿：哎…都说了别出声了。真是沉不住气哪，蜗居公主？
+            - listitem [ref=e453]: 遐蝶：我不是海瑟音女士…哪怕是「死亡」的化身，也有呼吸的诉求。
+            - listitem [ref=e454]: 赛飞儿：算了算了，反正从结果上看都一样——
+            - listitem [ref=e455]: 赛飞儿：吓了你一跳吧，灰子！
+          - generic [ref=e457]:
+            - generic [ref=e458]:
+              - img "剧情选项-图标-继续.png" [ref=e460]
+              - text: （冷淡）好惊讶哦。
+            - generic [ref=e461] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e463]
+              - text: 可惜，已经没什么能吓到我了。
+          - list [ref=e464]:
+            - listitem [ref=e465]: 赛飞儿：真冷静啊，灰子——看来那场大战真是让你成长了不少哪。
+            - listitem [ref=e466]: 赛飞儿：话说回来，你们这「星穹列车」还真是豪华。听说你们会跑到不同的世界去旅行？那想必收集了不少新奇的宝贝吧，嘿嘿……
+          - generic [ref=e468]:
+            - generic [ref=e469]:
+              - img "剧情选项-图标-继续.png" [ref=e471]
+              - text: 为什么…你们会出现在车上？
+            - generic [ref=e472] [cursor=pointer]:
+              - img "剧情选项-图标-对话.png" [ref=e474]
+              - text: 我的同伴呢？被你绑架了？
+            - generic [ref=e475] [cursor=pointer]:
+              - img "剧情选项-图标-对话.png" [ref=e477]
+              - text: 小手放干净点…
+          - separator [ref=e478]
+          - list [ref=e479]:
+            - listitem [ref=e480]: 赛飞儿：谁知道呢？前脚咱们还在喊着爱和正义，跟铁墓的病毒搏斗……
+            - listitem [ref=e481]: 赛飞儿：后脚刚醒，人就已经在这列车上了哪？
+            - listitem [ref=e482]: 遐蝶：不止我和赛飞儿小姐，大家都已经在车厢里待了一段时间了……
+            - listitem [ref=e483]: 遐蝶：开拓者阁下，去和他们打声招呼吧？
+          - generic [ref=e485]:
+            - generic [ref=e486]:
+              - img "剧情选项-图标-继续.png" [ref=e488]
+              - text: 但愿没弄坏什么东西…
+            - generic [ref=e489] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e491]
+              - text: 可别被列车长抓到咯。
+          - list [ref=e492]:
+            - listitem [ref=e493]: 遐蝶：嘻…放心吧，大家都很守规矩呢。
+            - listitem [ref=e494]: 遐蝶：不放心的话就去看看吧，开拓者阁下。
+          - generic [ref=e496] [cursor=pointer]:
+            - generic [ref=e497]: 额外对话（遐蝶）
+            - generic [ref=e498]: 折叠
+          - generic [ref=e500] [cursor=pointer]:
+            - generic [ref=e501]: 额外对话（赛飞儿）
+            - generic [ref=e502]: 折叠
+          - heading "前往派对车厢，与其他黄金裔伙伴打声招呼" [level=3] [ref=e503]: 前往派对车厢，与其他黄金裔伙伴打声招呼
+          - blockquote [ref=e504]:
+            - paragraph [ref=e505]: 据遐蝶和赛飞儿所说，黄金裔们在大战结束后便出现在星穹列车之中。或许，这就是史诗落幕前，最后的一次告别机会了。多和伙伴们聊聊天吧，这大概是他们此生唯一一次登上星穹列车的机会了。
+            - generic [ref=e506]:
+              - img "图标-位置.png" [ref=e507]
+              - text: 星穹列车-派对车厢
+          - heading "和在场的黄金裔们说说话" [level=3] [ref=e508]: 和在场的黄金裔们说说话
+          - list [ref=e509]:
+            - listitem [ref=e510]: 缇安：哇哇哇！好宽敞的车厢，好漂亮的地砖哇！
+            - listitem [ref=e511]: 缇宝：缇安，别在人家里乱跑啦。
+          - separator [ref=e512]
+          - definition [ref=e514]: 与小伊卡对话
+          - list [ref=e515]:
+            - listitem [ref=e516]: 开拓者：……
+            - listitem [ref=e517]: 小伊卡：嘟嘟…嘟？
+            - listitem [ref=e518]: 开拓者：……
+            - listitem [ref=e519]: 小伊卡：嘟…嘟嘟！
+            - listitem [ref=e520]: 风堇：老师们，千万要当心地滑呀。
+            - listitem [ref=e521]: 风堇：啊，灰宝！
+            - listitem [ref=e522]: 风堇：你可算醒啦~
+            - listitem [ref=e523]: 风堇：蝶宝和赛飞儿小姐的恶作剧，没吓到你吧？
+          - generic [ref=e525]:
+            - generic [ref=e526]:
+              - img "剧情选项-图标-继续.png" [ref=e528]
+              - text: 当场就被我识破了。
+            - generic [ref=e529] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e531]
+              - text: 合着你也知道啊。
+            - list [ref=e533]:
+              - listitem [ref=e534]: 风堇：嘻…不愧是你！
+          - list [ref=e535]:
+            - listitem [ref=e536]: 风堇：我们醒来的时候，整个列车上都空荡荡的，一个人影都没有……
+            - listitem [ref=e537]: 风堇：好遗憾呀，我还期待着能结识些新朋友呢——何况还是灰宝最最信赖的旅伴们。
+          - generic [ref=e539]:
+            - generic [ref=e540]:
+              - img "剧情选项-图标-继续.png" [ref=e542]
+              - text: 我有些担心他们…
+            - generic [ref=e543] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e545]
+              - text: 我是怎么回来的…？
+          - list [ref=e546]:
+            - listitem [ref=e547]: 风堇：别担心。我们一起战胜了铁墓，对吧？
+            - listitem [ref=e548]: 风堇：他们一定在回家的路上了。到时候，大家可以一起办一场宴会——
+            - listitem [ref=e549]: 风堇：那也是白厄阁下一直心心念念的情境呀。
+          - generic [ref=e552]:
+            - img "剧情选项-图标-继续.png" [ref=e554]
+            - text: 白厄…他也在？
+          - list [ref=e555]:
+            - listitem [ref=e556]: 风堇：刚才他还在这里和大家一起聊天来着。现在…不知道跑到哪去了？
+            - listitem [ref=e557]: 风堇：白厄阁下一直都这么…闲不下来，你应该也习惯啦，对吧？
+            - listitem [ref=e558]: 阿格莱雅：…再来一杯吧，迈德漠斯。
+            - listitem [ref=e559]: 万敌：当然。
+            - listitem [ref=e560]: 风堇：那三位大人，已经在旁边聊了好一阵啦。
+            - listitem [ref=e561]: 风堇：也去跟他们打声招呼吧，灰宝？
+          - separator [ref=e562]
+          - list [ref=e563]:
+            - listitem [ref=e564]: 阿格莱雅：近似半神议会的温和制度才是文明长存的保证。依我之见，银河中的大部分文明都将演化至此种形态。
+            - listitem [ref=e565]: 刻律德菈：不敢苟同。在如此庞大的丛林里，早期奥赫玛的独裁官制度才是能提供生存保障的范本。
+            - listitem [ref=e566]: 万敌：制度或许不是关键——武力和资源才是决定性的因素。
+          - definition [ref=e568]: 与阿格莱雅、刻律德菈、万敌对话
+          - list [ref=e569]:
+            - listitem [ref=e570]: 刻律德菈：呵，看看谁来了。这不是星穹列车的主人吗？
+            - listitem [ref=e571]: 阿格莱雅：见到你真好，开拓者。
+            - listitem [ref=e572]: 万敌：你安然无事，这便是好消息。借用了下这…「吧台」里的器具和饮品，但愿你不介意。
+          - generic [ref=e574]:
+            - generic [ref=e575]:
+              - img "剧情选项-图标-继续.png" [ref=e577]
+              - text: 在聊什么呢？
+            - generic [ref=e578] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e580]
+              - text: 闭嘴呢？
+            - list [ref=e582]:
+              - listitem [ref=e583]: 阿格莱雅：在聊一些…「契合微醺」的话题。
+          - list [ref=e584]:
+            - listitem [ref=e585]: 阿格莱雅：既然开拓者来了，不妨由真正见多识广的人来为我们解惑吧？
+            - listitem [ref=e586]: 万敌：呵，看来你来得正是时候。
+            - listitem [ref=e587]: 刻律德菈：我没意见。
+            - listitem [ref=e588]: 阿格莱雅：开拓者，你可知道——这广袤银河中的文明，多数是以何种体制存续至今的？
+          - generic [ref=e590]:
+            - generic [ref=e591]:
+              - img "剧情选项-图标-继续.png" [ref=e593]
+              - text: 我没到喜欢聊这种话题的年纪。
+            - generic [ref=e594] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e596]
+              - text: 我书读得少，不懂这些。
+            - generic [ref=e597] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e599]
+              - text: 管它这那的，最后都得归我管。
+          - list [ref=e600]:
+            - listitem [ref=e601]: 万敌：哈…像是你会给出的回答。
+            - listitem [ref=e602]: 刻律德菈：我赋予这星穹列车至高的使命：尔等，务必要将翁法罗斯的伟业散播至银河各个角落。
+            - listitem [ref=e603]: 刻律德菈：如此，来自众多世界的有能之士必然能从逐火的事迹中获得启发，开启伟大的征途。
+            - listitem [ref=e604]: 阿格莱雅：呵…对群星而言，很难评判那是福是祸呢。
+            - listitem [ref=e605]: 阿格莱雅：可以想见，这局间的话题恐怕会越发…恣肆。别被我们难得的欢畅时光缠住了，开拓者。
+            - listitem [ref=e606]: 刻律德菈：哼，这列车上的宴会还真是欠缺礼数…离席吧，我准了。
+            - listitem [ref=e607]: 万敌：那男人刚才离开了这里，甚至连一杯都不想多下肚——呵，不识抬举。
+            - listitem [ref=e608]: 万敌：若你要找他，就去上面那节车厢试试运气吧。
+          - generic [ref=e610] [cursor=pointer]:
+            - generic [ref=e611]: 额外对话（万敌&刻律德菈&阿格莱雅）
+            - generic [ref=e612]: 折叠
+          - separator [ref=e613]
+          - definition [ref=e615]: 与缇宝、缇安对话
+          - list [ref=e616]:
+            - listitem [ref=e617]: 缇宝：终于逮到你了，缇安。在别人家里跑得这么快，多没礼貌呀。
+            - listitem [ref=e618]: 缇安：嘿嘿…计划顺利！缇安可是故意把你引到这里的！
+            - listitem [ref=e619]: 缇安：瞧，这里有好几件可爱的小衣服，缇安要让你穿上它，然后把你可爱的样子画下来！
+            - listitem [ref=e620]: 缇宝：好呀，你连自己都敢算计。幸好，我早有准备。
+            - listitem [ref=e621]: 缇宁：该出奇兵了。正义的伙伴，缇宁。
+            - listitem [ref=e622]: 缇宁：缇宁，在这里埋伏很久了。*我们*会让缇安…自食其果。
+            - listitem [ref=e623]: 缇安：二…二对一，这不公平！
+            - listitem [ref=e624]: 缇安：小小灰，你来得正好，快救救我！
+          - generic [ref=e626]:
+            - generic [ref=e627]:
+              - img "剧情选项-图标-继续.png" [ref=e629]
+              - text: （袖手旁观）
+            - generic [ref=e630] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e632]
+              - text: 坚持住，我这就来！
+          - list [ref=e633]:
+            - listitem [ref=e634]: 开拓者：…缇安，祝你好运。
+            - listitem [ref=e635]: 缇安：连小小灰都这么说…可恶，缇安绝不屈服！
+            - listitem [ref=e636]: 缇宁：呀，缇安溜了…缇宁会尽到伏兵的职责。
+            - listitem [ref=e637]: 缇宝：缇里西庇俄丝们聚在一起，嬉笑打闹的样子，在小灰的记忆里应该不多见吧？
+          - generic [ref=e640]:
+            - img "剧情选项-图标-继续.png" [ref=e642]
+            - text: 但现在，大家都会好好的。
+          - list [ref=e643]:
+            - listitem [ref=e644]: 缇宝：是呀，大家都会好好的。你看，每位英雄都卸下负担，变回了纯真的孩子。
+            - listitem [ref=e645]: 缇宝：毕竟，一想到小灰的明天会多么温暖灿烂，*我们*就由衷地喜悦，也彻底松了口气呀。
+            - listitem [ref=e646]: 缇宝：所以今天，让缇宝老师也享受下难得的孩童时光吧？
+            - listitem [ref=e647]: 缇宝：等等我——缇安，可别想逃跑！
+          - heading "前往观景车厢，寻找白厄" [level=3] [ref=e648]: 前往观景车厢，寻找白厄
+          - heading "找海瑟音、那刻夏聊聊" [level=3] [ref=e649]: 找海瑟音、那刻夏聊聊
+          - list [ref=e650]:
+            - listitem [ref=e651]: 那刻夏：依我推断，这银河中存在水体的天体不计其数。
+            - listitem [ref=e652]: 那刻夏：但恐怕并非所有的「海洋」都适宜生物居住。这一点，你也务必要纳入考量。
+            - listitem [ref=e653]: 海瑟音：不愧是树庭的教授…即便对于从未亲眼见过的事物，竟也能如此笃定。
+            - listitem [ref=e654]: 那刻夏：我当你是在褒扬我了。
+          - separator [ref=e655]
+          - list [ref=e656]:
+            - listitem [ref=e657]: 那刻夏：对了，我听说，凯撒的逐火军喜欢在启蒙王座那儿办宴会？
+            - listitem [ref=e658]: 海瑟音：此事不假。不过，我和吟风爵偶尔也会觉得，在树庭最敬重的泰坦座前恣意畅饮，似有不妥……
+            - listitem [ref=e659]: 那刻夏：不妥？何来不妥！我只恨自己晚生了许多年，不然那样的宴会，我巴不得从门关月开到机缘月！
+            - listitem [ref=e660]: 海瑟音：这……
+          - generic [ref=e662]:
+            - generic [ref=e663]:
+              - img "剧情选项-图标-继续.png" [ref=e665]
+              - text: 这位更是重量级的渎神者。
+            - generic [ref=e666] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e668]
+              - text: 他一定和荒笛很有共同语言。
+          - list [ref=e669]:
+            - listitem [ref=e670]: 那刻夏：渎神只是现象，不是目的。放眼这星间，想必对所谓「星神」或「命途」心存质疑者亦不在少数。
+            - listitem [ref=e671]: 那刻夏：我不是在那吕枯耳戈斯的脑袋里待了些时日么？啧啧，可是让我学到不少「渎神」的知识啊。
+            - listitem [ref=e672]: 那刻夏：人创造神，神塑造人。造物主与信徒，究竟谁才是受困的一方呢？
+            - listitem [ref=e673]: 海瑟音：…阿那克萨戈拉斯教授，我姑且确认一句，你该不会理解了那神礼观众的歪理吧？
+            - listitem [ref=e674]: 那刻夏：不必担忧。天才与疯子的差别，就在于天才会将致命的真理共享，而疯子却试图将其强加于他人。
+            - listitem [ref=e675]: 海瑟音：…我明白了，大概就像宴会上喝蜜酿的时候，讨喜的人会举盏相邀，但不讨喜的人会碰杯强求。
+            - listitem [ref=e676]: 那刻夏：能够将复杂的语料简化为常识，你也像一名合格的学者了。
+          - definition [ref=e678]: 白厄从一旁走出
+          - heading "找白厄聊几句" [level=3] [ref=e679]: 找白厄聊几句
+          - list [ref=e680]:
+            - listitem [ref=e681]: 白厄：来了啊，搭档。
+            - listitem [ref=e682]: 白厄：我不止一次和你提到的庆功会，如今总算实现了。
+            - listitem [ref=e683]: 白厄：虽然和想象中的氛围不太一样…但这样也算兑现承诺了，对吧？
+          - generic [ref=e685]:
+            - generic [ref=e686]:
+              - img "剧情选项-图标-继续.png" [ref=e688]
+              - text: 我以为…你们已经消散了。
+            - generic [ref=e689] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e691]
+              - text: 你们…没有与铁墓合并啊。
+          - list [ref=e692]:
+            - listitem [ref=e693]: 白厄：你说的事，的的确确已经发生过了。我们战胜了铁墓，并以身引火，净化了它的余烬。
+            - listitem [ref=e694]: 白厄：现在，维系着我们意识和身形的力量——它来自别处。
+            - listitem [ref=e695]: 开拓者：……
+            - listitem [ref=e696]: 白厄：在为列车上的同伴担心，对么？我理解你现在的心情。
+            - listitem [ref=e697]: 白厄：放心吧，他们一定会平安无事。她是这么承诺的。
+          - generic [ref=e699]:
+            - generic [ref=e700]:
+              - img "剧情选项-图标-继续.png" [ref=e702]
+              - text: 昔涟…？
+            - generic [ref=e703] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e705]
+              - text: 她在哪…？
+          - list [ref=e706]:
+            - listitem [ref=e707]: 白厄：别着急，她总会在恰当的时刻出现。
+            - listitem [ref=e708]: 白厄：星穹列车…实话说，很有「家园」的感觉。
+            - listitem [ref=e709]: 白厄：我能想象，你、丹恒、还有三月小姐，你们被困在翁法罗斯时，一定十分想念这里的一切：漂亮的窗户，惬意的音乐，列车上的旅伴……
+            - listitem [ref=e710]: 白厄：就像无数次轮回中的每个夜晚，金色的麦穗总会在我的梦中摇曳。
+          - generic [ref=e712]:
+            - generic [ref=e713]:
+              - img "剧情选项-图标-继续.png" [ref=e715]
+              - text: 一起去旅行吧，搭档。
+            - generic [ref=e716] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e718]
+              - text: 银河中一定也有那样的小村庄。
+            - list [ref=e720]:
+              - listitem [ref=e721]: 白厄：这漫天的星星，在其中的某一颗上，一定也有类似哀丽秘榭的小村庄吧？
+          - list [ref=e722]:
+            - listitem [ref=e723]: 白厄：我好像找到属于自己的「愿望」了，搭档。
+            - listitem [ref=e724]: 白厄：曾有人对我说，「家」就是让你感到自由自在的地方。
+            - listitem [ref=e725]: 白厄：也许…和你们，还有大伙儿一起漫游银河，就是我现在最强烈的念想。当然，是所有人一起。
+            - listitem [ref=e726]: 白厄：仙舟联盟，匹诺康尼…都怪我的想象力太匮乏，光听丹恒的描述，我完全想象不出那些世界的样貌。
+            - listitem [ref=e727]: 白厄：只有眼见为实了，对吗？
+          - generic [ref=e729]:
+            - generic [ref=e730]:
+              - img "剧情选项-图标-继续.png" [ref=e732]
+              - text: 眼见为实。
+            - generic [ref=e733] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e735]
+              - text: 约好了，搭档。
+          - definition [ref=e737]: 昔涟从身后走来
+          - list [ref=e738]:
+            - listitem [ref=e739]: 白厄：终于来了。开拓者正有话想问你呢。
+            - listitem [ref=e740]: 白厄：那么，你们先聊。
+            - listitem [ref=e741]: 昔涟：谢谢你，白厄。
+          - separator [ref=e742]
+          - list [ref=e743]:
+            - listitem [ref=e744]:
+              - text: 昔涟：好好地睡了一觉，现在一定活力满满了吧，
+              - generic [ref=e745]:
+                - generic [ref=e746]: 开拓者
+                - generic [ref=e747]: 伙伴
+              - text: ？
+            - listitem [ref=e748]: 昔涟：不好意思啦。第一次来列车作客，本来想请各位都守规矩点的…但大家就是一个个的个性十足呢。你懂的，对吧？
+          - generic [ref=e750]:
+            - generic [ref=e751]:
+              - img "剧情选项-图标-继续.png" [ref=e753]
+              - text: 这一刻…是真实的吗？
+            - generic [ref=e754] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e756]
+              - text: 和我说说发生了什么吧。
+          - list [ref=e757]:
+            - listitem [ref=e758]: 昔涟：不如，回顾一下此前发生的一切吧？
+            - listitem [ref=e759]: 昔涟：我们合力战胜了铁墓；它试图化作万亿簇病毒，侵染银河；但英雄们以自身投入金焰，成为箭矢，净化了「毁灭」……
+            - listitem [ref=e760]: 昔涟：而铁墓的殒落，也象征着权杖δ-me13的衰亡。翁法罗斯——我们为之付出一切的家园——如今只存在于银河的记忆中了。
+          - generic [ref=e763]:
+            - img "剧情选项-图标-继续.png" [ref=e765]
+            - text: 所以…这只是一片幻境。
+          - list [ref=e766]:
+            - listitem [ref=e767]: 开拓者：所以，这并不是现实……
+            - listitem [ref=e768]: 开拓者：只是一场梦…一片幻境。
+            - listitem [ref=e769]: 昔涟：嘻……
+            - listitem [ref=e770]: 昔涟：可惜，回答错误♪
+            - listitem [ref=e771]: 开拓者：……？
+            - listitem [ref=e772]: 昔涟：在你以「开拓」冲破时空，背负全世「记忆」回到现实的一霎——
+            - listitem [ref=e773]: 昔涟：那个曾被「数据」桎梏的世界，便成为了银河中一粒粒静待萌芽的种子。
+            - listitem [ref=e774]: 开拓者：我们…做到了这些？
+            - listitem [ref=e775]: 昔涟：就如卡厄斯兰那以三千万世的愤怒，令「毁灭」流下了一滴金血……
+            - listitem [ref=e776]: 昔涟：说不定，我们也在各自的命途上留下了长长的足迹呢。
+          - generic [ref=e778]:
+            - generic [ref=e779]:
+              - img "剧情选项-图标-继续.png" [ref=e781]
+              - text: 你们自由了。
+            - generic [ref=e782] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e784]
+              - text: 你们成为了真正的生命。
+            - generic [ref=e785] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e787]
+              - text: 这是对我们努力的奖赏。
+            - list [ref=e789]:
+              - listitem [ref=e790]: 昔涟：自由，多美妙的词语呀。
+              - listitem [ref=e791]: 昔涟：不过，这还不足以让大家成为真正的「生命」哦。
+          - list [ref=e792]:
+            - listitem [ref=e793]: 昔涟：但翁法罗斯已经拥有了「明天」。所以，只要开拓者悉心保留、照看所有的种子。在未来的某一天，当「开拓」再度创造奇迹后……
+            - listitem [ref=e794]: 昔涟：我相信，这个我们深爱的世界就能发芽，绽放美丽的花。
+            - listitem [ref=e795]: 昔涟：别担心，人家已经帮你把所有种子都收在了「最初的果实」里……
+            - listitem [ref=e796]: 昔涟：而它的名字，就叫《如我所书》♪
+            - listitem [ref=e797]: 开拓者：……
+            - listitem [ref=e798]: 昔涟：所以，该揭晓正确答案啦。这里不是梦，也不是幻境。而是……
+            - listitem [ref=e799]: 昔涟：《如我所书》的尾声。
+            - listitem [ref=e800]: 昔涟：故事的最后，剧中人完成谢幕，踏上了永不回头的旅途。
+            - listitem [ref=e801]: 昔涟：那本不属于剧中，却帮助写下了浪漫结局的人儿…他/她同朋友们纷纷告别，回到属于他/她故事之外的家园。
+            - listitem [ref=e802]:
+              - text: 昔涟：答应我最后一件事吧，
+              - generic [ref=e803]:
+                - generic [ref=e804]: 开拓者
+                - generic [ref=e805]: 伙伴
+              - text: ……
+            - listitem [ref=e806]: 昔涟：说再见的时候，要笑一笑，好吗？
+          - generic [ref=e808]:
+            - generic [ref=e809]:
+              - img "剧情选项-图标-继续.png" [ref=e811]
+              - text: 我…答应你。
+            - generic [ref=e812] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e814]
+              - text: 银河绝对不会遗忘翁法罗斯。
+          - list [ref=e815]:
+            - listitem [ref=e816]: 开拓者：我答应你，昔涟。
+            - listitem [ref=e817]: 开拓者：「开拓」掠过的每一颗星星，都会记得「翁法罗斯」的名字。
+            - listitem [ref=e818]: 三月七：只有你一个人耍帅，未免太犯规了吧？
+            - listitem [ref=e819]: 三月七：我们会监督他/她，必须信守承诺！
+            - listitem [ref=e820]: 丹恒：交给我们吧，昔涟。你们的故事，会被许多世界传唱。
+            - listitem [ref=e821]: 昔涟：太过艰难曲折的故事总会令人难以相信。要是有人质疑这段故事的真实性……
+            - listitem [ref=e822]: 昔涟：各位可要为我们所有人挺身而出呀♪
+            - listitem [ref=e823]: 三月七：放一百个心吧！嘴再硬的人，也扛不住我们六只拳头。
+            - listitem [ref=e824]: 昔涟：真是可靠呀，三月。
+            - listitem [ref=e825]: 昔涟：嘘，你们听——
+            - listitem [ref=e826]: 瓦尔特：「…这里，留下了一本书？」
+            - listitem [ref=e827]: 星期日：「它的构成和『忆质』近似，但远比一般的忆泡强韧得多。」
+            - listitem [ref=e828]: 姬子：「收好它吧。也许，它就是翁法罗斯留给银河的最后一件馈赠。」
+            - listitem [ref=e829]: 帕姆：「不、不好了帕！三月乘客，正在梦游帕！」
+            - listitem [ref=e830]: 三月七：梦、梦游？！糟糕糟糕，我可不想在大家面前出洋相啊……
+          - generic [ref=e832]:
+            - generic [ref=e833]:
+              - img "剧情选项-图标-继续.png" [ref=e835]
+              - text: 这下有理由多待一会儿了。
+            - generic [ref=e836] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e838]
+              - text: 你留下，让我先出去瞅瞅。
+            - list [ref=e840]:
+              - listitem [ref=e841]: 三月七：…你脑子里打的算盘，我可全听见了！
+          - list [ref=e842]:
+            - listitem [ref=e843]:
+              - text: 昔涟：三月，丹恒，
+              - generic [ref=e844]:
+                - generic [ref=e845]: 开拓者
+                - generic [ref=e846]: 伙伴
+              - text: ……
+            - listitem [ref=e847]: 昔涟：未来的无数个日夜，你们可要继续担当彼此最宝贵的依靠呀。
+            - listitem [ref=e848]: 昔涟：大家，该回家啦♪
+          - heading "告别翁法罗斯这趟史诗的旅途" [level=3] [ref=e849]: 告别翁法罗斯这趟史诗的旅途
+          - list [ref=e850]:
+            - listitem [ref=e851]: 丹恒：离开这里，也意味着《如我所书》将就此搁笔。
+            - listitem [ref=e852]: 丹恒：无人再有机会修订，也没人再能续写。
+            - listitem [ref=e853]: 三月七：千万别留下遗憾啊，开拓者。
+          - separator [ref=e854]
+          - list [ref=e855]:
+            - listitem [ref=e856]: 昔涟：一篇轰轰烈烈的史诗，要多么华美的语句才能勾勒出它的尾声呢？
+            - listitem [ref=e857]: 昔涟：你睡着的时候，人家一直在思考这件事。现在，我终于有了答案……
+            - listitem [ref=e858]: 昔涟：平平淡淡的就好。在虚拟的演算中，我们度过了比许多星星的寿命更为漫长的岁月……
+            - listitem [ref=e859]: 昔涟：这世上没有任何一种语言，一行文字，能托得起这段旅途的重量。既然如此，就不必再囿于细微的字眼……
+            - listitem [ref=e860]: 昔涟：理解它热烈和浪漫的人们，自然会为最后被点上的那枚「。」热泪盈眶♪
+            - listitem [ref=e861]: 昔涟：那么，现在…到了和「读者们」道别的时候啦。
+            - listitem [ref=e862]: 昔涟：这便是「如我所书」的最后一页了——大家，别留下遗憾呀。
+            - listitem [ref=e863]: 缇里西庇俄丝：都到齐了呀…该由谁写下第一笔呢？
+            - listitem [ref=e864]: 卡厄斯兰那：打头阵的任务是最艰巨的，我可不想露怯啊。
+            - listitem [ref=e865]: 阿格莱雅：不如，就由凯撒大人为我们起稿吧？
+            - listitem [ref=e866]: 刻律德菈：呵，都这么胆小？
+            - listitem [ref=e867]: 刻律德菈：那就由我来启示后人吧——正如那三千万世的逐火一样。
+            - listitem [ref=e868]: 刻律德菈：「无我，即无世界。去思，去见，去征服。」
+          - definition [ref=e870]: ……
+          - list [ref=e871]:
+            - listitem [ref=e872]: 刻律德菈：怎么，都沉默了？
+            - listitem [ref=e873]: 雅辛忒丝：凯撒大人的调子…起得也太高啦，让人好难接呀…？
+            - listitem [ref=e874]: 迈德漠斯：帝王身后，忠臣必将紧随。她强大的气场，恐怕也只有剑旗爵能衬托得起了。
+            - listitem [ref=e875]: 海列屈拉：…我么？
+            - listitem [ref=e876]: 刻律德菈：呵…那倒也合我心意。
+            - listitem [ref=e877]: 刻律德菈：功成事了，就该断然离去，留后人评说是非。众爵——下次开疆拓土时再会。
+            - listitem [ref=e878]: 开拓者：「而星辰，会传颂凯撒的征途。」
+            - listitem [ref=e879]: 海列屈拉：早知道就同你们共饮几杯了，金织爵。
+            - listitem [ref=e880]: 阿格莱雅：放松些，海瑟音。
+            - listitem [ref=e881]: 海列屈拉：……
+            - listitem [ref=e882]: 海列屈拉：世事如沧海，潮起潮落，一切终会在浪中消逝。所以，请在生命的每一刻都纵情高歌吧。
+            - listitem [ref=e883]: 海列屈拉：不论等在前方的是欢宴还是虚无…我都会找到它的辉光，并将之歌颂。
+            - listitem [ref=e884]: 开拓者：「愿下一场宴席，永不散场。」
+            - listitem [ref=e885]: 遐蝶：海瑟音小姐的祝词…真唯美呢。
+            - listitem [ref=e886]: 阿那克萨戈拉斯：个个都要如此写意么？依我看，还是给后人留下些真正的「箴言」为好。
+            - listitem [ref=e887]: 赛法利娅：下一个，有没有人自告奋勇？
+            - listitem [ref=e888]: 迈德漠斯：我来。悬锋人的字典里没有「拖泥带水」。
+            - listitem [ref=e889]: 卡厄斯兰那：悬锋人的字典里……
+            - listitem [ref=e890]: 迈德漠斯：…HKS！别打岔。
+            - listitem [ref=e891]: 迈德漠斯：「去杀死玩耍，游戏便会诞生。去杀死纷争，荣光必然降临。」
+            - listitem [ref=e892]: 卡厄斯兰那：哈哈，不赖嘛。不过，这下我就踏实了——毕竟我准备的台词，意蕴在你之上。
+            - listitem [ref=e893]: 迈德漠斯：呵！别的不谈，你这自吹自擂的本事的确傲视群雄。
+            - listitem [ref=e894]: 迈德漠斯：诸位，择日再见。若能再会，我定将再度成为你们的后盾，义不容辞。
+            - listitem [ref=e895]: 开拓者：「迈德漠斯，加冕为王吧。」
+            - listitem [ref=e896]: 遐蝶：……
+            - listitem [ref=e897]: 缇里西庇俄丝：怎么了，小蝶？
+            - listitem [ref=e898]: 遐蝶：没什么，缇里西庇俄丝女士。我只是，终于有了些感悟……
+            - listitem [ref=e899]: 阿格莱雅：那就尽情言说，将它永远地留在纸页上吧，蝶。
+            - listitem [ref=e900]: 遐蝶：……
+            - listitem [ref=e901]: 遐蝶：「若心灵仍有余裕，请稍许分出些温柔，轻抚身边美好的一切吧。」
+            - listitem [ref=e902]: 雅辛忒丝：蝶宝…说得真好呀。
+            - listitem [ref=e903]: 遐蝶：谢谢，风堇小姐。我唯一的小小遗憾，就是没能尽情去触碰这个深爱的世界——希望读到这段话的人们，能代我完成这个心愿。
+            - listitem [ref=e904]: 遐蝶：大家——我们在西风的尽头再会吧。
+            - listitem [ref=e905]: 开拓者：「你所在的地方，就是温柔的花海。」
+            - listitem [ref=e906]: 阿那克萨戈拉斯：那么，该到我了。
+            - listitem [ref=e907]: 阿格莱雅：尽情表演吧，阿那克萨戈拉斯。这一次，你不用担心被打断了。
+            - listitem [ref=e908]: 阿那克萨戈拉斯：呵，那真要感谢你们捧场了。值此良机，我就将自己对世界真理的见解公之于众吧——
+            - listitem [ref=e909]: 阿那克萨戈拉斯：「『真理是溶解世界万物的溶剂，因而绝无法在客观上存在』——对此，本人心中已有绝妙的证明，但鉴于故事已临近尾声，故不再展开。」
+            - listitem [ref=e910]: 卡厄斯兰那：这是您给后人留下的最后一道课题？
+            - listitem [ref=e911]: 阿那克萨戈拉斯：不，这是既定事实，无须再议。我称其为《阿那克萨戈拉斯的最后定理》。
+            - listitem [ref=e912]: 雅辛忒丝：还是那么深奥呀，教授。时间还多，如果您不说明清楚，后世的读者恐怕看不懂您的真意喔？
+            - listitem [ref=e913]: 阿那克萨戈拉斯：真意并不重要。重要的是，当他们看到这句话时，心中会升起何种情感——而在那一瞬间，这道定理的任务就完成了。
+            - listitem [ref=e914]: 阿那克萨戈拉斯：所以，你们的课程可远没结束。不过，暂时休憩一下也未尝不可。
+            - listitem [ref=e915]: 阿那克萨戈拉斯：那么，下课。
+            - listitem [ref=e916]: 开拓者：「你播下的种子，已经生根发芽。」
+            - listitem [ref=e917]: 阿格莱雅：各位，介意由我续写这一笔么？
+            - listitem [ref=e918]: 赛法利娅：诶？我还觉得该由你来做最后的总结哪。不过……
+            - listitem [ref=e919]: 缇里西庇俄丝：…我们永远不会拒绝你的请求呀，阿雅。
+            - listitem [ref=e920]: 阿格莱雅：呵…吾师，赛法利娅——谢谢你们。
+            - listitem [ref=e921]: 阿格莱雅：「信任与无私，是世上最美丽的两件华服：一件赠予他人，一件装扮自己。」
+            - listitem [ref=e922]: 卡厄斯兰那：一件是金色…一件是紫色？
+            - listitem [ref=e923]: 阿格莱雅：没能彻底挽救你的审美，是我三千万世唯一抱憾之事呢。
+            - listitem [ref=e924]: 阿格莱雅：劳顿至此，我此时只想静心沐浴一番啊。黎明时再会吧，各位。
+            - listitem [ref=e925]: 开拓者：「一直以来，辛苦了。」
+            - listitem [ref=e926]: 雅辛忒丝：阿格莱雅女士，还是戒不掉她最大的爱好呢。
+            - listitem [ref=e927]: 雅辛忒丝：那，也该轮到我啦？
+            - listitem [ref=e928]: 赛法利娅：银河中也有很多跟风堇姑娘一样，到处救死扶伤的人吧？可得给他们立个好榜样哪。
+            - listitem [ref=e929]: 雅辛忒丝：那是当然~
+            - listitem [ref=e930]: 雅辛忒丝：「多望望天，多笑一笑；好多缠人的病痛，最怕乐观这剂良药！」
+            - listitem [ref=e931]: 缇里西庇俄丝：朗朗上口，孩子们肯定会喜欢这条寄语呢。
+            - listitem [ref=e932]: 雅辛忒丝：孩子们的心性，缇里西庇俄丝女士肯定最了解啦~
+            - listitem [ref=e933]: 雅辛忒丝：彩虹桥，已经挂在天边了呀——小伊卡，我们走吧？
+            - listitem [ref=e934]: 小伊卡：嘟…嘟嘟！
+            - listitem [ref=e935]: 开拓者：「然后，是你治愈了天空。」
+            - listitem [ref=e936]: 赛法利娅：唔……
+            - listitem [ref=e937]: 卡厄斯兰那：在想什么，赛飞儿小姐？
+            - listitem [ref=e938]: 赛法利娅：呼…我在想，要不要留下一句谜语？一个九折十八弯的诡计，让全宇宙的人为了挖掘它的谜底发狂？
+            - listitem [ref=e939]: 卡厄斯兰那：哈哈哈…原来如此。要我说，就尽情发挥吧？没人会责怪你的。
+            - listitem [ref=e940]: 赛法利娅：罢了罢了，脑子一时转不动了哪。就让本姑娘难得真诚一回吧——
+            - listitem [ref=e941]: 赛法利娅：「别怕摔，跑起来！命运就是只迟缓的若虫，它压根抓不住你！」
+            - listitem [ref=e942]: 缇里西庇俄丝：结果，小飞儿的留言是最简洁通俗的一条呢？
+            - listitem [ref=e943]: 赛法利娅：三千万个我加起来，读过的书可能都没你一辈子多吧？我可不想硬装有文化哪，缇宝、缇宁、缇安阿姐~
+            - listitem [ref=e944]: 赛法利娅：翁法罗斯最伟大的「诡计」，先溜一步——喵！
+            - listitem [ref=e945]: 开拓者：「远行的风儿，回家吧。」
+            - listitem [ref=e946]: 缇里西庇俄丝：…只剩我们了呢，小白。
+            - listitem [ref=e947]: 卡厄斯兰那：是啊，老师。要不，我……
+            - listitem [ref=e948]: 缇里西庇俄丝：不，还是我先吧。毕竟——
+            - listitem [ref=e949]: 缇里西庇俄丝：「众人将与一人离别，唯其人将……」
+            - listitem [ref=e950]: 卡厄斯兰那：真没想到，老师你还擅长黑色幽默啊……
+            - listitem [ref=e951]: 缇里西庇俄丝：嘻…你对「完整」的缇里西庇俄丝还知之甚少呢，小白。
+            - listitem [ref=e952]: 缇里西庇俄丝：不开玩笑啦，我想在故事的尾声留下的话语——
+            - listitem [ref=e953]: 缇里西庇俄丝：「不论晴天还是雨天，进入梦乡以前，记得和自己说一声：『明天见』！」
+            - listitem [ref=e954]: 卡厄斯兰那：明天见，乘以一千。
+            - listitem [ref=e955]: 缇里西庇俄丝：「预言」收到，乘以一千~
+            - listitem [ref=e956]: 开拓者：「从今以后，不再有离别。」
+            - listitem [ref=e957]: 卡厄斯兰那：终于，到了该说再见的时候了。
+            - listitem [ref=e958]: 卡厄斯兰那：你能见证这个时刻…我很感激，搭档。
+          - generic [ref=e960]:
+            - generic [ref=e961]:
+              - img "剧情选项-图标-继续.png" [ref=e963]
+              - text: 还能一起旅行吗，搭档？
+            - generic [ref=e964] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e966]
+              - text: 我的愿望，就是同你们再会。
+            - list [ref=e968]:
+              - listitem [ref=e969]: 卡厄斯兰那：当然。只要《如我所书》还在你手边，翁法罗斯就一直与你同在。
+          - list [ref=e970]:
+            - listitem [ref=e971]: 卡厄斯兰那：那么，我最后想写下的一行话……
+            - listitem [ref=e972]: 卡厄斯兰那：「每个人的心中都住着一个英雄。拥抱它，然后去追逐太阳吧。」
+            - listitem [ref=e973]: 卡厄斯兰那：希望读到它的人，都能鼓起勇气面对燃烧的生命。
+            - listitem [ref=e974]: 卡厄斯兰那：下个灰白色的黎明再会吧，搭档。
+            - listitem [ref=e975]: 开拓者：「你看见了吗？翁法罗斯终于迎来了黎明。」
+            - listitem [ref=e976]: 丹恒：书中人的谢幕已经完成了。我们…也该回到属于我们的现实了。
+            - listitem [ref=e977]: 三月七：不过，作为亲历者，我们还是可以给这个故事添上最后的几笔，对吧？
+            - listitem [ref=e978]: 丹恒：嗯，当然。
+            - listitem [ref=e979]: 丹恒：「笔终会折断，墨终会耗尽，生命终会逝去，但思想将在史诗中永垂不朽。」
+            - listitem [ref=e980]: 三月七：「如果岁月是个无穷的轮回——那就忘掉不断重复的苦涩，单独记住每个快乐的瞬间吧！」
+            - listitem [ref=e981]: 开拓者：「一起走向明天，我们不曾分离。」
+            - listitem [ref=e982]: 丹恒：该回家了，开拓者。
+            - listitem [ref=e983]: 三月七：可别错过了列车组的会议！我们可不会特意等你哦？
+            - listitem [ref=e984]: 昔涟：再见啦，丹恒，三月~
+            - listitem [ref=e985]: 昔涟：到了这里，《如我所书》就算正式完本啦。
+          - generic [ref=e987]:
+            - generic [ref=e988]:
+              - img "剧情选项-图标-继续.png" [ref=e990]
+              - text: 我不需要留下些什么吗？
+            - generic [ref=e991] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e993]
+              - text: 你…不说些什么吗？
+          - list [ref=e994]:
+            - listitem [ref=e995]:
+              - text: 昔涟：我们可是它共同的主笔呀，
+              - generic [ref=e996]:
+                - generic [ref=e997]: 开拓者
+                - generic [ref=e998]: 伙伴
+              - text: 。
+            - listitem [ref=e999]: 昔涟：文字脱离了作者的手笔，被他人收入眼中的时候，它承载的意义就不受你我掌控啦。
+            - listitem [ref=e1000]: 昔涟：把解读的自由留给每一位翻开它的读者…不觉得这是件很浪漫的事吗？
+            - listitem [ref=e1001]: 昔涟：至于这段故事在你我眼中的意义，就让我们把它好好放在心底吧……
+            - listitem [ref=e1002]: 昔涟：反正，人家一直都和你心照不宣呀♪
+          - separator [ref=e1003]
+          - list [ref=e1004]:
+            - listitem [ref=e1005]: 帕姆：…哇！三、三月乘客，你怎么突然醒来了帕！吓得我，都把书掉到地上了！
+            - listitem [ref=e1006]: 姬子：欢迎回家，三位。这次的「开拓」，也辛苦你们了。
+            - listitem [ref=e1007]: 瓦尔特：算上你们在翁法罗斯渡过的年月，列车组的辈分怕是该重新排布了。
+            - listitem [ref=e1008]: 三月七：啊，我可是第一个被卷进去的！这么说来，我要变成星穹列车的大姐大啦？
+            - listitem [ref=e1009]: 星期日：即便经历了漫长岁月的洗礼，三月小姐还是没有丢下纯真的本质。
+            - listitem [ref=e1010]: 丹恒：转译一下，就是没有什么实质性的长进。
+            - listitem [ref=e1011]: 三月七：——喂！
+            - listitem [ref=e1012]: 三月七：这还是，我第一次离得这么近端详这本《如我所书》……
+            - listitem [ref=e1013]: 丹恒：昔涟小姐的笔迹…绵柔中透着刚韧。
+            - listitem [ref=e1014]: 三月七：…原来这么有讲究吗？看来，我也该恶补一下这方面的知识了。
+            - listitem [ref=e1015]: 开拓者：你还是先随便找几本书入个门吧。
+            - listitem [ref=e1016]: 三月七：说得好像你不是每天都躲在房间里刷手机似的！
+            - listitem [ref=e1017]: 三月七：…欸？等等，有什么东西掉出来了——
+            - listitem [ref=e1018]: 丹恒：这是……
+            - listitem [ref=e1019]: 三月七：是…书签吗？
+            - listitem [ref=e1020]: 昔涟：其实，在大家不知道的角落，还发生了一段鲜有人知的「插曲」。
+            - listitem [ref=e1021]: 昔涟：我将它留在了故事之外，因为它事关一个「选择」，一个我出于私心而做的选择。
+            - listitem [ref=e1022]:
+              - text: 昔涟：可以原谅我吗，
+              - generic [ref=e1023]:
+                - generic [ref=e1024]: 开拓者
+                - generic [ref=e1025]: 伙伴
+              - text: 。你不在场的时候，我擅自做了一个决定……
+            - listitem [ref=e1026]: 昔涟：我把关于它的一切都写在了这张小卡片上。读过以后，假如你愿意原谅我——
+            - listitem [ref=e1027]: 昔涟：就把这最后一笔，添在《如我所书》的结尾吧？
+          - heading "铁墓陨落后，昔涟的选择" [level=3] [ref=e1028]: 铁墓陨落后，昔涟的选择
+          - blockquote [ref=e1029]:
+            - paragraph [ref=e1030]: 铁墓已经被打败，但永恒之地翁法罗斯的故事还没有结束。或者说，它该迎来怎样的结局，取决于昔涟的选择……
+            - generic [ref=e1031]:
+              - img "图标-位置.png" [ref=e1032]
+              - text: 命途狭间
+          - definition [ref=e1034]: 铁墓殒落后的片刻……
+          - list [ref=e1035]:
+            - listitem [ref=e1036]: 昔涟：被铁墓吞没的记忆，回到现实吧。
+            - listitem [ref=e1037]: 昔涟：可千万不要迷路呀♪
+            - listitem [ref=e1038]: 黑塔：终于找到你了，昔涟…德谬歌。
+            - listitem [ref=e1039]: 昔涟：我们赢下了这场战役呢。感谢您，黑塔女士。如果没有您，胜利根本无从谈起。
+            - listitem [ref=e1040]: 昔涟：只是，还有什么后顾之忧吗？
+            - listitem [ref=e1041]: 黑塔：合上眼睛前，在机器头的脑袋里，我看见了…一些令人在意的画面。
+            - listitem [ref=e1042]: 黑塔：「第四时刻」——由「智识」锚定的，银河命运的转折点…它并非某个瞬间，而是一段历程，许多事件的集合。
+            - listitem [ref=e1043]: 昔涟：所以，这场胜利不是那「许多事件」的最后一环？
+            - listitem [ref=e1044]: 黑塔：恰恰相反，它只是开始……
+            - listitem [ref=e1045]: 黑塔：是这片银河的第一声丧钟。
+            - listitem [ref=e1046]: 昔涟：这幅惆怅的表情可不适合您呀，黑塔女士…别有负担，告诉我吧？
+            - listitem [ref=e1047]: 黑塔：……
+            - listitem [ref=e1048]:
+              - text: 黑塔：不久前，你再次遇见了
+              - generic [ref=e1049]:
+                - generic [ref=e1050]: 「记忆」
+                - generic [ref=e1051]: 浮黎
+              - text: 星神，对么？
+            - listitem [ref=e1052]: 昔涟：嗯。哪怕身形模糊不清，人家还是确信：那就是「昔涟」梦中的神明。
+            - listitem [ref=e1053]: 黑塔：果然…「因果」出现问题了。
+            - listitem [ref=e1054]: 昔涟：因果？
+            - listitem [ref=e1055]: 黑塔：用你最爱的童话作比喻吧：宇宙起源于一枚种子，它长成大树，「现在」是它的枝叶。
+            - listitem [ref=e1056]: 黑塔：「智识」会计算「未来」如何发芽。当然，未来有无数种发展，所以祂需要「锚定」，剪除那些长歪的、不够健壮的枝叶，只留下一种可能。
+            - listitem [ref=e1057]: 黑塔：但如果只是这样，树枝越长越长，叶片越来越多，树迟早有一天会不堪重负。
+            - listitem [ref=e1058]: 黑塔：所以，生物学上有种说法叫「木质化」，让嫩枝生出坚硬的表皮，与树干连为一体。
+            - listitem [ref=e1059]: 黑塔：对于宇宙，这就是「记忆」的本质。
+            - listitem [ref=e1060]: 黑塔：在浮黎的铭记下，「过去」凝结成「记忆」；而祂遗忘的角落，即便有「现在」发生，也会成为无根之果。
+            - listitem [ref=e1061]: 昔涟：听起来，和「智识」正相反呢…一位计算未来，一位铭记过去。
+            - listitem [ref=e1062]: 黑塔：原本我们不用谈论此事。但事到如今，我终于明白了包裹翁法罗斯的那团混沌物质是什么……
+            - listitem [ref=e1063]: 黑塔：那是你的「记忆」。现在，你的心识遍布群星，让你在这条命途上走出了极其遥远的距离。
+            - listitem [ref=e1064]: 昔涟：我的…「记忆」？
+            - listitem [ref=e1065]: 黑塔：对。虽然你活在「当下」，但你的「记忆」存在于过去。
+            - listitem [ref=e1066]: 黑塔：就像「记忆」的星神，也只是一簇记忆。
+            - listitem [ref=e1067]: 昔涟：这是…什么意思？
+            - listitem [ref=e1068]: 昔涟：祂，陨落了吗？
+            - listitem [ref=e1069]: 黑塔：不。恰恰相反，是祂还未诞生。
+            - listitem [ref=e1070]: 黑塔：记得么？如果要贯彻「铭记」宇宙的信念，祂只会在时间的尽头飞升成神。
+            - listitem [ref=e1071]: 黑塔：而飞升的那一刻，祂的「记忆」贯穿过去，成为了人们眼中的「浮黎」。
+            - listitem [ref=e1072]: 昔涟：啊……
+            - listitem [ref=e1073]: 黑塔：所以祂才那么不近人情，那水晶身子只是一具空壳。我不知道忆庭怎么能把这件事瞒到现在——他们有理由这么做——但这些都不重要。
+            - listitem [ref=e1074]: 黑塔：身处「当下」的我们，没法弄清是谁成为了浮黎，但能确信祂一定会诞生。
+            - listitem [ref=e1075]: 黑塔：而那些可能成为浮黎的人，具备相同的特征——
+            - listitem [ref=e1076]: 黑塔：她们被称作「记忆」的孩子，无漏净子。
+          - separator [ref=e1077]
+          - list [ref=e1078]:
+            - listitem [ref=e1079]: 忆者的化身：你们都是…「记忆」的孩子……
+            - listitem [ref=e1080]: 三月七？：所以，帮帮我们，找到翁法罗斯「记忆」的起点，然后把它带出来……
+            - listitem [ref=e1081]: 恐惧的窃忆者：「我们。是牺牲品。忆庭。利用了我们。『无漏净子』。抛弃了我们。」
+            - listitem [ref=e1082]: 昔涟：原来，这个名字背后不是人家的「过去」……
+            - listitem [ref=e1083]: 昔涟：而是我的「未来」呀。
+            - listitem [ref=e1084]: 黑塔：也可能，是「现在」。
+            - listitem [ref=e1085]: 昔涟：……
+            - listitem [ref=e1086]: 黑塔：博识尊…为我揭示了两条路。
+            - listitem [ref=e1087]: 黑塔：那两条路上都站着你。
+            - listitem [ref=e1088]: 黑塔：一、沿着这条你踏出的「记忆」之路，挣脱这个世界，走向群星。
+            - listitem [ref=e1089]: 黑塔：这也意味着，翁法罗斯的因果与你无关，至少和现在的你无关。
+            - listitem [ref=e1090]: 昔涟：……
+            - listitem [ref=e1091]: 昔涟：请说下去吧。
+            - listitem [ref=e1092]: 黑塔：二……
+            - listitem [ref=e1093]: 黑塔：你停下脚步，以自我为代价完成「收梢」…成为贯穿翁法罗斯的「记忆」。
+            - listitem [ref=e1094]: 黑塔：这或许是每一个无漏净子都要面临的抉择。
+            - listitem [ref=e1095]: 昔涟：这意味着，我会永远留在「过去」。
+            - listitem [ref=e1096]: 黑塔：不仅如此，你会闭合翁法罗斯的因果。这是一个封闭世界，所以「记忆」为它带来的影响，会全部收束为「你」的影响。
+            - listitem [ref=e1097]: 黑塔：不会再有星神介入这段历史，也不会再有因果的「空白」，于是「现在」会被固定下来，变得坚不可摧。
+            - listitem [ref=e1098]: 黑塔：两条路，只有一条是对的。机器头没有告诉我答案。
+            - listitem [ref=e1099]: 黑塔：但错误的后果可以想象——因为「因果缺失」，有一定概率，铁墓会卷土重来。
+            - listitem [ref=e1100]: 昔涟：……
+            - listitem [ref=e1101]: 昔涟：银河里的神明，也是这么不讲道理呢。
+            - listitem [ref=e1102]: 黑塔：我的建议：别想那么多，先问问自己的内心。
+            - listitem [ref=e1103]:
+              - text: 黑塔：选第一条路，你或许能以忆灵的形式存在下去，甚至和
+              - generic [ref=e1104]:
+                - generic [ref=e1105]: 他们
+                - generic [ref=e1106]: 星穹列车
+              - text: 同行一段时间。
+            - listitem [ref=e1107]:
+              - text: 黑塔：哪怕是我也看得出来，你很在意他们，尤其是
+              - generic [ref=e1108]:
+                - generic [ref=e1109]: 开拓者
+                - generic [ref=e1110]: 那小家伙
+              - text: 。
+            - listitem [ref=e1111]: 黑塔：但如果选第二条路……
+            - listitem [ref=e1112]: 黑塔：那你可能已经错过告别的机会了。
+          - separator [ref=e1113]
+          - list [ref=e1114]:
+            - listitem [ref=e1115]: 昔涟：……
+            - listitem [ref=e1116]: 昔涟：我想好啦，黑塔女士。
+            - listitem [ref=e1117]: 黑塔：我以为你需要时间仔细斟酌。
+            - listitem [ref=e1118]: 昔涟：答案显而易见，不是吗？但人家确实需要一点时间……
+            - listitem [ref=e1119]: 昔涟：来克服心底的哀伤。
+            - listitem [ref=e1120]: 昔涟：他/她的温柔总是恰到好处，一定…会原谅我吧？
+            - listitem [ref=e1121]: 黑塔：……
+            - listitem [ref=e1122]: 黑塔：我就不多说什么了，免得破坏气氛。
+            - listitem [ref=e1123]: 黑塔：但最后，可以再问你一个问题吗？
+            - listitem [ref=e1124]: 昔涟：当然。
+            - listitem [ref=e1125]: 黑塔：为什么？
+            - listitem [ref=e1126]: 昔涟：……
+            - listitem [ref=e1127]: 昔涟：我听过这么一种说法：神性是「无瑕的人性」，而人性是「有瑕的神性」……
+            - listitem [ref=e1128]: 昔涟：翁法罗斯的孩子，早就不相信神明啦。比起喜欢恶作剧的祂们……
+            - listitem [ref=e1129]: 昔涟：我肯定更相信他/她，还有身为「人」的自己。
+            - listitem [ref=e1130]: 黑塔：……
+            - listitem [ref=e1131]: 黑塔：真是个…让人安心的答案。
+            - listitem [ref=e1132]: 昔涟：至于我最难割舍的那份私心……
+            - listitem [ref=e1133]: 昔涟：一人留在过去……
+            - listitem [ref=e1134]: 昔涟：一人走向未来。
+            - listitem [ref=e1135]: 昔涟：我相信，那个我最在乎的他/她……
+            - listitem [ref=e1136]: 昔涟：一定会替「往昔的涟漪」见证……
+            - listitem [ref=e1137]: 昔涟：每一个星星闪耀的明天♪
+          - separator [ref=e1138]
+          - list [ref=e1139]:
+            - listitem [ref=e1140]: 昔涟：在「记忆」中逆行，真是新奇的体验呀。
+            - listitem [ref=e1141]: 昔涟：这一刻，是「铁墓」宣告胜利，将「毁灭」洒向群星的瞬间？
+            - listitem [ref=e1142]: 昔涟：原来，那时在命途狭间，是「我」找到了「我」。神明的耳语，竟然是少女的自言自语呀。
+            - listitem [ref=e1143]: 昔涟：回想起来，当时听见的话是……
+          - definition [ref=e1145]: 你我曾是不是神明人子因罪行祝福降临陨落凡间经你我之手写下抹去的诗将是曾是你我在善见天的记忆忘却。
+          - list [ref=e1146]:
+            - listitem [ref=e1147]: 昔涟：可我明明只是想说：「别放弃，开拓者会找到你」…「记忆」可真是奇妙呀。
+            - listitem [ref=e1148]: 昔涟：那，就让人家行使这份力量……
+            - listitem [ref=e1149]: 昔涟：为注定发生的「奇迹」，种下因果吧♪
+          - generic [ref=e1151]:
+            - generic [ref=e1152]:
+              - img "剧情选项-图标-继续.png" [ref=e1154]
+              - text: 播下因果的涟漪——
+            - generic [ref=e1155] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e1157]
+              - text: 创造「一页永恒」。
+        - generic [ref=e1159]:
+          - link "分类" [ref=e1160] [cursor=pointer]:
+            - /url: /sr/%E7%89%B9%E6%AE%8A:%E9%A1%B5%E9%9D%A2%E5%88%86%E7%B1%BB
+          - text: ：
+          - list [ref=e1161]:
+            - listitem [ref=e1162]:
+              - link "任务" [ref=e1163] [cursor=pointer]:
+                - /url: /sr/index.php?title=%E5%88%86%E7%B1%BB:%E4%BB%BB%E5%8A%A1&action=edit&redlink=1
+            - listitem [ref=e1164]:
+              - link "开拓任务" [ref=e1165] [cursor=pointer]:
+                - /url: /sr/index.php?title=%E5%88%86%E7%B1%BB:%E5%BC%80%E6%8B%93%E4%BB%BB%E5%8A%A1&action=edit&redlink=1
+      - generic [ref=e1166]:
+        - text: 评论
+        - generic [ref=e1169]: 请先登录后发表评论 (・ω・)
+  - generic [ref=e1172]:
+    - generic [ref=e1173]:
+      - link [ref=e1174] [cursor=pointer]:
+        - /url: //www.bilibili.com
+      - img [ref=e1177]
+    - generic [ref=e1178]:
+      - paragraph [ref=e1179]:
+        - link "游戏中心" [ref=e1180] [cursor=pointer]:
+          - /url: //www.biligame.com/
+        - text: "|"
+        - link "帐号安全" [ref=e1181] [cursor=pointer]:
+          - /url: https://account.bilibili.com/
+        - text: "|"
+        - link "找回密码" [ref=e1182] [cursor=pointer]:
+          - /url: https://account.bilibili.com/resetpwd
+        - text: "|"
+        - link "家长监控" [ref=e1183] [cursor=pointer]:
+          - /url: //jiazhang.biligame.com/
+        - text: "|"
+        - link "用户协议" [ref=e1184] [cursor=pointer]:
+          - /url: //yhxy.biligame.com/
+      - paragraph
+      - paragraph [ref=e1185]: 抵制不良游戏 拒绝盗版游戏 注意自我保护 谨防受骗上当 适度游戏益脑 沉迷游戏伤身 合理安排时间 享受健康生活
+      - paragraph [ref=e1186]: 芜湖享游网络技术有限公司 | COPYRIGHT © 2009-2026 BILIBILI ALL RIGHTS RESERVED.
+      - paragraph [ref=e1187]: 皖网文[2023]1840-026号 | 皖B2-20180007-2 | 皖ICP证：皖B2-20180007
+      - paragraph [ref=e1188]:
+        - link "沪公网安备 31011002002714 号" [ref=e1189] [cursor=pointer]:
+          - /url: http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=31011002002714
+          - img [ref=e1190]
+          - text: 沪公网安备 31011002002714 号
+  - generic [ref=e1191]:
+    - list [ref=e1195]:
+      - listitem [ref=e1196]:
+        - link "首页" [ref=e1198] [cursor=pointer]:
+          - /url: javascript:;
+      - listitem [ref=e1199]:
+        - link "导航" [ref=e1201] [cursor=pointer]:
+          - /url: javascript:;
+      - listitem [ref=e1202]:
+        - link "图鉴" [ref=e1204] [cursor=pointer]:
+          - /url: javascript:;
+      - listitem [ref=e1205]:
+        - link "地图" [ref=e1206] [cursor=pointer]:
+          - /url: /sr/%E5%9C%B0%E5%9B%BE
+      - listitem [ref=e1207]:
+        - link "玩法/攻略" [ref=e1209] [cursor=pointer]:
+          - /url: javascript:;
+      - listitem [ref=e1210]:
+        - link "扩展阅读" [ref=e1212] [cursor=pointer]:
+          - /url: javascript:;
+      - listitem [ref=e1213]:
+        - link "其他" [ref=e1215] [cursor=pointer]:
+          - /url: javascript:;
+    - generic [ref=e1216]:
+      - link "BWIKI首页" [ref=e1217] [cursor=pointer]:
+        - /url: https://wiki.biligame.com/wiki/%E9%A6%96%E9%A1%B5
+      - link "创建WIKI" [ref=e1218] [cursor=pointer]:
+        - /url: https://wiki.biligame.com/wiki/WIKI%E7%94%B3%E8%AF%B7%E9%A1%B5%E9%9D%A2
+      - link "BWIKI客服" [ref=e1219] [cursor=pointer]:
+        - /url: https://space.bilibili.com/477233102?spm_id_from=333.337.0.0
+      - link "BWIKI君" [ref=e1220] [cursor=pointer]:
+        - /url: https://space.bilibili.com/477233102
+  - generic [ref=e1221]:
+    - heading "目录" [level=2] [ref=e1224]
+    - list [ref=e1225]:
+      - listitem [ref=e1226]:
+        - link "1 任务相关" [ref=e1228] [cursor=pointer]:
+          - /url: "#任务相关"
+      - listitem [ref=e1229]:
+        - link "2 剧情梗概" [ref=e1230] [cursor=pointer]:
+          - /url: "#剧情梗概"
+      - listitem [ref=e1231]:
+        - link "3 剧情内容" [ref=e1233] [cursor=pointer]:
+          - /url: "#剧情内容"
+  - navigation "目录" [ref=e1234]:
+    - generic [ref=e1235] [cursor=pointer]:
+      - heading "目录" [level=2] [ref=e1236]
+      - text: "[ 隐藏 ]"
+    - list [ref=e1237]:
+      - listitem [ref=e1238]:
+        - link "1 任务相关" [ref=e1239] [cursor=pointer]:
+          - /url: "#任务相关"
+          - generic [ref=e1240]: "1"
+          - generic [ref=e1241]: 任务相关
+        - list [ref=e1242]:
+          - listitem [ref=e1243]:
+            - link "1.1 任务条件" [ref=e1244] [cursor=pointer]:
+              - /url: "#任务条件"
+              - generic [ref=e1245]: "1.1"
+              - generic [ref=e1246]: 任务条件
+          - listitem [ref=e1247]:
+            - link "1.2 系列任务" [ref=e1248] [cursor=pointer]:
+              - /url: "#系列任务"
+              - generic [ref=e1249]: "1.2"
+              - generic [ref=e1250]: 系列任务
+          - listitem [ref=e1251]:
+            - link "1.3 前置任务" [ref=e1252] [cursor=pointer]:
+              - /url: "#前置任务"
+              - generic [ref=e1253]: "1.3"
+              - generic [ref=e1254]: 前置任务
+          - listitem [ref=e1255]:
+            - link "1.4 后续任务" [ref=e1256] [cursor=pointer]:
+              - /url: "#后续任务"
+              - generic [ref=e1257]: "1.4"
+              - generic [ref=e1258]: 后续任务
+          - listitem [ref=e1259]:
+            - link "1.5 任务流程" [ref=e1260] [cursor=pointer]:
+              - /url: "#任务流程"
+              - generic [ref=e1261]: "1.5"
+              - generic [ref=e1262]: 任务流程
+      - listitem [ref=e1263]:
+        - link "2 剧情梗概" [ref=e1264] [cursor=pointer]:
+          - /url: "#剧情梗概"
+          - generic [ref=e1265]: "2"
+          - generic [ref=e1266]: 剧情梗概
+      - listitem [ref=e1267]:
+        - link "3 剧情内容" [ref=e1268] [cursor=pointer]:
+          - /url: "#剧情内容"
+          - generic [ref=e1269]: "3"
+          - generic [ref=e1270]: 剧情内容
+        - list [ref=e1271]:
+          - listitem [ref=e1272]:
+            - link "3.1 铁墓的危机已经解除，但故事尚未结束" [ref=e1273] [cursor=pointer]:
+              - /url: "#铁墓的危机已经解除，但故事尚未结束"
+              - generic [ref=e1274]: "3.1"
+              - generic [ref=e1275]: 铁墓的危机已经解除，但故事尚未结束
+          - listitem [ref=e1276]:
+            - link "3.2 回到列车，寻找伙伴们的踪迹" [ref=e1277] [cursor=pointer]:
+              - /url: "#回到列车，寻找伙伴们的踪迹"
+              - generic [ref=e1278]: "3.2"
+              - generic [ref=e1279]: 回到列车，寻找伙伴们的踪迹
+          - listitem [ref=e1280]:
+            - link "3.3 列车为何空无一人？必须要弄清楚……" [ref=e1281] [cursor=pointer]:
+              - /url: "#列车为何空无一人？必须要弄清楚……"
+              - generic [ref=e1282]: "3.3"
+              - generic [ref=e1283]: 列车为何空无一人？必须要弄清楚……
+          - listitem [ref=e1284]:
+            - link "3.4 调查发出异响的浴室" [ref=e1285] [cursor=pointer]:
+              - /url: "#调查发出异响的浴室"
+              - generic [ref=e1286]: "3.4"
+              - generic [ref=e1287]: 调查发出异响的浴室
+          - listitem [ref=e1288]:
+            - link "3.5 揪出藏在浴缸里的遐蝶" [ref=e1289] [cursor=pointer]:
+              - /url: "#揪出藏在浴缸里的遐蝶"
+              - generic [ref=e1290]: "3.5"
+              - generic [ref=e1291]: 揪出藏在浴缸里的遐蝶
+          - listitem [ref=e1292]:
+            - link "3.6 前往派对车厢，与其他黄金裔伙伴打声招呼" [ref=e1293] [cursor=pointer]:
+              - /url: "#前往派对车厢，与其他黄金裔伙伴打声招呼"
+              - generic [ref=e1294]: "3.6"
+              - generic [ref=e1295]: 前往派对车厢，与其他黄金裔伙伴打声招呼
+          - listitem [ref=e1296]:
+            - link "3.7 和在场的黄金裔们说说话" [ref=e1297] [cursor=pointer]:
+              - /url: "#和在场的黄金裔们说说话"
+              - generic [ref=e1298]: "3.7"
+              - generic [ref=e1299]: 和在场的黄金裔们说说话
+          - listitem [ref=e1300]:
+            - link "3.8 前往观景车厢，寻找白厄" [ref=e1301] [cursor=pointer]:
+              - /url: "#前往观景车厢，寻找白厄"
+              - generic [ref=e1302]: "3.8"
+              - generic [ref=e1303]: 前往观景车厢，寻找白厄
+          - listitem [ref=e1304]:
+            - link "3.9 找海瑟音、那刻夏聊聊" [ref=e1305] [cursor=pointer]:
+              - /url: "#找海瑟音、那刻夏聊聊"
+              - generic [ref=e1306]: "3.9"
+              - generic [ref=e1307]: 找海瑟音、那刻夏聊聊
+          - listitem [ref=e1308]:
+            - link "3.10 找白厄聊几句" [ref=e1309] [cursor=pointer]:
+              - /url: "#找白厄聊几句"
+              - generic [ref=e1310]: "3.10"
+              - generic [ref=e1311]: 找白厄聊几句
+          - listitem [ref=e1312]:
+            - link "3.11 告别翁法罗斯这趟史诗的旅途" [ref=e1313] [cursor=pointer]:
+              - /url: "#告别翁法罗斯这趟史诗的旅途"
+              - generic [ref=e1314]: "3.11"
+              - generic [ref=e1315]: 告别翁法罗斯这趟史诗的旅途
+          - listitem [ref=e1316]:
+            - link "3.12 铁墓陨落后，昔涟的选择" [ref=e1317] [cursor=pointer]:
+              - /url: "#铁墓陨落后，昔涟的选择"
+              - generic [ref=e1318]: "3.12"
+              - generic [ref=e1319]: 铁墓陨落后，昔涟的选择
+    - text: 显示目录>

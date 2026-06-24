@@ -277,7 +277,7 @@
           </div>
 
           <div class="agent-settings-grid">
-            <article class="agent-setting-card">
+            <article class="agent-setting-card agent-setting-card--full">
               <div class="agent-setting-card__head">
                 <span>💗</span>
                 <div>
@@ -293,7 +293,7 @@
               <em class="field-note is-hidden" id="runtime-sync-note">LLM 模式每轮会额外调用一次模型，产生额外 Token 用量。</em>
             </article>
 
-            <article class="agent-setting-card">
+            <article class="agent-setting-card agent-setting-card--full">
               <div class="agent-setting-card__head">
                 <span>🎭</span>
                 <div>
@@ -315,7 +315,18 @@
                   <button type="button" class="option-block" data-value="large" aria-pressed="false">大图</button>
                 </div>
               </div>
-              <button type="button" class="ghost-btn" id="open-sticker-manager-btn">管理表情包</button>
+              <div class="agent-setting-subgroup">
+                <strong>相似度阈值</strong>
+                <div class="range-row">
+                  <input type="range" id="sticker-threshold" min="0.3" max="0.9" step="0.05" value="0.55" />
+                  <span class="range-val" id="sticker-threshold-val">0.55</span>
+                </div>
+                <em class="field-note">值越低越容易触发表情包，值越高匹配越精准</em>
+              </div>
+              <div class="agent-actions-row">
+                <button type="button" class="ghost-btn" id="open-sticker-manager-btn">管理表情包</button>
+                <button type="button" class="ghost-btn" id="add-sticker-btn">＋ 添加表情包</button>
+              </div>
             </article>
 
             <article class="agent-setting-card agent-setting-card--rag agent-setting-card--full">
@@ -542,6 +553,117 @@
             <div class="chat-sessions__footer">
               <button type="button" class="ghost-btn" id="chat-open-folder-btn">📂 打开存储位置</button>
               <span class="chat-sessions__footer-hint">所有会话保存在 userData/cyrene-chats/ 下，可整体迁移</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="settings-panel is-hidden" id="tasks-panel" data-panel="tasks">
+          <div class="panel-heading">
+            <div class="panel-heading__icon">⏰</div>
+            <div>
+              <h1>定时任务</h1>
+              <p>管理自动触发的 agent 任务。到点后会根据提示词调用当前允许的工具。</p>
+            </div>
+          </div>
+
+          <div class="scheduler-toolbar">
+            <div class="scheduler-toolbar__copy">
+              <strong>任务列表</strong>
+              <span>任务修改会立即保存，不需要点击全局保存按钮。</span>
+            </div>
+            <button type="button" class="save-btn" id="scheduler-new-btn">+ 新建任务</button>
+          </div>
+
+          <div class="scheduler-empty" id="scheduler-empty">
+            还没有定时任务。新建一个任务，让昔涟按时间自动执行提示词。
+          </div>
+
+          <div class="scheduler-list" id="scheduler-list"></div>
+
+          <div class="scheduler-editor is-hidden" id="scheduler-editor">
+            <div class="scheduler-editor__card">
+              <div class="scheduler-editor__header">
+                <h2 id="scheduler-editor-title">新建定时任务</h2>
+                <button type="button" class="ghost-btn" id="scheduler-editor-close">关闭</button>
+              </div>
+
+              <label class="field">
+                <span>标题</span>
+                <input id="scheduler-title" type="text" placeholder="例如：早安信息整理" />
+              </label>
+
+              <label class="field">
+                <span>提示词</span>
+                <textarea id="scheduler-prompt" rows="5" placeholder="到点后发给 LLM 的提示词"></textarea>
+              </label>
+
+              <label class="setting-row">
+                <div>
+                  <strong>启用</strong>
+                  <span>关闭后不会自动触发，但仍可手动立即运行。</span>
+                </div>
+                <input id="scheduler-enabled" type="checkbox" class="switch-input" checked />
+              </label>
+
+              <div class="form-grid scheduler-form-grid">
+                <label class="field">
+                  <span>频率</span>
+                  <select id="scheduler-kind">
+                    <option value="once">仅一次</option>
+                    <option value="daily">每天</option>
+                    <option value="weekly">每周</option>
+                    <option value="interval">每隔一段时间</option>
+                  </select>
+                </label>
+                <label class="field scheduler-once-field">
+                  <span>运行时间</span>
+                  <input id="scheduler-once-run-at" type="datetime-local" />
+                </label>
+                <label class="field scheduler-time-field">
+                  <span>时间</span>
+                  <input id="scheduler-time-of-day" type="time" value="08:00" />
+                </label>
+                <label class="field scheduler-weekly-field">
+                  <span>星期</span>
+                  <select id="scheduler-day-of-week">
+                    <option value="1">周一</option>
+                    <option value="2">周二</option>
+                    <option value="3">周三</option>
+                    <option value="4">周四</option>
+                    <option value="5">周五</option>
+                    <option value="6">周六</option>
+                    <option value="0">周日</option>
+                  </select>
+                </label>
+                <label class="field scheduler-interval-field">
+                  <span>间隔数值</span>
+                  <input id="scheduler-interval-every" type="number" min="1" value="1" />
+                </label>
+                <label class="field scheduler-interval-field">
+                  <span>间隔单位</span>
+                  <select id="scheduler-interval-unit">
+                    <option value="minutes">分钟</option>
+                    <option value="hours">小时</option>
+                  </select>
+                </label>
+              </div>
+
+              <label class="setting-row">
+                <div>
+                  <strong>高级工具限制</strong>
+                  <span>开启后，只允许调用下方选择的工具；仍不会绕过插件全局开关。</span>
+                </div>
+                <input id="scheduler-tool-limit" type="checkbox" class="switch-input" />
+              </label>
+
+              <div class="scheduler-tool-picker is-hidden" id="scheduler-tool-picker"></div>
+              <div class="scheduler-tool-hint is-hidden" id="scheduler-tool-empty-hint">未选择工具时，任务只能使用模型自身能力，不会调用任何工具。</div>
+
+              <div class="form-actions">
+                <div class="save-status" id="scheduler-save-status">等待操作</div>
+                <button type="button" class="ghost-btn" id="scheduler-cancel-btn">取消</button>
+                <button type="button" class="save-btn" id="scheduler-save-btn">保存任务</button>
+              </div>
             </div>
           </div>
         </section>
@@ -1068,6 +1190,40 @@
       </section>
     </main>
   </div>
+
+  <!-- 添加表情包弹窗 -->
+  <div class="sticker-add-overlay is-hidden" id="sticker-add-overlay">
+    <div class="sticker-add-modal">
+      <div class="sticker-add-modal__title">＋ 添加表情包</div>
+      <div class="sticker-add-modal__body">
+        <div class="sticker-field">
+          <label>图片</label>
+          <div class="sticker-file-row">
+            <button type="button" class="sticker-file-btn" id="sticker-add-pick-btn">选择文件</button>
+            <span class="sticker-file-name" id="sticker-add-file-name">未选择</span>
+          </div>
+        </div>
+        <div class="sticker-field">
+          <label>英文名称</label>
+          <input type="text" id="sticker-add-id" placeholder="mycat" autocomplete="off" />
+        </div>
+        <div class="sticker-field">
+          <label>图片描述</label>
+          <input type="text" id="sticker-add-desc" placeholder="可爱的小猫表情" autocomplete="off" />
+        </div>
+        <div class="sticker-field">
+          <label>相近语义（一行一个）</label>
+          <textarea id="sticker-add-phrases" rows="4" placeholder="可爱的小猫&#10;想rua一下&#10;猫咪好乖"></textarea>
+        </div>
+        <div class="sticker-add-modal__error is-hidden" id="sticker-add-error"></div>
+      </div>
+      <div class="sticker-add-modal__actions">
+        <button type="button" class="ghost-btn" id="sticker-add-cancel">取消</button>
+        <button type="button" class="btn-primary" id="sticker-add-confirm">确认添加</button>
+      </div>
+    </div>
+  </div>
+
   <script type="module" src="./settings.ts"></script>
 </body>
 </html>

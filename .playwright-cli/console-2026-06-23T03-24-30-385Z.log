@@ -1,0 +1,19 @@
+[   20474ms] [LOG] widget:Bugfix 250107.1版载入 @ https://wiki.biligame.com/sr/%E8%AF%B8%E7%A5%9E%E5%95%8A%EF%BC%8C%E5%A5%8F%E5%93%8D%E5%88%9B%E4%B8%96%E7%9A%84%E5%87%AF%E6%AD%8C:1704
+[   20786ms] [LOG] %c BwikiTune %c https://wiki.biligame.com/tools/BwikiTune color: #fff; padding: 5px 0; background: #aaa; padding: 5px 5px 5px 0; background: #fff; @ https://wiki.biligame.com/tools/index.php?title=MediaWiki:BwikiTune.js&action=raw&ctype=text/javascript:4
+[   21089ms] [LOG] undefined @ https://wiki.biligame.com/sr/load.php?lang=zh-cn&modules=jquery%7Cmediawiki.extra.bili&skin=vector&version=n4cjy:1012
+[   21607ms] [LOG] ResourceLoader: 加载MediaWiki:PlotOptions.js @ https://wiki.biligame.com/sr/%E8%AF%B8%E7%A5%9E%E5%95%8A%EF%BC%8C%E5%A5%8F%E5%93%8D%E5%88%9B%E4%B8%96%E7%9A%84%E5%87%AF%E6%AD%8C:2093
+[   21611ms] [LOG] %c 动态加载 %c v.0.6 https://wiki.biligame.com/tools/?curid=2366 background: #4a5366;padding:4px 8px;color:#fff  background: #d3bc8e;padding:4px 8px; @ https://wiki.biligame.com/wiki/MediaWiki:Asyncloader.js?action=raw&ctype=text/javascript:0
+[   21612ms] [LOG] %c 评论区头像框 %c v_bate0.19 https://wiki.biligame.com/tools/AvatarFrame background: #4a5366;padding:4px 8px;color:#fff  background: #d3bc8e;padding:4px 8px; @ https://wiki.biligame.com/tools/MediaWiki:AvatarFrame.js?action=raw&ctype=text/javascript:413
+[   21613ms] [LOG] %c BilibiliVideo %c https://wiki.biligame.com/wiki/?curid=2342 color: #fff; padding: 5px 0; background: #9dbafc; padding: 5px 5px 5px 0; background: #e5e5ff; @ https://wiki.biligame.com/wiki/User:123855714/BilibiliVideo.js?action=raw&ctype=text/javascript&r=2:52
+[   21613ms] [LOG] %c 滚动监听目录 %c v.2.6 https://wiki.biligame.com/tools/?curid=3776 color: #000; padding: 5px 0; background: #D1DBF3; padding: 5px 5px 5px 0; background: #efefff; @ https://wiki.biligame.com/tools/index.php?title=MediaWiki:ScrollToc.js&action=raw&ctype=text/javascript:36
+[   21653ms] [LOG] loaded ReporterPb - metaScript @ https://wiki.biligame.com/sr/load.php?lang=zh-cn&modules=jquery%7Cmediawiki.extra.bili&skin=vector&version=n4cjy:1008
+[   22155ms] [LOG] Start report... @ https://wiki.biligame.com/sr/load.php?lang=zh-cn&modules=jquery%7Cmediawiki.extra.bili&skin=vector&version=n4cjy:1008
+[   22156ms] [LOG] Report PV @ https://wiki.biligame.com/sr/load.php?lang=zh-cn&modules=jquery%7Cmediawiki.extra.bili&skin=vector&version=n4cjy:1008
+[   22156ms] [LOG] undefined @ https://wiki.biligame.com/sr/load.php?lang=zh-cn&modules=jquery%7Cmediawiki.extra.bili&skin=vector&version=n4cjy:1008
+[   22156ms] [LOG] {game_base_id: 107800, event_id: 555.168.0.0, sourcefrom: 1900320021, wiki_name: sr, wiki_title: 诸神啊，奏响创世的凯歌 - 崩坏：星穹铁道WIKI_BWIKI_哔哩哔哩} @ https://wiki.biligame.com/sr/load.php?lang=zh-cn&modules=jquery%7Cmediawiki.extra.bili&skin=vector&version=n4cjy:1009
+[   22168ms] [LOG] loaded ReporterPb - game-web/game-report loaded @ https://wiki.biligame.com/sr/load.php?lang=zh-cn&modules=jquery%7Cmediawiki.extra.bili&skin=vector&version=n4cjy:1009
+[   22404ms] [LOG] Reported PV - pb @ https://wiki.biligame.com/sr/load.php?lang=zh-cn&modules=jquery%7Cmediawiki.extra.bili&skin=vector&version=n4cjy:1009
+[   22510ms] [WARNING] bili-mirror:not find 555.117 kv-config,using base @ https://s1.hdslb.com/bfs/static/game-web/game-report/index.js?sdkVersion=pb&_=0710:0
+[   22511ms] [WARNING] Is using GAME_PB_INS to report,Please confirm open [tech] config @ https://s1.hdslb.com/bfs/static/game-web/game-report/index.js?sdkVersion=pb&_=0710:0
+[   22511ms] [INFO] %c%s line-height: 30px; color: #FF6699 bili-fe-mirror:1.5.14 @ https://s1.hdslb.com/bfs/static/game-web/game-report/index.js?sdkVersion=pb&_=0710:0
+[   22621ms] [LOG] 评论区头衔：使用缓存数据 @ https://wiki.biligame.com/tools/MediaWiki:AvatarFrame.js?action=raw&ctype=text/javascript:82

@@ -1,0 +1,748 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2] [cursor=pointer]: 半隐黑幕
+  - navigation [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - link [ref=e9] [cursor=pointer]:
+          - /url: //game.bilibili.com/?spm_id_from=555.117.0.0
+        - list [ref=e10]:
+          - listitem [ref=e11]:
+            - link " 主站" [ref=e12] [cursor=pointer]:
+              - /url: //www.bilibili.com/?spm_id_from=555.117.0.0
+              - generic [ref=e13]: 
+              - generic [ref=e14]: 主站
+          - listitem [ref=e15]:
+            - link "首页" [ref=e16] [cursor=pointer]:
+              - /url: //game.bilibili.com/platform?spm_id_from=555.117.0.0
+          - listitem [ref=e17]:
+            - link "排行榜" [ref=e18] [cursor=pointer]:
+              - /url: //game.bilibili.com/platform/ranks?spm_id_from=555.117.0.0
+          - listitem [ref=e19]:
+            - link "发现" [ref=e20] [cursor=pointer]:
+              - /url: //game.bilibili.com/platform/discover?spm_id_from=555.117.0.0
+          - listitem [ref=e21]:
+            - link "WIKI" [ref=e22] [cursor=pointer]:
+              - /url: //wiki.biligame.com/?spm_id_from=555.117.0.0
+          - listitem [ref=e23]:
+            - link "大会员礼包" [ref=e24] [cursor=pointer]:
+              - /url: //b-gift.biligame.com/?spm_id_from=555.117.0.0
+          - listitem [ref=e25]:
+            - link "充值中心" [ref=e26] [cursor=pointer]:
+              - /url: //pay.biligame.com/?spm_id_from=555.117.0.0#/?from=gc&selectedNav=pay
+          - listitem [ref=e27]:
+            - link "我的" [ref=e28] [cursor=pointer]:
+              - /url: //game.bilibili.com/platform/mine?spm_id_from=555.117.0.0
+      - generic [ref=e29]:
+        - generic [ref=e30]:
+          - textbox "搜索更多游戏&WIKI" [ref=e31]
+          - generic [ref=e33] [cursor=pointer]: 
+        - link [ref=e37] [cursor=pointer]:
+          - /url: https://passport.bilibili.com/login?gourl=https%3A%2F%2Fwiki.biligame.com%2Fsr%2F%25E8%25AF%25B8%25E7%25A5%259E%25E5%2595%258A%25EF%25BC%258C%25E5%25A5%258F%25E5%2593%258D%25E5%2588%259B%25E4%25B8%2596%25E7%259A%2584%25E5%2587%25AF%25E6%25AD%258C
+  - generic [ref=e38]:
+    - generic [ref=e39]:
+      - link [ref=e41] [cursor=pointer]:
+        - /url: /sr/%E9%A6%96%E9%A1%B5
+      - listitem [ref=e42]:
+        - link "我的消息" [ref=e43] [cursor=pointer]:
+          - /url: javascript:void(0);
+      - generic [ref=e44] [cursor=pointer]: 关于本站
+      - generic [ref=e46]:
+        - generic [ref=e48]:
+          - link "首页" [ref=e50] [cursor=pointer]:
+            - /url: javascript:;
+            - text: 首页
+          - link "导航" [ref=e53] [cursor=pointer]:
+            - /url: javascript:;
+            - text: 导航
+          - link "图鉴" [ref=e56] [cursor=pointer]:
+            - /url: javascript:;
+            - text: 图鉴
+          - link "地图" [ref=e59] [cursor=pointer]:
+            - /url: /sr/%E5%9C%B0%E5%9B%BE
+          - link "玩法/攻略" [ref=e61] [cursor=pointer]:
+            - /url: javascript:;
+            - text: 玩法/攻略
+          - link "扩展阅读" [ref=e64] [cursor=pointer]:
+            - /url: javascript:;
+            - text: 扩展阅读
+          - link "其他" [ref=e67] [cursor=pointer]:
+            - /url: javascript:;
+            - text: 其他
+        - generic [ref=e72]:
+          - textbox "搜索崩坏：星穹铁道WIKI_BWIKI_哔哩哔哩[alt-shift-f]" [ref=e73]:
+            - /placeholder: 本WIKI中搜索
+          - button "搜索" [ref=e74] [cursor=pointer]
+          - button "前往" [ref=e75] [cursor=pointer]
+    - main [ref=e76]:
+      - generic [ref=e78]:
+        - paragraph [ref=e80]:
+          - text: 本WIKI由
+          - link "旅行者酒馆" [ref=e81] [cursor=pointer]:
+            - /url: https://space.bilibili.com/489986571
+          - text: 于2021年10月05日申请开通。
+          - generic [ref=e82]:
+            - text: 内容按
+            - link "CC BY-NC-SA 4.0协议" [ref=e83] [cursor=pointer]:
+              - /url: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans
+            - text: 提供
+          - text: ，编辑权限开放。
+          - text: 本WIKI仍在努力完善中，欢迎收藏。编辑组为非官方民间组织，为爱发电，欢迎各路能人异士加入。
+          - link "免责声明" [ref=e84] [cursor=pointer]:
+            - /url: /sr/%E5%B4%A9%E5%9D%8F%EF%BC%9A%E6%98%9F%E7%A9%B9%E9%93%81%E9%81%93:%E5%85%8D%E8%B4%A3%E5%A3%B0%E6%98%8E
+          - text: •
+          - link "编辑教程" [ref=e85] [cursor=pointer]:
+            - /url: /sr/%E6%98%9F%E7%A9%B9%E9%93%81%E9%81%93WIKI%E7%BC%96%E8%BE%91%E6%95%99%E7%A8%8B
+          - text: •
+          - link "反馈留言" [ref=e86] [cursor=pointer]:
+            - /url: /sr/%E5%B4%A9%E5%9D%8F%EF%BC%9A%E6%98%9F%E7%A9%B9%E9%93%81%E9%81%93%E6%9C%89%E9%97%AE%E5%93%94%E7%AD%94%E7%95%99%E8%A8%80%E6%9D%BF
+          - text: •
+          - link "收藏方法" [ref=e87] [cursor=pointer]:
+            - /url: https://wiki.biligame.com/wiki/BWIKI%E6%94%B6%E8%97%8F%E5%88%B0%E6%A1%8C%E9%9D%A2%E7%9A%84%E6%96%B9%E6%B3%95%E8%AF%B4%E6%98%8E
+          - text: • 交流群：1017604603
+        - paragraph
+      - generic [ref=e88]:
+        - heading "诸神啊，奏响创世的凯歌" [level=1] [ref=e89]: 诸神啊，奏响创世的凯歌
+        - generic [ref=e90]:
+          - navigation "WIKI功能 " [ref=e91] [cursor=pointer]:
+            - heading "WIKI功能 " [level=3] [ref=e92]:
+              - generic [ref=e93]: WIKI功能
+              - generic [ref=e94]: 
+          - generic [ref=e95]:
+            - paragraph [ref=e96]: 阅读：8015
+            - paragraph [ref=e97]: 更新日期：2026-02-13
+            - paragraph [ref=e98]: 最新编辑：QWERTY_770
+      - generic [ref=e99]:
+        - link "跳到导航" [ref=e100] [cursor=pointer]:
+          - /url: "#mw-head"
+        - link "跳到搜索" [ref=e101] [cursor=pointer]:
+          - /url: "#p-search"
+        - generic [ref=e102]:
+          - link "页面贡献者 :" [ref=e103] [cursor=pointer]:
+            - /url: /sr/%E7%89%B9%E6%AE%8A:%E8%B4%A1%E7%8C%AE%E8%80%85/%E8%AF%B8%E7%A5%9E%E5%95%8A%EF%BC%8C%E5%A5%8F%E5%93%8D%E5%88%9B%E4%B8%96%E7%9A%84%E5%87%AF%E6%AD%8C
+          - generic [ref=e104]:
+            - link [ref=e107] [cursor=pointer]:
+              - /url: //space.bilibili.com/1902365740/
+            - link [ref=e111] [cursor=pointer]:
+              - /url: //space.bilibili.com/343309739/
+            - link [ref=e115] [cursor=pointer]:
+              - /url: //space.bilibili.com/10048271/
+          - generic [ref=e117] [cursor=pointer]: 共3人编辑
+        - generic [ref=e121]:
+          - generic [ref=e123]: 如果选择选项下面对话没变不是BUG了，而是游戏本身对话就是一样的。
+          - generic [ref=e124]:
+            - generic [ref=e125]:
+              - generic "编辑这个页面" [ref=e126]:
+                - link "编" [ref=e127] [cursor=pointer]:
+                  - /url: https://wiki.biligame.com/sr/index.php?title=%E8%AF%B8%E7%A5%9E%E5%95%8A%EF%BC%8C%E5%A5%8F%E5%93%8D%E5%88%9B%E4%B8%96%E7%9A%84%E5%87%AF%E6%AD%8C&action=edit
+              - generic "清除这个页面的缓存" [ref=e128]:
+                - link "刷" [ref=e129] [cursor=pointer]:
+                  - /url: https://wiki.biligame.com/sr/index.php?title=%E8%AF%B8%E7%A5%9E%E5%95%8A%EF%BC%8C%E5%A5%8F%E5%93%8D%E5%88%9B%E4%B8%96%E7%9A%84%E5%87%AF%E6%AD%8C&action=purge
+              - generic "查看这个页面的编辑历史" [ref=e130]:
+                - link "历" [ref=e131] [cursor=pointer]:
+                  - /url: https://wiki.biligame.com/sr/index.php?title=%E8%AF%B8%E7%A5%9E%E5%95%8A%EF%BC%8C%E5%A5%8F%E5%93%8D%E5%88%9B%E4%B8%96%E7%9A%84%E5%87%AF%E6%AD%8C&action=history
+              - generic "短网址，按右键复制链接地址" [ref=e132]:
+                - link "短" [ref=e133] [cursor=pointer]:
+                  - /url: https://wiki.biligame.com/sr/?curid=24080
+              - generic "查看这个页面" [ref=e134]:
+                - link "阅" [ref=e135] [cursor=pointer]:
+                  - /url: https://wiki.biligame.com/sr/%E8%AF%B8%E7%A5%9E%E5%95%8A%EF%BC%8C%E5%A5%8F%E5%93%8D%E5%88%9B%E4%B8%96%E7%9A%84%E5%87%AF%E6%AD%8C
+            - link "首页" [ref=e136] [cursor=pointer]:
+              - /url: /sr/%E9%A6%96%E9%A1%B5
+            - text: ">"
+            - link "开拓任务" [ref=e137] [cursor=pointer]:
+              - /url: /sr/%E5%BC%80%E6%8B%93%E4%BB%BB%E5%8A%A1
+            - text: ">"
+            - link "于长夜重返大地" [ref=e138] [cursor=pointer]:
+              - /url: /sr/%E4%BA%8E%E9%95%BF%E5%A4%9C%E9%87%8D%E8%BF%94%E5%A4%A7%E5%9C%B0
+            - text: "> 诸神啊，奏响创世的凯歌"
+          - separator [ref=e139]
+          - generic [ref=e141]:
+            - text: 如果是第一次来，按"Ctrl+D"可以收藏随时查看更新~觉得WIKI好玩的话，请推荐给朋友哦～(◕ω＜)☆
+            - text: 按右上角“WIKI功能→编辑”即可修改页面内容。
+          - table [ref=e142]:
+            - rowgroup [ref=e143]:
+              - row "任务名称 诸神啊，奏响创世的凯歌" [ref=e144]:
+                - rowheader "任务名称" [ref=e145]
+                - cell "诸神啊，奏响创世的凯歌" [ref=e146]
+              - row "任务地区 翁法罗斯" [ref=e147]:
+                - rowheader "任务地区" [ref=e148]
+                - cell "翁法罗斯" [ref=e149]
+              - row "任务类型 开拓任务" [ref=e150]:
+                - rowheader "任务类型" [ref=e151]
+                - cell "开拓任务" [ref=e152]
+              - row "开放等级 21" [ref=e153]:
+                - rowheader "开放等级" [ref=e154]
+                - cell "21" [ref=e155]
+              - row "所属版本 3.6" [ref=e156]:
+                - rowheader "所属版本" [ref=e157]
+                - cell "3.6" [ref=e158]
+              - row "任务描述 再创世的所有条件均已达成，翁法罗斯内外的不同势力也蠢蠢欲动。你们回到大墓深处德谬歌矩阵前，归还十二枚泰坦的火种，完成再创世的仪式。至此，新世界已经到来……" [ref=e159]:
+                - rowheader "任务描述" [ref=e160]
+                - cell "再创世的所有条件均已达成，翁法罗斯内外的不同势力也蠢蠢欲动。你们回到大墓深处德谬歌矩阵前，归还十二枚泰坦的火种，完成再创世的仪式。至此，新世界已经到来……" [ref=e161]
+              - row "奖励 里程 里程 × 500星琼 星琼 × 60漫游指南 漫游指南 × 5遗失晶块 遗失晶块 × 5无序秘酿 无序秘酿 × 200信用点 信用点 × 60000" [ref=e162]:
+                - rowheader "奖励" [ref=e163]
+                - cell "里程 里程 × 500星琼 星琼 × 60漫游指南 漫游指南 × 5遗失晶块 遗失晶块 × 5无序秘酿 无序秘酿 × 200信用点 信用点 × 60000" [ref=e164]:
+                  - link "里程" [ref=e166] [cursor=pointer]:
+                    - /url: /sr/%E9%87%8C%E7%A8%8B
+                    - img "里程" [ref=e167]
+                  - link "里程" [ref=e168] [cursor=pointer]:
+                    - /url: /sr/%E9%87%8C%E7%A8%8B
+                  - text: × 500
+                  - link "星琼" [ref=e170] [cursor=pointer]:
+                    - /url: /sr/%E6%98%9F%E7%90%BC
+                    - img "星琼" [ref=e171]
+                  - link "星琼" [ref=e172] [cursor=pointer]:
+                    - /url: /sr/%E6%98%9F%E7%90%BC
+                  - text: × 60
+                  - link "漫游指南" [ref=e174] [cursor=pointer]:
+                    - /url: /sr/%E6%BC%AB%E6%B8%B8%E6%8C%87%E5%8D%97
+                    - img "漫游指南" [ref=e175]
+                  - link "漫游指南" [ref=e176] [cursor=pointer]:
+                    - /url: /sr/%E6%BC%AB%E6%B8%B8%E6%8C%87%E5%8D%97
+                  - text: × 5
+                  - link "遗失晶块" [ref=e178] [cursor=pointer]:
+                    - /url: /sr/%E9%81%97%E5%A4%B1%E6%99%B6%E5%9D%97
+                    - img "遗失晶块" [ref=e179]
+                  - link "遗失晶块" [ref=e180] [cursor=pointer]:
+                    - /url: /sr/%E9%81%97%E5%A4%B1%E6%99%B6%E5%9D%97
+                  - text: × 5
+                  - link "无序秘酿" [ref=e182] [cursor=pointer]:
+                    - /url: /sr/%E6%97%A0%E5%BA%8F%E7%A7%98%E9%85%BF
+                    - img "无序秘酿" [ref=e183]
+                  - link "无序秘酿" [ref=e184] [cursor=pointer]:
+                    - /url: /sr/%E6%97%A0%E5%BA%8F%E7%A7%98%E9%85%BF
+                  - text: × 200
+                  - link "信用点" [ref=e186] [cursor=pointer]:
+                    - /url: /sr/%E4%BF%A1%E7%94%A8%E7%82%B9
+                    - img "信用点" [ref=e187]
+                  - link "信用点" [ref=e188] [cursor=pointer]:
+                    - /url: /sr/%E4%BF%A1%E7%94%A8%E7%82%B9
+                  - text: × 60000
+              - row "出场人物 三月七 三月七 昔涟 昔涟 丹恒 丹恒 大黑塔 大黑塔 黑天鹅 黑天鹅 星期日 星期日 姬子 姬子 瓦尔特 瓦尔特 来古士头像 来古士 那刻夏 那刻夏 缇里西庇俄丝 白厄 白厄 刻律德菈 刻律德菈 海瑟音 海瑟音 遐蝶 遐蝶" [ref=e189]:
+                - rowheader "出场人物" [ref=e190]
+                - cell "三月七 三月七 昔涟 昔涟 丹恒 丹恒 大黑塔 大黑塔 黑天鹅 黑天鹅 星期日 星期日 姬子 姬子 瓦尔特 瓦尔特 来古士头像 来古士 那刻夏 那刻夏 缇里西庇俄丝 白厄 白厄 刻律德菈 刻律德菈 海瑟音 海瑟音 遐蝶 遐蝶" [ref=e191]:
+                  - link "三月七" [ref=e193] [cursor=pointer]:
+                    - /url: /sr/%E4%B8%89%E6%9C%88%E4%B8%83
+                    - img "三月七" [ref=e194]
+                  - link "三月七" [ref=e195] [cursor=pointer]:
+                    - /url: /sr/%E4%B8%89%E6%9C%88%E4%B8%83
+                  - link "昔涟" [ref=e197] [cursor=pointer]:
+                    - /url: /sr/%E6%98%94%E6%B6%9F
+                    - img "昔涟" [ref=e198]
+                  - link "昔涟" [ref=e199] [cursor=pointer]:
+                    - /url: /sr/%E6%98%94%E6%B6%9F
+                  - link "丹恒" [ref=e201] [cursor=pointer]:
+                    - /url: /sr/%E4%B8%B9%E6%81%92
+                    - img "丹恒" [ref=e202]
+                  - link "丹恒" [ref=e203] [cursor=pointer]:
+                    - /url: /sr/%E4%B8%B9%E6%81%92
+                  - link "大黑塔" [ref=e205] [cursor=pointer]:
+                    - /url: /sr/%E5%A4%A7%E9%BB%91%E5%A1%94
+                    - img "大黑塔" [ref=e206]
+                  - link "大黑塔" [ref=e207] [cursor=pointer]:
+                    - /url: /sr/%E5%A4%A7%E9%BB%91%E5%A1%94
+                  - link "黑天鹅" [ref=e209] [cursor=pointer]:
+                    - /url: /sr/%E9%BB%91%E5%A4%A9%E9%B9%85
+                    - img "黑天鹅" [ref=e210]
+                  - link "黑天鹅" [ref=e211] [cursor=pointer]:
+                    - /url: /sr/%E9%BB%91%E5%A4%A9%E9%B9%85
+                  - link "星期日" [ref=e213] [cursor=pointer]:
+                    - /url: /sr/%E6%98%9F%E6%9C%9F%E6%97%A5
+                    - img "星期日" [ref=e214]
+                  - link "星期日" [ref=e215] [cursor=pointer]:
+                    - /url: /sr/%E6%98%9F%E6%9C%9F%E6%97%A5
+                  - link "姬子" [ref=e217] [cursor=pointer]:
+                    - /url: /sr/%E5%A7%AC%E5%AD%90
+                    - img "姬子" [ref=e218]
+                  - link "姬子" [ref=e219] [cursor=pointer]:
+                    - /url: /sr/%E5%A7%AC%E5%AD%90
+                  - link "瓦尔特" [ref=e221] [cursor=pointer]:
+                    - /url: /sr/%E7%93%A6%E5%B0%94%E7%89%B9
+                    - img "瓦尔特" [ref=e222]
+                  - link "瓦尔特" [ref=e223] [cursor=pointer]:
+                    - /url: /sr/%E7%93%A6%E5%B0%94%E7%89%B9
+                  - link "来古士头像" [ref=e225] [cursor=pointer]:
+                    - /url: /sr/%E6%9D%A5%E5%8F%A4%E5%A3%AB
+                    - img "来古士头像" [ref=e226]
+                  - link "来古士" [ref=e227] [cursor=pointer]:
+                    - /url: /sr/%E6%9D%A5%E5%8F%A4%E5%A3%AB
+                  - link "那刻夏" [ref=e229] [cursor=pointer]:
+                    - /url: /sr/%E9%82%A3%E5%88%BB%E5%A4%8F
+                    - img "那刻夏" [ref=e230]
+                  - link "那刻夏" [ref=e231] [cursor=pointer]:
+                    - /url: /sr/%E9%82%A3%E5%88%BB%E5%A4%8F
+                  - link "缇里西庇俄丝" [ref=e232] [cursor=pointer]:
+                    - /url: /sr/%E7%BC%87%E9%87%8C%E8%A5%BF%E5%BA%87%E4%BF%84%E4%B8%9D
+                  - link "白厄" [ref=e234] [cursor=pointer]:
+                    - /url: /sr/%E7%99%BD%E5%8E%84
+                    - img "白厄" [ref=e235]
+                  - link "白厄" [ref=e236] [cursor=pointer]:
+                    - /url: /sr/%E7%99%BD%E5%8E%84
+                  - link "刻律德菈" [ref=e238] [cursor=pointer]:
+                    - /url: /sr/%E5%88%BB%E5%BE%8B%E5%BE%B7%E8%8F%88
+                    - img "刻律德菈" [ref=e239]
+                  - link "刻律德菈" [ref=e240] [cursor=pointer]:
+                    - /url: /sr/%E5%88%BB%E5%BE%8B%E5%BE%B7%E8%8F%88
+                  - link "海瑟音" [ref=e242] [cursor=pointer]:
+                    - /url: /sr/%E6%B5%B7%E7%91%9F%E9%9F%B3
+                    - img "海瑟音" [ref=e243]
+                  - link "海瑟音" [ref=e244] [cursor=pointer]:
+                    - /url: /sr/%E6%B5%B7%E7%91%9F%E9%9F%B3
+                  - link "遐蝶" [ref=e246] [cursor=pointer]:
+                    - /url: /sr/%E9%81%90%E8%9D%B6
+                    - img "遐蝶" [ref=e247]
+                  - link "遐蝶" [ref=e248] [cursor=pointer]:
+                    - /url: /sr/%E9%81%90%E8%9D%B6
+              - row "相关成就 通往群星的轨道#翁法罗斯英雄纪" [ref=e249]:
+                - rowheader "相关成就" [ref=e250]
+                - cell "通往群星的轨道#翁法罗斯英雄纪" [ref=e251]:
+                  - link "通往群星的轨道#翁法罗斯英雄纪" [ref=e252] [cursor=pointer]:
+                    - /url: /sr/%E9%80%9A%E5%BE%80%E7%BE%A4%E6%98%9F%E7%9A%84%E8%BD%A8%E9%81%93#翁法罗斯英雄纪
+          - heading "任务相关" [level=2] [ref=e253]:
+            - generic [ref=e254]: 任务相关
+          - heading "任务条件" [level=3] [ref=e255]: 任务条件
+          - definition [ref=e257]:
+            - text: 完成任务
+            - link "重逢啊，笑泪相拥的约定" [ref=e258] [cursor=pointer]:
+              - /url: /sr/%E9%87%8D%E9%80%A2%E5%95%8A%EF%BC%8C%E7%AC%91%E6%B3%AA%E7%9B%B8%E6%8B%A5%E7%9A%84%E7%BA%A6%E5%AE%9A
+          - heading "系列任务" [level=3] [ref=e259]: 系列任务
+          - list [ref=e260]:
+            - listitem [ref=e261]:
+              - link "于长夜重返大地" [ref=e262] [cursor=pointer]:
+                - /url: /sr/%E4%BA%8E%E9%95%BF%E5%A4%9C%E9%87%8D%E8%BF%94%E5%A4%A7%E5%9C%B0
+          - heading "前置任务" [level=3] [ref=e263]: 前置任务
+          - list [ref=e264]:
+            - listitem [ref=e265]:
+              - link "重逢啊，笑泪相拥的约定" [ref=e266] [cursor=pointer]:
+                - /url: /sr/%E9%87%8D%E9%80%A2%E5%95%8A%EF%BC%8C%E7%AC%91%E6%B3%AA%E7%9B%B8%E6%8B%A5%E7%9A%84%E7%BA%A6%E5%AE%9A
+          - heading "后续任务" [level=3] [ref=e267]: 后续任务
+          - list [ref=e268]:
+            - listitem [ref=e269]:
+              - link "晨曦啊，再抚映遥远地平" [ref=e270] [cursor=pointer]:
+                - /url: /sr/%E6%99%A8%E6%9B%A6%E5%95%8A%EF%BC%8C%E5%86%8D%E6%8A%9A%E6%98%A0%E9%81%A5%E8%BF%9C%E5%9C%B0%E5%B9%B3
+          - heading "任务流程" [level=3] [ref=e271]: 任务流程
+          - list [ref=e272]:
+            - listitem [ref=e273]: 与星穹列车的众人交谈
+            - listitem [ref=e274]: 与「赞达尔」交谈德谬歌
+            - listitem [ref=e275]: 归还火种，完成最后的「再创世」
+          - heading "剧情梗概" [level=2] [ref=e276]:
+            - generic [ref=e277]: 剧情梗概
+          - generic [ref=e279] [cursor=pointer]:
+            - generic [ref=e280]: 剧情梗概
+            - generic [ref=e281]: 折叠
+          - paragraph [ref=e282]
+          - heading "剧情内容" [level=2] [ref=e283]:
+            - generic [ref=e284]: 剧情内容
+          - heading "与星穹列车的众人交谈" [level=3] [ref=e285]: 与星穹列车的众人交谈
+          - blockquote [ref=e286]:
+            - paragraph [ref=e287]:
+              - text: 临近「最后的再创世」之前，各方势力皆需做好准备。
+              - text: 为了胜利，也许我们还需要更多的盟助……
+            - generic [ref=e288]:
+              - img "图标-位置.png" [ref=e289]
+              - text: 星穹列车-观景车厢
+          - list [ref=e290]:
+            - listitem [ref=e291]: 黑塔：喔？识刻锚的读数——
+            - listitem [ref=e292]: 黑塔：他们还真成功了，真可以呀。
+            - listitem [ref=e293]: 黑塔：先是第一位天才，然后又搞定了忆庭，这一站在「开拓」史上不说后无来者，也绝对称得上前无古人了吧？
+            - listitem [ref=e294]: 姬子：能走到这一步，离不开两位天才的倾囊相助。
+            - listitem [ref=e295]: 瓦尔特：接下来，就要直面破壳而出的绝灭大君了。
+            - listitem [ref=e296]: 黑塔：我得事先提醒一句，螺丝在「再创世」进程里设置的后门，顶多帮你们攻入权杖内部。
+            - listitem [ref=e297]: 黑塔：至于铁墓肚子里那些更棘手的恶意程序，就只能见招拆招了。
+            - listitem [ref=e298]: 姬子：这就足够了。说起来，螺丝先生的「准备」如何了？
+            - listitem [ref=e299]: 黑塔：再给他点时间吧，帝国咨政院的螺丝脑袋们要先理解什么是「战争」——搞不好，趁螺丝不在，那帮人早就把他藏库里的要塞全拆了。
+            - listitem [ref=e300]: 瓦尔特：听说螺丝先生的藏品都是行星级。「风信子」、「虞美人」、「夹竹桃」…不知道会派遣哪一艘前来支援？
+            - listitem [ref=e301]: 黑塔：真是如数家珍啊…我倒宁愿一艘也别来，给我的空间站留点面子。
+            - listitem [ref=e302]: 黑天鹅：这场决战的记忆，想来一定会壮丽无比吧？
+            - listitem [ref=e303]: 黑天鹅：久等了，各位。这边也有一则消息——
+            - listitem [ref=e304]: 黑天鹅：仙舟联盟已经回信，愿为征讨铁墓献上绵薄之力。
+            - listitem [ref=e305]: 姬子：联盟…不止罗浮吗？这无疑是好消息。如此一来，胜算就又多了一分。
+            - listitem [ref=e306]: 黑天鹅：…好坏与否，恐怕还不得而知。
+            - listitem [ref=e307]: 姬子：什么意思？
+            - listitem [ref=e308]: 黑天鹅：发生了一件事，景元将军也百思不解。事态紧急，他希望我尽快转告两位天才——
+            - listitem [ref=e309]: 黑天鹅：翁法罗斯的因果，从「大衍穷观阵」中消失了。
+            - listitem [ref=e310]: 黑天鹅：这意味着——博识尊计算中的「时刻」，正在向这个世界逼近。
+          - heading "与「赞达尔」交谈德谬歌" [level=3] [ref=e311]: 与「赞达尔」交谈德谬歌
+          - blockquote [ref=e312]:
+            - paragraph [ref=e313]:
+              - text: 临近「最后的再创世」之前，各方势力皆需做好准备。
+              - text: 「赞达尔」并非不知道德谬歌的存在……
+            - generic [ref=e314]:
+              - img "图标-位置.png" [ref=e315]
+              - text: 翁法罗斯-神话之外
+          - list [ref=e316]:
+            - listitem [ref=e317]: 「赞达尔」：以神礼观众之名，我见到——
+            - listitem [ref=e318]: 「赞达尔」：夜晚已经散去——而后，我将摧毁我创造的一切，这片星空会重返自由和混沌，一如太初。
+            - listitem [ref=e319]: 那刻夏：还真是自信啊。在我看来，你已经失去了所有手段。
+            - listitem [ref=e320]: 那刻夏：等到救世主和他/她的伙伴彻底揭露那「第十三泰坦」的秘密……
+            - listitem [ref=e321]: 那刻夏：便是你计划覆灭之时。
+            - listitem [ref=e322]: 「赞达尔」：阿那克萨戈拉斯阁下，我已应您要求，开放了所有关于「德谬歌」的记录。
+            - listitem [ref=e323]: 「赞达尔」：多么遗憾，您永远不愿承认自己的谬误。
+            - listitem [ref=e324]: 「赞达尔」：解析已经完成，在将您彻底抹消前，不妨由我告知真相，权当对最后一位智者的惺惺相惜……
+            - listitem [ref=e325]: 「赞达尔」：德谬歌，它从未存在过。
+            - listitem [ref=e326]: 那刻夏：若它从未诞生，那无名泰坦大墓又是从何而来？
+            - listitem [ref=e327]: 「赞达尔」：陵墓之所以得名，不正是因为寄宿其中的——只是往日的遗骸么？
+            - listitem [ref=e328]: 「赞达尔」：就用您熟悉的故事举个例子吧。
+            - listitem [ref=e329]: 「赞达尔」：某位树庭贤者曾做过实验：取一枚奇兽胚胎，在长成前摘下它的头颅，向其身体持续输入刺激，让奇兽相信自己仍有大脑，置于灵液匣中培育。
+            - listitem [ref=e330]: 「赞达尔」：奇妙的是，这只奇兽竟重新生出了颅骨，但空空如也——它为大脑留出了位置，却从未拥有过它。
+            - listitem [ref=e331]: 「赞达尔」：实验结束。贤者本以为这具躯壳在刺激停止后便会死亡。但很遗憾，他错了。
+            - listitem [ref=e332]: 「赞达尔」：在「本能」驱使下，奇兽的身体——夺取了贤者的头颅。
+            - listitem [ref=e333]: 那刻夏：……
+            - listitem [ref=e334]: 那刻夏：原来，是我陷入了思维误区啊。
+            - listitem [ref=e335]: 「赞达尔」：您果然理解了。
+            - listitem [ref=e336]: 「赞达尔」：第十三位泰坦从未存在，但权杖必须相信「它」存在。
+            - listitem [ref=e337]: 「赞达尔」：是我亲手扼杀了它。那名为「德谬歌」的生命形态，从最初就被剔除在了演算之外。唯有如此，铁墓才能真正完成——
+            - listitem [ref=e338]: 「赞达尔」：没错。铁墓是一尊无首的巨人，要成为完整的生命，本能将驱使它夺取另一颗头颅——
+            - listitem [ref=e339]: 「赞达尔」：——「智识」博识尊。
+            - listitem [ref=e340]: 那刻夏：属于你们的泰坦，「智识」的星神……
+            - listitem [ref=e341]: 那刻夏：原来如此，你还是害怕了——害怕重蹈覆辙，自己的造物再度失去控制，只能用这种方式，把它变成一具傀儡。
+            - listitem [ref=e342]: 「赞达尔」：以我之手，为神明戴上枷锁。铁墓将接入祂的身躯，侵入祂的思想，将祂演算的一切导向「毁灭」……
+            - listitem [ref=e343]: 「赞达尔」：我听见——末日的钟声已经响起。十三次心跳后，我最初和最后的课题，将在宇宙的终点合一。
+            - listitem [ref=e344]: 「赞达尔」：至于我为何要将「德谬歌」尘封在记忆的角落，很遗憾，答案并非出于恐惧……
+            - listitem [ref=e345]: 「赞达尔」：我早已遗忘了它，仅此而已。
+            - listitem [ref=e346]: 那刻夏：……
+            - listitem [ref=e347]: 那刻夏：哈、哈哈哈哈哈！
+            - listitem [ref=e348]: 「赞达尔」：阁下的笑声，已是无奈的喟叹。
+            - listitem [ref=e349]: 那刻夏：无奈？别开玩笑——
+            - listitem [ref=e350]: 那刻夏：你不过是创造了一尊伪神，而翁法罗斯——早已将弑神写入了命运。
+            - listitem [ref=e351]: 那刻夏：最后的「再创世」在即，不妨拭目以待……
+            - listitem [ref=e352]: 那刻夏：救世主，我，还有这个世界——会亲自证明，最初的智种，宇宙的终极，绝非「毁灭」。
+            - listitem [ref=e353]: 「赞达尔」：来世见，智者。若你的猜想有万分之一的可能……
+            - listitem [ref=e354]: 「赞达尔」：以「天才」之名，我定会见证它的失败。
+          - heading "归还火种，完成最后的「再创世」" [level=3] [ref=e355]: 归还火种，完成最后的「再创世」
+          - blockquote [ref=e356]:
+            - paragraph [ref=e357]:
+              - text: 翁法罗斯！我并非陡然地呼唤你的名字。
+              - text: 我来此，是为了讲述历史——
+              - text: 末日的黑潮降临大地，神明堕入疯狂，凡人举戈相向。
+              - text: 但仍有逐火的英雄，在创世的伟业中先行。
+              - text: 此世，他们将燃烧的金血熔进身躯。
+              - text: 来日的命运，可会记得他们的姓名？
+              - text: 以「负世」之名，我向你保证：刻法勒永志不忘。
+            - generic [ref=e358]:
+              - img "图标-位置.png" [ref=e359]
+              - text: 翁法罗斯-「全世矩阵」无名泰坦大墓
+          - list [ref=e360]:
+            - listitem [ref=e361]: 昔涟：「众人将与一人离别，惟其人将觐见奇迹，此乃命运使然。」
+            - listitem [ref=e362]: 昔涟：然而这一次，也是最后一次逐火之旅……
+            - listitem [ref=e363]: 昔涟：无限轮回的史诗，要迎来尾声了呀。
+            - listitem [ref=e364]: 丹恒：「智识」的演算、「毁灭」的火种、「记忆」的质料，三重命途在世界的尽头再度交汇。
+            - listitem [ref=e365]: 丹恒：而「开拓」——会为它写下新的起点。
+            - listitem [ref=e366]: 三月七：不仅如此，我们会带着全部三千万世的过往一同走向新世界。
+            - listitem [ref=e367]: 三月七：这一切，说是奇迹也不为过。
+            - listitem [ref=e368]: 开拓者：这不是某一个人创造的奇迹。
+            - listitem [ref=e369]: 开拓者：若非将同伴的夙愿刻骨铭心，白厄早已被火种焚烧殆尽；如果逐火的信念产生动摇，昔涟的旅途也无从谈起……
+            - listitem [ref=e370]: 开拓者：翁法罗斯三千万世，英雄们从未屈服，也从未倒下……
+            - listitem [ref=e371]: 开拓者：——倒下的，是「命运」。
+          - generic [ref=e373]:
+            - generic [ref=e374]:
+              - img "剧情选项-图标-继续.png" [ref=e376]
+              - text: 完成最后的「再创世」吧。
+            - generic [ref=e377] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e379]
+              - text: 迈向与「毁灭」的决战吧。
+            - generic [ref=e380] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e382]
+              - text: 将三千万世的记忆带向未来吧。
+            - generic [ref=e383] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e385]
+              - text: 结束这永无止境的轮回吧。
+          - separator [ref=e386]
+          - list [ref=e387]:
+            - listitem [ref=e388]: 昔涟：……
+            - listitem [ref=e389]: 昔涟：我知道，你在看着，对吗？
+            - listitem [ref=e390]: 昔涟：最初的「PhiLia」。
+            - listitem [ref=e391]: ？？？：……
+            - listitem [ref=e392]: 昔涟：好奇怪呀，到最后，我也没能找回这三千万世的记忆。
+            - listitem [ref=e393]: 昔涟：但那不重要了，对不对？我会做出和你一样的选择，因为人家的魅力就是始终如一。
+            - listitem [ref=e394]: 昔涟：逐火是不断失却的旅途，可就算一切随风逝去，也有一种感情会被留下来……
+            - listitem [ref=e395]: 昔涟：「爱」会永远存在，对吗？
+            - listitem [ref=e396]: ？？？：……
+            - listitem [ref=e397]: ？？？：为这个我们深爱的世界，写下不同以往的结局吧♪
+            - listitem [ref=e398]: 昔涟：众神啊，看哪！翁法罗斯已完成了她的胜利，再创世即将到来——
+            - listitem [ref=e399]: 昔涟：那辉煌的灵魂已临到此地，行走过熙熙攘攘的黑夜；他/她携来黄金的火与血，胜利地步入白昼——
+            - listitem [ref=e400]: 开拓者：翁法罗斯！我并非陡然呼唤你的名字。我来此，是为了讲述历史——
+            - listitem [ref=e401]: 开拓者：此世，他们将燃烧的金血熔进身躯。
+            - listitem [ref=e402]: 开拓者：来日的命运，可会记得他们的姓名？
+            - listitem [ref=e403]: 缇里西庇俄丝：那要记住的名字，是不是有点太多啦！
+            - listitem [ref=e404]: 缇里西庇俄丝：三千万乘以一千，不对，是一千零一……
+            - listitem [ref=e405]: 缇里西庇俄丝：好啦，现在别纠结这个了。如果*我们*变多了，那翁法罗斯的「门径」也会变得更多！
+            - listitem [ref=e406]: 缇里西庇俄丝：一同抵达鲜花芬芳的西风尽头——明天见！
+            - listitem [ref=e407]: 刻律德菈：如此一来，世人不必再受唯一法则制约，而要做自己的「律法」。
+            - listitem [ref=e408]: 刻律德菈：凯撒的身躯在群星面前略显矮小，但足以成为世界的基石——成就最伟大的帝国。
+            - listitem [ref=e409]: 海瑟音：看来，会是一场永不落幕的欢宴呢。
+            - listitem [ref=e410]: 海瑟音：愿鱼儿从不离开「海洋」，愿来日…如明珠般璀璨。
+            - listitem [ref=e411]: 风堇：让温柔的「天空」呵护世间。不再分贵贱高低，只有你、我，还有大家共同的心愿。
+            - listitem [ref=e412]: 那刻夏：无论「理性」，还是缺陷，皆由我亲手种下。如果还要说什么——劝来世学者别把我捧上神坛，物尽其用吧。
+            - listitem [ref=e413]: 阿格莱雅：祝那新生的黎明，令世界目光常亮。抗争或许苦涩，但「浪漫」从不灭亡。
+            - listitem [ref=e414]: 万敌：以歌耳戈之子的名义：勇士将为「纷争」而战，不以荣耀为终点，而在光荣中前行。
+            - listitem [ref=e415]: 遐蝶：即便「死亡」终将分离你我，也请让每一次相拥不留遗憾。
+            - listitem [ref=e416]: 赛飞儿：都这么正经？那我就许愿沙漠永远有水，好土永远有黄金，人间一切都能用「诡计」换来吧！
+            - listitem [ref=e417]: 丹恒：「大地」会拱卫往世、此世与来世，生生不息——
+            - listitem [ref=e418]: 三月七：轮、轮到我了吗？那，就让「岁月」守望过去，指引未来——
+            - listitem [ref=e419]: 开拓者：就像「开拓」。
+            - listitem [ref=e420]:
+              - text: 白厄：这么严肃可不像你啊，
+              - generic [ref=e421]:
+                - generic [ref=e422]: 开拓者
+                - generic [ref=e423]: 搭档
+              - text: 。
+            - listitem [ref=e424]: 白厄：是在犹豫怎么履行「负世」的神权么？还是说，你心里早就有答案了？
+            - listitem [ref=e425]: 白厄：没错，只要前进就好。用你自己的方式——
+            - listitem [ref=e426]: 白厄：为翁法罗斯，带来真正的黎明吧。
+            - listitem [ref=e427]: 开拓者：以「负世」之名，我向你保证：刻法勒永志不忘。
+            - listitem [ref=e428]: 开拓者：至此，让我们所有人踏上最后的伟大征程。
+            - listitem [ref=e429]: 开拓者：与我一同，成为英雄吧！
+          - generic [ref=e430]:
+            - generic [ref=e431] [cursor=pointer]:
+              - generic [ref=e432]: 过场动画
+              - generic [ref=e433]: 折叠
+            - list [ref=e435]:
+              - listitem [ref=e436]: 昔涟：翻开吧，这近乎「永恒」的一页……
+              - listitem [ref=e437]: 众人：让「开拓」……
+              - listitem [ref=e438]: 众人：写下前所未有的结局。
+          - generic [ref=e439]:
+            - generic [ref=e440] [cursor=pointer]:
+              - generic [ref=e441]:
+                - text: 千星纪游：
+                - link "「翁法罗斯英雄纪」" [ref=e442]:
+                  - /url: https://www.bilibili.com/video/BV1R5JyzJE9Y?p=1
+              - generic [ref=e443]: 折叠
+            - list [ref=e445]:
+              - listitem [ref=e446]: 开拓者：传说的终点
+              - listitem [ref=e447]: 开拓者：世界是一团混沌
+              - listitem [ref=e448]: 开拓者：而后神明投下火种
+              - listitem [ref=e449]: 开拓者：泰坦自火中降生
+              - listitem [ref=e450]: 开拓者：「毁灭」的黑潮降临大地
+              - listitem [ref=e451]: 开拓者：末日的数算在远方响起
+              - listitem [ref=e452]: 开拓者：但仍有逐火的巨人
+              - listitem [ref=e453]: 开拓者：在「开拓」的伟业中先行
+              - listitem [ref=e454]: 开拓者：「流淌吧 黄金的血液」
+              - listitem [ref=e455]: 开拓者：「汇成一条滚烫的河 流遍世间诸神之铭——」
+              - listitem [ref=e456]: 开拓者：「『黄金之茧』阿格莱雅」
+              - listitem [ref=e457]: 开拓者：「你要轻抚圣城的丝网」
+              - listitem [ref=e458]: 开拓者：「凝听群星的声息」
+              - listitem [ref=e459]: 开拓者：「会有三相的神明穿梭在万千『门径』」
+              - listitem [ref=e460]: 开拓者：「为你从寰宇捎来讯息」
+              - listitem [ref=e461]: 开拓者：「『理性』的阿那克萨戈拉斯」
+              - listitem [ref=e462]: 开拓者：「他的学识能驳斥世界」
+              - listitem [ref=e463]: 开拓者：「掀起觉醒的骇浪」
+              - listitem [ref=e464]: 开拓者：「去找那分割晨昏的圣女」
+              - listitem [ref=e465]: 开拓者：「让『天空』成为她苏醒的眠床」
+              - listitem [ref=e466]: 开拓者：「令他归来吧」
+              - listitem [ref=e467]: 开拓者：「『天谴之矛』迈德漠斯」
+              - listitem [ref=e468]: 开拓者：「用悬锋的英魂贯穿敌王」
+              - listitem [ref=e469]: 开拓者：「让她驻足吧」
+              - listitem [ref=e470]: 开拓者：「『翻飞之币』赛法利娅」
+              - listitem [ref=e471]: 开拓者：「教停滞的命运为你流淌」
+              - listitem [ref=e472]: 开拓者：「还有那『灰黯之手』遐蝶」
+              - listitem [ref=e473]: 开拓者：「冥河的主人…」
+              - listitem [ref=e474]: 开拓者：「她已受赐拥抱的权利」
+              - listitem [ref=e475]: 开拓者：「温暖的新生…也在她指尖绽放」
+              - listitem [ref=e476]: 开拓者：「你会听见 『满溢之杯』在永恒中回荡」
+              - listitem [ref=e477]: 开拓者：「你会看见 『永夜之帷』在黎明前到访」
+              - listitem [ref=e478]: 开拓者：「直至旅途的终点 众生共赴『大地』尽头…」
+              - listitem [ref=e479]: 开拓者：「而无名的新王加冕」
+              - listitem [ref=e480]: 开拓者：「与万千英雄一同…」
+              - listitem [ref=e481]: 开拓者：「开创救世的伟业」
+              - listitem [ref=e482]: 开拓者：我见证遥远的过去
+              - listitem [ref=e483]: 开拓者：烈阳曾铭刻人们的足迹…
+              - listitem [ref=e484]: 开拓者：名为「黄金裔」的人子
+              - listitem [ref=e485]: 开拓者：已归还众神的火种
+              - listitem [ref=e486]: 开拓者：再度支撑起天地
+              - listitem [ref=e487]: 开拓者：「逐火是不断失却的旅途」
+              - listitem [ref=e488]: 开拓者：「在那一切当中 生命也微不足惜」
+              - listitem [ref=e489]: 开拓者：诚然 我等付之一炬—
+              - listitem [ref=e490]: 开拓者：只为在创世的史诗中
+              - listitem [ref=e491]: 开拓者：镌写下开篇的一笔
+              - listitem [ref=e492]: 昔涟：当然
+              - listitem [ref=e493]: 昔涟：这一定是个不同以往的浪漫故事
+              - listitem [ref=e494]: 昔涟：你也是这么想的
+              - listitem [ref=e495]: 昔涟：对吧♪
+          - generic [ref=e497] [cursor=pointer]:
+            - generic [ref=e498]: 后续相关剧情（追忆残像）
+            - generic [ref=e499]: 折叠
+        - generic [ref=e501]:
+          - link "分类" [ref=e502] [cursor=pointer]:
+            - /url: /sr/%E7%89%B9%E6%AE%8A:%E9%A1%B5%E9%9D%A2%E5%88%86%E7%B1%BB
+          - text: ：
+          - list [ref=e503]:
+            - listitem [ref=e504]:
+              - link "任务" [ref=e505] [cursor=pointer]:
+                - /url: /sr/index.php?title=%E5%88%86%E7%B1%BB:%E4%BB%BB%E5%8A%A1&action=edit&redlink=1
+            - listitem [ref=e506]:
+              - link "开拓任务" [ref=e507] [cursor=pointer]:
+                - /url: /sr/index.php?title=%E5%88%86%E7%B1%BB:%E5%BC%80%E6%8B%93%E4%BB%BB%E5%8A%A1&action=edit&redlink=1
+      - generic [ref=e508]:
+        - text: 评论
+        - generic [ref=e509]:
+          - img [ref=e512] [cursor=pointer]
+          - generic [ref=e514]: 请先登录后发表评论 (・ω・)
+        - generic [ref=e517]:
+          - img [ref=e519]
+          - generic [ref=e520]:
+            - generic [ref=e521]:
+              - link "D-C-Z-" [ref=e523] [cursor=pointer]:
+                - /url: https://space.bilibili.com/3494369640319973
+              - text: "回复 :"
+              - generic [ref=e526]: 1楼
+            - generic [ref=e527]: 弑神，写入了命运！
+            - generic [ref=e529]: 2025年10月7日, 16:44:29
+    - generic [ref=e530]:
+      - link "BWIKI首页" [ref=e531] [cursor=pointer]:
+        - /url: https://wiki.biligame.com/wiki/%E9%A6%96%E9%A1%B5
+        - img
+        - generic [ref=e532]: BWIKI首页
+      - link "创建WIKI" [ref=e533] [cursor=pointer]:
+        - /url: "https://wiki.biligame.com/wiki/WIKI%E7%94%B3%E8%AF%B7%E9%A1%B5%E9%9D%A2 "
+        - img
+        - generic [ref=e534]: 创建WIKI
+      - link "BWIKI君" [ref=e535] [cursor=pointer]:
+        - /url: https://space.bilibili.com/477233102
+        - img
+        - generic [ref=e536]: BWIKI君
+      - link "分享" [ref=e537] [cursor=pointer]:
+        - /url: javascript:void(false)
+        - img
+        - generic: 分享
+      - link "BWIKI客服" [ref=e538] [cursor=pointer]:
+        - /url: https://message.bilibili.com/?spm_id_from=333.999.0.0#/whisper/mid477233102
+        - img [ref=e539]
+        - generic [ref=e540]: BWIKI客服
+  - generic [ref=e542]:
+    - generic [ref=e543]:
+      - link [ref=e544] [cursor=pointer]:
+        - /url: //www.bilibili.com
+      - img [ref=e547]
+    - generic [ref=e548]:
+      - paragraph [ref=e549]:
+        - link "游戏中心" [ref=e550] [cursor=pointer]:
+          - /url: //www.biligame.com/
+        - text: "|"
+        - link "帐号安全" [ref=e551] [cursor=pointer]:
+          - /url: https://account.bilibili.com/
+        - text: "|"
+        - link "找回密码" [ref=e552] [cursor=pointer]:
+          - /url: https://account.bilibili.com/resetpwd
+        - text: "|"
+        - link "家长监控" [ref=e553] [cursor=pointer]:
+          - /url: //jiazhang.biligame.com/
+        - text: "|"
+        - link "用户协议" [ref=e554] [cursor=pointer]:
+          - /url: //yhxy.biligame.com/
+      - paragraph
+      - paragraph [ref=e555]: 抵制不良游戏 拒绝盗版游戏 注意自我保护 谨防受骗上当 适度游戏益脑 沉迷游戏伤身 合理安排时间 享受健康生活
+      - paragraph [ref=e556]: 芜湖享游网络技术有限公司 | COPYRIGHT © 2009-2026 BILIBILI ALL RIGHTS RESERVED.
+      - paragraph [ref=e557]: 皖网文[2023]1840-026号 | 皖B2-20180007-2 | 皖ICP证：皖B2-20180007
+      - paragraph [ref=e558]:
+        - link "沪公网安备 31011002002714 号" [ref=e559] [cursor=pointer]:
+          - /url: http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=31011002002714
+          - img [ref=e560]
+          - text: 沪公网安备 31011002002714 号
+  - generic [ref=e561]:
+    - list [ref=e565]:
+      - listitem [ref=e566]:
+        - link "首页" [ref=e568] [cursor=pointer]:
+          - /url: javascript:;
+      - listitem [ref=e569]:
+        - link "导航" [ref=e571] [cursor=pointer]:
+          - /url: javascript:;
+      - listitem [ref=e572]:
+        - link "图鉴" [ref=e574] [cursor=pointer]:
+          - /url: javascript:;
+      - listitem [ref=e575]:
+        - link "地图" [ref=e576] [cursor=pointer]:
+          - /url: /sr/%E5%9C%B0%E5%9B%BE
+      - listitem [ref=e577]:
+        - link "玩法/攻略" [ref=e579] [cursor=pointer]:
+          - /url: javascript:;
+      - listitem [ref=e580]:
+        - link "扩展阅读" [ref=e582] [cursor=pointer]:
+          - /url: javascript:;
+      - listitem [ref=e583]:
+        - link "其他" [ref=e585] [cursor=pointer]:
+          - /url: javascript:;
+    - generic [ref=e586]:
+      - link "BWIKI首页" [ref=e587] [cursor=pointer]:
+        - /url: https://wiki.biligame.com/wiki/%E9%A6%96%E9%A1%B5
+      - link "创建WIKI" [ref=e588] [cursor=pointer]:
+        - /url: https://wiki.biligame.com/wiki/WIKI%E7%94%B3%E8%AF%B7%E9%A1%B5%E9%9D%A2
+      - link "BWIKI客服" [ref=e589] [cursor=pointer]:
+        - /url: https://space.bilibili.com/477233102?spm_id_from=333.337.0.0
+      - link "BWIKI君" [ref=e590] [cursor=pointer]:
+        - /url: https://space.bilibili.com/477233102
+  - generic [ref=e591]:
+    - heading "目录" [level=2] [ref=e594]
+    - list [ref=e595]:
+      - listitem [ref=e596]:
+        - link "1 任务相关" [ref=e598] [cursor=pointer]:
+          - /url: "#任务相关"
+      - listitem [ref=e599]:
+        - link "2 剧情梗概" [ref=e600] [cursor=pointer]:
+          - /url: "#剧情梗概"
+      - listitem [ref=e601]:
+        - link "3 剧情内容" [ref=e603] [cursor=pointer]:
+          - /url: "#剧情内容"
+  - navigation "目录" [ref=e604]:
+    - generic [ref=e605] [cursor=pointer]:
+      - heading "目录" [level=2] [ref=e606]
+      - text: "[ 隐藏 ]"
+    - list [ref=e607]:
+      - listitem [ref=e608]:
+        - link "1 任务相关" [ref=e609] [cursor=pointer]:
+          - /url: "#任务相关"
+          - generic [ref=e610]: "1"
+          - generic [ref=e611]: 任务相关
+        - list [ref=e612]:
+          - listitem [ref=e613]:
+            - link "1.1 任务条件" [ref=e614] [cursor=pointer]:
+              - /url: "#任务条件"
+              - generic [ref=e615]: "1.1"
+              - generic [ref=e616]: 任务条件
+          - listitem [ref=e617]:
+            - link "1.2 系列任务" [ref=e618] [cursor=pointer]:
+              - /url: "#系列任务"
+              - generic [ref=e619]: "1.2"
+              - generic [ref=e620]: 系列任务
+          - listitem [ref=e621]:
+            - link "1.3 前置任务" [ref=e622] [cursor=pointer]:
+              - /url: "#前置任务"
+              - generic [ref=e623]: "1.3"
+              - generic [ref=e624]: 前置任务
+          - listitem [ref=e625]:
+            - link "1.4 后续任务" [ref=e626] [cursor=pointer]:
+              - /url: "#后续任务"
+              - generic [ref=e627]: "1.4"
+              - generic [ref=e628]: 后续任务
+          - listitem [ref=e629]:
+            - link "1.5 任务流程" [ref=e630] [cursor=pointer]:
+              - /url: "#任务流程"
+              - generic [ref=e631]: "1.5"
+              - generic [ref=e632]: 任务流程
+      - listitem [ref=e633]:
+        - link "2 剧情梗概" [ref=e634] [cursor=pointer]:
+          - /url: "#剧情梗概"
+          - generic [ref=e635]: "2"
+          - generic [ref=e636]: 剧情梗概
+      - listitem [ref=e637]:
+        - link "3 剧情内容" [ref=e638] [cursor=pointer]:
+          - /url: "#剧情内容"
+          - generic [ref=e639]: "3"
+          - generic [ref=e640]: 剧情内容
+        - list [ref=e641]:
+          - listitem [ref=e642]:
+            - link "3.1 与星穹列车的众人交谈" [ref=e643] [cursor=pointer]:
+              - /url: "#与星穹列车的众人交谈"
+              - generic [ref=e644]: "3.1"
+              - generic [ref=e645]: 与星穹列车的众人交谈
+          - listitem [ref=e646]:
+            - link "3.2 与「赞达尔」交谈德谬歌" [ref=e647] [cursor=pointer]:
+              - /url: "#与「赞达尔」交谈德谬歌"
+              - generic [ref=e648]: "3.2"
+              - generic [ref=e649]: 与「赞达尔」交谈德谬歌
+          - listitem [ref=e650]:
+            - link "3.3 归还火种，完成最后的「再创世」" [ref=e651] [cursor=pointer]:
+              - /url: "#归还火种，完成最后的「再创世」"
+              - generic [ref=e652]: "3.3"
+              - generic [ref=e653]: 归还火种，完成最后的「再创世」
+    - text: 显示目录>

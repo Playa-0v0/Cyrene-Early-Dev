@@ -18,17 +18,18 @@ export type ChatStickerId =
   | "calm"
   | "peek"
   | "clingy-confused"
-  | "tired"
-  | "love-calm"
-  | "love"
-  | "applause";
+  | "love-calm";
+
+/** 任意表情包 ID（内置 + 用户自定义） */
+export type AnyStickerId = string;
 
 export interface ChatMessage {
   id: string;
   role: ChatRole;
   content: string;
   at: number;
-  sticker?: ChatStickerId | null;
+  /** 表情包 ID（内置或用户自定义） */
+  sticker?: string | null;
   /** TTS 缓存 key。只存 key，不存绝对路径，避免 userData 路径变化后 session JSON 失效。 */
   ttsCacheKey?: string;
 }

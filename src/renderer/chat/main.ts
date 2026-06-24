@@ -13,16 +13,14 @@ interface Message {
   role: Role;
   content: string;
   at: number;
-  sticker?: StickerId | null;
+  sticker?: string | null;
   thinking?: boolean;
   ttsCacheKey?: string;
 }
 
-type StickerId = "playful" | "love-happy" | "confident" | "serious" | "calm" | "peek" | "clingy-confused" | "tired" | "love-calm" | "love" | "applause";
-
 interface ChatReplyPayload {
   reply: string;
-  sticker: StickerId | null;
+  sticker: string | null;
 }
 
 function normalizeChatReplyPayload(payload: unknown): ChatReplyPayload {
@@ -87,6 +85,10 @@ interface AguiBaseEvent {
   content?: string;
   error?: string;
   stepName?: string;
+  runId?: string;
+  threadId?: string;
+  schedulerRunId?: string;
+  schedulerTaskId?: string;
   name?: string;   // CUSTOM 事件的 name
   value?: unknown; // CUSTOM 事件的 value
 }
@@ -165,7 +167,7 @@ const AVATAR_SRC: Record<Role, string> = {
   } catch { /* ignore */ }
 })();
 
-const STICKER_SRC: Record<StickerId, string> = {
+const BUILT_IN_STICKER_SRC: Record<string, string> = {
   playful: "/stickers/playful.png",
   "love-happy": "/stickers/love-happy.png",
   confident: "/stickers/confident.png",
@@ -173,11 +175,61 @@ const STICKER_SRC: Record<StickerId, string> = {
   calm: "/stickers/calm.png",
   peek: "/stickers/peek.gif",
   "clingy-confused": "/stickers/clingy-confused.gif",
-  tired: "/stickers/tired.png",
   "love-calm": "/stickers/love-calm.png",
-  love: "/stickers/love.webp",
-  applause: "/stickers/applause.webp",
+  HI: "/stickers/HI.jpg",
+  hello: "/stickers/hello.jpg",
+  goodmoring1: "/stickers/goodmoring1.jpg",
+  goodnight: "/stickers/goodnight.jpg",
+  teatime: "/stickers/teatime.jpg",
+  eating: "/stickers/eating.jpg",
+  Allset: "/stickers/Allset.jpg",
+  OK: "/stickers/OK.jpg",
+  copythat: "/stickers/copythat.jpg",
+  Thumbsup: "/stickers/Thumbsup.jpg",
+  awesome: "/stickers/awesome.jpg",
+  sogood: "/stickers/sogood.jpg",
+  sonice: "/stickers/sonice.jpg",
+  fighting: "/stickers/fighting.jpg",
+  hellyeah: "/stickers/hellyeah.jpg",
+  Thanks: "/stickers/Thanks.jpg",
+  foryou: "/stickers/foryou.jpg",
+  blushhard: "/stickers/blushhard.jpg",
+  shyshort: "/stickers/shyshort.jpg",
+  hmph: "/stickers/hmph.jpg",
+  hugtight: "/stickers/hugtight.jpg",
+  Airkiss: "/stickers/Airkiss.jpg",
+  Gigglelots: "/stickers/Gigglelots.jpg",
+  thinking: "/stickers/thinking.jpg",
+  putmd: "/stickers/putmd.jpg",
+  Whatswrong: "/stickers/Whatswrong.jpg",
+  midmeh: "/stickers/midmeh.jpg",
+  awkward: "/stickers/awkward.jpg",
+  Madnow: "/stickers/Madnow.jpg",
+  Hurtcry: "/stickers/Hurtcry.jpg",
+  Sobbinghard: "/stickers/Sobbinghard.jpg",
+  weeploud: "/stickers/weeploud.jpg",
+  PanincCrying: "/stickers/PanincCrying.jpg",
+  missme: "/stickers/missme.jpg",
+  Free: "/stickers/Free.jpg",
+  Dreak: "/stickers/Dreak.jpg",
+  outfast: "/stickers/outfast.jpg",
+  Vcayover: "/stickers/Vcayover.jpg",
+  sleepynow: "/stickers/sleepynow.jpg",
+  deadtired: "/stickers/deadtired.jpg",
+  sotired: "/stickers/sotired.jpg",
+  giveup: "/stickers/giveup.jpg",
+  poorwallet: "/stickers/poorwallet.jpg",
+  please: "/stickers/please.jpg",
 };
+
+function getStickerSrc(id: string): string | undefined {
+  // 内置 sticker 用已知路径
+  if (id in BUILT_IN_STICKER_SRC) {
+    return BUILT_IN_STICKER_SRC[id];
+  }
+  // 用户自定义 sticker 用 local-sticker:// 协议
+  return `local-sticker://${id}`;
+}
 
 // 多会话改造：messages 是当前活跃 session 的消息数组（启动时为空，由 bootstrap 填充）。
 // currentSessionId 是当前正在显示的会话 id，所有持久化操作都基于它。
@@ -232,7 +284,7 @@ interface ChatStoreSession {
     role: Role;
     content: string;
     at: number;
-    sticker?: StickerId | null;
+    sticker?: string | null;
     ttsCacheKey?: string;
   }>;
   createdAt: number;
@@ -676,7 +728,7 @@ function render(): void {
     body.appendChild(bubble);
 
     if (m.role === "model" && m.sticker) {
-      const stickerSrc = STICKER_SRC[m.sticker];
+      const stickerSrc = getStickerSrc(m.sticker);
       if (stickerSrc) {
         const sticker = document.createElement("img");
         sticker.className = "msg__sticker";
@@ -718,57 +770,81 @@ function render(): void {
 function installSchedulerEventListener(): void {
   if (!window.schedulerEvents?.onEvent) return;
 
-  let streamMsgId = "";
-  let streamContent = "";
+  interface SchedulerStreamState {
+    msgId: string;
+    content: string;
+    toolLines: string[];
+  }
+
+  const streams = new Map<string, SchedulerStreamState>();
+
+  const runKeyOf = (event: AguiBaseEvent): string => {
+    if (event.schedulerRunId) return event.schedulerRunId;
+    if (event.runId) return event.runId;
+    if (event.threadId) return event.threadId;
+    return "scheduler-default";
+  };
+
+  const renderState = (state: SchedulerStreamState): void => {
+    const msg = messages.find(m => m.id === state.msgId);
+    if (!msg) return;
+    msg.thinking = false;
+    msg.content = state.content || state.toolLines.join("\n") || "定时任务运行中…";
+    render();
+  };
 
   window.schedulerEvents.onEvent((rawEvent) => {
     const event = rawEvent as AguiBaseEvent;
     if (event.type === "CUSTOM" && event.name === "scheduler.started") {
-      const value = event.value as { taskId?: string; title?: string; firedAt?: string } | undefined;
+      const value = event.value as { taskId?: string; title?: string; firedAt?: string; runId?: string } | undefined;
+      const runKey = event.schedulerRunId ?? value?.runId ?? `scheduler-${Date.now()}`;
       messages.push({
-        id: `scheduler-system-${Date.now()}`,
+        id: `scheduler-system-${runKey}`,
         role: "model",
         content: `⏰ 定时任务「${value?.title ?? "未命名任务"}」已触发`,
         at: Date.now(),
       });
-      streamMsgId = `scheduler-model-${Date.now()}`;
-      streamContent = "";
-      messages.push({ id: streamMsgId, role: "model", content: "", at: Date.now(), thinking: true });
+      const msgId = `scheduler-model-${runKey}`;
+      streams.set(runKey, { msgId, content: "", toolLines: [] });
+      messages.push({ id: msgId, role: "model", content: "", at: Date.now(), thinking: true });
       render();
       void saveSession();
       return;
     }
 
-    const msg = messages.find(m => m.id === streamMsgId);
+    const runKey = runKeyOf(event);
+    const state = streams.get(runKey);
+    if (!state) return;
+    const msg = messages.find(m => m.id === state.msgId);
     if (!msg) return;
 
     if (event.type === "TOOL_CALL_START") {
-      msg.thinking = false;
-      msg.content = `🔧 调用中：${event.toolCallName ?? "工具"}`;
-      render();
+      state.toolLines.push(`🔧 调用中：${event.toolCallName ?? "工具"}`);
+      renderState(state);
+    } else if (event.type === "TOOL_CALL_RESULT") {
+      const preview = (event.content ?? "").slice(0, 240);
+      state.toolLines.push(`✅ 工具结果：${preview || "完成"}`);
+      renderState(state);
+    } else if (event.type === "TOOL_CALL_END") {
+      state.toolLines.push("✅ 工具调用完成");
+      renderState(state);
     } else if (event.type === "TEXT_MESSAGE_START") {
       msg.thinking = false;
-      msg.content = "";
-      render();
+      state.content = "";
+      renderState(state);
     } else if (event.type === "TEXT_MESSAGE_CONTENT" && event.delta) {
-      streamContent += event.delta;
-      msg.thinking = false;
-      msg.content = streamContent;
-      render();
+      state.content += event.delta;
+      renderState(state);
     } else if (event.type === "RUN_FINISHED") {
-      msg.thinking = false;
-      msg.content = streamContent || msg.content;
-      render();
+      renderState(state);
       void saveSession();
-      streamMsgId = "";
-      streamContent = "";
+      streams.delete(runKey);
     } else if (event.type === "RUN_ERROR") {
       msg.thinking = false;
       msg.content = "定时任务执行失败：" + (event.error ?? event.content ?? "未知错误");
       render();
       void saveSession();
-      streamMsgId = "";
-      streamContent = "";
+      streams.delete(runKey);
     }
   });
 }
@@ -1620,8 +1696,11 @@ if (particlesCtx) {
 
 
 // 启动：迁移老 localStorage → 选会话 → render
-void bootstrap();
-void initModelConfig();
+void (async () => {
+  await bootstrap();
+  installSchedulerEventListener();
+  void initModelConfig();
+})();
 
 // main → renderer：设置面板点列表/新对话时，让窗口切到指定 session
 window.chatStore?.onSwitchSession(async (sessionId) => {

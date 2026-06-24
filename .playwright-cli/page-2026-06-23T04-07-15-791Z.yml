@@ -1,0 +1,199 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2] [cursor=pointer]: 半隐黑幕
+  - navigation [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - link [ref=e9] [cursor=pointer]:
+          - /url: //game.bilibili.com/?spm_id_from=555.117.0.0
+        - list [ref=e10]:
+          - listitem [ref=e11]:
+            - link " 主站" [ref=e12] [cursor=pointer]:
+              - /url: //www.bilibili.com/?spm_id_from=555.117.0.0
+              - generic [ref=e13]: 
+              - generic [ref=e14]: 主站
+          - listitem [ref=e15]:
+            - link "首页" [ref=e16] [cursor=pointer]:
+              - /url: //game.bilibili.com/platform?spm_id_from=555.117.0.0
+          - listitem [ref=e17]:
+            - link "排行榜" [ref=e18] [cursor=pointer]:
+              - /url: //game.bilibili.com/platform/ranks?spm_id_from=555.117.0.0
+          - listitem [ref=e19]:
+            - link "发现" [ref=e20] [cursor=pointer]:
+              - /url: //game.bilibili.com/platform/discover?spm_id_from=555.117.0.0
+          - listitem [ref=e21]:
+            - link "WIKI" [ref=e22] [cursor=pointer]:
+              - /url: //wiki.biligame.com/?spm_id_from=555.117.0.0
+          - listitem [ref=e23]:
+            - link "大会员礼包" [ref=e24] [cursor=pointer]:
+              - /url: //b-gift.biligame.com/?spm_id_from=555.117.0.0
+          - listitem [ref=e25]:
+            - link "充值中心" [ref=e26] [cursor=pointer]:
+              - /url: //pay.biligame.com/?spm_id_from=555.117.0.0#/?from=gc&selectedNav=pay
+          - listitem [ref=e27]:
+            - link "我的" [ref=e28] [cursor=pointer]:
+              - /url: //game.bilibili.com/platform/mine?spm_id_from=555.117.0.0
+      - generic [ref=e29]:
+        - generic [ref=e30]:
+          - textbox "搜索更多游戏&WIKI" [ref=e31]
+          - generic [ref=e33] [cursor=pointer]: 
+        - link [ref=e37] [cursor=pointer]:
+          - /url: https://passport.bilibili.com/login?gourl=https%3A%2F%2Fwiki.biligame.com%2Fsr%2F%25E8%2590%25BD%25E8%258B%25B1%25E5%2595%258A%25EF%25BC%258C%25E6%25AE%258B%25E8%258A%25B3%25E7%25BA%25B7%25E9%25A3%259E%25E7%2595%2599%25E5%25BD%2592%25E8%25BA%259D
+  - generic [ref=e38]:
+    - generic [ref=e39]:
+      - link [ref=e41] [cursor=pointer]:
+        - /url: /sr/%E9%A6%96%E9%A1%B5
+      - listitem [ref=e42]:
+        - link "我的消息" [ref=e43] [cursor=pointer]:
+          - /url: javascript:void(0);
+      - generic [ref=e44] [cursor=pointer]: 关于本站
+      - generic [ref=e46]:
+        - generic [ref=e48]:
+          - link "首页" [ref=e50] [cursor=pointer]:
+            - /url: javascript:;
+            - text: 首页
+          - link "导航" [ref=e53] [cursor=pointer]:
+            - /url: javascript:;
+            - text: 导航
+          - link "图鉴" [ref=e56] [cursor=pointer]:
+            - /url: javascript:;
+            - text: 图鉴
+          - link "地图" [ref=e59] [cursor=pointer]:
+            - /url: /sr/%E5%9C%B0%E5%9B%BE
+          - link "玩法/攻略" [ref=e61] [cursor=pointer]:
+            - /url: javascript:;
+            - text: 玩法/攻略
+          - link "扩展阅读" [ref=e64] [cursor=pointer]:
+            - /url: javascript:;
+            - text: 扩展阅读
+          - link "其他" [ref=e67] [cursor=pointer]:
+            - /url: javascript:;
+            - text: 其他
+        - generic [ref=e72]:
+          - textbox "搜索崩坏：星穹铁道WIKI_BWIKI_哔哩哔哩[alt-shift-f]" [ref=e73]:
+            - /placeholder: 本WIKI中搜索
+          - button "搜索" [ref=e74] [cursor=pointer]
+          - button "前往" [ref=e75] [cursor=pointer]
+    - main [ref=e76]:
+      - generic [ref=e78]:
+        - paragraph [ref=e80]:
+          - text: 本WIKI由
+          - link "旅行者酒馆" [ref=e81] [cursor=pointer]:
+            - /url: https://space.bilibili.com/489986571
+          - text: 于2021年10月05日申请开通。
+          - generic [ref=e82]:
+            - text: 内容按
+            - link "CC BY-NC-SA 4.0协议" [ref=e83] [cursor=pointer]:
+              - /url: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans
+            - text: 提供
+          - text: ，编辑权限开放。
+          - text: 本WIKI仍在努力完善中，欢迎收藏。编辑组为非官方民间组织，为爱发电，欢迎各路能人异士加入。
+          - link "免责声明" [ref=e84] [cursor=pointer]:
+            - /url: /sr/%E5%B4%A9%E5%9D%8F%EF%BC%9A%E6%98%9F%E7%A9%B9%E9%93%81%E9%81%93:%E5%85%8D%E8%B4%A3%E5%A3%B0%E6%98%8E
+          - text: •
+          - link "编辑教程" [ref=e85] [cursor=pointer]:
+            - /url: /sr/%E6%98%9F%E7%A9%B9%E9%93%81%E9%81%93WIKI%E7%BC%96%E8%BE%91%E6%95%99%E7%A8%8B
+          - text: •
+          - link "反馈留言" [ref=e86] [cursor=pointer]:
+            - /url: /sr/%E5%B4%A9%E5%9D%8F%EF%BC%9A%E6%98%9F%E7%A9%B9%E9%93%81%E9%81%93%E6%9C%89%E9%97%AE%E5%93%94%E7%AD%94%E7%95%99%E8%A8%80%E6%9D%BF
+          - text: •
+          - link "收藏方法" [ref=e87] [cursor=pointer]:
+            - /url: https://wiki.biligame.com/wiki/BWIKI%E6%94%B6%E8%97%8F%E5%88%B0%E6%A1%8C%E9%9D%A2%E7%9A%84%E6%96%B9%E6%B3%95%E8%AF%B4%E6%98%8E
+          - text: • 交流群：1017604603
+        - paragraph
+      - heading "落英啊，残芳纷飞留归躝" [level=1] [ref=e89]: 落英啊，残芳纷飞留归躝
+      - generic [ref=e91]:
+        - link "跳到导航" [ref=e92] [cursor=pointer]:
+          - /url: "#mw-head"
+        - link "跳到搜索" [ref=e93] [cursor=pointer]:
+          - /url: "#p-search"
+        - paragraph [ref=e96]:
+          - text: 此页面目前没有内容。 您可以在其他页面中
+          - link "搜索本页标题" [ref=e97] [cursor=pointer]:
+            - /url: /sr/%E7%89%B9%E6%AE%8A:%E6%90%9C%E7%B4%A2/%E8%90%BD%E8%8B%B1%E5%95%8A%EF%BC%8C%E6%AE%8B%E8%8A%B3%E7%BA%B7%E9%A3%9E%E7%95%99%E5%BD%92%E8%BA%9D
+          - text: 或
+          - link "搜索相关日志" [ref=e99] [cursor=pointer]:
+            - /url: https://wiki.biligame.com/sr/index.php?title=%E7%89%B9%E6%AE%8A:%E6%97%A5%E5%BF%97&page=%E8%90%BD%E8%8B%B1%E5%95%8A%EF%BC%8C%E6%AE%8B%E8%8A%B3%E7%BA%B7%E9%A3%9E%E7%95%99%E5%BD%92%E8%BA%9D
+          - text: ，但您没有权限创建本页面。
+    - generic [ref=e100]:
+      - link "BWIKI首页" [ref=e101] [cursor=pointer]:
+        - /url: https://wiki.biligame.com/wiki/%E9%A6%96%E9%A1%B5
+        - img
+        - generic [ref=e102]: BWIKI首页
+      - link "创建WIKI" [ref=e103] [cursor=pointer]:
+        - /url: "https://wiki.biligame.com/wiki/WIKI%E7%94%B3%E8%AF%B7%E9%A1%B5%E9%9D%A2 "
+        - img
+        - generic [ref=e104]: 创建WIKI
+      - link "BWIKI君" [ref=e105] [cursor=pointer]:
+        - /url: https://space.bilibili.com/477233102
+        - img
+        - generic [ref=e106]: BWIKI君
+      - link "分享" [ref=e107] [cursor=pointer]:
+        - /url: javascript:void(false)
+        - img
+        - generic: 分享
+      - link "BWIKI客服" [ref=e108] [cursor=pointer]:
+        - /url: https://message.bilibili.com/?spm_id_from=333.999.0.0#/whisper/mid477233102
+        - img [ref=e109]
+        - generic [ref=e110]: BWIKI客服
+  - generic [ref=e112]:
+    - generic [ref=e113]:
+      - link [ref=e114] [cursor=pointer]:
+        - /url: //www.bilibili.com
+      - img [ref=e117]
+    - generic [ref=e118]:
+      - paragraph [ref=e119]:
+        - link "游戏中心" [ref=e120] [cursor=pointer]:
+          - /url: //www.biligame.com/
+        - text: "|"
+        - link "帐号安全" [ref=e121] [cursor=pointer]:
+          - /url: https://account.bilibili.com/
+        - text: "|"
+        - link "找回密码" [ref=e122] [cursor=pointer]:
+          - /url: https://account.bilibili.com/resetpwd
+        - text: "|"
+        - link "家长监控" [ref=e123] [cursor=pointer]:
+          - /url: //jiazhang.biligame.com/
+        - text: "|"
+        - link "用户协议" [ref=e124] [cursor=pointer]:
+          - /url: //yhxy.biligame.com/
+      - paragraph
+      - paragraph [ref=e125]: 抵制不良游戏 拒绝盗版游戏 注意自我保护 谨防受骗上当 适度游戏益脑 沉迷游戏伤身 合理安排时间 享受健康生活
+      - paragraph [ref=e126]: 芜湖享游网络技术有限公司 | COPYRIGHT © 2009-2026 BILIBILI ALL RIGHTS RESERVED.
+      - paragraph [ref=e127]: 皖网文[2023]1840-026号 | 皖B2-20180007-2 | 皖ICP证：皖B2-20180007
+      - paragraph [ref=e128]:
+        - link "沪公网安备 31011002002714 号" [ref=e129] [cursor=pointer]:
+          - /url: http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=31011002002714
+          - img [ref=e130]
+          - text: 沪公网安备 31011002002714 号
+  - generic [ref=e131]:
+    - list [ref=e135]:
+      - listitem [ref=e136]:
+        - link "首页" [ref=e138] [cursor=pointer]:
+          - /url: javascript:;
+      - listitem [ref=e139]:
+        - link "导航" [ref=e141] [cursor=pointer]:
+          - /url: javascript:;
+      - listitem [ref=e142]:
+        - link "图鉴" [ref=e144] [cursor=pointer]:
+          - /url: javascript:;
+      - listitem [ref=e145]:
+        - link "地图" [ref=e146] [cursor=pointer]:
+          - /url: /sr/%E5%9C%B0%E5%9B%BE
+      - listitem [ref=e147]:
+        - link "玩法/攻略" [ref=e149] [cursor=pointer]:
+          - /url: javascript:;
+      - listitem [ref=e150]:
+        - link "扩展阅读" [ref=e152] [cursor=pointer]:
+          - /url: javascript:;
+      - listitem [ref=e153]:
+        - link "其他" [ref=e155] [cursor=pointer]:
+          - /url: javascript:;
+    - generic [ref=e156]:
+      - link "BWIKI首页" [ref=e157] [cursor=pointer]:
+        - /url: https://wiki.biligame.com/wiki/%E9%A6%96%E9%A1%B5
+      - link "创建WIKI" [ref=e158] [cursor=pointer]:
+        - /url: https://wiki.biligame.com/wiki/WIKI%E7%94%B3%E8%AF%B7%E9%A1%B5%E9%9D%A2
+      - link "BWIKI客服" [ref=e159] [cursor=pointer]:
+        - /url: https://space.bilibili.com/477233102?spm_id_from=333.337.0.0
+      - link "BWIKI君" [ref=e160] [cursor=pointer]:
+        - /url: https://space.bilibili.com/477233102

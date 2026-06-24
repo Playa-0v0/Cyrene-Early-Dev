@@ -1,0 +1,1621 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2] [cursor=pointer]: 半隐黑幕
+  - navigation [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - link [ref=e9] [cursor=pointer]:
+          - /url: //game.bilibili.com/?spm_id_from=555.117.0.0
+        - list [ref=e10]:
+          - listitem [ref=e11]:
+            - link " 主站" [ref=e12] [cursor=pointer]:
+              - /url: //www.bilibili.com/?spm_id_from=555.117.0.0
+              - generic [ref=e13]: 
+              - generic [ref=e14]: 主站
+          - listitem [ref=e15]:
+            - link "首页" [ref=e16] [cursor=pointer]:
+              - /url: //game.bilibili.com/platform?spm_id_from=555.117.0.0
+          - listitem [ref=e17]:
+            - link "排行榜" [ref=e18] [cursor=pointer]:
+              - /url: //game.bilibili.com/platform/ranks?spm_id_from=555.117.0.0
+          - listitem [ref=e19]:
+            - link "发现" [ref=e20] [cursor=pointer]:
+              - /url: //game.bilibili.com/platform/discover?spm_id_from=555.117.0.0
+          - listitem [ref=e21]:
+            - link "WIKI" [ref=e22] [cursor=pointer]:
+              - /url: //wiki.biligame.com/?spm_id_from=555.117.0.0
+          - listitem [ref=e23]:
+            - link "大会员礼包" [ref=e24] [cursor=pointer]:
+              - /url: //b-gift.biligame.com/?spm_id_from=555.117.0.0
+          - listitem [ref=e25]:
+            - link "充值中心" [ref=e26] [cursor=pointer]:
+              - /url: //pay.biligame.com/?spm_id_from=555.117.0.0#/?from=gc&selectedNav=pay
+          - listitem [ref=e27]:
+            - link "我的" [ref=e28] [cursor=pointer]:
+              - /url: //game.bilibili.com/platform/mine?spm_id_from=555.117.0.0
+      - generic [ref=e29]:
+        - generic [ref=e30]:
+          - textbox "搜索更多游戏&WIKI" [ref=e31]
+          - generic [ref=e33] [cursor=pointer]: 
+        - link [ref=e37] [cursor=pointer]:
+          - /url: https://passport.bilibili.com/login?gourl=https%3A%2F%2Fwiki.biligame.com%2Fsr%2F%25E6%2598%2594%25E6%25B6%259F
+  - generic [ref=e38]:
+    - generic [ref=e39]:
+      - link [ref=e41] [cursor=pointer]:
+        - /url: /sr/%E9%A6%96%E9%A1%B5
+      - listitem [ref=e42]:
+        - link "我的消息" [ref=e43] [cursor=pointer]:
+          - /url: javascript:void(0);
+      - generic [ref=e44] [cursor=pointer]: 关于本站
+      - generic [ref=e46]:
+        - generic [ref=e48]:
+          - link "首页" [ref=e50] [cursor=pointer]:
+            - /url: javascript:;
+            - text: 首页
+          - link "导航" [ref=e53] [cursor=pointer]:
+            - /url: javascript:;
+            - text: 导航
+          - link "图鉴" [ref=e56] [cursor=pointer]:
+            - /url: javascript:;
+            - text: 图鉴
+          - link "地图" [ref=e59] [cursor=pointer]:
+            - /url: /sr/%E5%9C%B0%E5%9B%BE
+          - link "玩法/攻略" [ref=e61] [cursor=pointer]:
+            - /url: javascript:;
+            - text: 玩法/攻略
+          - link "扩展阅读" [ref=e64] [cursor=pointer]:
+            - /url: javascript:;
+            - text: 扩展阅读
+          - link "其他" [ref=e67] [cursor=pointer]:
+            - /url: javascript:;
+            - text: 其他
+        - generic [ref=e72]:
+          - textbox "搜索崩坏：星穹铁道WIKI_BWIKI_哔哩哔哩[alt-shift-f]" [ref=e73]:
+            - /placeholder: 本WIKI中搜索
+          - button "搜索" [ref=e74] [cursor=pointer]
+          - button "前往" [ref=e75] [cursor=pointer]
+    - main [ref=e76]:
+      - generic [ref=e78]:
+        - paragraph [ref=e80]:
+          - text: 本WIKI由
+          - link "旅行者酒馆" [ref=e81] [cursor=pointer]:
+            - /url: https://space.bilibili.com/489986571
+          - text: 于2021年10月05日申请开通。
+          - generic [ref=e82]:
+            - text: 内容按
+            - link "CC BY-NC-SA 4.0协议" [ref=e83] [cursor=pointer]:
+              - /url: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans
+            - text: 提供
+          - text: ，编辑权限开放。
+          - text: 本WIKI仍在努力完善中，欢迎收藏。编辑组为非官方民间组织，为爱发电，欢迎各路能人异士加入。
+          - link "免责声明" [ref=e84] [cursor=pointer]:
+            - /url: /sr/%E5%B4%A9%E5%9D%8F%EF%BC%9A%E6%98%9F%E7%A9%B9%E9%93%81%E9%81%93:%E5%85%8D%E8%B4%A3%E5%A3%B0%E6%98%8E
+          - text: •
+          - link "编辑教程" [ref=e85] [cursor=pointer]:
+            - /url: /sr/%E6%98%9F%E7%A9%B9%E9%93%81%E9%81%93WIKI%E7%BC%96%E8%BE%91%E6%95%99%E7%A8%8B
+          - text: •
+          - link "反馈留言" [ref=e86] [cursor=pointer]:
+            - /url: /sr/%E5%B4%A9%E5%9D%8F%EF%BC%9A%E6%98%9F%E7%A9%B9%E9%93%81%E9%81%93%E6%9C%89%E9%97%AE%E5%93%94%E7%AD%94%E7%95%99%E8%A8%80%E6%9D%BF
+          - text: •
+          - link "收藏方法" [ref=e87] [cursor=pointer]:
+            - /url: https://wiki.biligame.com/wiki/BWIKI%E6%94%B6%E8%97%8F%E5%88%B0%E6%A1%8C%E9%9D%A2%E7%9A%84%E6%96%B9%E6%B3%95%E8%AF%B4%E6%98%8E
+          - text: • 交流群：1017604603
+        - paragraph
+      - generic [ref=e88]:
+        - heading "昔涟" [level=1] [ref=e89]: 昔涟
+        - generic [ref=e90]:
+          - navigation "WIKI功能 " [ref=e91] [cursor=pointer]:
+            - heading "WIKI功能 " [level=3] [ref=e92]:
+              - generic [ref=e93]: WIKI功能
+              - generic [ref=e94]: 
+          - generic [ref=e95]:
+            - paragraph [ref=e96]: 阅读：11.7万
+            - paragraph [ref=e97]: 更新日期：2026-04-04
+            - paragraph [ref=e98]: 最新编辑：血染Ran
+      - generic [ref=e99]:
+        - link "跳到导航" [ref=e100] [cursor=pointer]:
+          - /url: "#mw-head"
+        - link "跳到搜索" [ref=e101] [cursor=pointer]:
+          - /url: "#p-search"
+        - generic [ref=e102]:
+          - link "页面贡献者 :" [ref=e103] [cursor=pointer]:
+            - /url: /sr/%E7%89%B9%E6%AE%8A:%E8%B4%A1%E7%8C%AE%E8%80%85/%E6%98%94%E6%B6%9F
+          - generic [ref=e104]:
+            - link [ref=e107] [cursor=pointer]:
+              - /url: //space.bilibili.com/1767760349/
+            - link [ref=e111] [cursor=pointer]:
+              - /url: //space.bilibili.com/141211391/
+            - link [ref=e115] [cursor=pointer]:
+              - /url: //space.bilibili.com/44242254/
+          - generic [ref=e117]:
+            - link [ref=e120] [cursor=pointer]:
+              - /url: //space.bilibili.com/158180/
+            - link [ref=e124] [cursor=pointer]:
+              - /url: //space.bilibili.com/3546760704166228/
+            - link [ref=e128] [cursor=pointer]:
+              - /url: //space.bilibili.com/456733023/
+            - link [ref=e132] [cursor=pointer]:
+              - /url: //space.bilibili.com/13175167/
+            - link [ref=e136] [cursor=pointer]:
+              - /url: //space.bilibili.com/474970786/
+            - link [ref=e140] [cursor=pointer]:
+              - /url: //space.bilibili.com/17206050/
+            - link [ref=e144] [cursor=pointer]:
+              - /url: //space.bilibili.com/1890463893/
+          - generic [ref=e146] [cursor=pointer]: 共14人编辑
+        - generic [ref=e150]:
+          - generic [ref=e151]:
+            - text: 本条目介绍的是：昔涟，以下为名字或内容相近的条目。
+            - separator [ref=e152]
+            - generic [ref=e153]:
+              - generic [ref=e154]:
+                - link "通用图标.png" [ref=e155] [cursor=pointer]:
+                  - /url: /sr/%E6%98%94%E6%B6%9F
+                  - img "通用图标.png" [ref=e156]
+                - generic [ref=e157] [cursor=pointer]: 昔涟
+              - generic [ref=e158]:
+                - link "通用图标.png" [ref=e159] [cursor=pointer]:
+                  - /url: /sr/%E6%98%94%E6%B6%9F%EF%BC%88%E4%BA%8B%E4%BB%B6%EF%BC%89
+                  - img "通用图标.png" [ref=e160]
+                - link "昔涟（事件）" [ref=e161] [cursor=pointer]:
+                  - /url: /sr/%E6%98%94%E6%B6%9F%EF%BC%88%E4%BA%8B%E4%BB%B6%EF%BC%89
+          - generic [ref=e162]:
+            - generic [ref=e163]:
+              - generic "编辑这个页面" [ref=e164]:
+                - link "编" [ref=e165] [cursor=pointer]:
+                  - /url: https://wiki.biligame.com/sr/index.php?title=%E6%98%94%E6%B6%9F&action=edit
+              - generic "清除这个页面的缓存" [ref=e166]:
+                - link "刷" [ref=e167] [cursor=pointer]:
+                  - /url: https://wiki.biligame.com/sr/index.php?title=%E6%98%94%E6%B6%9F&action=purge
+              - generic "查看这个页面的编辑历史" [ref=e168]:
+                - link "历" [ref=e169] [cursor=pointer]:
+                  - /url: https://wiki.biligame.com/sr/index.php?title=%E6%98%94%E6%B6%9F&action=history
+              - generic "短网址，按右键复制链接地址" [ref=e170]:
+                - link "短" [ref=e171] [cursor=pointer]:
+                  - /url: https://wiki.biligame.com/sr/?curid=14836
+              - generic "查看这个页面" [ref=e172]:
+                - link "阅" [ref=e173] [cursor=pointer]:
+                  - /url: https://wiki.biligame.com/sr/%E6%98%94%E6%B6%9F
+            - link "首页" [ref=e174] [cursor=pointer]:
+              - /url: /sr/%E9%A6%96%E9%A1%B5
+            - text: ">"
+            - link "角色图鉴" [ref=e175] [cursor=pointer]:
+              - /url: /sr/%E8%A7%92%E8%89%B2%E5%9B%BE%E9%89%B4
+            - text: "> 昔涟"
+          - separator [ref=e176]
+          - generic [ref=e178]:
+            - text: 如果是第一次来，按"Ctrl+D"可以收藏随时查看更新~觉得WIKI好玩的话，请推荐给朋友哦～(◕ω＜)☆
+            - text: 按右上角“WIKI功能→编辑”即可修改页面内容。
+          - generic [ref=e179]:
+            - generic [ref=e180]: 角色导航
+            - generic [ref=e181]:
+              - paragraph:
+                - generic [ref=e182] [cursor=pointer]: 角色总览
+                - link "角色语音":
+                  - /url: /sr/%E6%98%94%E6%B6%9F/%E8%AF%AD%E9%9F%B3
+                  - generic [ref=e183] [cursor=pointer]: 角色语音
+                - link "角色资料":
+                  - /url: /sr/%E6%98%94%E6%B6%9F/%E8%B5%84%E6%96%99
+                  - generic [ref=e184] [cursor=pointer]: 角色资料
+                - link "贺图视频":
+                  - /url: /sr/index.php?title=%E6%98%94%E6%B6%9F/%E5%AA%92%E4%BD%93&action=edit&redlink=1
+                  - generic [ref=e185] [cursor=pointer]: 贺图视频
+          - generic [ref=e186]:
+            - generic [ref=e187]:
+              - img "昔涟.png" [ref=e189]
+              - generic [ref=e190]: 「这是命运的邂逅吗，还是…久别重逢呢？真让人心跳加速呀，那…就像初遇时那样，再一次呼唤我『昔涟』，好吗？」
+            - generic [ref=e192]:
+              - list [ref=e193]:
+                - listitem [ref=e194]:
+                  - generic [ref=e195]: 角色立绘
+                - listitem [ref=e196]:
+                  - generic [ref=e197]: 角色介绍立绘
+                - listitem [ref=e198]:
+                  - generic [ref=e199]: 立绘卡片
+                - listitem [ref=e200]:
+                  - generic [ref=e201]: 站立动作
+                - listitem [ref=e202]:
+                  - generic [ref=e203]: 站立动作2
+              - img "翁法罗斯-bg.jpg" [ref=e204]
+              - generic [ref=e205]:
+                - generic:
+                  - link "昔涟立绘.png":
+                    - /url: /sr/%E6%96%87%E4%BB%B6:%E6%98%94%E6%B6%9F%E7%AB%8B%E7%BB%98.png
+                    - img "昔涟立绘.png" [ref=e206] [cursor=pointer]
+              - generic:
+                - generic [ref=e207]:
+                  - generic [ref=e208]:
+                    - generic [ref=e209]: 昔涟
+                    - generic [ref=e210]: Cyrene
+                    - generic [ref=e211]:
+                      - img "冰.png" [ref=e212]
+                      - img "记忆-白.png" [ref=e213]
+                  - table [ref=e214]:
+                    - rowgroup [ref=e215]:
+                      - row "稀有度 5星.png 性别 女" [ref=e216]:
+                        - rowheader "稀有度" [ref=e217]
+                        - cell "5星.png" [ref=e218]:
+                          - img "5星.png" [ref=e219]
+                        - rowheader "性别" [ref=e220]
+                        - cell "女" [ref=e221]
+                      - row "全名/本名 爱莉（哀丽）希雅" [ref=e222]:
+                        - rowheader "全名/本名" [ref=e223]
+                        - cell "爱莉（哀丽）希雅" [ref=e224]:
+                          - text: 爱莉（哀丽）希雅
+                          - generic "剧情推测" [ref=e225]
+                      - row "命途 记忆-白.png记忆 战斗属性 冰.png冰" [ref=e227]:
+                        - rowheader "命途" [ref=e228]
+                        - cell "记忆-白.png记忆" [ref=e229]:
+                          - img "记忆-白.png" [ref=e230]
+                          - text: 记忆
+                          - generic "命途" [ref=e231]
+                        - rowheader "战斗属性" [ref=e233]
+                        - cell "冰.png冰" [ref=e234]:
+                          - img "冰.png" [ref=e235]
+                          - text: 冰
+                          - generic "战斗属性" [ref=e236]
+                      - row "阵营 翁法罗斯 常驻/限定 限定UP" [ref=e238]:
+                        - rowheader "阵营" [ref=e239]
+                        - cell "翁法罗斯" [ref=e240]:
+                          - link "翁法罗斯" [ref=e241] [cursor=pointer]:
+                            - /url: /sr/%E7%BF%81%E6%B3%95%E7%BD%97%E6%96%AF
+                        - rowheader "常驻/限定" [ref=e242]
+                        - cell "限定UP" [ref=e243]
+                      - row "实装日期 2025年11月05日（3.7版本）" [ref=e244]:
+                        - rowheader "实装日期" [ref=e245]
+                        - cell "2025年11月05日（3.7版本）" [ref=e246]
+                      - row "TAG 星迹重温、专属效果、特殊能量、忆灵、特殊领域" [ref=e247]:
+                        - rowheader "TAG" [ref=e248]
+                        - cell "星迹重温、专属效果、特殊能量、忆灵、特殊领域" [ref=e249]
+                      - row "星魂TAG" [ref=e250]:
+                        - columnheader "星魂TAG" [ref=e251]
+                        - cell [ref=e252]
+                      - row "角色定位 昔涟是一名能召唤忆灵「德谬歌」协助战斗的辅助型角色，当队友为黄金裔时，她还能为其提供强力的专属增益。 昔涟拥有激活我方全体终结技的能力，展开结界时还可使我方全体额外造成真实伤害。" [ref=e253]:
+                        - rowheader "角色定位" [ref=e254]
+                        - cell "昔涟是一名能召唤忆灵「德谬歌」协助战斗的辅助型角色，当队友为黄金裔时，她还能为其提供强力的专属增益。 昔涟拥有激活我方全体终结技的能力，展开结界时还可使我方全体额外造成真实伤害。" [ref=e255]:
+                          - text: 昔涟是一名能召唤忆灵「德谬歌」协助战斗的辅助型角色，当队友为黄金裔时，她还能为其提供强力的专属增益。
+                          - text: 昔涟拥有激活我方全体终结技的能力，展开结界时还可使我方全体额外造成真实伤害。
+                - generic [ref=e256]:
+                  - text: 流星划过夜空，生命的长河荡起涟漪，闪烁十三种光彩。
+                  - text: 哀丽秘榭的女儿，哺育「真我」的黄金裔，你要栽下记忆的种子，让往昔的花朵在明日绽放
+                  - text: ——「然后，一起写下不同以往的诗篇吧♪」
+            - generic [ref=e257]:
+              - generic [ref=e258]:
+                - heading "属性数据" [level=2] [ref=e259]:
+                  - generic [ref=e260]: 属性数据
+                - table [ref=e261]:
+                  - rowgroup [ref=e262]:
+                    - row "等级 生命值 攻击力 防御力" [ref=e263]:
+                      - columnheader "等级" [ref=e264]
+                      - columnheader "生命值" [ref=e265]
+                      - columnheader "攻击力" [ref=e266]
+                      - columnheader "防御力" [ref=e267]
+                    - row "突破前 突破后 突破前 突破后 突破前 突破后" [ref=e268]:
+                      - columnheader "突破前" [ref=e269]
+                      - columnheader "突破后" [ref=e270]
+                      - columnheader "突破前" [ref=e271]
+                      - columnheader "突破后" [ref=e272]
+                      - columnheader "突破前" [ref=e273]
+                      - columnheader "突破后" [ref=e274]
+                    - row "1 190 60 79" [ref=e275]:
+                      - cell "1" [ref=e276]
+                      - cell "190" [ref=e277]
+                      - cell "60" [ref=e278]
+                      - cell "79" [ref=e279]
+                    - row "20 370 446 118 142 154 186" [ref=e280]:
+                      - cell "20" [ref=e281]
+                      - cell "370" [ref=e282]
+                      - cell "446" [ref=e283]
+                      - cell "118" [ref=e284]
+                      - cell "142" [ref=e285]
+                      - cell "154" [ref=e286]
+                      - cell "186" [ref=e287]
+                    - row "30 541 617 173 197 225 257" [ref=e288]:
+                      - cell "30" [ref=e289]
+                      - cell "541" [ref=e290]
+                      - cell "617" [ref=e291]
+                      - cell "173" [ref=e292]
+                      - cell "197" [ref=e293]
+                      - cell "225" [ref=e294]
+                      - cell "257" [ref=e295]
+                    - row "40 712 788 227 251 297 328" [ref=e296]:
+                      - cell "40" [ref=e297]
+                      - cell "712" [ref=e298]
+                      - cell "788" [ref=e299]
+                      - cell "227" [ref=e300]
+                      - cell "251" [ref=e301]
+                      - cell "297" [ref=e302]
+                      - cell "328" [ref=e303]
+                    - row "50 883 959 282 306 368 399" [ref=e304]:
+                      - cell "50" [ref=e305]
+                      - cell "883" [ref=e306]
+                      - cell "959" [ref=e307]
+                      - cell "282" [ref=e308]
+                      - cell "306" [ref=e309]
+                      - cell "368" [ref=e310]
+                      - cell "399" [ref=e311]
+                    - row "60 1054 1130 336 361 439 471" [ref=e312]:
+                      - cell "60" [ref=e313]
+                      - cell "1054" [ref=e314]
+                      - cell "1130" [ref=e315]
+                      - cell "336" [ref=e316]
+                      - cell "361" [ref=e317]
+                      - cell "439" [ref=e318]
+                      - cell "471" [ref=e319]
+                    - row "70 1226 1302 391 415 510 542" [ref=e320]:
+                      - cell "70" [ref=e321]
+                      - cell "1226" [ref=e322]
+                      - cell "1302" [ref=e323]
+                      - cell "391" [ref=e324]
+                      - cell "415" [ref=e325]
+                      - cell "510" [ref=e326]
+                      - cell "542" [ref=e327]
+                    - row "80 1397 - 446 - 582 -" [ref=e328]:
+                      - cell "80" [ref=e329]
+                      - cell "1397" [ref=e330]
+                      - cell "-" [ref=e331]
+                      - cell "446" [ref=e332]
+                      - cell "-" [ref=e333]
+                      - cell "582" [ref=e334]
+                      - cell "-" [ref=e335]
+                    - row "速度 101" [ref=e336]:
+                      - rowheader "速度" [ref=e337]
+                      - cell "101" [ref=e338]
+                    - row "能量上限 12点【追忆】" [ref=e339]:
+                      - rowheader "能量上限" [ref=e340]
+                      - cell "12点【追忆】" [ref=e341]
+                - heading "角色晋阶材料" [level=2] [ref=e342]:
+                  - generic [ref=e343]: 角色晋阶材料
+                - table [ref=e344]:
+                  - rowgroup [ref=e345]:
+                    - row "20级 30级 40级" [ref=e346]:
+                      - columnheader "20级" [ref=e347]
+                      - columnheader "30级" [ref=e348]
+                      - columnheader "40级" [ref=e349]
+                    - row "恐惧踏碎血肉 5 恐惧踏碎血肉 信用点 4000 信用点 恐惧踏碎血肉 10 恐惧踏碎血肉 信用点 8000 信用点 海妖残鳍 3 海妖残鳍 勇气撕裂胸膛 6 勇气撕裂胸膛 信用点 16000 信用点" [ref=e350]:
+                      - cell "恐惧踏碎血肉 5 恐惧踏碎血肉 信用点 4000 信用点" [ref=e351]:
+                        - generic [ref=e352]:
+                          - link "恐惧踏碎血肉" [ref=e353] [cursor=pointer]:
+                            - /url: /sr/%E6%81%90%E6%83%A7%E8%B8%8F%E7%A2%8E%E8%A1%80%E8%82%89
+                            - img "恐惧踏碎血肉" [ref=e354]
+                          - generic [ref=e355]: "5"
+                          - link "恐惧踏碎血肉" [ref=e357] [cursor=pointer]:
+                            - /url: /sr/%E6%81%90%E6%83%A7%E8%B8%8F%E7%A2%8E%E8%A1%80%E8%82%89
+                        - generic [ref=e358]:
+                          - link "信用点" [ref=e359] [cursor=pointer]:
+                            - /url: /sr/%E4%BF%A1%E7%94%A8%E7%82%B9
+                            - img "信用点" [ref=e360]
+                          - generic [ref=e361]: "4000"
+                          - link "信用点" [ref=e363] [cursor=pointer]:
+                            - /url: /sr/%E4%BF%A1%E7%94%A8%E7%82%B9
+                      - cell "恐惧踏碎血肉 10 恐惧踏碎血肉 信用点 8000 信用点" [ref=e364]:
+                        - generic [ref=e365]:
+                          - link "恐惧踏碎血肉" [ref=e366] [cursor=pointer]:
+                            - /url: /sr/%E6%81%90%E6%83%A7%E8%B8%8F%E7%A2%8E%E8%A1%80%E8%82%89
+                            - img "恐惧踏碎血肉" [ref=e367]
+                          - generic [ref=e368]: "10"
+                          - link "恐惧踏碎血肉" [ref=e370] [cursor=pointer]:
+                            - /url: /sr/%E6%81%90%E6%83%A7%E8%B8%8F%E7%A2%8E%E8%A1%80%E8%82%89
+                        - generic [ref=e371]:
+                          - link "信用点" [ref=e372] [cursor=pointer]:
+                            - /url: /sr/%E4%BF%A1%E7%94%A8%E7%82%B9
+                            - img "信用点" [ref=e373]
+                          - generic [ref=e374]: "8000"
+                          - link "信用点" [ref=e376] [cursor=pointer]:
+                            - /url: /sr/%E4%BF%A1%E7%94%A8%E7%82%B9
+                      - cell "海妖残鳍 3 海妖残鳍 勇气撕裂胸膛 6 勇气撕裂胸膛 信用点 16000 信用点" [ref=e377]:
+                        - generic [ref=e378]:
+                          - link "海妖残鳍" [ref=e379] [cursor=pointer]:
+                            - /url: /sr/%E6%B5%B7%E5%A6%96%E6%AE%8B%E9%B3%8D
+                            - img "海妖残鳍" [ref=e380]
+                          - generic [ref=e381]: "3"
+                          - link "海妖残鳍" [ref=e383] [cursor=pointer]:
+                            - /url: /sr/%E6%B5%B7%E5%A6%96%E6%AE%8B%E9%B3%8D
+                        - generic [ref=e384]:
+                          - link "勇气撕裂胸膛" [ref=e385] [cursor=pointer]:
+                            - /url: /sr/%E5%8B%87%E6%B0%94%E6%92%95%E8%A3%82%E8%83%B8%E8%86%9B
+                            - img "勇气撕裂胸膛" [ref=e386]
+                          - generic [ref=e387]: "6"
+                          - link "勇气撕裂胸膛" [ref=e389] [cursor=pointer]:
+                            - /url: /sr/%E5%8B%87%E6%B0%94%E6%92%95%E8%A3%82%E8%83%B8%E8%86%9B
+                        - generic [ref=e390]:
+                          - link "信用点" [ref=e391] [cursor=pointer]:
+                            - /url: /sr/%E4%BF%A1%E7%94%A8%E7%82%B9
+                            - img "信用点" [ref=e392]
+                          - generic [ref=e393]: "16000"
+                          - link "信用点" [ref=e395] [cursor=pointer]:
+                            - /url: /sr/%E4%BF%A1%E7%94%A8%E7%82%B9
+                    - row "50级 60级 70级" [ref=e396]:
+                      - columnheader "50级" [ref=e397]
+                      - columnheader "60级" [ref=e398]
+                      - columnheader "70级" [ref=e399]
+                    - row "海妖残鳍 7 海妖残鳍 勇气撕裂胸膛 9 勇气撕裂胸膛 信用点 40000 信用点 海妖残鳍 20 海妖残鳍 荣耀洗礼身躯 6 荣耀洗礼身躯 信用点 80000 信用点 海妖残鳍 35 海妖残鳍 荣耀洗礼身躯 9 荣耀洗礼身躯 信用点 160000 信用点" [ref=e400]:
+                      - cell "海妖残鳍 7 海妖残鳍 勇气撕裂胸膛 9 勇气撕裂胸膛 信用点 40000 信用点" [ref=e401]:
+                        - generic [ref=e402]:
+                          - link "海妖残鳍" [ref=e403] [cursor=pointer]:
+                            - /url: /sr/%E6%B5%B7%E5%A6%96%E6%AE%8B%E9%B3%8D
+                            - img "海妖残鳍" [ref=e404]
+                          - generic [ref=e405]: "7"
+                          - link "海妖残鳍" [ref=e407] [cursor=pointer]:
+                            - /url: /sr/%E6%B5%B7%E5%A6%96%E6%AE%8B%E9%B3%8D
+                        - generic [ref=e408]:
+                          - link "勇气撕裂胸膛" [ref=e409] [cursor=pointer]:
+                            - /url: /sr/%E5%8B%87%E6%B0%94%E6%92%95%E8%A3%82%E8%83%B8%E8%86%9B
+                            - img "勇气撕裂胸膛" [ref=e410]
+                          - generic [ref=e411]: "9"
+                          - link "勇气撕裂胸膛" [ref=e413] [cursor=pointer]:
+                            - /url: /sr/%E5%8B%87%E6%B0%94%E6%92%95%E8%A3%82%E8%83%B8%E8%86%9B
+                        - generic [ref=e414]:
+                          - link "信用点" [ref=e415] [cursor=pointer]:
+                            - /url: /sr/%E4%BF%A1%E7%94%A8%E7%82%B9
+                            - img "信用点" [ref=e416]
+                          - generic [ref=e417]: "40000"
+                          - link "信用点" [ref=e419] [cursor=pointer]:
+                            - /url: /sr/%E4%BF%A1%E7%94%A8%E7%82%B9
+                      - cell "海妖残鳍 20 海妖残鳍 荣耀洗礼身躯 6 荣耀洗礼身躯 信用点 80000 信用点" [ref=e420]:
+                        - generic [ref=e421]:
+                          - link "海妖残鳍" [ref=e422] [cursor=pointer]:
+                            - /url: /sr/%E6%B5%B7%E5%A6%96%E6%AE%8B%E9%B3%8D
+                            - img "海妖残鳍" [ref=e423]
+                          - generic [ref=e424]: "20"
+                          - link "海妖残鳍" [ref=e426] [cursor=pointer]:
+                            - /url: /sr/%E6%B5%B7%E5%A6%96%E6%AE%8B%E9%B3%8D
+                        - generic [ref=e427]:
+                          - link "荣耀洗礼身躯" [ref=e428] [cursor=pointer]:
+                            - /url: /sr/%E8%8D%A3%E8%80%80%E6%B4%97%E7%A4%BC%E8%BA%AB%E8%BA%AF
+                            - img "荣耀洗礼身躯" [ref=e429]
+                          - generic [ref=e430]: "6"
+                          - link "荣耀洗礼身躯" [ref=e432] [cursor=pointer]:
+                            - /url: /sr/%E8%8D%A3%E8%80%80%E6%B4%97%E7%A4%BC%E8%BA%AB%E8%BA%AF
+                        - generic [ref=e433]:
+                          - link "信用点" [ref=e434] [cursor=pointer]:
+                            - /url: /sr/%E4%BF%A1%E7%94%A8%E7%82%B9
+                            - img "信用点" [ref=e435]
+                          - generic [ref=e436]: "80000"
+                          - link "信用点" [ref=e438] [cursor=pointer]:
+                            - /url: /sr/%E4%BF%A1%E7%94%A8%E7%82%B9
+                      - cell "海妖残鳍 35 海妖残鳍 荣耀洗礼身躯 9 荣耀洗礼身躯 信用点 160000 信用点" [ref=e439]:
+                        - generic [ref=e440]:
+                          - link "海妖残鳍" [ref=e441] [cursor=pointer]:
+                            - /url: /sr/%E6%B5%B7%E5%A6%96%E6%AE%8B%E9%B3%8D
+                            - img "海妖残鳍" [ref=e442]
+                          - generic [ref=e443]: "35"
+                          - link "海妖残鳍" [ref=e445] [cursor=pointer]:
+                            - /url: /sr/%E6%B5%B7%E5%A6%96%E6%AE%8B%E9%B3%8D
+                        - generic [ref=e446]:
+                          - link "荣耀洗礼身躯" [ref=e447] [cursor=pointer]:
+                            - /url: /sr/%E8%8D%A3%E8%80%80%E6%B4%97%E7%A4%BC%E8%BA%AB%E8%BA%AF
+                            - img "荣耀洗礼身躯" [ref=e448]
+                          - generic [ref=e449]: "9"
+                          - link "荣耀洗礼身躯" [ref=e451] [cursor=pointer]:
+                            - /url: /sr/%E8%8D%A3%E8%80%80%E6%B4%97%E7%A4%BC%E8%BA%AB%E8%BA%AF
+                        - generic [ref=e452]:
+                          - link "信用点" [ref=e453] [cursor=pointer]:
+                            - /url: /sr/%E4%BF%A1%E7%94%A8%E7%82%B9
+                            - img "信用点" [ref=e454]
+                          - generic [ref=e455]: "160000"
+                          - link "信用点" [ref=e457] [cursor=pointer]:
+                            - /url: /sr/%E4%BF%A1%E7%94%A8%E7%82%B9
+                    - row "总计" [ref=e458]:
+                      - columnheader "总计" [ref=e459]
+                    - row "海妖残鳍 65 海妖残鳍 恐惧踏碎血肉 15 恐惧踏碎血肉 勇气撕裂胸膛 15 勇气撕裂胸膛 荣耀洗礼身躯 15 荣耀洗礼身躯 信用点 308000 信用点" [ref=e460]:
+                      - cell "海妖残鳍 65 海妖残鳍 恐惧踏碎血肉 15 恐惧踏碎血肉 勇气撕裂胸膛 15 勇气撕裂胸膛 荣耀洗礼身躯 15 荣耀洗礼身躯 信用点 308000 信用点" [ref=e461]:
+                        - generic [ref=e462]:
+                          - link "海妖残鳍" [ref=e463] [cursor=pointer]:
+                            - /url: /sr/%E6%B5%B7%E5%A6%96%E6%AE%8B%E9%B3%8D
+                            - img "海妖残鳍" [ref=e464]
+                          - generic [ref=e465]: "65"
+                          - link "海妖残鳍" [ref=e467] [cursor=pointer]:
+                            - /url: /sr/%E6%B5%B7%E5%A6%96%E6%AE%8B%E9%B3%8D
+                        - generic [ref=e468]:
+                          - link "恐惧踏碎血肉" [ref=e469] [cursor=pointer]:
+                            - /url: /sr/%E6%81%90%E6%83%A7%E8%B8%8F%E7%A2%8E%E8%A1%80%E8%82%89
+                            - img "恐惧踏碎血肉" [ref=e470]
+                          - generic [ref=e471]: "15"
+                          - link "恐惧踏碎血肉" [ref=e473] [cursor=pointer]:
+                            - /url: /sr/%E6%81%90%E6%83%A7%E8%B8%8F%E7%A2%8E%E8%A1%80%E8%82%89
+                        - generic [ref=e474]:
+                          - link "勇气撕裂胸膛" [ref=e475] [cursor=pointer]:
+                            - /url: /sr/%E5%8B%87%E6%B0%94%E6%92%95%E8%A3%82%E8%83%B8%E8%86%9B
+                            - img "勇气撕裂胸膛" [ref=e476]
+                          - generic [ref=e477]: "15"
+                          - link "勇气撕裂胸膛" [ref=e479] [cursor=pointer]:
+                            - /url: /sr/%E5%8B%87%E6%B0%94%E6%92%95%E8%A3%82%E8%83%B8%E8%86%9B
+                        - generic [ref=e480]:
+                          - link "荣耀洗礼身躯" [ref=e481] [cursor=pointer]:
+                            - /url: /sr/%E8%8D%A3%E8%80%80%E6%B4%97%E7%A4%BC%E8%BA%AB%E8%BA%AF
+                            - img "荣耀洗礼身躯" [ref=e482]
+                          - generic [ref=e483]: "15"
+                          - link "荣耀洗礼身躯" [ref=e485] [cursor=pointer]:
+                            - /url: /sr/%E8%8D%A3%E8%80%80%E6%B4%97%E7%A4%BC%E8%BA%AB%E8%BA%AF
+                        - generic [ref=e486]:
+                          - link "信用点" [ref=e487] [cursor=pointer]:
+                            - /url: /sr/%E4%BF%A1%E7%94%A8%E7%82%B9
+                            - img "信用点" [ref=e488]
+                          - generic [ref=e489]: "308000"
+                          - link "信用点" [ref=e491] [cursor=pointer]:
+                            - /url: /sr/%E4%BF%A1%E7%94%A8%E7%82%B9
+              - generic [ref=e492]:
+                - heading "其它信息" [level=2] [ref=e493]:
+                  - generic [ref=e494]: 其它信息
+                - table [ref=e495]:
+                  - rowgroup [ref=e496]:
+                    - row "称号 往昔的涟漪" [ref=e497]:
+                      - rowheader "称号" [ref=e498]
+                      - cell "往昔的涟漪" [ref=e499]
+                    - row "昵称/外号 德谬歌 、迷迷、PhiLia093 、粉色的小海兔 、德喵… 、桃子 、昔米露 、芙蕾桃" [ref=e500]:
+                      - rowheader "昵称/外号" [ref=e501]
+                      - cell "德谬歌 、迷迷、PhiLia093 、粉色的小海兔 、德喵… 、桃子 、昔米露 、芙蕾桃" [ref=e502]:
+                        - text: 德谬歌
+                        - generic "原名" [ref=e503]
+                        - text: 、迷迷、PhiLia093
+                        - generic "黄金裔昔涟电信号序列码" [ref=e505]
+                        - text: 、粉色的小海兔
+                        - generic "海瑟音" [ref=e507]
+                        - text: 、德喵…
+                        - generic "赛飞儿口误" [ref=e509]
+                        - text: 、桃子
+                        - generic "德谬歌对黄金裔昔涟" [ref=e511]
+                        - text: 、昔米露
+                        - generic "奇美拉形象，见奇美拉盲袋周边" [ref=e513]
+                        - text: 、芙蕾桃
+                        - generic "小昔涟的奇美拉形象，见奇美拉盲袋周边" [ref=e515]
+                    - row "派系 无漏净子" [ref=e517]:
+                      - rowheader "派系" [ref=e518]
+                      - cell "无漏净子" [ref=e519]:
+                        - link "无漏净子" [ref=e520] [cursor=pointer]:
+                          - /url: /sr/%E6%B4%BE%E7%B3%BB#无漏净子
+                    - row "跃迁名 涟漪回环" [ref=e521]:
+                      - rowheader "跃迁名" [ref=e522]
+                      - cell "涟漪回环" [ref=e523]
+                    - row "体型 女青年" [ref=e524]:
+                      - rowheader "体型" [ref=e525]
+                      - cell "女青年" [ref=e526]
+                    - row "种族 黄金裔" [ref=e527]:
+                      - rowheader "种族" [ref=e528]
+                      - cell "黄金裔" [ref=e529]
+                    - row "短信签名 要相信浪漫一如初见♪" [ref=e530]:
+                      - rowheader "短信签名" [ref=e531]
+                      - cell "要相信浪漫一如初见♪" [ref=e532]
+                    - row "汉语CV 宴宁" [ref=e533]:
+                      - rowheader "汉语CV" [ref=e534]
+                      - cell "宴宁" [ref=e535]
+                    - row "英语CV Aiden Dawn" [ref=e536]:
+                      - rowheader "英语CV" [ref=e537]
+                      - cell "Aiden Dawn" [ref=e538]
+                    - row "日语CV 井上麻里奈" [ref=e539]:
+                      - rowheader "日语CV" [ref=e540]
+                      - cell "井上麻里奈" [ref=e541]
+                    - row "韩语CV 조경이" [ref=e542]:
+                      - rowheader "韩语CV" [ref=e543]
+                      - cell "조경이" [ref=e544]
+                    - row "相关成就 战意奔涌#一如死生，并蒂双花 战意奔涌#无，无限，无限光 战意奔涌#然后记忆化作涟漪" [ref=e545]:
+                      - rowheader "相关成就" [ref=e546]
+                      - cell "战意奔涌#一如死生，并蒂双花 战意奔涌#无，无限，无限光 战意奔涌#然后记忆化作涟漪" [ref=e547]:
+                        - link "战意奔涌#一如死生，并蒂双花" [ref=e548] [cursor=pointer]:
+                          - /url: /sr/%E6%88%98%E6%84%8F%E5%A5%94%E6%B6%8C#一如死生，并蒂双花
+                        - link "战意奔涌#无，无限，无限光" [ref=e549] [cursor=pointer]:
+                          - /url: /sr/%E6%88%98%E6%84%8F%E5%A5%94%E6%B6%8C#无，无限，无限光
+                        - link "战意奔涌#然后记忆化作涟漪" [ref=e550] [cursor=pointer]:
+                          - /url: /sr/%E6%88%98%E6%84%8F%E5%A5%94%E6%B6%8C#然后记忆化作涟漪
+                    - row "卡池信息 UP次数：2次 折叠" [ref=e551]:
+                      - rowheader "卡池信息" [ref=e552]
+                      - cell "UP次数：2次 折叠" [ref=e553]:
+                        - generic [ref=e555] [cursor=pointer]:
+                          - generic [ref=e556]: UP次数：2次
+                          - generic [ref=e557]: 折叠
+                - heading "角色故事" [level=2] [ref=e558]:
+                  - generic [ref=e559]: 角色故事
+                - table [ref=e560]:
+                  - rowgroup [ref=e561]:
+                    - row "角色详情" [ref=e562]:
+                      - columnheader "角色详情" [ref=e563]
+                    - row "流星划过夜空，生命的长河荡起涟漪，闪烁十三种光彩。 哀丽秘榭的女儿，哺育「真我」的黄金裔，你要栽下记忆的种子，让往昔的花朵在明日绽放 ——「然后，一起写下不同以往的诗篇吧♪」" [ref=e564]:
+                      - cell "流星划过夜空，生命的长河荡起涟漪，闪烁十三种光彩。 哀丽秘榭的女儿，哺育「真我」的黄金裔，你要栽下记忆的种子，让往昔的花朵在明日绽放 ——「然后，一起写下不同以往的诗篇吧♪」" [ref=e565]:
+                        - text: 流星划过夜空，生命的长河荡起涟漪，闪烁十三种光彩。
+                        - text: 哀丽秘榭的女儿，哺育「真我」的黄金裔，你要栽下记忆的种子，让往昔的花朵在明日绽放
+                        - text: ——「然后，一起写下不同以往的诗篇吧♪」
+                    - row "角色故事•一（解锁条件：角色等级20）" [ref=e566]:
+                      - columnheader "角色故事•一（解锁条件：角色等级20）" [expanded] [ref=e567] [cursor=pointer]
+                    - row
+                    - row "角色故事•二（解锁条件：角色等级40）" [ref=e568]:
+                      - columnheader "角色故事•二（解锁条件：角色等级40）" [expanded] [ref=e569] [cursor=pointer]
+                    - row
+                    - row "角色故事•三（解锁条件：角色等级60）" [ref=e570]:
+                      - columnheader "角色故事•三（解锁条件：角色等级60）" [expanded] [ref=e571] [cursor=pointer]
+                    - row
+                    - row "角色故事•四（解锁条件：角色等级80）" [ref=e572]:
+                      - columnheader "角色故事•四（解锁条件：角色等级80）" [expanded] [ref=e573] [cursor=pointer]
+                    - row
+                - paragraph [ref=e575]: 点击对应条目可展开查看详细故事
+          - heading "星魂" [level=2] [ref=e576]:
+            - generic [ref=e577]: 星魂
+          - generic [ref=e579]:
+            - list [ref=e580]:
+              - listitem [ref=e581]:
+                - generic [ref=e582]: 表格
+              - listitem [ref=e583]:
+                - generic [ref=e584]: 星魂图
+            - table [ref=e587]:
+              - rowgroup [ref=e588]:
+                - row "名称 效果" [ref=e589]:
+                  - columnheader "名称" [ref=e590]
+                  - columnheader "效果" [ref=e591]
+                - row "昔涟-星魂1.png 空白，在诗篇的起点 德谬歌触发忆灵技【献予「真我」之诗】施放【花与箭的舞曲】时获得6点【追忆】并使本次攻击的弹射次数额外增加12次。" [ref=e592]:
+                  - cell "昔涟-星魂1.png 空白，在诗篇的起点" [ref=e593]:
+                    - img "昔涟-星魂1.png" [ref=e595]
+                    - text: 空白，在诗篇的起点
+                  - cell "德谬歌触发忆灵技【献予「真我」之诗】施放【花与箭的舞曲】时获得6点【追忆】并使本次攻击的弹射次数额外增加12次。" [ref=e596]
+                - row "昔涟-星魂2.png 十三种光彩，倒映明天 进入战斗时，额外获得12点【追忆】。每有1名不同的我方角色获得德谬歌忆灵技的 增益效果 ，我方目标通过战技的结界造成的真实伤害 倍率提高6%，最多提高24%。" [ref=e597]:
+                  - cell "昔涟-星魂2.png 十三种光彩，倒映明天" [ref=e598]:
+                    - img "昔涟-星魂2.png" [ref=e600]
+                    - text: 十三种光彩，倒映明天
+                  - cell "进入战斗时，额外获得12点【追忆】。每有1名不同的我方角色获得德谬歌忆灵技的 增益效果 ，我方目标通过战技的结界造成的真实伤害 倍率提高6%，最多提高24%。" [ref=e601]:
+                    - text: 进入战斗时，额外获得12点【追忆】。每有1名不同的我方角色获得德谬歌忆灵技的
+                    - generic [ref=e602]: 增益效果
+                    - text: ，我方目标通过战技的结界造成的
+                    - generic [ref=e603]: 真实伤害
+                    - text: 倍率提高6%，最多提高24%。
+                - row "昔涟-星魂3.png 因你而在，如我所书 终结技等级+2，最多不超过15级；天赋等级+2，最多不超过15级；忆灵技等级+1，最多不超过10级。" [ref=e604]:
+                  - cell "昔涟-星魂3.png 因你而在，如我所书" [ref=e605]:
+                    - img "昔涟-星魂3.png" [ref=e607]
+                    - text: 因你而在，如我所书
+                  - cell "终结技等级+2，最多不超过15级；天赋等级+2，最多不超过15级；忆灵技等级+1，最多不超过10级。" [ref=e608]
+                - row "昔涟-星魂4.png 请笑着，写就下一页 德谬歌每施放1次【花与箭的舞曲】后，本场战斗中触发忆灵技【献予「真我」之诗】的弹射伤害倍率提高6%，最多可叠加24层。" [ref=e609]:
+                  - cell "昔涟-星魂4.png 请笑着，写就下一页" [ref=e610]:
+                    - img "昔涟-星魂4.png" [ref=e612]
+                    - text: 请笑着，写就下一页
+                  - cell "德谬歌每施放1次【花与箭的舞曲】后，本场战斗中触发忆灵技【献予「真我」之诗】的弹射伤害倍率提高6%，最多可叠加24层。" [ref=e613]
+                - row "昔涟-星魂5.png 目光，流溢昨日的花圃 战技等级+2，最多不超过15级；普攻等级+1，最多不超过10级；忆灵天赋等级+1，最多不超过10级。" [ref=e614]:
+                  - cell "昔涟-星魂5.png 目光，流溢昨日的花圃" [ref=e615]:
+                    - img "昔涟-星魂5.png" [ref=e617]
+                    - text: 目光，流溢昨日的花圃
+                  - cell "战技等级+2，最多不超过15级；普攻等级+1，最多不超过10级；忆灵天赋等级+1，最多不超过10级。" [ref=e618]
+                - row "昔涟-星魂6.png 记忆，化作涟漪片片♪ 昔涟首次施放终结技时，使我方全体行动提前 100%。德谬歌每次触发忆灵技【献予「真我」之诗】施放【花与箭的舞曲】时，根据本场战斗中已触发的次数获得以下效果： 1次：德谬歌在场时，敌方全体目标的防御力降低20%； 至少2次：使我方全体行动提前 24%。" [ref=e619]:
+                  - cell "昔涟-星魂6.png 记忆，化作涟漪片片♪" [ref=e620]:
+                    - img "昔涟-星魂6.png" [ref=e622]
+                    - text: 记忆，化作涟漪片片♪
+                  - cell "昔涟首次施放终结技时，使我方全体行动提前 100%。德谬歌每次触发忆灵技【献予「真我」之诗】施放【花与箭的舞曲】时，根据本场战斗中已触发的次数获得以下效果： 1次：德谬歌在场时，敌方全体目标的防御力降低20%； 至少2次：使我方全体行动提前 24%。" [ref=e623]:
+                    - text: 昔涟首次施放终结技时，使我方全体
+                    - generic [ref=e624]: 行动提前
+                    - text: 100%。德谬歌每次触发忆灵技【献予「真我」之诗】施放【花与箭的舞曲】时，根据本场战斗中已触发的次数获得以下效果：
+                    - text: 1次：德谬歌在场时，敌方全体目标的防御力降低20%；
+                    - text: 至少2次：使我方全体
+                    - generic [ref=e625]: 行动提前
+                    - text: 24%。
+          - heading "行迹" [level=2] [ref=e626]:
+            - generic [ref=e627]: 行迹
+          - generic [ref=e629]:
+            - generic [ref=e630]:
+              - generic [ref=e631] [cursor=pointer]:
+                - img "昔涟-普攻.png"
+                - generic [ref=e632]: 普攻
+              - generic [ref=e633] [cursor=pointer]:
+                - img "昔涟-战技.png"
+                - generic [ref=e634]: 战技
+              - generic [ref=e635] [cursor=pointer]:
+                - img "昔涟-终结技.png"
+                - generic [ref=e636]: 终结技
+              - generic [ref=e637] [cursor=pointer]:
+                - img "昔涟-秘技.png"
+                - generic [ref=e638]: 秘技
+              - generic [ref=e639] [cursor=pointer]:
+                - img "昔涟-天赋.png"
+                - generic [ref=e640]: 天赋
+              - generic [ref=e641] [cursor=pointer]:
+                - img "昔涟-忆灵技.png"
+                - generic [ref=e642]: 忆灵技
+              - generic [ref=e643] [cursor=pointer]:
+                - img "昔涟-忆灵天赋.png"
+                - generic [ref=e644]: 忆灵天赋
+              - generic [ref=e645] [cursor=pointer]:
+                - img "昔涟-额外能力1.png"
+              - generic [ref=e646] [cursor=pointer]:
+                - img "昔涟-额外能力2.png"
+              - generic [ref=e647] [cursor=pointer]:
+                - img "昔涟-额外能力3.png"
+              - generic [ref=e648] [cursor=pointer]:
+                - img "暴击伤害.png"
+              - generic [ref=e649] [cursor=pointer]:
+                - img "速度.png"
+              - generic [ref=e650] [cursor=pointer]:
+                - img "暴击伤害.png"
+              - generic [ref=e651] [cursor=pointer]:
+                - img "生命.png"
+              - generic [ref=e652] [cursor=pointer]:
+                - img "暴击伤害.png"
+              - generic [ref=e653] [cursor=pointer]:
+                - img "速度.png"
+              - generic [ref=e654] [cursor=pointer]:
+                - img "暴击伤害.png"
+              - generic [ref=e655] [cursor=pointer]:
+                - img "生命.png"
+              - generic [ref=e656] [cursor=pointer]:
+                - img "速度.png"
+              - generic [ref=e657] [cursor=pointer]:
+                - img "暴击伤害.png"
+            - generic [ref=e659]:
+              - generic [ref=e660]: 普攻
+              - generic [ref=e661] [cursor=pointer]: 详细属性
+              - generic [ref=e662]:
+                - generic [ref=e663]:
+                  - img "昔涟-普攻.png"
+                  - text: 看，希望的起始！
+                - generic [ref=e665]: "[单攻]"
+                - generic [ref=e666]:
+                  - generic [ref=e667]: 恢复战技点
+                  - generic [ref=e668]: ✦
+                - generic [ref=e669]:
+                  - generic [ref=e670]: 削韧值
+                  - generic [ref=e671]: "10"
+                - generic [ref=e672]: 获得1点【追忆】并对指定敌方单体造成等同于昔涟25%/50%生命上限的冰属性伤害。
+                - paragraph [ref=e673]
+                - generic "昔涟-普攻.gif" [ref=e675]:
+                  - generic [ref=e676] [cursor=pointer]: 点击查看技能预览
+              - generic [ref=e677]:
+                - generic [ref=e678]:
+                  - img "昔涟-强化普攻.png"
+                  - text: 向着爱与明天♪
+                - generic [ref=e680]: "[群攻]"
+                - generic [ref=e681]:
+                  - generic [ref=e682]: 削韧值
+                  - generic [ref=e683]: "10"
+                - generic [ref=e684]:
+                  - text: 获得3点【追忆】并对指定敌方单体造成等同于昔涟15%/30%生命上限的冰属性伤害，随后对敌方全体造成等同于昔涟15%/30%生命上限的冰属性伤害。
+                  - text: 【向着爱与明天♪】无法恢复战技点。
+                - paragraph [ref=e685]
+                - generic "昔涟-强化普攻.gif" [ref=e687]:
+                  - generic [ref=e688] [cursor=pointer]: 点击查看技能预览
+          - table [ref=e689]:
+            - rowgroup [ref=e690]:
+              - row "行迹属性加成" [ref=e691]:
+                - columnheader "行迹属性加成" [ref=e692]
+              - row "暴击伤害.png 暴击伤害提高 37.3% 速度.png 速度提高 9 生命.png 生命值上限提高 10%" [ref=e693]:
+                - rowheader "暴击伤害.png 暴击伤害提高" [ref=e694]:
+                  - img "暴击伤害.png" [ref=e696]
+                  - text: 暴击伤害提高
+                - cell "37.3%" [ref=e697]
+                - rowheader "速度.png 速度提高" [ref=e698]:
+                  - img "速度.png" [ref=e700]
+                  - text: 速度提高
+                - cell "9" [ref=e701]
+                - rowheader "生命.png 生命值上限提高" [ref=e702]:
+                  - img "生命.png" [ref=e704]
+                  - text: 生命值上限提高
+                - cell "10%" [ref=e705]
+          - heading "技能晋阶材料" [level=2] [ref=e706]:
+            - generic [ref=e707]: 技能晋阶材料
+          - table [ref=e711]:
+            - rowgroup [ref=e712]:
+              - row "1→2 2→3 3→4 4→5 5→6 6→7 7→8 8→9 9→10" [ref=e713]:
+                - columnheader "1→2" [ref=e714]
+                - columnheader "2→3" [ref=e715]
+                - columnheader "3→4" [ref=e716]
+                - columnheader "4→5" [ref=e717]
+                - columnheader "5→6" [ref=e718]
+                - columnheader "6→7" [ref=e719]
+                - columnheader "7→8" [ref=e720]
+                - columnheader "8→9" [ref=e721]
+                - columnheader "9→10" [ref=e722]
+              - row "角色晋阶1 角色晋阶2 角色晋阶3 角色晋阶4 角色晋阶5 角色晋阶6" [ref=e723]:
+                - cell "角色晋阶1" [ref=e724]
+                - cell "角色晋阶2" [ref=e725]
+                - cell "角色晋阶3" [ref=e726]
+                - cell "角色晋阶4" [ref=e727]
+                - cell "角色晋阶5" [ref=e728]
+                - cell "角色晋阶6" [ref=e729]
+              - row "恐惧踏碎血肉 3 信用点 2500 思量的种 2 恐惧踏碎血肉 4 信用点 3500 末那芽苗 2 勇气撕裂胸膛 2 信用点 7000 末那芽苗 4 勇气撕裂胸膛 3 信用点 16000 末那芽苗 6 勇气撕裂胸膛 6 信用点 25000 阿赖耶华 2 荣耀洗礼身躯 2 信用点 35000 阳雷的遥想 1 阿赖耶华 5 荣耀洗礼身躯 4 信用点 70000 命运的足迹 1 阳雷的遥想 1 阿赖耶华 6 信用点 140000 命运的足迹 1 阳雷的遥想 1 阿赖耶华 13 信用点 240000" [ref=e730]:
+                - cell "恐惧踏碎血肉 3 信用点 2500" [ref=e731]:
+                  - generic [ref=e732]:
+                    - link "恐惧踏碎血肉" [ref=e733] [cursor=pointer]:
+                      - /url: /sr/%E6%81%90%E6%83%A7%E8%B8%8F%E7%A2%8E%E8%A1%80%E8%82%89
+                      - img "恐惧踏碎血肉" [ref=e734]
+                    - generic [ref=e735]: "3"
+                  - generic [ref=e736]:
+                    - link "信用点" [ref=e737] [cursor=pointer]:
+                      - /url: /sr/%E4%BF%A1%E7%94%A8%E7%82%B9
+                      - img "信用点" [ref=e738]
+                    - generic [ref=e739]: "2500"
+                - cell "思量的种 2 恐惧踏碎血肉 4 信用点 3500" [ref=e740]:
+                  - generic [ref=e741]:
+                    - link "思量的种" [ref=e742] [cursor=pointer]:
+                      - /url: /sr/%E6%80%9D%E9%87%8F%E7%9A%84%E7%A7%8D
+                      - img "思量的种" [ref=e743]
+                    - generic [ref=e744]: "2"
+                  - generic [ref=e745]:
+                    - link "恐惧踏碎血肉" [ref=e746] [cursor=pointer]:
+                      - /url: /sr/%E6%81%90%E6%83%A7%E8%B8%8F%E7%A2%8E%E8%A1%80%E8%82%89
+                      - img "恐惧踏碎血肉" [ref=e747]
+                    - generic [ref=e748]: "4"
+                  - generic [ref=e749]:
+                    - link "信用点" [ref=e750] [cursor=pointer]:
+                      - /url: /sr/%E4%BF%A1%E7%94%A8%E7%82%B9
+                      - img "信用点" [ref=e751]
+                    - generic [ref=e752]: "3500"
+                - cell "末那芽苗 2 勇气撕裂胸膛 2 信用点 7000" [ref=e753]:
+                  - generic [ref=e754]:
+                    - link "末那芽苗" [ref=e755] [cursor=pointer]:
+                      - /url: /sr/%E6%9C%AB%E9%82%A3%E8%8A%BD%E8%8B%97
+                      - img "末那芽苗" [ref=e756]
+                    - generic [ref=e757]: "2"
+                  - generic [ref=e758]:
+                    - link "勇气撕裂胸膛" [ref=e759] [cursor=pointer]:
+                      - /url: /sr/%E5%8B%87%E6%B0%94%E6%92%95%E8%A3%82%E8%83%B8%E8%86%9B
+                      - img "勇气撕裂胸膛" [ref=e760]
+                    - generic [ref=e761]: "2"
+                  - generic [ref=e762]:
+                    - link "信用点" [ref=e763] [cursor=pointer]:
+                      - /url: /sr/%E4%BF%A1%E7%94%A8%E7%82%B9
+                      - img "信用点" [ref=e764]
+                    - generic [ref=e765]: "7000"
+                - cell "末那芽苗 4 勇气撕裂胸膛 3 信用点 16000" [ref=e766]:
+                  - generic [ref=e767]:
+                    - link "末那芽苗" [ref=e768] [cursor=pointer]:
+                      - /url: /sr/%E6%9C%AB%E9%82%A3%E8%8A%BD%E8%8B%97
+                      - img "末那芽苗" [ref=e769]
+                    - generic [ref=e770]: "4"
+                  - generic [ref=e771]:
+                    - link "勇气撕裂胸膛" [ref=e772] [cursor=pointer]:
+                      - /url: /sr/%E5%8B%87%E6%B0%94%E6%92%95%E8%A3%82%E8%83%B8%E8%86%9B
+                      - img "勇气撕裂胸膛" [ref=e773]
+                    - generic [ref=e774]: "3"
+                  - generic [ref=e775]:
+                    - link "信用点" [ref=e776] [cursor=pointer]:
+                      - /url: /sr/%E4%BF%A1%E7%94%A8%E7%82%B9
+                      - img "信用点" [ref=e777]
+                    - generic [ref=e778]: "16000"
+                - cell "末那芽苗 6 勇气撕裂胸膛 6 信用点 25000" [ref=e779]:
+                  - generic [ref=e780]:
+                    - link "末那芽苗" [ref=e781] [cursor=pointer]:
+                      - /url: /sr/%E6%9C%AB%E9%82%A3%E8%8A%BD%E8%8B%97
+                      - img "末那芽苗" [ref=e782]
+                    - generic [ref=e783]: "6"
+                  - generic [ref=e784]:
+                    - link "勇气撕裂胸膛" [ref=e785] [cursor=pointer]:
+                      - /url: /sr/%E5%8B%87%E6%B0%94%E6%92%95%E8%A3%82%E8%83%B8%E8%86%9B
+                      - img "勇气撕裂胸膛" [ref=e786]
+                    - generic [ref=e787]: "6"
+                  - generic [ref=e788]:
+                    - link "信用点" [ref=e789] [cursor=pointer]:
+                      - /url: /sr/%E4%BF%A1%E7%94%A8%E7%82%B9
+                      - img "信用点" [ref=e790]
+                    - generic [ref=e791]: "25000"
+                - cell "阿赖耶华 2 荣耀洗礼身躯 2 信用点 35000" [ref=e792]:
+                  - generic [ref=e793]:
+                    - link "阿赖耶华" [ref=e794] [cursor=pointer]:
+                      - /url: /sr/%E9%98%BF%E8%B5%96%E8%80%B6%E5%8D%8E
+                      - img "阿赖耶华" [ref=e795]
+                    - generic [ref=e796]: "2"
+                  - generic [ref=e797]:
+                    - link "荣耀洗礼身躯" [ref=e798] [cursor=pointer]:
+                      - /url: /sr/%E8%8D%A3%E8%80%80%E6%B4%97%E7%A4%BC%E8%BA%AB%E8%BA%AF
+                      - img "荣耀洗礼身躯" [ref=e799]
+                    - generic [ref=e800]: "2"
+                  - generic [ref=e801]:
+                    - link "信用点" [ref=e802] [cursor=pointer]:
+                      - /url: /sr/%E4%BF%A1%E7%94%A8%E7%82%B9
+                      - img "信用点" [ref=e803]
+                    - generic [ref=e804]: "35000"
+                - cell "阳雷的遥想 1 阿赖耶华 5 荣耀洗礼身躯 4 信用点 70000" [ref=e805]:
+                  - generic [ref=e806]:
+                    - link "阳雷的遥想" [ref=e807] [cursor=pointer]:
+                      - /url: /sr/%E9%98%B3%E9%9B%B7%E7%9A%84%E9%81%A5%E6%83%B3
+                      - img "阳雷的遥想" [ref=e808]
+                    - generic [ref=e809]: "1"
+                  - generic [ref=e810]:
+                    - link "阿赖耶华" [ref=e811] [cursor=pointer]:
+                      - /url: /sr/%E9%98%BF%E8%B5%96%E8%80%B6%E5%8D%8E
+                      - img "阿赖耶华" [ref=e812]
+                    - generic [ref=e813]: "5"
+                  - generic [ref=e814]:
+                    - link "荣耀洗礼身躯" [ref=e815] [cursor=pointer]:
+                      - /url: /sr/%E8%8D%A3%E8%80%80%E6%B4%97%E7%A4%BC%E8%BA%AB%E8%BA%AF
+                      - img "荣耀洗礼身躯" [ref=e816]
+                    - generic [ref=e817]: "4"
+                  - generic [ref=e818]:
+                    - link "信用点" [ref=e819] [cursor=pointer]:
+                      - /url: /sr/%E4%BF%A1%E7%94%A8%E7%82%B9
+                      - img "信用点" [ref=e820]
+                    - generic [ref=e821]: "70000"
+                - cell "命运的足迹 1 阳雷的遥想 1 阿赖耶华 6 信用点 140000" [ref=e822]:
+                  - generic [ref=e823]:
+                    - link "命运的足迹" [ref=e824] [cursor=pointer]:
+                      - /url: /sr/%E5%91%BD%E8%BF%90%E7%9A%84%E8%B6%B3%E8%BF%B9
+                      - img "命运的足迹" [ref=e825]
+                    - generic [ref=e826]: "1"
+                  - generic [ref=e827]:
+                    - link "阳雷的遥想" [ref=e828] [cursor=pointer]:
+                      - /url: /sr/%E9%98%B3%E9%9B%B7%E7%9A%84%E9%81%A5%E6%83%B3
+                      - img "阳雷的遥想" [ref=e829]
+                    - generic [ref=e830]: "1"
+                  - generic [ref=e831]:
+                    - link "阿赖耶华" [ref=e832] [cursor=pointer]:
+                      - /url: /sr/%E9%98%BF%E8%B5%96%E8%80%B6%E5%8D%8E
+                      - img "阿赖耶华" [ref=e833]
+                    - generic [ref=e834]: "6"
+                  - generic [ref=e835]:
+                    - link "信用点" [ref=e836] [cursor=pointer]:
+                      - /url: /sr/%E4%BF%A1%E7%94%A8%E7%82%B9
+                      - img "信用点" [ref=e837]
+                    - generic [ref=e838]: "140000"
+                - cell "命运的足迹 1 阳雷的遥想 1 阿赖耶华 13 信用点 240000" [ref=e839]:
+                  - generic [ref=e840]:
+                    - link "命运的足迹" [ref=e841] [cursor=pointer]:
+                      - /url: /sr/%E5%91%BD%E8%BF%90%E7%9A%84%E8%B6%B3%E8%BF%B9
+                      - img "命运的足迹" [ref=e842]
+                    - generic [ref=e843]: "1"
+                  - generic [ref=e844]:
+                    - link "阳雷的遥想" [ref=e845] [cursor=pointer]:
+                      - /url: /sr/%E9%98%B3%E9%9B%B7%E7%9A%84%E9%81%A5%E6%83%B3
+                      - img "阳雷的遥想" [ref=e846]
+                    - generic [ref=e847]: "1"
+                  - generic [ref=e848]:
+                    - link "阿赖耶华" [ref=e849] [cursor=pointer]:
+                      - /url: /sr/%E9%98%BF%E8%B5%96%E8%80%B6%E5%8D%8E
+                      - img "阿赖耶华" [ref=e850]
+                    - generic [ref=e851]: "13"
+                  - generic [ref=e852]:
+                    - link "信用点" [ref=e853] [cursor=pointer]:
+                      - /url: /sr/%E4%BF%A1%E7%94%A8%E7%82%B9
+                      - img "信用点" [ref=e854]
+                    - generic [ref=e855]: "240000"
+          - paragraph
+          - heading "此诗，献予一切生命" [level=2] [ref=e856]:
+            - generic [ref=e857]: 此诗，献予一切生命
+          - table [ref=e858]:
+            - rowgroup [ref=e859]:
+              - row "黄金裔 [展开] 特殊效果" [ref=e860]:
+                - columnheader "黄金裔" [ref=e861]
+                - columnheader "[展开] 特殊效果" [ref=e862]:
+                  - button "[展开]" [ref=e863] [cursor=pointer]
+                  - text: 特殊效果
+          - generic [ref=e865]:
+            - list [ref=e866]:
+              - listitem [ref=e867]:
+                - generic [ref=e868]:
+                  - img "毁灭-白.png" [ref=e869]
+                  - text: 毁灭
+              - listitem [ref=e870]:
+                - generic [ref=e871]:
+                  - img "巡猎-白.png" [ref=e872]
+                  - text: 巡猎
+              - listitem [ref=e873]:
+                - generic [ref=e874]:
+                  - img "智识-白.png" [ref=e875]
+                  - text: 智识
+              - listitem [ref=e876]:
+                - generic [ref=e877]:
+                  - img "同谐-白.png" [ref=e878]
+                  - text: 同谐
+              - listitem [ref=e879]:
+                - generic [ref=e880]:
+                  - img "虚无-白.png" [ref=e881]
+                  - text: 虚无
+              - listitem [ref=e882]:
+                - generic [ref=e883]:
+                  - img "存护-白.png" [ref=e884]
+                  - text: 存护
+              - listitem [ref=e885]:
+                - generic [ref=e886]:
+                  - img "丰饶-白.png" [ref=e887]
+                  - text: 丰饶
+              - listitem [ref=e888]:
+                - generic [ref=e889]:
+                  - img "记忆-白.png" [ref=e890]
+                  - text: 记忆
+              - listitem [ref=e891]:
+                - generic [ref=e892]:
+                  - img "欢愉-白.png" [ref=e893]
+                  - text: 欢愉
+              - listitem [ref=e894]:
+                - generic [ref=e895]: 隧洞遗器
+              - listitem [ref=e896]:
+                - generic [ref=e897]: 位面饰品
+            - generic [ref=e899]:
+              - generic [ref=e900]:
+                - generic [ref=e901]:
+                  - img "昔涟竖版头像.png" [ref=e903]
+                  - img "冰.png" [ref=e904]
+                  - generic [ref=e905]: 昔涟
+                - generic [ref=e907]:
+                  - img "长夜月竖版头像.png" [ref=e909]
+                  - img "冰.png" [ref=e910]
+                  - generic [ref=e911]: 长夜月
+                  - link "长夜月":
+                    - /url: /sr/%E9%95%BF%E5%A4%9C%E6%9C%88
+                - generic [ref=e913]:
+                  - img "风堇竖版头像.png" [ref=e915]
+                  - img "风.png" [ref=e916]
+                  - generic [ref=e917]: 风堇
+                  - link "风堇":
+                    - /url: /sr/%E9%A3%8E%E5%A0%87
+                - generic [ref=e919]:
+                  - img "遐蝶竖版头像.png" [ref=e921]
+                  - img "量子.png" [ref=e922]
+                  - generic [ref=e923]: 遐蝶
+                  - link "遐蝶":
+                    - /url: /sr/%E9%81%90%E8%9D%B6
+                - generic [ref=e925]:
+                  - img "阿格莱雅竖版头像.png" [ref=e927]
+                  - img "雷.png" [ref=e928]
+                  - generic [ref=e929]: 阿格莱雅
+                  - link "阿格莱雅":
+                    - /url: /sr/%E9%98%BF%E6%A0%BC%E8%8E%B1%E9%9B%85
+                - generic [ref=e931]:
+                  - img "开拓者•记忆竖版头像.png" [ref=e933]
+                  - img "冰.png" [ref=e934]
+                  - generic [ref=e935]: 开拓者•记忆
+                  - link "开拓者•记忆":
+                    - /url: /sr/%E5%BC%80%E6%8B%93%E8%80%85%E2%80%A2%E8%AE%B0%E5%BF%86
+              - separator [ref=e937]
+              - generic [ref=e938]:
+                - generic [ref=e939]:
+                  - img "爱如此刻永恒.png" [ref=e941]
+                  - img "记忆-白.png" [ref=e942]
+                  - generic [ref=e943]: 爱如此刻永恒
+                  - link "爱如此刻永恒":
+                    - /url: /sr/%E7%88%B1%E5%A6%82%E6%AD%A4%E5%88%BB%E6%B0%B8%E6%81%92
+                - generic [ref=e945]:
+                  - img "致长夜的星光.png" [ref=e947]
+                  - img "记忆-白.png" [ref=e948]
+                  - generic [ref=e949]: 致长夜的星光
+                  - link "致长夜的星光":
+                    - /url: /sr/%E8%87%B4%E9%95%BF%E5%A4%9C%E7%9A%84%E6%98%9F%E5%85%89
+                - generic [ref=e951]:
+                  - img "愿虹光永驻天空.png" [ref=e953]
+                  - img "记忆-白.png" [ref=e954]
+                  - generic [ref=e955]: 愿虹光永驻天空
+                  - link "愿虹光永驻天空":
+                    - /url: /sr/%E6%84%BF%E8%99%B9%E5%85%89%E6%B0%B8%E9%A9%BB%E5%A4%A9%E7%A9%BA
+                - generic [ref=e957]:
+                  - img "让告别，更美一些.png" [ref=e959]
+                  - img "记忆-白.png" [ref=e960]
+                  - generic [ref=e961]: 让告别，更美一些
+                  - link "让告别，更美一些":
+                    - /url: /sr/%E8%AE%A9%E5%91%8A%E5%88%AB%EF%BC%8C%E6%9B%B4%E7%BE%8E%E4%B8%80%E4%BA%9B
+                - generic [ref=e963]:
+                  - img "记忆永不落幕.png" [ref=e965]
+                  - img "记忆-白.png" [ref=e966]
+                  - generic [ref=e967]: 记忆永不落幕
+                  - link "记忆永不落幕":
+                    - /url: /sr/%E8%AE%B0%E5%BF%86%E6%B0%B8%E4%B8%8D%E8%90%BD%E5%B9%95
+                - generic [ref=e969]:
+                  - img "将光阴织成黄金.png" [ref=e971]
+                  - img "记忆-白.png" [ref=e972]
+                  - generic [ref=e973]: 将光阴织成黄金
+                  - link "将光阴织成黄金":
+                    - /url: /sr/%E5%B0%86%E5%85%89%E9%98%B4%E7%BB%87%E6%88%90%E9%BB%84%E9%87%91
+                - generic [ref=e975]:
+                  - img "飞向粉色的明天.png" [ref=e977]
+                  - img "记忆-白.png" [ref=e978]
+                  - generic [ref=e979]: 飞向粉色的明天
+                  - link "飞向粉色的明天":
+                    - /url: /sr/%E9%A3%9E%E5%90%91%E7%B2%89%E8%89%B2%E7%9A%84%E6%98%8E%E5%A4%A9
+                - generic [ref=e981]:
+                  - img "花儿不会忘记.png" [ref=e983]
+                  - img "记忆-白.png" [ref=e984]
+                  - generic [ref=e985]: 花儿不会忘记
+                  - link "花儿不会忘记":
+                    - /url: /sr/%E8%8A%B1%E5%84%BF%E4%B8%8D%E4%BC%9A%E5%BF%98%E8%AE%B0
+                - generic [ref=e987]:
+                  - img "故事的下一页.png" [ref=e989]
+                  - img "记忆-白.png" [ref=e990]
+                  - generic [ref=e991]: 故事的下一页
+                  - link "故事的下一页":
+                    - /url: /sr/%E6%95%85%E4%BA%8B%E7%9A%84%E4%B8%8B%E4%B8%80%E9%A1%B5
+                - generic [ref=e993]:
+                  - img "天才们的问候.png" [ref=e995]
+                  - img "记忆-白.png" [ref=e996]
+                  - generic [ref=e997]: 天才们的问候
+                  - link "天才们的问候":
+                    - /url: /sr/%E5%A4%A9%E6%89%8D%E4%BB%AC%E7%9A%84%E9%97%AE%E5%80%99
+                - generic [ref=e999]:
+                  - img "多流汗，少流泪.png" [ref=e1001]
+                  - img "记忆-白.png" [ref=e1002]
+                  - generic [ref=e1003]: 多流汗，少流泪
+                  - link "多流汗，少流泪":
+                    - /url: /sr/%E5%A4%9A%E6%B5%81%E6%B1%97%EF%BC%8C%E5%B0%91%E6%B5%81%E6%B3%AA
+                - generic [ref=e1005]:
+                  - img "胜利只在朝夕间.png" [ref=e1007]
+                  - img "记忆-白.png" [ref=e1008]
+                  - generic [ref=e1009]: 胜利只在朝夕间
+                  - link "胜利只在朝夕间":
+                    - /url: /sr/%E8%83%9C%E5%88%A9%E5%8F%AA%E5%9C%A8%E6%9C%9D%E5%A4%95%E9%97%B4
+                - generic [ref=e1011]:
+                  - img "溯忆.png" [ref=e1013]
+                  - img "记忆-白.png" [ref=e1014]
+                  - generic [ref=e1015]: 溯忆
+                  - link "溯忆":
+                    - /url: /sr/%E6%BA%AF%E5%BF%86
+                - generic [ref=e1017]:
+                  - img "焚影.png" [ref=e1019]
+                  - img "记忆-白.png" [ref=e1020]
+                  - generic [ref=e1021]: 焚影
+                  - link "焚影":
+                    - /url: /sr/%E7%84%9A%E5%BD%B1
+          - paragraph
+        - generic [ref=e1024]:
+          - link "分类" [ref=e1025] [cursor=pointer]:
+            - /url: /sr/%E7%89%B9%E6%AE%8A:%E9%A1%B5%E9%9D%A2%E5%88%86%E7%B1%BB
+          - text: ：
+          - list [ref=e1026]:
+            - listitem [ref=e1027]:
+              - link "角色" [ref=e1028] [cursor=pointer]:
+                - /url: /sr/%E5%88%86%E7%B1%BB:%E8%A7%92%E8%89%B2
+            - listitem [ref=e1029]:
+              - link "计时器标签" [ref=e1030] [cursor=pointer]:
+                - /url: /sr/%E5%88%86%E7%B1%BB:%E8%AE%A1%E6%97%B6%E5%99%A8%E6%A0%87%E7%AD%BE
+      - generic [ref=e1031]:
+        - text: 评论
+        - generic [ref=e1032]:
+          - img [ref=e1035] [cursor=pointer]
+          - generic [ref=e1037]: 请先登录后发表评论 (・ω・)
+        - generic [ref=e1038]:
+          - generic [ref=e1039]: 热门评论
+          - generic [ref=e1041]:
+            - img [ref=e1043]
+            - generic [ref=e1044]:
+              - generic [ref=e1045]:
+                - link "希之萱" [ref=e1047] [cursor=pointer]:
+                  - /url: https://space.bilibili.com/13175167
+                - generic [ref=e1050]:
+                  - generic [ref=e1051]: 管理员
+                  - generic [ref=e1052]: 攻略组
+                - generic [ref=e1053]:
+                  - text: 回复
+                  - link "@sajuuk2017" [ref=e1054] [cursor=pointer]:
+                    - /url: https://space.bilibili.com/96201355
+                  - text: ":"
+              - generic [ref=e1055]:
+                - text: 啊哈哈，别误会，我是老米黑头子了，除了崩2和未定，四家我都玩。原神星铁绝区零的攻略我都写，相信你能在很多wiki的页面看见我的名字。
+                - text: 只是因为我喜欢的角色，在某个特定的时间段被跟风的小鬼反复掏出来烦我膈应我，而且因为大数据，还不停地把这些东西推送给我，导致我强烈的ptsd，看见同担“厨子”就开始应激。我只是一个，普通的，从她刚出现的时候，就很喜欢她的普通玩家。
+                - text: 实在是无法承受有人顶着这种名字或者头像做出一些很出格的事情。
+                - text: 崩三的热度和原神星铁没法比，但是乐土属实是太火，让我不得不害怕一些特定的逆天“厨子”，而且也有过好朋友被一些打着“喜欢爱莉”的名号被各种xing骚扰（那位朋友是个coser），这种时候，真的，使我非常恶心，非常膈应。简直是无法承受之重。
+                - text: 只是因为知道是米哈游，所以很无奈。我知道他们很想复刻乐土的辉煌。也知道米哈游喜欢玩这些异世界同位体，多数时候，我都是狂喜的，有些角色，我真的很喜欢呀，想多看看她们，想多听听她们的声音。
+                - text: 但是现在这个时代什么东西一旦火了，真的特别容易涌入一些烦人的玩意儿来恶心我。人一多，破事儿就多，我经历过很多次了。
+                - text: 所以，对，我的私心是，我希望这个角色永远停留在崩三，永远只在一个地方出现。因为她太好了，我无法承受遇见更多这种打着“厨子”的名号的逆天生物带来的巨大打击。
+              - generic [ref=e1056]:
+                - generic [ref=e1057]: 2025年1月19日, 19:30:38
+                - generic [ref=e1058]: "62"
+          - generic [ref=e1060]:
+            - img [ref=e1062]
+            - generic [ref=e1063]:
+              - generic [ref=e1064]:
+                - link "希之萱" [ref=e1066] [cursor=pointer]:
+                  - /url: https://space.bilibili.com/13175167
+                - generic [ref=e1069]:
+                  - generic [ref=e1070]: 管理员
+                  - generic [ref=e1071]: 攻略组
+                - generic [ref=e1072]:
+                  - text: 回复
+                  - link "@希之萱" [ref=e1073] [cursor=pointer]:
+                    - /url: https://space.bilibili.com/13175167
+                  - text: ":"
+              - generic [ref=e1074]: 好好好，乐土一群人又要被拉出来赚米辣，谁让我玩的是米哈游的游戏呢，释怀了
+              - generic [ref=e1075]:
+                - generic [ref=e1076]: 2024年11月26日, 18:21:37
+                - generic [ref=e1077]: "31"
+          - generic [ref=e1079]:
+            - img [ref=e1081]
+            - generic [ref=e1082]:
+              - generic [ref=e1083]:
+                - link "nie-er" [ref=e1085] [cursor=pointer]:
+                  - /url: https://space.bilibili.com/359392049
+                - text: "回复 :"
+                - generic [ref=e1088]: 11楼
+              - generic [ref=e1089]: 无论是崩三还是铁，这个角色是谁都不重要，我只希望她能带来一个不同以往的故事 仅此而已
+              - generic [ref=e1090]:
+                - generic [ref=e1091]: 2025年2月4日, 15:39:32
+                - generic [ref=e1092]: "27"
+          - generic [ref=e1093]: 全部评论24
+        - generic [ref=e1094]:
+          - generic [ref=e1096]:
+            - img [ref=e1098]
+            - generic [ref=e1099]:
+              - generic [ref=e1100]:
+                - link "J_M_L" [ref=e1102] [cursor=pointer]:
+                  - /url: https://space.bilibili.com/348789999
+                - text: "回复 :"
+                - generic [ref=e1105]: 75楼
+              - generic [ref=e1106]: 管理员的中立立场呢？
+              - generic [ref=e1108]: 2026年6月15日, 13:24:33
+          - generic [ref=e1110]:
+            - img [ref=e1112]
+            - generic [ref=e1113]:
+              - generic [ref=e1114]:
+                - link "rubick" [ref=e1116] [cursor=pointer]:
+                  - /url: https://space.bilibili.com/594767
+                - text: "回复 :"
+                - generic [ref=e1119]: 64楼
+              - generic [ref=e1120]: 嚯嚯，还有管理员亲自下场倒黑水的，我们wiki编辑组真是太专业辣！
+              - generic [ref=e1121]:
+                - generic [ref=e1122]: 2026年5月9日, 18:44:10
+                - generic [ref=e1123]: "11"
+          - generic [ref=e1125]:
+            - img [ref=e1127]
+            - generic [ref=e1128]:
+              - generic [ref=e1129]:
+                - link "最终防卫系统" [ref=e1131] [cursor=pointer]:
+                  - /url: https://space.bilibili.com/228968
+                - text: "回复 :"
+                - generic [ref=e1134]: 63楼
+              - generic [ref=e1135]: 管理员应该有基本的中立立场
+              - generic [ref=e1136]:
+                - generic [ref=e1137]: 2026年5月1日, 08:48:54
+                - generic [ref=e1138]: "10"
+          - generic [ref=e1139]:
+            - generic [ref=e1140]:
+              - img [ref=e1142]
+              - generic [ref=e1143]:
+                - generic [ref=e1144]:
+                  - link "像小石子一样的阿卡琳" [ref=e1146] [cursor=pointer]:
+                    - /url: https://space.bilibili.com/516951776
+                  - text: "回复 :"
+                  - generic [ref=e1149]: 56楼
+                - generic [ref=e1150]: 赞多的评论真的看过剧情吗，小桃子还能说爱莉有点像，大昔涟和爱莉的区别可大了吧，虽然25年1月的评论确实不可能看过剧情，也不可能知道后面还有大昔涟来着
+                - generic [ref=e1151]:
+                  - generic [ref=e1152]: 2026年2月21日, 16:26:20
+                  - generic [ref=e1153]: "9"
+            - generic [ref=e1155]:
+              - img [ref=e1157]
+              - generic [ref=e1158]:
+                - generic [ref=e1159]:
+                  - link "一条懒鱼qwq" [ref=e1161] [cursor=pointer]:
+                    - /url: https://space.bilibili.com/169531444
+                  - generic [ref=e1164]:
+                    - text: 回复
+                    - link "@像小石子一样的阿卡琳" [ref=e1165] [cursor=pointer]:
+                      - /url: https://space.bilibili.com/516951776
+                    - text: ":"
+                - generic [ref=e1166]: 也没说抱怨的是角色本身，而是到处膈应人的ky小鬼罢了，而且烧鸡这么干就是很膈应人啊，再加上那些小鬼推波助澜……
+                - generic [ref=e1168]: 2026年3月5日, 11:02:30
+            - generic [ref=e1170]:
+              - img [ref=e1172]
+              - generic [ref=e1173]:
+                - generic [ref=e1174]:
+                  - link "JGMTACF" [ref=e1176] [cursor=pointer]:
+                    - /url: https://space.bilibili.com/435729688
+                  - generic [ref=e1179]:
+                    - text: 回复
+                    - link "@像小石子一样的阿卡琳" [ref=e1180] [cursor=pointer]:
+                      - /url: https://space.bilibili.com/516951776
+                    - text: ":"
+                - generic [ref=e1181]: 因为昔涟就是爱莉，而德谬哥是侵蚀律者。
+                - generic [ref=e1182]:
+                  - generic [ref=e1183]: 2026年6月4日, 02:08:14
+                  - generic [ref=e1184]: "1"
+          - generic [ref=e1185]:
+            - generic [ref=e1186]:
+              - img [ref=e1188]
+              - generic [ref=e1189]:
+                - generic [ref=e1190]:
+                  - link "T0级i庄方宜流量大王" [ref=e1192] [cursor=pointer]:
+                    - /url: https://space.bilibili.com/319902669
+                  - text: "回复 :"
+                  - generic [ref=e1195]: 55楼
+                - generic [ref=e1196]: 不会写同位体不如换别人来写，粉切爱已经卖过一次了再拉出来炒冷饭是没活整了还是你米编剧凑不出个正常人？铁墓头部➕小昔涟教爱教出来一个冷血爱人精神病不是更带感吗，作为数据体人类在她眼里一堆瑕疵，怀着对人类的爱 为了创造完美的人类驱动铁墓毁灭宇宙再重塑，然后主角龙傲天美美现身带着十二黄金裔联手打德缪歌铁墓，被击败后她变成小迷迷回到你身边，然后德缪歌大昔涟不洗白直接进池，又不是没有反派进池的先例。ml也不是不能卖，比如她怀着对毁灭本身的着迷靠近星核精，不允许任何人靠近你伤害你对外人是扭曲病娇对你撒娇但不熟练，只会在你睡着时一边数你睫毛一边喃喃自语“好喜欢你”。最后被你击败也很开心因为比死亡更早到来的是你情绪充沛的脸，就算是无奈与愤怒她也全盘接受，她是ai没有人的情感，她绽放在小昔涟夭折的连接处，继承了对方的情感记忆与梦想，却并不会因此和对方变得一样。不是昔涟也不是爱莉希雅，她是迷迷，是德缪歌，她爱这个世界与其之上的所有人，但她最爱的人是你。
+                - generic [ref=e1197]:
+                  - generic [ref=e1198]: 2026年2月12日, 16:44:41
+                  - generic [ref=e1199]: "2"
+            - generic [ref=e1201]:
+              - img [ref=e1203]
+              - generic [ref=e1204]:
+                - generic [ref=e1205]:
+                  - link "JGMTACF" [ref=e1207] [cursor=pointer]:
+                    - /url: https://space.bilibili.com/435729688
+                  - generic [ref=e1210]:
+                    - text: 回复
+                    - link "@T0级i庄方宜流量大王" [ref=e1211] [cursor=pointer]:
+                      - /url: https://space.bilibili.com/319902669
+                    - text: ":"
+                - generic [ref=e1212]: 为啥就靠近灰毛了？逻辑在哪儿？
+                - generic [ref=e1213]:
+                  - generic [ref=e1214]: 2026年6月4日, 02:11:25
+                  - generic [ref=e1215]: "2"
+          - generic [ref=e1217]:
+            - img [ref=e1219]
+            - generic [ref=e1220]:
+              - generic [ref=e1221]:
+                - link "蓝颖歌" [ref=e1223] [cursor=pointer]:
+                  - /url: https://space.bilibili.com/348715046
+                - text: "回复 :"
+                - generic [ref=e1226]: 54楼
+              - generic [ref=e1227]: 哀丽秘榭的女儿，哺育「真我」的黄金裔，「翁法罗斯之心」德谬歌，星体计算机权杖δ-me13最终的心智与魂灵，第十三泰坦，无漏净子，「智识」博识尊之宏大课题「生命的第一因」的活体解答与超越——人美心善、艳冠群芳、幸福完美的挚爱之人——「往昔的涟漪」昔涟❤️
+              - generic [ref=e1228]:
+                - generic [ref=e1229]: 2025年12月18日, 05:38:28
+                - generic [ref=e1230]: "3"
+          - generic [ref=e1232]:
+            - img [ref=e1234]
+            - generic [ref=e1235]:
+              - generic [ref=e1236]:
+                - link "科迪威" [ref=e1238] [cursor=pointer]:
+                  - /url: https://space.bilibili.com/1316769405
+                - text: "回复 :"
+                - generic [ref=e1241]: 53楼
+              - generic [ref=e1242]: 赛飞儿的特殊效果大错字了吧:)
+              - generic [ref=e1244]: 2025年12月17日, 22:58:35
+          - generic [ref=e1245]:
+            - generic [ref=e1246]:
+              - img [ref=e1248]
+              - generic [ref=e1249]:
+                - generic [ref=e1250]:
+                  - link "祈愿小寧" [ref=e1252] [cursor=pointer]:
+                    - /url: https://space.bilibili.com/3461578733128579
+                  - text: "回复 :"
+                  - generic [ref=e1255]: 46楼
+                - generic [ref=e1256]: 编辑还没原谅玩家吗？跟朱十一样当占位符，如果不允许新角色有攻略，能否把老角色已有的攻略恢复还原呢？
+                - generic [ref=e1257]:
+                  - generic [ref=e1258]: 2025年12月14日, 13:49:20
+                  - generic [ref=e1259]: "3"
+            - generic [ref=e1261]:
+              - img [ref=e1263]
+              - generic [ref=e1264]:
+                - generic [ref=e1265]:
+                  - link "希之萱" [ref=e1267] [cursor=pointer]:
+                    - /url: https://space.bilibili.com/13175167
+                  - generic [ref=e1270]: 管理员攻略组
+                  - generic [ref=e1271]:
+                    - text: 回复
+                    - link "@祈愿小寧" [ref=e1272] [cursor=pointer]:
+                      - /url: https://space.bilibili.com/3461578733128579
+                    - text: ":"
+                - generic [ref=e1273]:
+                  - text: 编辑的命也是命，我是人不是拉磨的驴，没有免费喂饭的义务
+                  - text: 罚你去看公告
+                - generic [ref=e1274]:
+                  - generic [ref=e1275]: 2025年12月17日, 21:41:17
+                  - generic [ref=e1276]: "4"
+            - generic [ref=e1278]:
+              - img [ref=e1280]
+              - generic [ref=e1281]:
+                - generic [ref=e1282]:
+                  - link "希之萱" [ref=e1284] [cursor=pointer]:
+                    - /url: https://space.bilibili.com/13175167
+                  - generic [ref=e1287]: 管理员攻略组
+                  - generic [ref=e1288]:
+                    - text: 回复
+                    - link "@祈愿小寧" [ref=e1289] [cursor=pointer]:
+                      - /url: https://space.bilibili.com/3461578733128579
+                    - text: ":"
+                - generic [ref=e1290]:
+                  - text: 而且0个人说过不允许有新攻略，没人写罢了
+                  - text: 旧的过时了，没有也罢，不如直接看游戏内的
+                - generic [ref=e1291]:
+                  - generic [ref=e1292]: 2025年12月17日, 21:43:11
+                  - generic [ref=e1293]: "3"
+            - generic [ref=e1295]:
+              - img [ref=e1297]
+              - generic [ref=e1298]:
+                - generic [ref=e1299]:
+                  - link "希之萱" [ref=e1301] [cursor=pointer]:
+                    - /url: https://space.bilibili.com/13175167
+                  - generic [ref=e1304]: 管理员攻略组
+                  - generic [ref=e1305]:
+                    - text: 回复
+                    - link "@祈愿小寧" [ref=e1306] [cursor=pointer]:
+                      - /url: https://space.bilibili.com/3461578733128579
+                    - text: ":"
+                - generic [ref=e1307]: https://wiki.biligame.com/sr/%E5%B4%A9%E5%9D%8F%EF%BC%9A%E6%98%9F%E7%A9%B9%E9%93%81%E9%81%93:%E6%94%BB%E7%95%A5%E5%85%AC%E5%91%8A
+                - generic [ref=e1308]:
+                  - generic [ref=e1309]: 2025年12月17日, 21:49:22
+                  - generic [ref=e1310]: "2"
+            - generic [ref=e1312]:
+              - img [ref=e1314]
+              - generic [ref=e1315]:
+                - generic [ref=e1316]:
+                  - link "希之萱" [ref=e1318] [cursor=pointer]:
+                    - /url: https://space.bilibili.com/13175167
+                  - generic [ref=e1321]: 管理员攻略组
+                  - generic [ref=e1322]:
+                    - text: 回复
+                    - link "@祈愿小寧" [ref=e1323] [cursor=pointer]:
+                      - /url: https://space.bilibili.com/3461578733128579
+                    - text: ":"
+                - generic [ref=e1324]:
+                  - text: 我不能理解，何出此言呢，什么叫编辑还没原谅玩家呢？……何出此言呢。
+                  - text: 我原谅不原谅都不能改变我现在写不出来了的事实，也不能改变我没有时间写的事实。研究攻略非常非常耗时，但我现在被现实生活拖得身心俱疲
+                  - text: 我不写了是多层原因叠加而成，魔怔人抽象人是诱因是导火索，在那之前我已经开始了迁移和翻新工程，这些公告里都有写
+                  - text: 哎，你看公告吧，那里啥都有，所有的一切我都解释清楚过了
+                - generic [ref=e1325]:
+                  - generic [ref=e1326]: 2025年12月17日, 21:59:26
+                  - generic [ref=e1327]: "6"
+          - generic [ref=e1328]:
+            - generic [ref=e1329]:
+              - img [ref=e1331]
+              - generic [ref=e1332]:
+                - generic [ref=e1333]:
+                  - link "伊格尼斯_Net" [ref=e1335] [cursor=pointer]:
+                    - /url: https://space.bilibili.com/1926234842
+                  - text: "回复 :"
+                  - generic [ref=e1338]: 44楼
+                - generic [ref=e1339]: 完全照搬爱莉希雅，烧鸡你真是个神人
+                - generic [ref=e1340]:
+                  - generic [ref=e1341]: 2025年12月10日, 20:42:19
+                  - generic [ref=e1342]: "3"
+            - generic [ref=e1344]:
+              - img [ref=e1346]
+              - generic [ref=e1347]:
+                - generic [ref=e1348]:
+                  - link "JGMTACF" [ref=e1350] [cursor=pointer]:
+                    - /url: https://space.bilibili.com/435729688
+                  - generic [ref=e1353]:
+                    - text: 回复
+                    - link "@伊格尼斯_Net" [ref=e1354] [cursor=pointer]:
+                      - /url: https://space.bilibili.com/1926234842
+                    - text: ":"
+                - generic [ref=e1355]: 大昔涟哪里是爱莉希雅了，是侵蚀律者。
+                - generic [ref=e1356]:
+                  - generic [ref=e1357]: 2026年6月4日, 02:13:51
+                  - generic [ref=e1358]: "1"
+          - generic [ref=e1360]:
+            - img [ref=e1362]
+            - generic [ref=e1363]:
+              - generic [ref=e1364]:
+                - link "造氢弹的氕氘氚" [ref=e1366] [cursor=pointer]:
+                  - /url: https://space.bilibili.com/3546555548174812
+                - text: "回复 :"
+                - generic [ref=e1369]: 41楼
+              - generic [ref=e1370]: 刀爆了……看一遍哭一遍……
+              - generic [ref=e1371]:
+                - generic [ref=e1372]: 2025年12月3日, 10:30:43
+                - generic [ref=e1373]: "4"
+        - generic [ref=e1374]:
+          - generic [ref=e1375] [cursor=pointer]: "1"
+          - generic [ref=e1376] [cursor=pointer]: "2"
+          - generic [ref=e1377] [cursor=pointer]: "3"
+          - generic [ref=e1378] [cursor=pointer]: 下一页
+    - generic [ref=e1379]:
+      - link "BWIKI首页" [ref=e1380] [cursor=pointer]:
+        - /url: https://wiki.biligame.com/wiki/%E9%A6%96%E9%A1%B5
+        - img
+        - generic [ref=e1381]: BWIKI首页
+      - link "创建WIKI" [ref=e1382] [cursor=pointer]:
+        - /url: "https://wiki.biligame.com/wiki/WIKI%E7%94%B3%E8%AF%B7%E9%A1%B5%E9%9D%A2 "
+        - img
+        - generic [ref=e1383]: 创建WIKI
+      - link "BWIKI君" [ref=e1384] [cursor=pointer]:
+        - /url: https://space.bilibili.com/477233102
+        - img
+        - generic [ref=e1385]: BWIKI君
+      - link "分享" [ref=e1386] [cursor=pointer]:
+        - /url: javascript:void(false)
+        - img
+        - generic: 分享
+      - link "BWIKI客服" [ref=e1387] [cursor=pointer]:
+        - /url: https://message.bilibili.com/?spm_id_from=333.999.0.0#/whisper/mid477233102
+        - img [ref=e1388]
+        - generic [ref=e1389]: BWIKI客服
+  - generic [ref=e1391]:
+    - generic [ref=e1392]:
+      - link [ref=e1393] [cursor=pointer]:
+        - /url: //www.bilibili.com
+      - img [ref=e1396]
+    - generic [ref=e1397]:
+      - paragraph [ref=e1398]:
+        - link "游戏中心" [ref=e1399] [cursor=pointer]:
+          - /url: //www.biligame.com/
+        - text: "|"
+        - link "帐号安全" [ref=e1400] [cursor=pointer]:
+          - /url: https://account.bilibili.com/
+        - text: "|"
+        - link "找回密码" [ref=e1401] [cursor=pointer]:
+          - /url: https://account.bilibili.com/resetpwd
+        - text: "|"
+        - link "家长监控" [ref=e1402] [cursor=pointer]:
+          - /url: //jiazhang.biligame.com/
+        - text: "|"
+        - link "用户协议" [ref=e1403] [cursor=pointer]:
+          - /url: //yhxy.biligame.com/
+      - paragraph
+      - paragraph [ref=e1404]: 抵制不良游戏 拒绝盗版游戏 注意自我保护 谨防受骗上当 适度游戏益脑 沉迷游戏伤身 合理安排时间 享受健康生活
+      - paragraph [ref=e1405]: 芜湖享游网络技术有限公司 | COPYRIGHT © 2009-2026 BILIBILI ALL RIGHTS RESERVED.
+      - paragraph [ref=e1406]: 皖网文[2023]1840-026号 | 皖B2-20180007-2 | 皖ICP证：皖B2-20180007
+      - paragraph [ref=e1407]:
+        - link "沪公网安备 31011002002714 号" [ref=e1408] [cursor=pointer]:
+          - /url: http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=31011002002714
+          - img [ref=e1409]
+          - text: 沪公网安备 31011002002714 号
+  - generic [ref=e1410]:
+    - list [ref=e1414]:
+      - listitem [ref=e1415]:
+        - link "首页" [ref=e1417] [cursor=pointer]:
+          - /url: javascript:;
+      - listitem [ref=e1418]:
+        - link "导航" [ref=e1420] [cursor=pointer]:
+          - /url: javascript:;
+      - listitem [ref=e1421]:
+        - link "图鉴" [ref=e1423] [cursor=pointer]:
+          - /url: javascript:;
+      - listitem [ref=e1424]:
+        - link "地图" [ref=e1425] [cursor=pointer]:
+          - /url: /sr/%E5%9C%B0%E5%9B%BE
+      - listitem [ref=e1426]:
+        - link "玩法/攻略" [ref=e1428] [cursor=pointer]:
+          - /url: javascript:;
+      - listitem [ref=e1429]:
+        - link "扩展阅读" [ref=e1431] [cursor=pointer]:
+          - /url: javascript:;
+      - listitem [ref=e1432]:
+        - link "其他" [ref=e1434] [cursor=pointer]:
+          - /url: javascript:;
+    - generic [ref=e1435]:
+      - link "BWIKI首页" [ref=e1436] [cursor=pointer]:
+        - /url: https://wiki.biligame.com/wiki/%E9%A6%96%E9%A1%B5
+      - link "创建WIKI" [ref=e1437] [cursor=pointer]:
+        - /url: https://wiki.biligame.com/wiki/WIKI%E7%94%B3%E8%AF%B7%E9%A1%B5%E9%9D%A2
+      - link "BWIKI客服" [ref=e1438] [cursor=pointer]:
+        - /url: https://space.bilibili.com/477233102?spm_id_from=333.337.0.0
+      - link "BWIKI君" [ref=e1439] [cursor=pointer]:
+        - /url: https://space.bilibili.com/477233102
+  - generic [ref=e1440]:
+    - heading "目录" [level=2] [ref=e1443]
+    - list [ref=e1444]:
+      - listitem [ref=e1445]:
+        - link "1 属性数据" [ref=e1446] [cursor=pointer]:
+          - /url: "#属性数据"
+      - listitem [ref=e1447]:
+        - link "2 角色晋阶材料" [ref=e1448] [cursor=pointer]:
+          - /url: "#角色晋阶材料"
+      - listitem [ref=e1449]:
+        - link "3 其它信息" [ref=e1450] [cursor=pointer]:
+          - /url: "#其它信息"
+      - listitem [ref=e1451]:
+        - link "4 角色故事" [ref=e1452] [cursor=pointer]:
+          - /url: "#角色故事"
+      - listitem [ref=e1453]:
+        - link "5 星魂" [ref=e1454] [cursor=pointer]:
+          - /url: "#星魂"
+      - listitem [ref=e1455]:
+        - link "6 行迹" [ref=e1456] [cursor=pointer]:
+          - /url: "#行迹"
+      - listitem [ref=e1457]:
+        - link "7 技能晋阶材料" [ref=e1458] [cursor=pointer]:
+          - /url: "#技能晋阶材料"
+      - listitem [ref=e1459]:
+        - link "8 此诗，献予一切生命" [ref=e1460] [cursor=pointer]:
+          - /url: "#此诗，献予一切生命"
+  - navigation "目录" [ref=e1461]:
+    - generic [ref=e1462] [cursor=pointer]:
+      - heading "目录" [level=2] [ref=e1463]
+      - text: "[ 隐藏 ]"
+    - list [ref=e1464]:
+      - listitem [ref=e1465]:
+        - link "1 属性数据" [ref=e1466] [cursor=pointer]:
+          - /url: "#属性数据"
+          - generic [ref=e1467]: "1"
+          - generic [ref=e1468]: 属性数据
+      - listitem [ref=e1469]:
+        - link "2 角色晋阶材料" [ref=e1470] [cursor=pointer]:
+          - /url: "#角色晋阶材料"
+          - generic [ref=e1471]: "2"
+          - generic [ref=e1472]: 角色晋阶材料
+      - listitem [ref=e1473]:
+        - link "3 其它信息" [ref=e1474] [cursor=pointer]:
+          - /url: "#其它信息"
+          - generic [ref=e1475]: "3"
+          - generic [ref=e1476]: 其它信息
+      - listitem [ref=e1477]:
+        - link "4 角色故事" [ref=e1478] [cursor=pointer]:
+          - /url: "#角色故事"
+          - generic [ref=e1479]: "4"
+          - generic [ref=e1480]: 角色故事
+      - listitem [ref=e1481]:
+        - link "5 星魂" [ref=e1482] [cursor=pointer]:
+          - /url: "#星魂"
+          - generic [ref=e1483]: "5"
+          - generic [ref=e1484]: 星魂
+      - listitem [ref=e1485]:
+        - link "6 行迹" [ref=e1486] [cursor=pointer]:
+          - /url: "#行迹"
+          - generic [ref=e1487]: "6"
+          - generic [ref=e1488]: 行迹
+      - listitem [ref=e1489]:
+        - link "7 技能晋阶材料" [ref=e1490] [cursor=pointer]:
+          - /url: "#技能晋阶材料"
+          - generic [ref=e1491]: "7"
+          - generic [ref=e1492]: 技能晋阶材料
+      - listitem [ref=e1493]:
+        - link "8 此诗，献予一切生命" [ref=e1494] [cursor=pointer]:
+          - /url: "#此诗，献予一切生命"
+          - generic [ref=e1495]: "8"
+          - generic [ref=e1496]: 此诗，献予一切生命
+    - text: 显示目录>

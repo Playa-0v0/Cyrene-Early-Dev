@@ -5,6 +5,8 @@ type StickerItem = {
   id: string;
   src: string;
   enabled: boolean;
+  builtIn?: boolean;
+  description?: string;
 };
 
 interface StickerManagerApi {
@@ -26,6 +28,7 @@ const closeBtn = document.getElementById("close-btn") as HTMLButtonElement;
 
 function render(items: StickerItem[]): void {
   grid.replaceChildren();
+
   for (const item of items) {
     const card = document.createElement("article");
     card.className = "sticker-card";
@@ -33,7 +36,7 @@ function render(items: StickerItem[]): void {
 
     const img = document.createElement("img");
     img.src = item.src;
-    img.alt = "";
+    img.alt = item.description || "";
     img.draggable = false;
 
     const label = document.createElement("label");

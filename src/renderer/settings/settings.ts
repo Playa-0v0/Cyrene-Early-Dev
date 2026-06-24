@@ -151,12 +151,75 @@ interface ModelSettings {
   runtimeSync: "off" | "local" | "llm";
   stickerEnabled: boolean;
   stickerSize: "small" | "standard" | "large";
+  stickerSimilarityThreshold: number;
   vision?: {
     syncWithMain: boolean;
     baseUrl: string;
     apiKey: string;
     model: string;
   };
+}
+
+type ScheduleConfig =
+  | { kind: "once"; runAt: string }
+  | { kind: "daily"; timeOfDay: string }
+  | { kind: "weekly"; dayOfWeek: 0 | 1 | 2 | 3 | 4 | 5 | 6; timeOfDay: string }
+  | { kind: "interval"; every: number; unit: "minutes" | "hours" };
+
+type SchedulerToolMode = "all-enabled" | "allow-list";
+
+interface ScheduledTask {
+  id: string;
+  title: string;
+  prompt: string;
+  enabled: boolean;
+  schedule: ScheduleConfig;
+  nextFireAt: string | null;
+  lastFiredAt?: string;
+  toolMode: SchedulerToolMode;
+  allowedToolIds: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface ScheduledTaskHistoryEntry {
+  id: string;
+  taskId: string;
+  taskTitle: string;
+  firedAt: string;
+  finishedAt?: string;
+  durationMs?: number;
+  status: "running" | "success" | "failed" | "skipped";
+  reason?: string;
+  outputPreview?: string;
+  errorMessage?: string;
+  effectiveToolIds: string[];
+}
+
+interface SchedulerToolInfo {
+  id: string;
+  name: string;
+  description: string;
+  enabled: boolean;
+  risk: string;
+}
+
+interface SchedulerResult<T> {
+  ok: boolean;
+  value?: T;
+  error?: string;
+  reason?: string;
+}
+
+interface SchedulerApi {
+  list: () => Promise<SchedulerResult<ScheduledTask[]>>;
+  add: (input: unknown) => Promise<SchedulerResult<ScheduledTask>>;
+  update: (id: string, patch: unknown) => Promise<SchedulerResult<ScheduledTask>>;
+  delete: (id: string) => Promise<SchedulerResult<boolean>>;
+  toggle: (id: string, enabled: boolean) => Promise<SchedulerResult<ScheduledTask>>;
+  fireNow: (id: string) => Promise<SchedulerResult<boolean>>;
+  getHistory: (taskId: string, limit?: number) => Promise<SchedulerResult<ScheduledTaskHistoryEntry[]>>;
+  getTools: () => Promise<SchedulerResult<SchedulerToolInfo[]>>;
 }
 
 interface ModelPreset {
@@ -253,6 +316,8 @@ interface SettingsApi {
   setPetVisible: (value: boolean) => void;
   previewRuntimeSync: (value: "off" | "local" | "llm") => void;
   openStickerManager: () => Promise<{ ok: boolean; error?: string }>;
+  stickerPickFile?: () => Promise<string | null>;
+  stickerAdd?: (payload: { sourcePath: string; id: string; description: string; phrases: string[] }) => Promise<unknown>;
   getEmbeddingStatus?: () => Promise<Record<string, { installed: boolean; sizeBytes: number }>>;
   downloadEmbeddingModel?: (model: string, mirror: string) => Promise<{ ok: boolean; error?: string }>;
   deleteEmbeddingModel?: (model: string) => Promise<{ ok: boolean; error?: string }>;
@@ -276,6 +341,7 @@ interface SettingsApi {
 declare global {
   interface Window {
     settings?: SettingsApi;
+    cyreneScheduler?: SchedulerApi;
     user?: UserApi;
     memoryPanel?: MemoryPanelApi;
   }
@@ -382,6 +448,8 @@ if (!window.settings) {
     setPetAlwaysOnTop: () => {},
     setPetVisible: () => {},
     openStickerManager: async () => ({ ok: false, error: "settings api unavailable" }),
+    stickerPickFile: async () => null,
+    stickerAdd: async () => { throw new Error("settings api unavailable"); },
     setToolEnabled: async () => ({ ok: false, error: "settings api unavailable" }),
     getToolEnabled: async () => ({}),
     listSkills: async () => [],
@@ -389,6 +457,19 @@ if (!window.settings) {
     addMcpServer: async () => ({ ok: false, error: "settings api unavailable" }),
     removeMcpServer: async () => ({ ok: false, error: "settings api unavailable" }),
     listMcpServers: async () => [],
+  };
+}
+
+if (!window.cyreneScheduler) {
+  (window as unknown as { cyreneScheduler: SchedulerApi }).cyreneScheduler = {
+    list: async () => ({ ok: true, value: [] }),
+    add: async () => ({ ok: false, error: "scheduler api unavailable" }),
+    update: async () => ({ ok: false, error: "scheduler api unavailable" }),
+    delete: async () => ({ ok: false, error: "scheduler api unavailable" }),
+    toggle: async () => ({ ok: false, error: "scheduler api unavailable" }),
+    fireNow: async () => ({ ok: false, reason: "scheduler api unavailable" }),
+    getHistory: async () => ({ ok: true, value: [] }),
+    getTools: async () => ({ ok: true, value: [] }),
   };
 }
 
@@ -414,6 +495,32 @@ const placeholderCopy = document.getElementById("placeholder-copy") as HTMLEleme
 const saveStatus = document.getElementById("save-status") as HTMLElement;
 const generalSaveStatus = document.getElementById("general-save-status") as HTMLElement;
 const cyreneSaveStatus = document.getElementById("cyrene-save-status") as HTMLElement;
+
+const schedulerNewBtn = document.getElementById("scheduler-new-btn") as HTMLButtonElement | null;
+const schedulerEmpty = document.getElementById("scheduler-empty") as HTMLDivElement | null;
+const schedulerList = document.getElementById("scheduler-list") as HTMLDivElement | null;
+const schedulerEditor = document.getElementById("scheduler-editor") as HTMLDivElement | null;
+const schedulerEditorTitle = document.getElementById("scheduler-editor-title") as HTMLHeadingElement | null;
+const schedulerEditorClose = document.getElementById("scheduler-editor-close") as HTMLButtonElement | null;
+const schedulerTitleInput = document.getElementById("scheduler-title") as HTMLInputElement | null;
+const schedulerPromptInput = document.getElementById("scheduler-prompt") as HTMLTextAreaElement | null;
+const schedulerEnabledInput = document.getElementById("scheduler-enabled") as HTMLInputElement | null;
+const schedulerKindInput = document.getElementById("scheduler-kind") as HTMLSelectElement | null;
+const schedulerOnceRunAtInput = document.getElementById("scheduler-once-run-at") as HTMLInputElement | null;
+const schedulerTimeOfDayInput = document.getElementById("scheduler-time-of-day") as HTMLInputElement | null;
+const schedulerDayOfWeekInput = document.getElementById("scheduler-day-of-week") as HTMLSelectElement | null;
+const schedulerIntervalEveryInput = document.getElementById("scheduler-interval-every") as HTMLInputElement | null;
+const schedulerIntervalUnitInput = document.getElementById("scheduler-interval-unit") as HTMLSelectElement | null;
+const schedulerToolLimitInput = document.getElementById("scheduler-tool-limit") as HTMLInputElement | null;
+const schedulerToolPicker = document.getElementById("scheduler-tool-picker") as HTMLDivElement | null;
+const schedulerToolEmptyHint = document.getElementById("scheduler-tool-empty-hint") as HTMLDivElement | null;
+const schedulerSaveStatus = document.getElementById("scheduler-save-status") as HTMLDivElement | null;
+const schedulerCancelBtn = document.getElementById("scheduler-cancel-btn") as HTMLButtonElement | null;
+const schedulerSaveBtn = document.getElementById("scheduler-save-btn") as HTMLButtonElement | null;
+
+let schedulerTasks: ScheduledTask[] = [];
+let schedulerTools: SchedulerToolInfo[] = [];
+let editingSchedulerTaskId: string | null = null;
 
 const presetSelect = document.getElementById("preset-select") as HTMLSelectElement;
 // 模式按钮已删除——baseUrl 永远可改、模型名永远可手填（datalist 出预设建议）
@@ -461,6 +568,9 @@ const sidebarVisibleInput = document.getElementById("sidebar-visible") as HTMLIn
 const tasksVisibleInput = document.getElementById("tasks-visible") as HTMLInputElement;
 const clearChatHistoryBtn = document.getElementById("clear-chat-history-btn") as HTMLButtonElement;
 const openStickerManagerBtn = document.getElementById("open-sticker-manager-btn") as HTMLButtonElement;
+const addStickerBtn = document.getElementById("add-sticker-btn") as HTMLButtonElement;
+const stickerThresholdInput = document.getElementById("sticker-threshold") as HTMLInputElement;
+const stickerThresholdVal = document.getElementById("sticker-threshold-val") as HTMLElement;
 
 const NAV_LABELS: Record<string, { emoji: string; title: string; hint: string }> = {
   memory: { emoji: "🧠", title: "记忆", hint: "管理长期记忆与画像" },
@@ -700,6 +810,9 @@ async function loadConfig(): Promise<void> {
     applyRuntimeSyncSelection(cfg.runtimeSync);
     stickerEnabledInput.checked = cfg.stickerEnabled !== false;
     applyStickerSizeSelection(cfg.stickerSize);
+    const threshold = cfg.stickerSimilarityThreshold ?? 0.55;
+    stickerThresholdInput.value = String(threshold);
+    stickerThresholdVal.textContent = threshold.toFixed(2);
 
     // 视觉模型配置
     const vision = cfg.vision;
@@ -769,6 +882,11 @@ stickerSizeSelect.querySelectorAll<HTMLButtonElement>(".option-block").forEach((
   });
 });
 
+stickerThresholdInput.addEventListener("input", () => {
+  stickerThresholdVal.textContent = parseFloat(stickerThresholdInput.value).toFixed(2);
+  setCyreneSaveStatus("有未保存的更改");
+});
+
 sidebarVisibleInput.addEventListener("change", () => {
   if (sidebarVisibleInput.checked) window.settings?.openSidebar();
   else window.settings?.closeSidebar();
@@ -806,6 +924,90 @@ openStickerManagerBtn.addEventListener("click", async () => {
   } catch (error) {
     console.error("[settings] open sticker manager error", error);
     window.alert("表情包管理窗口打开失败，请查看终端日志。");
+  }
+});
+
+// ── 添加表情包弹窗 ──
+const stickerAddOverlay = document.getElementById("sticker-add-overlay") as HTMLElement;
+const stickerAddPickBtn = document.getElementById("sticker-add-pick-btn") as HTMLButtonElement;
+const stickerAddFileName = document.getElementById("sticker-add-file-name") as HTMLElement;
+const stickerAddId = document.getElementById("sticker-add-id") as HTMLInputElement;
+const stickerAddDesc = document.getElementById("sticker-add-desc") as HTMLInputElement;
+const stickerAddPhrases = document.getElementById("sticker-add-phrases") as HTMLTextAreaElement;
+const stickerAddError = document.getElementById("sticker-add-error") as HTMLElement;
+const stickerAddConfirm = document.getElementById("sticker-add-confirm") as HTMLButtonElement;
+const stickerAddCancel = document.getElementById("sticker-add-cancel") as HTMLButtonElement;
+
+let stickerAddPickedPath: string | null = null;
+
+function openStickerAddModal(): void {
+  stickerAddPickedPath = null;
+  stickerAddFileName.textContent = "未选择";
+  stickerAddId.value = "";
+  stickerAddDesc.value = "";
+  stickerAddPhrases.value = "";
+  stickerAddError.classList.add("is-hidden");
+  stickerAddOverlay.classList.remove("is-hidden");
+}
+
+function closeStickerAddModal(): void {
+  stickerAddOverlay.classList.add("is-hidden");
+}
+
+addStickerBtn.addEventListener("click", openStickerAddModal);
+stickerAddCancel.addEventListener("click", closeStickerAddModal);
+
+stickerAddPickBtn.addEventListener("click", async () => {
+  const filePath = await window.settings?.stickerPickFile?.();
+  if (filePath) {
+    stickerAddPickedPath = filePath;
+    const name = filePath.split(/[\\/]/).pop() || filePath;
+    stickerAddFileName.textContent = name;
+    if (!stickerAddId.value) {
+      const baseName = name.replace(/\.[^.]+$/, "");
+      stickerAddId.value = baseName.replace(/[^a-zA-Z0-9_-]/g, "");
+    }
+  }
+});
+
+stickerAddConfirm.addEventListener("click", async () => {
+  stickerAddError.classList.add("is-hidden");
+
+  if (!stickerAddPickedPath) {
+    stickerAddError.textContent = "请先选择图片文件";
+    stickerAddError.classList.remove("is-hidden");
+    return;
+  }
+  const id = stickerAddId.value.trim();
+  if (!id) {
+    stickerAddError.textContent = "请填写英文名称";
+    stickerAddError.classList.remove("is-hidden");
+    return;
+  }
+  if (!/^[a-zA-Z0-9_-]+$/.test(id)) {
+    stickerAddError.textContent = "名称只能用英文字母、数字、下划线和连字符";
+    stickerAddError.classList.remove("is-hidden");
+    return;
+  }
+  const description = stickerAddDesc.value.trim();
+  if (!description) {
+    stickerAddError.textContent = "请填写图片描述";
+    stickerAddError.classList.remove("is-hidden");
+    return;
+  }
+  const phrases = stickerAddPhrases.value.split("\n").map((s) => s.trim()).filter(Boolean);
+  if (phrases.length === 0) {
+    stickerAddError.textContent = "请至少写一行相近语义";
+    stickerAddError.classList.remove("is-hidden");
+    return;
+  }
+
+  try {
+    await window.settings?.stickerAdd?.({ sourcePath: stickerAddPickedPath, id, description, phrases });
+    closeStickerAddModal();
+  } catch (err) {
+    stickerAddError.textContent = "添加失败：" + (err as Error).message;
+    stickerAddError.classList.remove("is-hidden");
   }
 });
 
@@ -1173,6 +1375,117 @@ testVisionBtn.addEventListener("click", async () => {
   }
 });
 
+function toLocalDateTimeInputValue(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+function isValidTimeOfDay(value: string): boolean {
+  return /^([01]\d|2[0-3]):[0-5]\d$/.test(value);
+}
+
+function formatSchedulerDate(value: string | null | undefined): string {
+  if (!value) return "未安排";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "时间无效";
+  return date.toLocaleString();
+}
+
+function describeSchedule(schedule: ScheduleConfig): string {
+  if (schedule.kind === "once") return "仅一次 " + formatSchedulerDate(schedule.runAt);
+  if (schedule.kind === "daily") return "每天 " + schedule.timeOfDay;
+  if (schedule.kind === "weekly") {
+    const names = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+    return `${names[schedule.dayOfWeek]} ${schedule.timeOfDay}`;
+  }
+  return `每隔 ${schedule.every} ${schedule.unit === "minutes" ? "分钟" : "小时"}`;
+}
+
+function setSchedulerStatus(text: string, className = ""): void {
+  if (!schedulerSaveStatus) return;
+  schedulerSaveStatus.textContent = text;
+  schedulerSaveStatus.className = "save-status" + (className ? " " + className : "");
+}
+
+function renderSchedulerTools(selectedIds: string[] = []): void {
+  if (!schedulerToolPicker) return;
+  schedulerToolPicker.replaceChildren();
+  const selected = new Set(selectedIds);
+  for (const tool of schedulerTools) {
+    const label = document.createElement("label");
+    label.className = "scheduler-tool-option";
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.value = tool.id;
+    checkbox.checked = selected.has(tool.id);
+    checkbox.addEventListener("change", updateSchedulerConditionalFields);
+    const copy = document.createElement("span");
+    copy.textContent = `${tool.name} (${tool.id}) · ${tool.risk}${tool.enabled ? "" : " · 已全局禁用"}`;
+    label.appendChild(checkbox);
+    label.appendChild(copy);
+    schedulerToolPicker.appendChild(label);
+  }
+}
+
+async function renderSchedulerList(): Promise<void> {
+  if (!schedulerList || !schedulerEmpty) return;
+  schedulerList.replaceChildren();
+  schedulerEmpty.classList.toggle("is-hidden", schedulerTasks.length > 0);
+  for (const task of schedulerTasks) {
+    const card = document.createElement("article");
+    card.className = "scheduler-card";
+    card.innerHTML = `
+      <div class="scheduler-card__head">
+        <div class="scheduler-card__title"><span>⏰</span><strong></strong><span class="scheduler-badge"></span></div>
+      </div>
+      <div class="scheduler-card__meta"></div>
+      <div class="scheduler-card__actions"></div>
+      <div class="scheduler-history is-hidden"></div>
+    `;
+    const strong = card.querySelector("strong");
+    if (strong) strong.textContent = task.title;
+    const badge = card.querySelector(".scheduler-badge") as HTMLSpanElement | null;
+    if (badge) {
+      badge.textContent = task.enabled ? "已启用" : "已停用";
+      badge.classList.toggle("is-disabled", !task.enabled);
+    }
+    const meta = card.querySelector(".scheduler-card__meta");
+    if (meta) meta.textContent = `${describeSchedule(task.schedule)} · 下次运行：${formatSchedulerDate(task.nextFireAt)} · 工具：${task.toolMode === "all-enabled" ? "全部已启用工具" : task.allowedToolIds.join(", ") || "无"}`;
+    const actions = card.querySelector(".scheduler-card__actions") as HTMLDivElement | null;
+    if (actions) {
+      const fireBtn = document.createElement("button");
+      fireBtn.type = "button";
+      fireBtn.className = "ghost-btn";
+      fireBtn.textContent = "立即运行";
+      fireBtn.addEventListener("click", () => void fireSchedulerTask(task.id));
+      const editBtn = document.createElement("button");
+      editBtn.type = "button";
+      editBtn.className = "ghost-btn";
+      editBtn.textContent = "编辑";
+      editBtn.addEventListener("click", () => void openSchedulerEditor(task));
+      const toggleBtn = document.createElement("button");
+      toggleBtn.type = "button";
+      toggleBtn.className = "ghost-btn";
+      toggleBtn.textContent = task.enabled ? "停用" : "启用";
+      toggleBtn.addEventListener("click", () => void toggleSchedulerTask(task.id, !task.enabled));
+      const historyBtn = document.createElement("button");
+      historyBtn.type = "button";
+      historyBtn.className = "ghost-btn";
+      historyBtn.textContent = "历史";
+      historyBtn.addEventListener("click", () => void toggleSchedulerHistory(task.id, card));
+      const deleteBtn = document.createElement("button");
+      deleteBtn.type = "button";
+      deleteBtn.className = "ghost-btn";
+      deleteBtn.textContent = "删除";
+      deleteBtn.addEventListener("click", () => void deleteSchedulerTask(task.id));
+      actions.append(fireBtn, editBtn, toggleBtn, historyBtn, deleteBtn);
+    }
+    schedulerList.appendChild(card);
+  }
+}
+
 generalForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   setGeneralSaveStatus("保存中…");
@@ -1197,7 +1510,7 @@ cyrenePanel.addEventListener("submit", async (e) => {
   e.preventDefault();
   setCyreneSaveStatus("保存中…");
   try {
-    await window.settings!.saveConfig({ runtimeSync: getRuntimeSyncValue(), stickerEnabled: stickerEnabledInput.checked, stickerSize: getStickerSizeValue() });
+    await window.settings!.saveConfig({ runtimeSync: getRuntimeSyncValue(), stickerEnabled: stickerEnabledInput.checked, stickerSize: getStickerSizeValue(), stickerSimilarityThreshold: parseFloat(stickerThresholdInput.value) });
     setCyreneSaveStatus("已保存", "is-ok");
   } catch {
     setCyreneSaveStatus("保存失败", "is-error");
@@ -1234,6 +1547,167 @@ apiForm.addEventListener("submit", async (e) => {
   }
 });
 
+async function loadSchedulerPanel(): Promise<void> {
+  const [tasksResult, toolsResult] = await Promise.all([
+    window.cyreneScheduler!.list(),
+    window.cyreneScheduler!.getTools(),
+  ]);
+  if (tasksResult.ok) schedulerTasks = tasksResult.value ?? [];
+  if (toolsResult.ok) schedulerTools = toolsResult.value ?? [];
+  renderSchedulerTools();
+  await renderSchedulerList();
+}
+
+async function openSchedulerEditor(task?: ScheduledTask): Promise<void> {
+  editingSchedulerTaskId = task?.id ?? null;
+  schedulerEditor?.classList.remove("is-hidden");
+  // 确保工具列表已加载
+  if (schedulerTools.length === 0) {
+    const toolsResult = await window.cyreneScheduler!.getTools();
+    if (toolsResult.ok) schedulerTools = toolsResult.value ?? [];
+  }
+  if (schedulerEditorTitle) schedulerEditorTitle.textContent = task ? "编辑定时任务" : "新建定时任务";
+  if (schedulerTitleInput) schedulerTitleInput.value = task?.title ?? "";
+  if (schedulerPromptInput) schedulerPromptInput.value = task?.prompt ?? "";
+  if (schedulerEnabledInput) schedulerEnabledInput.checked = task?.enabled ?? true;
+  if (schedulerKindInput) schedulerKindInput.value = task?.schedule.kind ?? "daily";
+  if (schedulerOnceRunAtInput) schedulerOnceRunAtInput.value = "";
+  if (schedulerTimeOfDayInput) schedulerTimeOfDayInput.value = "08:00";
+  if (schedulerDayOfWeekInput) schedulerDayOfWeekInput.value = "1";
+  if (schedulerIntervalEveryInput) schedulerIntervalEveryInput.value = "1";
+  if (schedulerIntervalUnitInput) schedulerIntervalUnitInput.value = "minutes";
+  if (task?.schedule.kind === "once" && schedulerOnceRunAtInput) schedulerOnceRunAtInput.value = toLocalDateTimeInputValue(task.schedule.runAt);
+  if ((task?.schedule.kind === "daily" || task?.schedule.kind === "weekly") && schedulerTimeOfDayInput) schedulerTimeOfDayInput.value = task.schedule.timeOfDay;
+  if (task?.schedule.kind === "weekly" && schedulerDayOfWeekInput) schedulerDayOfWeekInput.value = String(task.schedule.dayOfWeek);
+  if (task?.schedule.kind === "interval") {
+    if (schedulerIntervalEveryInput) schedulerIntervalEveryInput.value = String(task.schedule.every);
+    if (schedulerIntervalUnitInput) schedulerIntervalUnitInput.value = task.schedule.unit;
+  }
+  if (schedulerToolLimitInput) schedulerToolLimitInput.checked = task?.toolMode === "allow-list";
+  renderSchedulerTools(task?.allowedToolIds ?? []);
+  updateSchedulerConditionalFields();
+  setSchedulerStatus("等待操作");
+}
+
+function closeSchedulerEditor(): void {
+  editingSchedulerTaskId = null;
+  schedulerEditor?.classList.add("is-hidden");
+}
+
+function updateSchedulerConditionalFields(): void {
+  const kind = schedulerKindInput?.value ?? "daily";
+  document.querySelectorAll(".scheduler-once-field").forEach(el => el.classList.toggle("is-hidden", kind !== "once"));
+  document.querySelectorAll(".scheduler-time-field").forEach(el => el.classList.toggle("is-hidden", kind !== "daily" && kind !== "weekly"));
+  document.querySelectorAll(".scheduler-weekly-field").forEach(el => el.classList.toggle("is-hidden", kind !== "weekly"));
+  document.querySelectorAll(".scheduler-interval-field").forEach(el => el.classList.toggle("is-hidden", kind !== "interval"));
+  const allowListEnabled = Boolean(schedulerToolLimitInput?.checked);
+  schedulerToolPicker?.classList.toggle("is-hidden", !allowListEnabled);
+  const selectedCount = collectAllowedToolIds().length;
+  schedulerToolEmptyHint?.classList.toggle("is-hidden", !allowListEnabled || selectedCount > 0);
+}
+
+function collectSchedule(): ScheduleConfig {
+  const kind = schedulerKindInput?.value ?? "daily";
+  if (kind === "once") {
+    const value = schedulerOnceRunAtInput?.value;
+    if (!value) throw new Error("请选择一次性运行时间");
+    const runAt = new Date(value);
+    if (Number.isNaN(runAt.getTime())) throw new Error("一次性运行时间无效");
+    if (runAt.getTime() <= Date.now()) throw new Error("一次性任务时间必须晚于当前时间");
+    return { kind: "once", runAt: runAt.toISOString() };
+  }
+  if (kind === "weekly") {
+    const timeOfDay = schedulerTimeOfDayInput?.value || "08:00";
+    if (!isValidTimeOfDay(timeOfDay)) throw new Error("每周时间格式必须是 HH:mm");
+    const dayOfWeek = Number(schedulerDayOfWeekInput?.value ?? 1);
+    if (!Number.isInteger(dayOfWeek) || dayOfWeek < 0 || dayOfWeek > 6) throw new Error("星期必须是周一到周日");
+    return { kind: "weekly", dayOfWeek: dayOfWeek as 0 | 1 | 2 | 3 | 4 | 5 | 6, timeOfDay };
+  }
+  if (kind === "interval") {
+    const every = Number(schedulerIntervalEveryInput?.value ?? 1);
+    const unit = schedulerIntervalUnitInput?.value === "hours" ? "hours" : "minutes";
+    if (!Number.isInteger(every) || every <= 0) throw new Error("间隔必须是正整数");
+    if (unit === "minutes" && every > 1440) throw new Error("分钟间隔不能超过 1440");
+    if (unit === "hours" && every > 168) throw new Error("小时间隔不能超过 168");
+    return { kind: "interval", every, unit };
+  }
+  const timeOfDay = schedulerTimeOfDayInput?.value || "08:00";
+  if (!isValidTimeOfDay(timeOfDay)) throw new Error("每日时间格式必须是 HH:mm");
+  return { kind: "daily", timeOfDay };
+}
+
+function collectAllowedToolIds(): string[] {
+  if (!schedulerToolPicker) return [];
+  return Array.from(schedulerToolPicker.querySelectorAll<HTMLInputElement>('input[type="checkbox"]:checked')).map(input => input.value);
+}
+
+async function saveSchedulerTask(): Promise<void> {
+  try {
+    setSchedulerStatus("保存中…");
+    const title = (schedulerTitleInput?.value ?? "").trim();
+    const prompt = (schedulerPromptInput?.value ?? "").trim();
+    if (!title) throw new Error("标题不能为空");
+    if (!prompt) throw new Error("提示词不能为空");
+    const input = {
+      title,
+      prompt,
+      enabled: schedulerEnabledInput?.checked ?? true,
+      schedule: collectSchedule(),
+      toolMode: schedulerToolLimitInput?.checked ? "allow-list" : "all-enabled",
+      allowedToolIds: collectAllowedToolIds(),
+    };
+    const result = editingSchedulerTaskId
+      ? await window.cyreneScheduler!.update(editingSchedulerTaskId, input)
+      : await window.cyreneScheduler!.add(input);
+    if (!result.ok) throw new Error(result.error ?? "保存失败");
+    await loadSchedulerPanel();
+    closeSchedulerEditor();
+  } catch (err) {
+    setSchedulerStatus(err instanceof Error ? err.message : String(err), "is-error");
+  }
+}
+
+async function toggleSchedulerTask(id: string, enabled: boolean): Promise<void> {
+  const result = await window.cyreneScheduler!.toggle(id, enabled);
+  if (!result.ok) window.alert(result.error ?? "切换失败");
+  await loadSchedulerPanel();
+}
+
+async function fireSchedulerTask(id: string): Promise<void> {
+  const result = await window.cyreneScheduler!.fireNow(id);
+  if (!result.ok) window.alert(result.reason === "task already running" ? "该任务正在运行中" : (result.error ?? result.reason ?? "立即运行失败"));
+}
+
+async function deleteSchedulerTask(id: string): Promise<void> {
+  const ok = await showModal({ title: "删除定时任务", message: "确定删除这个定时任务吗？", icon: "🗑️", confirmText: "删除" });
+  if (!ok) return;
+  const result = await window.cyreneScheduler!.delete(id);
+  if (!result.ok) window.alert(result.error ?? "删除失败");
+  await loadSchedulerPanel();
+}
+
+async function toggleSchedulerHistory(taskId: string, card: Element): Promise<void> {
+  const box = card.querySelector(".scheduler-history") as HTMLDivElement | null;
+  if (!box) return;
+  if (!box.classList.contains("is-hidden")) {
+    box.classList.add("is-hidden");
+    return;
+  }
+  const result = await window.cyreneScheduler!.getHistory(taskId, 10);
+  const rows = result.value ?? [];
+  box.replaceChildren();
+  if (!result.ok || rows.length === 0) {
+    box.textContent = result.ok ? "暂无运行历史" : (result.error ?? "读取历史失败");
+  } else {
+    for (const row of rows) {
+      const div = document.createElement("div");
+      div.textContent = `${formatSchedulerDate(row.firedAt)} ${row.status}${row.durationMs ? ` ${Math.round(row.durationMs / 100) / 10}s` : ""}：${row.outputPreview ?? row.errorMessage ?? row.reason ?? ""}`;
+      box.appendChild(div);
+    }
+  }
+  box.classList.remove("is-hidden");
+}
+
 function switchSection(section: string): void {
   const label = NAV_LABELS[section] ?? NAV_LABELS.api;
   sectionTitle.textContent = label.title;
@@ -1246,6 +1720,7 @@ function switchSection(section: string): void {
   const isMemory = section === "memory";
   const isUser = section === "user";
   const isChat = section === "chat";
+  const isTasks = section === "tasks";
   const isIdentity = section === "identity";
   const isPlugins = section === "plugins";
   const isSkills = section === "skills";
@@ -1263,6 +1738,9 @@ function switchSection(section: string): void {
   if (chatPanel) chatPanel.classList.toggle("is-hidden", !isChat);
   // 切到 💬 聊天面板时拉一次列表（cross-window 变化由 onChanged 监听器自己刷新）
   if (isChat) void renderChatSessions();
+  const tasksPanel = document.getElementById("tasks-panel");
+  if (tasksPanel) tasksPanel.classList.toggle("is-hidden", !isTasks);
+  if (isTasks) void loadSchedulerPanel();
   const identityPanel = document.getElementById("identity-panel");
   if (identityPanel) identityPanel.classList.toggle("is-hidden", !isIdentity);
   pluginsPanel.classList.toggle("is-hidden", !isPlugins);
@@ -1273,9 +1751,9 @@ function switchSection(section: string): void {
   if (tokenPanel) tokenPanel.classList.toggle("is-hidden", !isTokens);
   const ttsPanel = document.getElementById("tts-panel");
   if (ttsPanel) ttsPanel.classList.toggle("is-hidden", !isTts);
-  placeholderPanel.classList.toggle("is-hidden", isApi || isGeneral || isCyrene || isDisclaimer || isMemory || isUser || isChat || isIdentity || isPlugins || isSkills || isTokens || isTts);
+  placeholderPanel.classList.toggle("is-hidden", isApi || isGeneral || isCyrene || isDisclaimer || isMemory || isUser || isChat || isTasks || isIdentity || isPlugins || isSkills || isTokens || isTts);
 
-  if (!isApi && !isGeneral && !isCyrene && !isDisclaimer && !isMemory && !isUser && !isChat && !isIdentity && !isPlugins && !isSkills && !isTokens && !isTts) {
+  if (!isApi && !isGeneral && !isCyrene && !isDisclaimer && !isMemory && !isUser && !isChat && !isTasks && !isIdentity && !isPlugins && !isSkills && !isTokens && !isTts) {
     placeholderIcon.textContent = label.emoji;
     placeholderTitle.textContent = label.title;
     placeholderCopy.textContent = "这个模块先占位，等核心聊天与 API 接通后再继续扩展。";
@@ -1292,6 +1770,14 @@ document.querySelectorAll(".nav-item").forEach((el) => {
     if (section) switchSection(section);
   });
 });
+
+schedulerNewBtn?.addEventListener("click", () => void openSchedulerEditor());
+schedulerEditorClose?.addEventListener("click", closeSchedulerEditor);
+schedulerCancelBtn?.addEventListener("click", closeSchedulerEditor);
+schedulerSaveBtn?.addEventListener("click", () => void saveSchedulerTask());
+schedulerKindInput?.addEventListener("change", updateSchedulerConditionalFields);
+schedulerToolLimitInput?.addEventListener("change", updateSchedulerConditionalFields);
+updateSchedulerConditionalFields();
 
 // ===== 游戏代肝插件卡（在 plugins 面板里，MCP 下、生活工具上）=====
 function initGameBotPluginCard(): void {

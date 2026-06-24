@@ -1,0 +1,679 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2] [cursor=pointer]: 半隐黑幕
+  - navigation [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - link [ref=e9] [cursor=pointer]:
+          - /url: //game.bilibili.com/?spm_id_from=555.117.0.0
+        - list [ref=e10]:
+          - listitem [ref=e11]:
+            - link " 主站" [ref=e12] [cursor=pointer]:
+              - /url: //www.bilibili.com/?spm_id_from=555.117.0.0
+              - generic [ref=e13]: 
+              - generic [ref=e14]: 主站
+          - listitem [ref=e15]:
+            - link "首页" [ref=e16] [cursor=pointer]:
+              - /url: //game.bilibili.com/platform?spm_id_from=555.117.0.0
+          - listitem [ref=e17]:
+            - link "排行榜" [ref=e18] [cursor=pointer]:
+              - /url: //game.bilibili.com/platform/ranks?spm_id_from=555.117.0.0
+          - listitem [ref=e19]:
+            - link "发现" [ref=e20] [cursor=pointer]:
+              - /url: //game.bilibili.com/platform/discover?spm_id_from=555.117.0.0
+          - listitem [ref=e21]:
+            - link "WIKI" [ref=e22] [cursor=pointer]:
+              - /url: //wiki.biligame.com/?spm_id_from=555.117.0.0
+          - listitem [ref=e23]:
+            - link "大会员礼包" [ref=e24] [cursor=pointer]:
+              - /url: //b-gift.biligame.com/?spm_id_from=555.117.0.0
+          - listitem [ref=e25]:
+            - link "充值中心" [ref=e26] [cursor=pointer]:
+              - /url: //pay.biligame.com/?spm_id_from=555.117.0.0#/?from=gc&selectedNav=pay
+          - listitem [ref=e27]:
+            - link "我的" [ref=e28] [cursor=pointer]:
+              - /url: //game.bilibili.com/platform/mine?spm_id_from=555.117.0.0
+      - generic [ref=e29]:
+        - generic [ref=e30]:
+          - textbox "搜索更多游戏&WIKI" [ref=e31]
+          - generic [ref=e33] [cursor=pointer]: 
+        - link [ref=e37] [cursor=pointer]:
+          - /url: https://passport.bilibili.com/login?gourl=https%3A%2F%2Fwiki.biligame.com%2Fsr%2F%25E6%2599%25A8%25E6%259B%25A6%25E5%2595%258A%25EF%25BC%258C%25E5%2586%258D%25E6%258A%259A%25E6%2598%25A0%25E9%2581%25A5%25E8%25BF%259C%25E5%259C%25B0%25E5%25B9%25B3
+  - generic [ref=e38]:
+    - generic [ref=e39]:
+      - link [ref=e41] [cursor=pointer]:
+        - /url: /sr/%E9%A6%96%E9%A1%B5
+      - listitem [ref=e42]:
+        - link "我的消息" [ref=e43] [cursor=pointer]:
+          - /url: javascript:void(0);
+      - generic [ref=e44] [cursor=pointer]: 关于本站
+      - generic [ref=e46]:
+        - generic [ref=e48]:
+          - link "首页" [ref=e50] [cursor=pointer]:
+            - /url: javascript:;
+            - text: 首页
+          - link "导航" [ref=e53] [cursor=pointer]:
+            - /url: javascript:;
+            - text: 导航
+          - link "图鉴" [ref=e56] [cursor=pointer]:
+            - /url: javascript:;
+            - text: 图鉴
+          - link "地图" [ref=e59] [cursor=pointer]:
+            - /url: /sr/%E5%9C%B0%E5%9B%BE
+          - link "玩法/攻略" [ref=e61] [cursor=pointer]:
+            - /url: javascript:;
+            - text: 玩法/攻略
+          - link "扩展阅读" [ref=e64] [cursor=pointer]:
+            - /url: javascript:;
+            - text: 扩展阅读
+          - link "其他" [ref=e67] [cursor=pointer]:
+            - /url: javascript:;
+            - text: 其他
+        - generic [ref=e72]:
+          - textbox "搜索崩坏：星穹铁道WIKI_BWIKI_哔哩哔哩[alt-shift-f]" [ref=e73]:
+            - /placeholder: 本WIKI中搜索
+          - button "搜索" [ref=e74] [cursor=pointer]
+          - button "前往" [ref=e75] [cursor=pointer]
+    - main [ref=e76]:
+      - generic [ref=e78]:
+        - paragraph [ref=e80]:
+          - text: 本WIKI由
+          - link "旅行者酒馆" [ref=e81] [cursor=pointer]:
+            - /url: https://space.bilibili.com/489986571
+          - text: 于2021年10月05日申请开通。
+          - generic [ref=e82]:
+            - text: 内容按
+            - link "CC BY-NC-SA 4.0协议" [ref=e83] [cursor=pointer]:
+              - /url: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans
+            - text: 提供
+          - text: ，编辑权限开放。
+          - text: 本WIKI仍在努力完善中，欢迎收藏。编辑组为非官方民间组织，为爱发电，欢迎各路能人异士加入。
+          - link "免责声明" [ref=e84] [cursor=pointer]:
+            - /url: /sr/%E5%B4%A9%E5%9D%8F%EF%BC%9A%E6%98%9F%E7%A9%B9%E9%93%81%E9%81%93:%E5%85%8D%E8%B4%A3%E5%A3%B0%E6%98%8E
+          - text: •
+          - link "编辑教程" [ref=e85] [cursor=pointer]:
+            - /url: /sr/%E6%98%9F%E7%A9%B9%E9%93%81%E9%81%93WIKI%E7%BC%96%E8%BE%91%E6%95%99%E7%A8%8B
+          - text: •
+          - link "反馈留言" [ref=e86] [cursor=pointer]:
+            - /url: /sr/%E5%B4%A9%E5%9D%8F%EF%BC%9A%E6%98%9F%E7%A9%B9%E9%93%81%E9%81%93%E6%9C%89%E9%97%AE%E5%93%94%E7%AD%94%E7%95%99%E8%A8%80%E6%9D%BF
+          - text: •
+          - link "收藏方法" [ref=e87] [cursor=pointer]:
+            - /url: https://wiki.biligame.com/wiki/BWIKI%E6%94%B6%E8%97%8F%E5%88%B0%E6%A1%8C%E9%9D%A2%E7%9A%84%E6%96%B9%E6%B3%95%E8%AF%B4%E6%98%8E
+          - text: • 交流群：1017604603
+        - paragraph
+      - generic [ref=e88]:
+        - heading "晨曦啊，再抚映遥远地平" [level=1] [ref=e89]: 晨曦啊，再抚映遥远地平
+        - generic [ref=e90]:
+          - navigation "WIKI功能 " [ref=e91] [cursor=pointer]:
+            - heading "WIKI功能 " [level=3] [ref=e92]:
+              - generic [ref=e93]: WIKI功能
+              - generic [ref=e94]: 
+          - generic [ref=e95]:
+            - paragraph [ref=e96]: 阅读：4548
+            - paragraph [ref=e97]: 更新日期：2026-02-13
+            - paragraph [ref=e98]: 最新编辑：QWERTY_770
+      - generic [ref=e99]:
+        - link "跳到导航" [ref=e100] [cursor=pointer]:
+          - /url: "#mw-head"
+        - link "跳到搜索" [ref=e101] [cursor=pointer]:
+          - /url: "#p-search"
+        - generic [ref=e102]:
+          - link "页面贡献者 :" [ref=e103] [cursor=pointer]:
+            - /url: /sr/%E7%89%B9%E6%AE%8A:%E8%B4%A1%E7%8C%AE%E8%80%85/%E6%99%A8%E6%9B%A6%E5%95%8A%EF%BC%8C%E5%86%8D%E6%8A%9A%E6%98%A0%E9%81%A5%E8%BF%9C%E5%9C%B0%E5%B9%B3
+          - generic [ref=e104]:
+            - link [ref=e107] [cursor=pointer]:
+              - /url: //space.bilibili.com/1902365740/
+            - link [ref=e111] [cursor=pointer]:
+              - /url: //space.bilibili.com/474970786/
+            - link [ref=e115] [cursor=pointer]:
+              - /url: //space.bilibili.com/343309739/
+          - generic [ref=e117] [cursor=pointer]: 共3人编辑
+        - generic [ref=e121]:
+          - generic [ref=e123]: 如果选择选项下面对话没变不是BUG了，而是游戏本身对话就是一样的。
+          - generic [ref=e124]:
+            - generic [ref=e125]:
+              - generic "编辑这个页面" [ref=e126]:
+                - link "编" [ref=e127] [cursor=pointer]:
+                  - /url: https://wiki.biligame.com/sr/index.php?title=%E6%99%A8%E6%9B%A6%E5%95%8A%EF%BC%8C%E5%86%8D%E6%8A%9A%E6%98%A0%E9%81%A5%E8%BF%9C%E5%9C%B0%E5%B9%B3&action=edit
+              - generic "清除这个页面的缓存" [ref=e128]:
+                - link "刷" [ref=e129] [cursor=pointer]:
+                  - /url: https://wiki.biligame.com/sr/index.php?title=%E6%99%A8%E6%9B%A6%E5%95%8A%EF%BC%8C%E5%86%8D%E6%8A%9A%E6%98%A0%E9%81%A5%E8%BF%9C%E5%9C%B0%E5%B9%B3&action=purge
+              - generic "查看这个页面的编辑历史" [ref=e130]:
+                - link "历" [ref=e131] [cursor=pointer]:
+                  - /url: https://wiki.biligame.com/sr/index.php?title=%E6%99%A8%E6%9B%A6%E5%95%8A%EF%BC%8C%E5%86%8D%E6%8A%9A%E6%98%A0%E9%81%A5%E8%BF%9C%E5%9C%B0%E5%B9%B3&action=history
+              - generic "短网址，按右键复制链接地址" [ref=e132]:
+                - link "短" [ref=e133] [cursor=pointer]:
+                  - /url: https://wiki.biligame.com/sr/?curid=24373
+              - generic "查看这个页面" [ref=e134]:
+                - link "阅" [ref=e135] [cursor=pointer]:
+                  - /url: https://wiki.biligame.com/sr/%E6%99%A8%E6%9B%A6%E5%95%8A%EF%BC%8C%E5%86%8D%E6%8A%9A%E6%98%A0%E9%81%A5%E8%BF%9C%E5%9C%B0%E5%B9%B3
+            - link "首页" [ref=e136] [cursor=pointer]:
+              - /url: /sr/%E9%A6%96%E9%A1%B5
+            - text: ">"
+            - link "开拓任务" [ref=e137] [cursor=pointer]:
+              - /url: /sr/%E5%BC%80%E6%8B%93%E4%BB%BB%E5%8A%A1
+            - text: ">"
+            - link "成为昨日的明天" [ref=e138] [cursor=pointer]:
+              - /url: /sr/%E6%88%90%E4%B8%BA%E6%98%A8%E6%97%A5%E7%9A%84%E6%98%8E%E5%A4%A9
+            - text: "> 晨曦啊，再抚映遥远地平"
+          - separator [ref=e139]
+          - generic [ref=e141]:
+            - text: 如果是第一次来，按"Ctrl+D"可以收藏随时查看更新~觉得WIKI好玩的话，请推荐给朋友哦～(◕ω＜)☆
+            - text: 按右上角“WIKI功能→编辑”即可修改页面内容。
+          - table [ref=e142]:
+            - rowgroup [ref=e143]:
+              - row "任务名称 晨曦啊，再抚映遥远地平" [ref=e144]:
+                - rowheader "任务名称" [ref=e145]
+                - cell "晨曦啊，再抚映遥远地平" [ref=e146]
+              - row "任务地区 翁法罗斯" [ref=e147]:
+                - rowheader "任务地区" [ref=e148]
+                - cell "翁法罗斯" [ref=e149]
+              - row "任务类型 开拓任务" [ref=e150]:
+                - rowheader "任务类型" [ref=e151]
+                - cell "开拓任务" [ref=e152]
+              - row "开放等级 21" [ref=e153]:
+                - rowheader "开放等级" [ref=e154]
+                - cell "21" [ref=e155]
+              - row "所属版本 3.7" [ref=e156]:
+                - rowheader "所属版本" [ref=e157]
+                - cell "3.7" [ref=e158]
+              - row "任务描述 为完成泰坦的试炼，你须在翁法罗斯负世千年，并于此世尽头的黎明时刻苏醒。你的伙伴们将会在西风的彼岸等待，与你踏上最后的旅程。" [ref=e159]:
+                - rowheader "任务描述" [ref=e160]
+                - cell "为完成泰坦的试炼，你须在翁法罗斯负世千年，并于此世尽头的黎明时刻苏醒。你的伙伴们将会在西风的彼岸等待，与你踏上最后的旅程。" [ref=e161]
+              - row "奖励 里程 里程 × 200星琼 星琼 × 30漫游指南 漫游指南 × 2提纯以太 提纯以太 × 2无序秘酿 无序秘酿 × 80信用点 信用点 × 30000" [ref=e162]:
+                - rowheader "奖励" [ref=e163]
+                - cell "里程 里程 × 200星琼 星琼 × 30漫游指南 漫游指南 × 2提纯以太 提纯以太 × 2无序秘酿 无序秘酿 × 80信用点 信用点 × 30000" [ref=e164]:
+                  - link "里程" [ref=e166] [cursor=pointer]:
+                    - /url: /sr/%E9%87%8C%E7%A8%8B
+                    - img "里程" [ref=e167]
+                  - link "里程" [ref=e168] [cursor=pointer]:
+                    - /url: /sr/%E9%87%8C%E7%A8%8B
+                  - text: × 200
+                  - link "星琼" [ref=e170] [cursor=pointer]:
+                    - /url: /sr/%E6%98%9F%E7%90%BC
+                    - img "星琼" [ref=e171]
+                  - link "星琼" [ref=e172] [cursor=pointer]:
+                    - /url: /sr/%E6%98%9F%E7%90%BC
+                  - text: × 30
+                  - link "漫游指南" [ref=e174] [cursor=pointer]:
+                    - /url: /sr/%E6%BC%AB%E6%B8%B8%E6%8C%87%E5%8D%97
+                    - img "漫游指南" [ref=e175]
+                  - link "漫游指南" [ref=e176] [cursor=pointer]:
+                    - /url: /sr/%E6%BC%AB%E6%B8%B8%E6%8C%87%E5%8D%97
+                  - text: × 2
+                  - link "提纯以太" [ref=e178] [cursor=pointer]:
+                    - /url: /sr/%E6%8F%90%E7%BA%AF%E4%BB%A5%E5%A4%AA
+                    - img "提纯以太" [ref=e179]
+                  - link "提纯以太" [ref=e180] [cursor=pointer]:
+                    - /url: /sr/%E6%8F%90%E7%BA%AF%E4%BB%A5%E5%A4%AA
+                  - text: × 2
+                  - link "无序秘酿" [ref=e182] [cursor=pointer]:
+                    - /url: /sr/%E6%97%A0%E5%BA%8F%E7%A7%98%E9%85%BF
+                    - img "无序秘酿" [ref=e183]
+                  - link "无序秘酿" [ref=e184] [cursor=pointer]:
+                    - /url: /sr/%E6%97%A0%E5%BA%8F%E7%A7%98%E9%85%BF
+                  - text: × 80
+                  - link "信用点" [ref=e186] [cursor=pointer]:
+                    - /url: /sr/%E4%BF%A1%E7%94%A8%E7%82%B9
+                    - img "信用点" [ref=e187]
+                  - link "信用点" [ref=e188] [cursor=pointer]:
+                    - /url: /sr/%E4%BF%A1%E7%94%A8%E7%82%B9
+                  - text: × 30000
+              - row "出场人物 昔涟 昔涟 丹恒 丹恒 三月七 三月七" [ref=e189]:
+                - rowheader "出场人物" [ref=e190]
+                - cell "昔涟 昔涟 丹恒 丹恒 三月七 三月七" [ref=e191]:
+                  - link "昔涟" [ref=e193] [cursor=pointer]:
+                    - /url: /sr/%E6%98%94%E6%B6%9F
+                    - img "昔涟" [ref=e194]
+                  - link "昔涟" [ref=e195] [cursor=pointer]:
+                    - /url: /sr/%E6%98%94%E6%B6%9F
+                  - link "丹恒" [ref=e197] [cursor=pointer]:
+                    - /url: /sr/%E4%B8%B9%E6%81%92
+                    - img "丹恒" [ref=e198]
+                  - link "丹恒" [ref=e199] [cursor=pointer]:
+                    - /url: /sr/%E4%B8%B9%E6%81%92
+                  - link "三月七" [ref=e201] [cursor=pointer]:
+                    - /url: /sr/%E4%B8%89%E6%9C%88%E4%B8%83
+                    - img "三月七" [ref=e202]
+                  - link "三月七" [ref=e203] [cursor=pointer]:
+                    - /url: /sr/%E4%B8%89%E6%9C%88%E4%B8%83
+          - heading "任务相关" [level=2] [ref=e204]:
+            - generic [ref=e205]: 任务相关
+          - heading "任务条件" [level=3] [ref=e206]: 任务条件
+          - definition [ref=e208]:
+            - text: 完成任务
+            - link "诸神啊，奏响创世的凯歌" [ref=e209] [cursor=pointer]:
+              - /url: /sr/%E8%AF%B8%E7%A5%9E%E5%95%8A%EF%BC%8C%E5%A5%8F%E5%93%8D%E5%88%9B%E4%B8%96%E7%9A%84%E5%87%AF%E6%AD%8C
+          - heading "系列任务" [level=3] [ref=e210]: 系列任务
+          - list [ref=e211]:
+            - listitem [ref=e212]:
+              - link "成为昨日的明天" [ref=e213] [cursor=pointer]:
+                - /url: /sr/%E6%88%90%E4%B8%BA%E6%98%A8%E6%97%A5%E7%9A%84%E6%98%8E%E5%A4%A9
+          - heading "前置任务" [level=3] [ref=e214]: 前置任务
+          - list [ref=e215]:
+            - listitem [ref=e216]:
+              - link "诸神啊，奏响创世的凯歌" [ref=e217] [cursor=pointer]:
+                - /url: /sr/%E8%AF%B8%E7%A5%9E%E5%95%8A%EF%BC%8C%E5%A5%8F%E5%93%8D%E5%88%9B%E4%B8%96%E7%9A%84%E5%87%AF%E6%AD%8C
+          - heading "后续任务" [level=3] [ref=e218]: 后续任务
+          - list [ref=e219]:
+            - listitem [ref=e220]:
+              - link "星路长驰，穹宇远征" [ref=e221] [cursor=pointer]:
+                - /url: /sr/%E6%98%9F%E8%B7%AF%E9%95%BF%E9%A9%B0%EF%BC%8C%E7%A9%B9%E5%AE%87%E8%BF%9C%E5%BE%81
+          - heading "任务流程" [level=3] [ref=e222]: 任务流程
+          - list [ref=e223]:
+            - listitem [ref=e224]: 在新世界的开始，与昔涟对话
+            - listitem [ref=e225]: 前往码头，再看一眼哀丽秘榭的海
+            - listitem [ref=e226]: 聆听昔涟讲述真相，完成「记忆」的拼图
+          - heading "剧情梗概" [level=2] [ref=e227]:
+            - generic [ref=e228]: 剧情梗概
+          - generic [ref=e230] [cursor=pointer]:
+            - generic [ref=e231]: 剧情梗概
+            - generic [ref=e232]: 折叠
+          - paragraph [ref=e233]
+          - heading "剧情内容" [level=2] [ref=e234]:
+            - generic [ref=e235]: 剧情内容
+          - generic [ref=e237] [cursor=pointer]:
+            - generic [ref=e238]: 前情提要
+            - generic [ref=e239]: 折叠
+          - heading "在新世界的开始，与昔涟对话" [level=3] [ref=e240]: 在新世界的开始，与昔涟对话
+          - blockquote [ref=e241]:
+            - paragraph [ref=e242]: 天外之界的来客背负起世界的命运，用「开拓」为翁法罗斯写下新的起点。哀丽秘榭之外，是所有人愿望中的崭新纪元。
+            - paragraph [ref=e243]: 而今你已抵达黎明，准备好迎接世人的召唤了吗，开拓者？
+            - generic [ref=e244]:
+              - img "图标-位置.png" [ref=e245]
+              - text: 翁法罗斯-哀丽秘榭
+          - list [ref=e246]:
+            - listitem [ref=e247]: 昔涟：这片风景，还是一点没变，对吗？
+            - listitem [ref=e248]: 昔涟：记忆里的故乡总是一动不动，可回过神来，才发现命运早就偷走了时间。
+            - listitem [ref=e249]:
+              - text: 昔涟：欢迎踏上「创世」的小径，
+              - generic [ref=e250]:
+                - generic [ref=e251]: 开拓者
+                - generic [ref=e252]: 伙伴
+              - text: 。
+          - generic [ref=e254]:
+            - generic [ref=e255]:
+              - img "剧情选项-图标-继续.png" [ref=e257]
+              - text: 昔涟，你的样子…
+            - generic [ref=e258] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e260]
+              - text: 站在这里，就会想起许多事。
+            - generic [ref=e261] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e263]
+              - text: 「创世」的小径？
+            - list [ref=e265]:
+              - listitem [ref=e266]: 昔涟：看来三千万世「记忆」的重量，让我成熟了许多呢。
+              - listitem [ref=e267]:
+                - text: 昔涟：不过，要是继续长大，人家是不是要比
+                - generic [ref=e268]:
+                  - generic [ref=e269]: 开拓者
+                  - generic [ref=e270]: 伙伴
+                - text: 更高啦？那我可要好好期待一下咯？
+          - list [ref=e271]:
+            - listitem [ref=e272]: 昔涟：在你来之前，我一直在想，哀丽秘榭的帷幕外，正在诞生的是一个怎样的翁法罗斯？
+            - listitem [ref=e273]: 昔涟：我闭上眼睛，就能看见零星的碎片：那些与我们并肩的伙伴，已经奔向了各自的命运。
+            - listitem [ref=e274]: 昔涟：有人化作世界的支柱，撑起「天空」和「海洋」；有人播撒「理性」，划定「律法」，再用双手将婴儿们轻轻捧起。
+            - listitem [ref=e275]: 昔涟：「死亡」和「纷争」不再为人们所惧怕，「诡计」也成为孩子们天真的游戏。
+            - listitem [ref=e276]: 昔涟：万千生灵，都在「浪漫」和「门径」的结网下度过平凡、安然的一生。
+            - listitem [ref=e277]: 昔涟：没有黑潮、逐火，也没有「毁灭」。海的对面，是一个沐浴在阳光下的世界。
+          - generic [ref=e279]:
+            - generic [ref=e280]:
+              - img "剧情选项-图标-继续.png" [ref=e282]
+              - text: 是我们必须守护的世界。
+            - generic [ref=e283] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e285]
+              - text: 是白厄和所有人愿望中的黎明。
+            - generic [ref=e286] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e288]
+              - text: 世界会一直和平，直到决战来临。
+          - list [ref=e289]:
+            - listitem [ref=e290]: 昔涟：这一世，童年般的「黄金世」会延续千年，直到神谕中注定的瞬间——
+            - listitem [ref=e291]: 昔涟：光历4931年的「自由月」，属于「负世」的时刻。
+            - listitem [ref=e292]:
+              - text: 昔涟：准备好迎接世人的召唤了吗，
+              - generic [ref=e293]:
+                - generic [ref=e294]: 开拓者
+                - generic [ref=e295]: 伙伴
+              - text: ？
+            - listitem [ref=e296]: 昔涟：那，就去为这个无数愿望汇成的世界，落下「全世之座」的第一笔吧♪
+          - separator [ref=e297]
+          - list [ref=e298]:
+            - listitem [ref=e299]: ？？？：话虽如此，距离光历4931年，还有好久好久呢。
+            - listitem [ref=e300]: 永夜之帷，三月七：我是能利用「岁月」的夹缝，但开拓者和丹恒…不会要干等好几千年吧？
+            - listitem [ref=e301]: 磐岩之脊，丹恒：倒也不必。只需安静沉睡，「识刻锚」自会将我们唤醒。
+          - generic [ref=e303]:
+            - generic [ref=e304]:
+              - img "剧情选项-图标-继续.png" [ref=e306]
+              - text: 永夜之帷，还有磐岩之脊？
+            - generic [ref=e307] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e309]
+              - text: 没想到，你们也在这里。
+            - list [ref=e311]:
+              - listitem [ref=e312]: 永夜之帷，三月七：没错。咱俩都成了新世界的一部分，现在就等你啦。
+          - list [ref=e313]:
+            - listitem [ref=e314]: 磐岩之脊，丹恒：似乎是受「开拓」影响，我们的意识得以跨越天地，与彼此对话。
+            - listitem [ref=e315]: 磐岩之脊，丹恒：如今，我与这片「大地」相连，能感受到每一座山脉的呼吸……
+            - listitem [ref=e316]: 磐岩之脊，丹恒：我看见，最高的那座名为「奥赫玛」，圣城的身影已初见雏形。
+            - listitem [ref=e317]: 永夜之帷，三月七：意思是，属于你的舞台快搭好了。要不学习下刻法勒，先去发表一番神谕再入睡？
+            - listitem [ref=e318]: 磐岩之脊，丹恒：不过，变化的不止有我们。
+            - listitem [ref=e319]: 磐岩之脊，丹恒：就在刚才，识刻锚传来讯息：「铁墓」对「再创世」产生了反应。
+            - listitem [ref=e320]:
+              - text: 昔涟：在
+              - generic [ref=e321]:
+                - generic [ref=e322]: 开拓者
+                - generic [ref=e323]: 伙伴
+              - text: 背负起三千万世「记忆」的同时……
+            - listitem [ref=e324]: 磐岩之脊，丹恒：恐怕，它也吞下了三千万世的「毁灭」。
+          - generic [ref=e326]:
+            - generic [ref=e327]:
+              - img "剧情选项-图标-继续.png" [ref=e329]
+              - text: 在所难免，我早有准备。
+            - generic [ref=e330] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e332]
+              - text: 不能再等了，必须阻止铁墓。
+            - generic [ref=e333] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e335]
+              - text: 该去接过白厄背负的重担了…
+          - list [ref=e336]:
+            - listitem [ref=e337]: 永夜之帷，三月七：……
+            - listitem [ref=e338]: 永夜之帷，三月七：其实，开拓者，你不必独自背负这个世界的。
+            - listitem [ref=e339]: 永夜之帷，三月七：自登上列车的那天起，这趟旅行就没有「一个人」的说法。所以这次，没人会在时间的尽头独自前行。
+            - listitem [ref=e340]: 永夜之帷，三月七：我和丹恒特地赶来，就是为了跟你说这事。
+            - listitem [ref=e341]: 磐岩之脊，丹恒：记得，这不是你一人的「负世」。
+            - listitem [ref=e342]: 磐岩之脊，丹恒：而是星穹列车共同的「开拓」。
+          - generic [ref=e344]:
+            - generic [ref=e345]:
+              - img "剧情选项-图标-继续.png" [ref=e347]
+              - text: 当然，谢谢你们，好伙伴。
+            - generic [ref=e348] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e350]
+              - text: 不用提醒，我一直记得你们。
+            - generic [ref=e351] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e353]
+              - text: 真是的，不能让我当一回主角？
+          - list [ref=e354]:
+            - listitem [ref=e355]: 永夜之帷，三月七：好啦。我和丹恒该去睡个好——长的觉了。替我们看好这个世界，开拓者。
+            - listitem [ref=e356]: 磐岩之脊，丹恒：前路漫漫，但我们会在终点等你。
+            - listitem [ref=e357]: 永夜之帷，三月七：一定，要再见面啊。
+            - listitem [ref=e358]: 开拓者：……
+            - listitem [ref=e359]: 开拓者：（启程前，再看一眼海的对面吧。）
+          - heading "前往码头，再看一眼哀丽秘榭的海" [level=3] [ref=e360]: 前往码头，再看一眼哀丽秘榭的海
+          - list [ref=e361]:
+            - listitem [ref=e362]: 开拓者：哀丽秘榭，真安静啊。
+            - listitem [ref=e363]: 昔涟：嗯。和记忆中一模一样。
+            - listitem [ref=e364]: 开拓者：又一次，我们回到了这里。
+          - separator [ref=e365]
+          - list [ref=e366]:
+            - listitem [ref=e367]: 开拓者：（黑潮的气息，彻底平静了。）
+            - listitem [ref=e368]: 开拓者：（三千万次轮回的起点，终于迎来了……）
+            - listitem [ref=e369]: 昔涟：…第一次终点。
+            - listitem [ref=e370]: 昔涟：也是最后一次，对吗？
+            - listitem [ref=e371]: 昔涟：我听不见他的声音。那里没有为他绽放的花，也没有属于他的星星。
+            - listitem [ref=e372]: 昔涟：白厄…是唯一一个，没能抵达新世界的人。
+          - generic [ref=e374]:
+            - generic [ref=e375]:
+              - img "剧情选项-图标-继续.png" [ref=e377]
+              - text: 他用牺牲，换来了这片宁静。
+            - generic [ref=e378] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e380]
+              - text: 要相信他，我们一定会重逢。
+            - generic [ref=e381] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e383]
+              - text: 白厄在铁墓体内等待我们。
+          - list [ref=e384]:
+            - listitem [ref=e385]: 昔涟：你看，那道照彻树庭的金光，依然在天地间徘徊。就像翁法罗斯的神谕。
+            - listitem [ref=e386]: 昔涟：那一定是他留下的指引，指向「毁灭」…最深的黑夜。
+            - listitem [ref=e387]: 昔涟：还记得吗？上一次启程时，也是在这里，我问过开拓者……
+            - listitem [ref=e388]:
+              - text: 昔涟：「
+              - generic [ref=e389]:
+                - generic [ref=e390]: 开拓者
+                - generic [ref=e391]: 伙伴
+              - text: ，准备好成为英雄了吗？」
+            - listitem [ref=e392]: 昔涟：那时候，你还在为「负世」的职责而烦恼，思考自己该扮演什么样的角色。但现在，所有人都给出了回答……
+            - listitem [ref=e393]: 昔涟：史诗中的「英雄」，只是在每一个被世界需要的场合，恰到好处地出现在那里。
+            - listitem [ref=e394]: 昔涟：正如你的到来，让翁法罗斯的命运再度开始转动。
+            - listitem [ref=e395]: 昔涟：一个人的性格，就是他/她的命运。
+          - generic [ref=e398]:
+            - img "剧情选项-图标-继续.png" [ref=e400]
+            - text: 我们所有人一起，走向最好的结局。
+          - list [ref=e401]:
+            - listitem [ref=e402]: 昔涟：「我们」…「最好」…都是很美的词呢。
+            - listitem [ref=e403]:
+              - text: 昔涟：谢谢你，
+              - generic [ref=e404]:
+                - generic [ref=e405]: 开拓者
+                - generic [ref=e406]: 伙伴
+              - text: 。刚才那些话，也是在为我自己加油打气。
+            - listitem [ref=e407]: 昔涟：毕竟，在真正为这个故事写下结局前，我也必须鼓起勇气，和你一起出发……
+            - listitem [ref=e408]: 昔涟：……
+            - listitem [ref=e409]: 昔涟：去面对一份……
+            - listitem [ref=e410]: 昔涟：被我遗忘了太久，也抗拒了太久的「记忆」。
+          - heading "聆听昔涟讲述真相，完成「记忆」的拼图" [level=3] [ref=e411]: 聆听昔涟讲述真相，完成「记忆」的拼图
+          - list [ref=e412]:
+            - listitem [ref=e413]: 开拓者：好黑。这里是……
+            - listitem [ref=e414]: 昔涟：无名泰坦大墓，「记忆」最深的角落。
+            - listitem [ref=e415]: 昔涟：也是，「昔涟」的诞生之地。
+          - generic [ref=e417]:
+            - generic [ref=e418]:
+              - img "剧情选项-图标-继续.png" [ref=e420]
+              - text: 不是哀丽秘榭吗？
+            - generic [ref=e421] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e423]
+              - text: 难道…你取回失去的记忆了？
+            - generic [ref=e424] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e426]
+              - text: 诞生之地？什么意思…
+          - list [ref=e427]:
+            - listitem [ref=e428]:
+              - text: 昔涟：对不起呀，
+              - generic [ref=e429]:
+                - generic [ref=e430]: 开拓者
+                - generic [ref=e431]: 伙伴
+              - text: 。这一路上，取回的记忆越多，我心中的违和感就越是强烈。
+            - listitem [ref=e432]: 昔涟：总有一种不安挥之不去。就好像在哀丽秘榭，我望着水面，分不清水中的我和岸边的我，哪一个才是真正的我。
+            - listitem [ref=e433]: 昔涟：但现在，我终于明白了。
+            - listitem [ref=e434]:
+              - text: 昔涟：你看，
+              - generic [ref=e435]:
+                - generic [ref=e436]: 开拓者
+                - generic [ref=e437]: 伙伴
+              - text: 。那面墙上的字，就是答案呀。
+            - listitem [ref=e438]: ？？？：「一、二、三、四、五、六、七」……
+            - listitem [ref=e439]: 昔涟：「哆、徕、咪、发、嗦、啦、嘻」……
+            - listitem [ref=e440]: 昔涟：不成调的小曲，是小妖精们的歌谣。
+            - listitem [ref=e441]: ？？？：「一如既往，我会把这本书念给你听……」
+            - listitem [ref=e442]: ？？？：「这样一来，它就不再是『昔涟』一个人的回忆。」
+            - listitem [ref=e443]: 昔涟：我一直以为，自己是逐火之旅的讲述者。
+            - listitem [ref=e444]: 昔涟：但讲故事的人，原来……
+            - listitem [ref=e445]: 昔涟：也是最专心的「听众」呀。
+          - generic [ref=e447]:
+            - generic [ref=e448]:
+              - img "剧情选项-图标-继续.png" [ref=e450]
+              - text: 什么意思…
+            - generic [ref=e451] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e453]
+              - text: 我相信每一个你。
+            - generic [ref=e454] [cursor=pointer]:
+              - img "剧情选项-图标-继续.png" [ref=e456]
+              - text: 我才是讲故事的人。
+          - list [ref=e457]:
+            - listitem [ref=e458]: 昔涟：「再创世」的瞬间，「记忆」的质料包裹住我。在晶莹的水晶中，我看见了无数个「昔涟」……
+            - listitem [ref=e459]: 昔涟：还有，无数个自己。
+            - listitem [ref=e460]: 昔涟：开拓者，这就是「记忆」的最后一块拼图啦。
+            - listitem [ref=e461]: 昔涟：一座诞生自「智识」的囚笼，一片消陨于「毁灭」的坟茔。
+            - listitem [ref=e462]: 昔涟：那无人知晓的、孑然的神明，不应存在的第十三位泰坦……
+            - listitem [ref=e463]: 昔涟：最初的智种，德谬歌…它就在这里。
+        - generic [ref=e465]:
+          - link "分类" [ref=e466] [cursor=pointer]:
+            - /url: /sr/%E7%89%B9%E6%AE%8A:%E9%A1%B5%E9%9D%A2%E5%88%86%E7%B1%BB
+          - text: ：
+          - list [ref=e467]:
+            - listitem [ref=e468]:
+              - link "任务" [ref=e469] [cursor=pointer]:
+                - /url: /sr/index.php?title=%E5%88%86%E7%B1%BB:%E4%BB%BB%E5%8A%A1&action=edit&redlink=1
+            - listitem [ref=e470]:
+              - link "开拓任务" [ref=e471] [cursor=pointer]:
+                - /url: /sr/index.php?title=%E5%88%86%E7%B1%BB:%E5%BC%80%E6%8B%93%E4%BB%BB%E5%8A%A1&action=edit&redlink=1
+      - generic [ref=e472]:
+        - text: 评论
+        - generic [ref=e473]:
+          - img [ref=e476] [cursor=pointer]
+          - generic [ref=e478]: 请先登录后发表评论 (・ω・)
+    - generic [ref=e480]:
+      - link "BWIKI首页" [ref=e481] [cursor=pointer]:
+        - /url: https://wiki.biligame.com/wiki/%E9%A6%96%E9%A1%B5
+        - img
+        - generic [ref=e482]: BWIKI首页
+      - link "创建WIKI" [ref=e483] [cursor=pointer]:
+        - /url: "https://wiki.biligame.com/wiki/WIKI%E7%94%B3%E8%AF%B7%E9%A1%B5%E9%9D%A2 "
+        - img
+        - generic [ref=e484]: 创建WIKI
+      - link "BWIKI君" [ref=e485] [cursor=pointer]:
+        - /url: https://space.bilibili.com/477233102
+        - img
+        - generic [ref=e486]: BWIKI君
+      - link "分享" [ref=e487] [cursor=pointer]:
+        - /url: javascript:void(false)
+        - img
+        - generic: 分享
+      - link "BWIKI客服" [ref=e488] [cursor=pointer]:
+        - /url: https://message.bilibili.com/?spm_id_from=333.999.0.0#/whisper/mid477233102
+        - img [ref=e489]
+        - generic [ref=e490]: BWIKI客服
+  - generic [ref=e492]:
+    - generic [ref=e493]:
+      - link [ref=e494] [cursor=pointer]:
+        - /url: //www.bilibili.com
+      - img [ref=e497]
+    - generic [ref=e498]:
+      - paragraph [ref=e499]:
+        - link "游戏中心" [ref=e500] [cursor=pointer]:
+          - /url: //www.biligame.com/
+        - text: "|"
+        - link "帐号安全" [ref=e501] [cursor=pointer]:
+          - /url: https://account.bilibili.com/
+        - text: "|"
+        - link "找回密码" [ref=e502] [cursor=pointer]:
+          - /url: https://account.bilibili.com/resetpwd
+        - text: "|"
+        - link "家长监控" [ref=e503] [cursor=pointer]:
+          - /url: //jiazhang.biligame.com/
+        - text: "|"
+        - link "用户协议" [ref=e504] [cursor=pointer]:
+          - /url: //yhxy.biligame.com/
+      - paragraph
+      - paragraph [ref=e505]: 抵制不良游戏 拒绝盗版游戏 注意自我保护 谨防受骗上当 适度游戏益脑 沉迷游戏伤身 合理安排时间 享受健康生活
+      - paragraph [ref=e506]: 芜湖享游网络技术有限公司 | COPYRIGHT © 2009-2026 BILIBILI ALL RIGHTS RESERVED.
+      - paragraph [ref=e507]: 皖网文[2023]1840-026号 | 皖B2-20180007-2 | 皖ICP证：皖B2-20180007
+      - paragraph [ref=e508]:
+        - link "沪公网安备 31011002002714 号" [ref=e509] [cursor=pointer]:
+          - /url: http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=31011002002714
+          - img [ref=e510]
+          - text: 沪公网安备 31011002002714 号
+  - generic [ref=e511]:
+    - list [ref=e515]:
+      - listitem [ref=e516]:
+        - link "首页" [ref=e518] [cursor=pointer]:
+          - /url: javascript:;
+      - listitem [ref=e519]:
+        - link "导航" [ref=e521] [cursor=pointer]:
+          - /url: javascript:;
+      - listitem [ref=e522]:
+        - link "图鉴" [ref=e524] [cursor=pointer]:
+          - /url: javascript:;
+      - listitem [ref=e525]:
+        - link "地图" [ref=e526] [cursor=pointer]:
+          - /url: /sr/%E5%9C%B0%E5%9B%BE
+      - listitem [ref=e527]:
+        - link "玩法/攻略" [ref=e529] [cursor=pointer]:
+          - /url: javascript:;
+      - listitem [ref=e530]:
+        - link "扩展阅读" [ref=e532] [cursor=pointer]:
+          - /url: javascript:;
+      - listitem [ref=e533]:
+        - link "其他" [ref=e535] [cursor=pointer]:
+          - /url: javascript:;
+    - generic [ref=e536]:
+      - link "BWIKI首页" [ref=e537] [cursor=pointer]:
+        - /url: https://wiki.biligame.com/wiki/%E9%A6%96%E9%A1%B5
+      - link "创建WIKI" [ref=e538] [cursor=pointer]:
+        - /url: https://wiki.biligame.com/wiki/WIKI%E7%94%B3%E8%AF%B7%E9%A1%B5%E9%9D%A2
+      - link "BWIKI客服" [ref=e539] [cursor=pointer]:
+        - /url: https://space.bilibili.com/477233102?spm_id_from=333.337.0.0
+      - link "BWIKI君" [ref=e540] [cursor=pointer]:
+        - /url: https://space.bilibili.com/477233102
+  - generic [ref=e541]:
+    - heading "目录" [level=2] [ref=e544]
+    - list [ref=e545]:
+      - listitem [ref=e546]:
+        - link "1 任务相关" [ref=e548] [cursor=pointer]:
+          - /url: "#任务相关"
+      - listitem [ref=e549]:
+        - link "2 剧情梗概" [ref=e550] [cursor=pointer]:
+          - /url: "#剧情梗概"
+      - listitem [ref=e551]:
+        - link "3 剧情内容" [ref=e553] [cursor=pointer]:
+          - /url: "#剧情内容"
+  - navigation "目录" [ref=e554]:
+    - generic [ref=e555] [cursor=pointer]:
+      - heading "目录" [level=2] [ref=e556]
+      - text: "[ 隐藏 ]"
+    - list [ref=e557]:
+      - listitem [ref=e558]:
+        - link "1 任务相关" [ref=e559] [cursor=pointer]:
+          - /url: "#任务相关"
+          - generic [ref=e560]: "1"
+          - generic [ref=e561]: 任务相关
+        - list [ref=e562]:
+          - listitem [ref=e563]:
+            - link "1.1 任务条件" [ref=e564] [cursor=pointer]:
+              - /url: "#任务条件"
+              - generic [ref=e565]: "1.1"
+              - generic [ref=e566]: 任务条件
+          - listitem [ref=e567]:
+            - link "1.2 系列任务" [ref=e568] [cursor=pointer]:
+              - /url: "#系列任务"
+              - generic [ref=e569]: "1.2"
+              - generic [ref=e570]: 系列任务
+          - listitem [ref=e571]:
+            - link "1.3 前置任务" [ref=e572] [cursor=pointer]:
+              - /url: "#前置任务"
+              - generic [ref=e573]: "1.3"
+              - generic [ref=e574]: 前置任务
+          - listitem [ref=e575]:
+            - link "1.4 后续任务" [ref=e576] [cursor=pointer]:
+              - /url: "#后续任务"
+              - generic [ref=e577]: "1.4"
+              - generic [ref=e578]: 后续任务
+          - listitem [ref=e579]:
+            - link "1.5 任务流程" [ref=e580] [cursor=pointer]:
+              - /url: "#任务流程"
+              - generic [ref=e581]: "1.5"
+              - generic [ref=e582]: 任务流程
+      - listitem [ref=e583]:
+        - link "2 剧情梗概" [ref=e584] [cursor=pointer]:
+          - /url: "#剧情梗概"
+          - generic [ref=e585]: "2"
+          - generic [ref=e586]: 剧情梗概
+      - listitem [ref=e587]:
+        - link "3 剧情内容" [ref=e588] [cursor=pointer]:
+          - /url: "#剧情内容"
+          - generic [ref=e589]: "3"
+          - generic [ref=e590]: 剧情内容
+        - list [ref=e591]:
+          - listitem [ref=e592]:
+            - link "3.1 在新世界的开始，与昔涟对话" [ref=e593] [cursor=pointer]:
+              - /url: "#在新世界的开始，与昔涟对话"
+              - generic [ref=e594]: "3.1"
+              - generic [ref=e595]: 在新世界的开始，与昔涟对话
+          - listitem [ref=e596]:
+            - link "3.2 前往码头，再看一眼哀丽秘榭的海" [ref=e597] [cursor=pointer]:
+              - /url: "#前往码头，再看一眼哀丽秘榭的海"
+              - generic [ref=e598]: "3.2"
+              - generic [ref=e599]: 前往码头，再看一眼哀丽秘榭的海
+          - listitem [ref=e600]:
+            - link "3.3 聆听昔涟讲述真相，完成「记忆」的拼图" [ref=e601] [cursor=pointer]:
+              - /url: "#聆听昔涟讲述真相，完成「记忆」的拼图"
+              - generic [ref=e602]: "3.3"
+              - generic [ref=e603]: 聆听昔涟讲述真相，完成「记忆」的拼图
+    - text: 显示目录>

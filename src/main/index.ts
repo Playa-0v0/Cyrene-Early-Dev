@@ -1,13 +1,16 @@
-import { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, screen, shell, dialog } from "electron";
+import { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, screen, shell, dialog, protocol, net } from "electron";
 import * as path from "path";
 import * as fs from "fs";
 import * as os from "os";
 import { createHash } from "crypto";
+import { pathToFileURL } from "url";
 import { IPC } from "../shared/ipc-channels";
-import { STATUS_KEYWORDS, STICKER_EXPLICIT_TRIGGERS, STICKER_CONTENT_TRIGGERS, STICKER_MAP } from "./status-keywords";
+import { STATUS_KEYWORDS } from "./status-keywords";
 import { initRAG, buildMemoryContext, addMemory, importDocument, switchEmbeddingModel, deleteImportedDoc } from "./rag";
+import { getEmbeddingProvider } from "./rag/embedding";
 import { ingestPaths } from "./rag/file-ingest";
 import { buildAlwaysOnContext, runFunctionCallingLoop, scheduleMemoryWrite } from "./orchestrator";
+import { buildToneInjection } from "./orchestrator/tone-injector";
 import { getAdapter, buildVendorUrl } from "./orchestrator/vendors";
 import { getCapability } from "./orchestrator/vendors/capabilities";
 import type { VisionConfig } from "./orchestrator/vision-captioner";
@@ -21,6 +24,11 @@ import { buildEnvironmentContext } from "./orchestrator/environment";
 import { initPermissionFromDisk, registerPermissionIpc, getCurrentLevel } from "./permission";
 import { enqueueLLMTask } from "./llm-queue";
 import { getEmbeddingStatus, downloadEmbeddingModel, deleteEmbeddingModel } from "./embedding-manager";
+import { BUILT_IN_STICKER_DESCRIPTIONS } from "./sticker-descriptions";
+import { buildStickerEmbeddingIndex, matchSticker } from "./sticker-embedder";
+import type { StickerEmbeddingEntry } from "./sticker-embedder";
+import { loadUserStickerManifest, addUserSticker, deleteUserSticker, getAllStickerConfig, isStickerIdTaken, getUserStickerFilePath } from "./sticker-storage";
+import type { StickerConfigItem } from "../shared/sticker-types";
 import { initReranker } from "./rag/reranker";
 import { memoryStore } from "./memory/memory-store"
 import type { L0Profile, L1Profile } from "./memory/memory-types";
@@ -34,6 +42,11 @@ import { registerDocumentTools } from "./orchestrator/document-tools";
 import { registerLifeTools, setTranslateConfig } from "./orchestrator/life-tools";
 import { initSkills, skillRegistry, buildSkillCatalog, parseSlashCommand, setSkillEnabled, listSkillsForUi } from "./skills";
 import { initGameBot } from "./game-bot";
+import { getSchedulerStore } from "./scheduler/scheduler-store";
+import { SchedulerEngine } from "./scheduler/scheduler-engine";
+import { createSchedulerRunner } from "./scheduler/scheduler-runner";
+import { registerSchedulerIpc } from "./scheduler/scheduler-ipc";
+import type { ScheduledTask } from "./scheduler/types";
 
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
@@ -42,6 +55,7 @@ let sidebarWindow: BrowserWindow | null = null;
 let tasksWindow: BrowserWindow | null = null;
 let settingsWindow: BrowserWindow | null = null;
 let stickerManagerWindow: BrowserWindow | null = null;
+let schedulerEngine: SchedulerEngine | null = null;
 // 聊天窗口当前活跃的会话 id（通过 IPC 由聊天窗口上报）；
 // 设置面板"删除当前会话"差异化提示用。聊天窗口关闭时由 closed 事件置 null。
 let activeChatSessionId: string | null = null;
@@ -170,6 +184,7 @@ interface ModelSettings {
   runtimeSync: "off" | "local" | "llm";
   stickerEnabled: boolean;
   stickerSize: StickerSize;
+  stickerSimilarityThreshold: number;
   rerankerMode: "light" | "standard" | "none";
   embeddingModel: "minilm" | "bgem3";
   // 视觉模型配置（可选）。undefined 或未启用 = 不支持看图，read_image 诚实拒绝。
@@ -247,7 +262,6 @@ interface PublicModelConfig {
 
 type RuntimeStatus = "陪伴中" | "思考中" | "工作中" | "聆听中" | "提醒中" | "离线";
 type RuntimeFeeling = "平静" | "开心" | "温柔" | "激动" | "撒娇" | "担心" | "难过" | "感动" | "害羞";
-type StickerId = "playful" | "love-happy" | "confident" | "serious" | "calm" | "peek" | "clingy-confused" | "tired" | "love-calm" | "love" | "applause";
 type StickerSize = "small" | "standard" | "large";
 
 interface RuntimeState {
@@ -259,25 +273,11 @@ interface RuntimeState {
 
 interface ChatReplyPayload {
   reply: string;
-  sticker: StickerId | null;
+  sticker: string | null;
 }
 
 const RUNTIME_STATUSES: RuntimeStatus[] = ["陪伴中", "思考中", "工作中", "聆听中", "提醒中", "离线"];
 const RUNTIME_FEELINGS: RuntimeFeeling[] = ["平静", "开心", "温柔", "激动", "撒娇", "担心", "难过", "感动", "害羞"];
-const STICKER_IDS: StickerId[] = ["playful", "love-happy", "confident", "serious", "calm", "peek", "clingy-confused", "tired", "love-calm", "love", "applause"];
-const STICKER_FILES: Record<StickerId, string> = {
-  playful: "playful.png",
-  "love-happy": "love-happy.png",
-  confident: "confident.png",
-  serious: "serious.png",
-  calm: "calm.png",
-  peek: "peek.gif",
-  "clingy-confused": "clingy-confused.gif",
-  tired: "tired.png",
-  "love-calm": "love-calm.png",
-  love: "love.webp",
-  applause: "applause.webp",
-};
 const CHAT_REQUEST_TIMEOUT_MS = 180000; // FC 总预算：12 轮 × 推理模型 ~10-15s 需 180s 余量
 let runtimeState: RuntimeState = {
     status: "陪伴中",
@@ -285,6 +285,7 @@ let runtimeState: RuntimeState = {
     expression: 0,
     updatedAt: Date.now(),
   };
+let stickerEmbeddingIndex: StickerEmbeddingEntry[] | null = null;
 const DEFAULT_MODEL_SETTINGS: ModelSettings = {
   mode: "auto",
   // 默认厂商改为 MiniMax（v1 vendor adapter 第一个落地的），DeepSeek 已从 v1 清单移除。
@@ -296,6 +297,7 @@ const DEFAULT_MODEL_SETTINGS: ModelSettings = {
   runtimeSync: "off",
   stickerEnabled: true,
   stickerSize: "standard",
+  stickerSimilarityThreshold: 0.55,
   rerankerMode: "light",
   embeddingModel: "minilm",
 };
@@ -529,6 +531,9 @@ function normalizeModelSettings(input: Partial<ModelSettings> | null | undefined
     runtimeSync: input?.runtimeSync === "llm" ? "llm" : input?.runtimeSync === "local" ? "local" : "off",
     stickerEnabled: input?.stickerEnabled !== false,
     stickerSize: input?.stickerSize === "small" || input?.stickerSize === "large" ? input.stickerSize : "standard",
+    stickerSimilarityThreshold: typeof input?.stickerSimilarityThreshold === "number"
+      ? Math.max(0.3, Math.min(0.9, input.stickerSimilarityThreshold))
+      : 0.55,
     rerankerMode: input?.rerankerMode === "standard" || input?.rerankerMode === "none" ? input.rerankerMode : "light",
     embeddingModel: input?.embeddingModel === "bgem3" ? "bgem3" : "minilm",
     vision: normalizeVisionConfig(input?.vision),
@@ -739,7 +744,7 @@ async function syncVolcanoSearchMcp(settings: GeneralSettings): Promise<void> {
   }
 }
 
-function loadStickerSettings(): Record<StickerId, boolean> {
+function loadStickerSettings(): Record<string, boolean> {
   let raw: Record<string, unknown> = {};
   try {
     const filePath = getStickerSettingsPath();
@@ -750,40 +755,30 @@ function loadStickerSettings(): Record<StickerId, boolean> {
     console.error("[Cyrene] load sticker settings failed:", err);
   }
 
-  return STICKER_IDS.reduce((acc, id) => {
-    acc[id] = raw[id] !== false;
-    return acc;
-  }, {} as Record<StickerId, boolean>);
+  // 把所有 id 归一化为 boolean（默认 true）
+  const result: Record<string, boolean> = {};
+  for (const id of Object.keys(raw)) {
+    result[id] = raw[id] !== false;
+  }
+  return result;
 }
 
-function saveStickerSettings(settings: Record<StickerId, boolean>): Record<StickerId, boolean> {
-  const normalized = STICKER_IDS.reduce((acc, id) => {
-    acc[id] = settings[id] !== false;
-    return acc;
-  }, {} as Record<StickerId, boolean>);
+function saveStickerSettings(settings: Record<string, boolean>): Record<string, boolean> {
   const filePath = getStickerSettingsPath();
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
-  fs.writeFileSync(filePath, JSON.stringify(normalized, null, 2), "utf8");
-  return normalized;
+  fs.writeFileSync(filePath, JSON.stringify(settings, null, 2), "utf8");
+  return settings;
 }
 
-function setStickerEnabled(id: StickerId, enabled: boolean): Record<StickerId, boolean> {
+function setStickerEnabled(id: string, enabled: boolean): Record<string, boolean> {
   const current = loadStickerSettings();
   current[id] = enabled;
   return saveStickerSettings(current);
 }
 
-function normalizeStickerId(value: unknown): StickerId | null {
-  return typeof value === "string" && STICKER_IDS.includes(value as StickerId) ? value as StickerId : null;
-}
-
-function getStickerManagerConfig() {
-  const enabled = loadStickerSettings();
-  return STICKER_IDS.map((id) => ({
-    id,
-    src: "/stickers/" + STICKER_FILES[id],
-    enabled: enabled[id] !== false,
-  }));
+function getStickerManagerConfig(): StickerConfigItem[] {
+  const stickerSettings = loadStickerSettings();
+  return getAllStickerConfig(stickerSettings);
 }
 
 // 计算 chat / sidebar / tasks 三个窗口的初始位置。
@@ -945,34 +940,6 @@ function inferRuntimeState(
   }
 
   return { status: "陪伴中" };
-}
-
-
-
-function inferStickerId(state: RuntimeState, text: string, latestUserText: string): StickerId | null {
-  const source = `${latestUserText}
-${text}`;
-
-  // 显式触发：用户明确要表情包
-  if (/表情包|发表情|来一个|发一个/.test(latestUserText)) {
-    for (const [id, regex] of Object.entries(STICKER_EXPLICIT_TRIGGERS)) {
-      if (regex.test(source)) return id as StickerId;
-    }
-    return "peek";
-  }
-
-  // 内容触发
-  if (STICKER_CONTENT_TRIGGERS["love-happy"].test(source)) return state.feeling === "开心" ? "love-happy" : "love-calm";
-  for (const [id, regex] of Object.entries(STICKER_CONTENT_TRIGGERS)) {
-    if (id === "love-happy") continue;
-    if (regex.test(source)) return id as StickerId;
-  }
-  if (state.status === "思考中") return "serious";
-  if (state.feeling === "开心") return "playful";
-  if (state.feeling === "感动" || state.feeling === "害羞") return "love";
-
-  // 兜底：STICKER_MAP 查表
-  return (STICKER_MAP[state.status]?.[state.feeling] as StickerId) ?? null;
 }
 
 function parseObserverFeeling(text: string): string | null {
@@ -1305,12 +1272,16 @@ async function requestModelReply(inputMessages: unknown, styleFile = "01_default
   // /命令拦截：命中 /skill-id 则当轮 system 注入 skill 正文（user message 原样，不污染 memory）
   const skillCatalog = buildSkillCatalog(skillRegistry.getEnabled());
   const skillActivation = resolveSlashActivation(messages);
+  // 语气硬注入：检测场景，强制注入语气规则 + 场景参考样本（必须遵守，优先级最高）
+  const recentTexts = messages.filter(m => m.role === "user" || m.role === "assistant").slice(-6).map(m => m.content);
+  const toneInjection = buildToneInjection(latestUserText, recentTexts);
   const systemContent =
     (environmentContext ? environmentContext + "\n\n" : "") +
     (alwaysOnContext ? alwaysOnContext + "\n\n" : "") +
     buildSystemPrompt(styleFile) +
     (skillCatalog ? "\n\n---\n\n" + skillCatalog : "") +
-    skillActivation;
+    skillActivation +
+    toneInjection;
 
   // 2. Function Calling 循环：模型自己决定调不调工具、调哪个
   const fcMessages: Array<{ role: "system" | "user" | "assistant" | "tool"; content: string }> = [
@@ -1362,7 +1333,9 @@ async function requestModelReply(inputMessages: unknown, styleFile = "01_default
   runtimeState.expression = feelingToExpression[runtimeState.feeling] ?? 0;
   runtimeState.updatedAt = Date.now();
 
-  const stickerCandidate = settings.stickerEnabled ? inferStickerId(runtimeState, chatContent, latestUserText) : null;
+  const stickerCandidate = settings.stickerEnabled && stickerEmbeddingIndex
+    ? (await matchSticker(chatContent + "\n" + latestUserText, getEmbeddingProvider(), stickerEmbeddingIndex, settings.stickerSimilarityThreshold))?.id ?? null
+    : null;
   const stickerSettings = loadStickerSettings();
   const sticker = stickerCandidate && stickerSettings[stickerCandidate] !== false ? stickerCandidate : null;
 
@@ -2122,9 +2095,61 @@ ipcMain.handle(IPC.STICKERS_GET_CONFIG, () => {
 
 ipcMain.handle(IPC.STICKERS_SET_ENABLED, (_event, payload: unknown) => {
   const record = payload as { id?: unknown; enabled?: unknown };
-  const id = normalizeStickerId(record?.id);
+  const id = typeof record?.id === "string" ? record.id : null;
   if (!id) return getStickerManagerConfig();
   setStickerEnabled(id, Boolean(record.enabled));
+  return getStickerManagerConfig();
+});
+
+ipcMain.handle(IPC.STICKERS_PICK_FILE, async () => {
+  const result = await dialog.showOpenDialog({
+    properties: ["openFile"],
+    filters: [{ name: "图片", extensions: ["png", "jpg", "jpeg", "gif", "webp"] }],
+  });
+  return result.canceled ? null : result.filePaths[0];
+});
+
+ipcMain.handle(IPC.STICKERS_ADD, async (_event, payload: unknown) => {
+  const { sourcePath, id, description, phrases } = payload as {
+    sourcePath: string;
+    id: string;
+    description: string;
+    phrases: string[];
+  };
+  try {
+    await addUserSticker(sourcePath, id, description, phrases);
+    // 重建 embedding 索引
+    const provider = getEmbeddingProvider();
+    if (provider) {
+      stickerEmbeddingIndex = await buildStickerEmbeddingIndex(
+        provider,
+        BUILT_IN_STICKER_DESCRIPTIONS,
+        loadUserStickerManifest(),
+      );
+    }
+  } catch (err) {
+    console.error("[stickers] add failed:", err);
+    throw err;
+  }
+  return getStickerManagerConfig();
+});
+
+ipcMain.handle(IPC.STICKERS_DELETE, async (_event, id: string) => {
+  try {
+    await deleteUserSticker(id);
+    // 重建 embedding 索引
+    const provider = getEmbeddingProvider();
+    if (provider) {
+      stickerEmbeddingIndex = await buildStickerEmbeddingIndex(
+        provider,
+        BUILT_IN_STICKER_DESCRIPTIONS,
+        loadUserStickerManifest(),
+      );
+    }
+  } catch (err) {
+    console.error("[stickers] delete failed:", err);
+    throw err;
+  }
   return getStickerManagerConfig();
 });
 
@@ -2282,7 +2307,21 @@ ipcMain.handle(IPC.EMBEDDING_DELETE, async (_event, payload: unknown) => {
   }
 });
 
+// 注册 local-sticker:// 协议（用户添加的表情包图片）
+// 必须在 app.ready 之前调用
+protocol.registerSchemesAsPrivileged([
+  { scheme: "local-sticker", privileges: { standard: true, secure: true, supportFetchAPI: true, stream: true } },
+]);
+
 app.whenReady().then(async () => {
+  // 注册 local-sticker:// 协议处理器：将请求映射到 userData/stickers/ 下的文件
+  protocol.handle("local-sticker", (request) => {
+    const url = new URL(request.url);
+    // url.pathname 形如 "/mycat.jpg" 或 "mycat.jpg"
+    const file = url.pathname.replace(/^\/+/, "");
+    const filePath = getUserStickerFilePath(file);
+    return net.fetch(pathToFileURL(filePath).toString());
+  });
   // Token 用量查询 IPC
   ipcMain.handle(IPC.TOKEN_USAGE_GET, (_event, days: number) => {
     return getUsage(Math.max(1, Math.min(90, Number(days) || 7)));
@@ -2472,6 +2511,52 @@ app.whenReady().then(async () => {
     }
   });
 
+  const schedulerStore = getSchedulerStore();
+  schedulerStore.load();
+  const schedulerRunner = createSchedulerRunner({
+    buildOptions: async (task: ScheduledTask) => {
+      const settings = loadModelSettings();
+      if (!settings.apiKey) throw new Error("还没有填写 API Key，请先在设置里保存 API 配置。");
+      const messages = [{ role: "user" as const, content: task.prompt }];
+      let alwaysOnContext = "";
+      try {
+        alwaysOnContext = await buildAlwaysOnContext(task.prompt, messages);
+      } catch (err) {
+        console.warn("[Scheduler] always-on context build failed:", err);
+      }
+      let environmentContext = "";
+      try {
+        const profile = loadUserProfile();
+        environmentContext = buildEnvironmentContext(
+          { provider: settings.provider, model: settings.model },
+          { nickname: profile.nickname, callPreference: profile.callPreference, birthday: profile.birthday, defaultCity: profile.defaultCity, timezone: profile.timezone },
+        );
+      } catch (err) {
+        console.warn("[Scheduler] environment context build failed:", err);
+      }
+      const skillCatalog = buildSkillCatalog(skillRegistry.getEnabled());
+      const systemContent =
+        (environmentContext ? environmentContext + "\n\n" : "") +
+        (alwaysOnContext ? alwaysOnContext + "\n\n" : "") +
+        buildSystemPrompt("01_default.md") +
+        (skillCatalog ? "\n\n---\n\n" + skillCatalog : "");
+      return {
+        settings: { provider: settings.provider, baseUrl: settings.baseUrl, model: settings.model, apiKey: settings.apiKey },
+        messages: [{ role: "system", content: systemContent }, ...messages],
+        timeoutMs: CHAT_REQUEST_TIMEOUT_MS,
+      };
+    },
+    getChatWebContents: () => (chatWindow && !chatWindow.isDestroyed() ? chatWindow.webContents : null),
+    recordHistory: (entry) => schedulerStore.recordHistory(entry),
+    id: () => `hist-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    now: () => new Date(),
+  });
+  schedulerEngine = new SchedulerEngine({
+    store: schedulerStore,
+    runTask: schedulerRunner.runScheduledTask,
+  });
+  registerSchedulerIpc(schedulerStore, schedulerEngine, () => toolRegistry.getAllTools());
+
   // AG-UI 事件流桥：渲染进程 invoke(AGUI_RUN) → CyreneAgent 跑 FC 循环 → 事件透传
   // buildOptions 复用 requestModelReply 的上下文构建；onRunFinished 复用副作用
   registerAgUiIpc(
@@ -2505,6 +2590,9 @@ app.whenReady().then(async () => {
       // 事实层在前，人格层在后，skill 清单 + /命令激活放最后
       const skillCatalog = buildSkillCatalog(skillRegistry.getEnabled());
       const skillActivation = resolveSlashActivation(messages);
+      // 语气硬注入
+      const recentTexts = messages.filter(m => m.role === "user" || m.role === "assistant").slice(-6).map(m => m.content);
+      const toneInjection = buildToneInjection(latestUserText, recentTexts);
       // 附件内容（本轮临时注入，不存历史）
       let attachmentContext = "";
       const atts = input.attachments;
@@ -2518,6 +2606,7 @@ app.whenReady().then(async () => {
         buildSystemPrompt(input.style || "01_default.md") +
         (skillCatalog ? "\n\n---\n\n" + skillCatalog : "") +
         skillActivation +
+        toneInjection +
         attachmentContext;
 
       const fcMessages = [
@@ -2543,7 +2632,9 @@ app.whenReady().then(async () => {
       runtimeState.expression = feelingToExpression[runtimeState.feeling] ?? 0;
       runtimeState.updatedAt = Date.now();
 
-      const stickerCandidate = settings.stickerEnabled ? inferStickerId(runtimeState, chatContent, latestUserText) : null;
+      const stickerCandidate = settings.stickerEnabled && stickerEmbeddingIndex
+        ? (await matchSticker(chatContent + "\n" + latestUserText, getEmbeddingProvider(), stickerEmbeddingIndex, settings.stickerSimilarityThreshold))?.id ?? null
+        : null;
       const stickerSettings = loadStickerSettings();
       const sticker = stickerCandidate && stickerSettings[stickerCandidate] !== false ? stickerCandidate : null;
       // sticker 通过 AG-UI 的 CUSTOM 事件发给渲染进程（渲染端按 RUN_FINISHED 后取兜底）
@@ -2593,22 +2684,38 @@ app.whenReady().then(async () => {
   try {
     const modelSettings = loadModelSettings();
     await initRAG("auto", undefined, undefined, modelSettings.embeddingModel);
-    // 初始化 MCP Manager（异步，不阻塞启动）
-    initMcpManager().catch(err => {
-      console.error('[Cyrene] MCP Manager init failed:', err);
-    });
-    console.log("[Cyrene] RAG initialized OK");
+      // 初始化 MCP Manager；scheduler 启动前等待一次，避免近即时任务早于 MCP 工具恢复。
+      await initMcpManager();
+      console.log("[Cyrene] RAG initialized OK");
 
     await initReranker(modelSettings.rerankerMode);
   } catch (err) {
     console.error("[Cyrene] RAG init FAILED:", err);
   }
+
+  // 初始化表情包 embedding 索引
+  try {
+    const provider = getEmbeddingProvider();
+    if (provider) {
+      stickerEmbeddingIndex = await buildStickerEmbeddingIndex(
+        provider,
+        BUILT_IN_STICKER_DESCRIPTIONS,
+        loadUserStickerManifest(),
+      );
+      console.log(`[stickers] embedding index built: ${stickerEmbeddingIndex.length} entries`);
+    }
+  } catch (err) {
+    console.error("[stickers] embedding index init FAILED:", err);
+  }
+
+  schedulerEngine.start();
 });
 
 app.on("window-all-closed", () => {});
 
 // 应用退出前把 token 用量缓存落盘（防抖未触发的最后一次写）
 app.on("before-quit", () => {
+  schedulerEngine?.stop();
   flushTokenUsage();
 });
 

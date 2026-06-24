@@ -14,7 +14,7 @@ interface MatterResult {
 }
 
 /**
- * 解析 SKILL.md 文本：frontmatter（name/description/tools?/version?）+ 正文。
+ * 解析 SKILL.md 文本：frontmatter（name/description/tools?/version?/autoInject?）+ 正文。
  * 纯函数，不碰 fs/electron。
  * 返回 null 表示不合规（缺 name/description、tools 非 array、或无 frontmatter）。
  */

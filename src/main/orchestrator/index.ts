@@ -11,6 +11,7 @@ import { toolRegistry } from "./tool-registry";
 export { RuleContext, Rule, ToolCallResult } from "./types";
 export { registerRule, clearRules } from "./rule-router";
 export { scheduleMemoryWrite } from "./context-builder";
+export { buildToneInjection } from "./tone-injector";
 export { runFunctionCallingLoop } from "./function-calling";
 
 // ── Topic state (module-level, not persisted) ──────────

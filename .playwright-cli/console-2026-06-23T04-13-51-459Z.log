@@ -1,0 +1,4 @@
+[    4710ms] [LOG] widget:Bugfix 250107.1版载入 @ https://wiki.biligame.com/sr/%E8%90%BD%E8%8B%B1%E5%95%8A%EF%BC%8C%E6%AE%8B%E8%8A%B3%E7%BA%B7%E9%A3%9E%E7%95%99%E5%BD%92%E8%BA%85:1705
+[    4941ms] [LOG] %c BwikiTune %c https://wiki.biligame.com/tools/BwikiTune color: #fff; padding: 5px 0; background: #aaa; padding: 5px 5px 5px 0; background: #fff; @ https://wiki.biligame.com/tools/index.php?title=MediaWiki:BwikiTune.js&action=raw&ctype=text/javascript:4
+[    6778ms] Uncaught (in promise) Error: COLS: response timeout
+    at <anonymous> (https://s1.hdslb.com/bfs/seed/log/report/log-reporter.js:1:23538)

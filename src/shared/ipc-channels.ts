@@ -26,6 +26,7 @@ export const IPC = {
   AGUI_RUN: "agui:run",
   AGUI_EVENT: "agui:event",
   AGUI_CANCEL: "agui:cancel",
+  SCHEDULER_EVENT: "scheduler:event",
 
   // sidebar window (status / schedule / settings entry)
   SIDEBAR_MINIMIZE: "sidebar:minimize",
@@ -81,11 +82,14 @@ export const IPC = {
   // main → 所有窗口：活跃 sessionId 变化时广播
   CHATS_ACTIVE_SESSION_CHANGED: "chats:active-session-changed",
 
-  // sticker manager window
-  STICKERS_MINIMIZE: "stickers:minimize",
-  STICKERS_CLOSE: "stickers:close",
-  STICKERS_GET_CONFIG: "stickers:get-config",
-  STICKERS_SET_ENABLED: "stickers:set-enabled",
+// sticker manager window
+	  STICKERS_MINIMIZE: "stickers:minimize",
+	  STICKERS_CLOSE: "stickers:close",
+	  STICKERS_GET_CONFIG: "stickers:get-config",
+	  STICKERS_SET_ENABLED: "stickers:set-enabled",
+	  STICKERS_PICK_FILE: "stickers:pick-file",
+	  STICKERS_ADD: "stickers:add",
+	  STICKERS_DELETE: "stickers:delete",
 
   // public model config updates (no API key)
   MODEL_CONFIG_GET: "model-config:get",
@@ -130,6 +134,16 @@ export const IPC = {
   // skill toggle
   SKILL_LIST: "skill:list",
   SKILL_SET_ENABLED: "skill:set-enabled",
+
+  // scheduled tasks
+  SCHEDULER_LIST: "scheduler:list",
+  SCHEDULER_ADD: "scheduler:add",
+  SCHEDULER_UPDATE: "scheduler:update",
+  SCHEDULER_DELETE: "scheduler:delete",
+  SCHEDULER_TOGGLE: "scheduler:toggle",
+  SCHEDULER_FIRE_NOW: "scheduler:fire-now",
+  SCHEDULER_GET_HISTORY: "scheduler:get-history",
+  SCHEDULER_GET_TOOLS: "scheduler:get-tools",
 
   // game-bot（游戏代肝）
   GAME_BOT_GET_CONFIG: "game-bot:get-config",
