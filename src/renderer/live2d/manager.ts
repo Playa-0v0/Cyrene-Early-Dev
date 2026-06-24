@@ -68,6 +68,11 @@ export class Live2DManager {
       transparent: true,
       backgroundAlpha: 0,
       antialias: true,
+      // Preserve the drawing buffer so callers can read pixels back out of
+      // it at any time (e.g. the click-through controller sampling the alpha
+      // under the cursor to decide transparent vs. opaque). Without this the
+      // WebGL framebuffer is cleared after each frame and readPixels is UB.
+      preserveDrawingBuffer: true,
       resolution: window.devicePixelRatio || 1,
       autoDensity: true,
     });
@@ -113,6 +118,19 @@ export class Live2DManager {
 
   getModel(): Live2DModel | null {
     return this.model;
+  }
+
+  /**
+   * The underlying WebGL rendering context, or null before init/disposed.
+   * Used by the click-through controller to sample pixel alpha under the
+   * cursor (transparent -> click passes through, opaque -> capture).
+   *
+   * `app.renderer` is typed as the abstract `IRenderer`; only the concrete
+   * WebGL `Renderer` exposes `.gl`, so we narrow with an instanceof check.
+   */
+  getGL(): WebGL2RenderingContext | null {
+    const renderer = this.app?.renderer;
+    return renderer instanceof PIXI.Renderer ? renderer.gl : null;
   }
 
   getHitAreaDefs(): HitAreaDef[] {

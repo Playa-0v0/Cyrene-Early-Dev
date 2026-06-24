@@ -4,6 +4,7 @@ import { MouseFocusController } from "./live2d/focus";
 import { ExpressionResetController } from "./live2d/expression-reset";
 import { MouthSyncController } from "./live2d/mouth-sync";
 import { SpeakingMotionController } from "./live2d/speaking-motion";
+import { ClickThroughController } from "./live2d/click-through";
 
 const canvas = document.getElementById("live2d-canvas") as HTMLCanvasElement;
 if (!canvas) throw new Error("Canvas #live2d-canvas not found");
@@ -37,6 +38,7 @@ let focus: MouseFocusController | null = null;
 let expressionReset: ExpressionResetController | null = null;
 let mouthSync: MouthSyncController | null = null;
 let speakingMotion: SpeakingMotionController | null = null;
+let clickThrough: ClickThroughController | null = null;
 let live2dSpeechOffs: Array<() => void> = [];
 
 const manager = new Live2DManager({
@@ -79,6 +81,10 @@ const manager = new Live2DManager({
     focus = new MouseFocusController(canvas, model);
     focus.focusCenter(true);
 
+    clickThrough = new ClickThroughController(canvas, manager, {
+      onInteractive: (interactive) => void window.cyrene.setInteractive(interactive),
+    });
+
     (window as unknown as { __cyrene: unknown }).__cyrene = {
       manager,
       interaction,
@@ -110,6 +116,8 @@ window.addEventListener("beforeunload", () => {
   speakingMotion = null;
   focus?.dispose();
   focus = null;
+  clickThrough?.dispose();
+  clickThrough = null;
   interaction?.dispose();
   interaction = null;
   manager.dispose();
@@ -188,10 +196,15 @@ function finishDrag(): void {
   manager.resume();
   focus?.resume();
   window.cyrene.setDragging(false);
+  clickThrough?.resume();
 }
 
+// Click-through is driven per-pixel by ClickThroughController on pointermove.
+// We only need enter/leave to bookend the cursor's stay in the window:
+// entering hands control to the controller, leaving the window entirely
+// means there's nothing to capture (and no move will fire), so pass through.
 canvas.addEventListener("pointerenter", () => {
-  void window.cyrene.setInteractive(true);
+  clickThrough?.resume();
 });
 
 canvas.addEventListener("pointercancel", () => {
@@ -210,6 +223,7 @@ canvas.addEventListener("pointerdown", (e) => {
   dragOffsetX = e.screenX - window.screenX;
   dragOffsetY = e.screenY - window.screenY;
   cancelPendingMove();
+  clickThrough?.pause();
   focus?.pause(true);
   manager.pause();
   void window.cyrene.setInteractive(true);
