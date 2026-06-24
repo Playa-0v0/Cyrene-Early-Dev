@@ -4,11 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>昔涟 · 聊天</title>
-  <script type="module" crossorigin src="../assets/chat-B-24xcEg.js"></script>
+  <script type="module" crossorigin src="../assets/chat-D-Zh-2-q.js"></script>
   <link rel="modulepreload" crossorigin href="../assets/base-CVzNOcnc.js">
   <link rel="modulepreload" crossorigin href="../assets/chat-ui-kPmAHPjl.js">
   <link rel="stylesheet" crossorigin href="../assets/base-BTHABN_A.css">
-  <link rel="stylesheet" crossorigin href="../assets/chat-Ciqegibl.css">
+  <link rel="stylesheet" crossorigin href="../assets/chat-ClwimDvW.css">
 </head>
 <body>
   <div class="chat">
@@ -89,6 +89,7 @@
     <form class="chat__input" id="composer">
       <input type="file" id="file-input" accept=".txt,.md,.json,.csv,.log" multiple style="display:none" />
       <button type="button" class="chat__attach" id="attach-btn" aria-label="上传文件" title="上传文件">📎</button>
+      <button type="button" class="chat__sticker-btn" id="sticker-picker-btn" aria-label="表情包" title="表情包">😀</button>
       <textarea
         id="input"
         rows="1"
@@ -98,6 +99,9 @@
       ></textarea>
       <button type="submit" class="chat__send" id="send" aria-label="发送">↵</button>
     </form>
+    <div class="sticker-picker" id="sticker-picker" hidden>
+      <div class="sticker-picker__grid" id="sticker-picker-grid"></div>
+    </div>
   </div>
   <div class="dropdown-menu" id="style-dropdown">
     <div class="dm-title">聊天风格</div>

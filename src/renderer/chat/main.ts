@@ -59,6 +59,7 @@ interface ChatApi {
     isMaximized: () => Promise<boolean>;
     sendMessage: (messages: Array<{ role: "user" | "model"; content: string }>, style: string) => Promise<ChatReplyPayload>;
     ingestDroppedFiles: (files: File[]) => Promise<Attachment[]>;
+    getEnabledStickers?: () => Promise<Array<{ id: string; src: string; description?: string }>>;
   }
 
 /** AG-UI 事件流 API（window.agui）。 */
@@ -129,6 +130,9 @@ const messagesEl = document.getElementById("messages") as HTMLElement;
 const formEl = document.getElementById("composer") as HTMLFormElement;
 const inputEl = document.getElementById("input") as HTMLTextAreaElement;
 const sendBtn = document.getElementById("send") as HTMLButtonElement;
+const stickerPickerBtn = document.getElementById("sticker-picker-btn") as HTMLButtonElement;
+const stickerPicker = document.getElementById("sticker-picker") as HTMLElement;
+const stickerPickerGrid = document.getElementById("sticker-picker-grid") as HTMLElement;
 const clearBtn = document.getElementById("clear") as HTMLButtonElement;
 const minBtn = document.getElementById("min-btn") as HTMLButtonElement;
 const maxBtn = document.getElementById("max-btn") as HTMLButtonElement;
@@ -228,7 +232,12 @@ function getStickerSrc(id: string): string | undefined {
     return BUILT_IN_STICKER_SRC[id];
   }
   // 用户自定义 sticker 用 local-sticker:// 协议
-  return `local-sticker://${id}`;
+  // 注意：只有用户添加的才走这里，已删除的旧内置 ID 会返回 undefined
+  if (id.includes(".")) {
+    return `local-sticker://${id}`;
+  }
+  // 无后缀的未知 ID（可能是已删除的旧内置 sticker），不渲染
+  return undefined;
 }
 
 // 多会话改造：messages 是当前活跃 session 的消息数组（启动时为空，由 bootstrap 填充）。
@@ -706,6 +715,7 @@ function render(): void {
 
     const bubble = document.createElement("div");
     bubble.className = "msg__bubble";
+    bubble.hidden = false;
     if (m.thinking) {
       bubble.classList.add("msg__bubble--thinking");
       const dot1 = document.createElement("span");
@@ -717,6 +727,11 @@ function render(): void {
       bubble.appendChild(dot1);
       bubble.appendChild(dot2);
       bubble.appendChild(dot3);
+    } else if (m.role === "user") {
+      // 用户消息：去掉 [sticker:xxx] 标记后显示纯文字
+      const cleanText = m.content.replace(/\[sticker:[^\]]+\]/g, "").trim();
+      if (cleanText) bubble.textContent = cleanText;
+      else bubble.hidden = true; // 纯表情包消息不显示气泡
     } else {
       bubble.textContent = m.content;
     }
@@ -725,15 +740,15 @@ function render(): void {
     time.className = "msg__time";
     time.textContent = formatTime(m.at);
 
-    body.appendChild(bubble);
+    if (!bubble.hidden) body.appendChild(bubble);
 
-    if (m.role === "model" && m.sticker) {
+    if (m.sticker) {
       const stickerSrc = getStickerSrc(m.sticker);
       if (stickerSrc) {
         const sticker = document.createElement("img");
         sticker.className = "msg__sticker";
         sticker.src = stickerSrc;
-        sticker.alt = "昔涟表情";
+        sticker.alt = m.role === "user" ? "用户表情" : "昔涟表情";
         sticker.draggable = false;
         body.appendChild(sticker);
       }
@@ -1060,13 +1075,98 @@ function autosize(): void {
   inputEl.style.height = Math.min(inputEl.scrollHeight, 160) + "px";
 }
 
+// ── 表情包选择器 ──
+
+let enabledStickers: Array<{ id: string; src: string; description?: string }> = [];
+
+async function loadEnabledStickers(): Promise<void> {
+  try {
+    enabledStickers = (await window.chat?.getEnabledStickers?.()) ?? [];
+  } catch {
+    enabledStickers = [];
+  }
+}
+
+/** 根据 sticker id 查语义描述 */
+function getStickerDescription(id: string): string {
+  const found = enabledStickers.find((s) => s.id === id);
+  return found?.description ?? id;
+}
+
+function renderStickerPicker(): void {
+  stickerPickerGrid.replaceChildren();
+  if (enabledStickers.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "sticker-picker__empty";
+    empty.textContent = "没有可用的表情包";
+    stickerPickerGrid.appendChild(empty);
+    return;
+  }
+  for (const s of enabledStickers) {
+    const card = document.createElement("button");
+    card.type = "button";
+    card.className = "sticker-picker__item";
+    const img = document.createElement("img");
+    img.src = s.src;
+    img.alt = s.id;
+    img.draggable = false;
+    card.appendChild(img);
+    card.addEventListener("click", () => {
+      insertSticker(s.id);
+      hideStickerPicker();
+    });
+    stickerPickerGrid.appendChild(card);
+  }
+}
+
+function insertSticker(id: string): void {
+  const marker = `[sticker:${id}]`;
+  const cursorPos = inputEl.selectionStart ?? inputEl.value.length;
+  const cursorEnd = inputEl.selectionEnd ?? cursorPos;
+  inputEl.value = inputEl.value.slice(0, cursorPos) + marker + inputEl.value.slice(cursorEnd);
+  inputEl.selectionStart = inputEl.selectionEnd = cursorPos + marker.length;
+  autosize();
+  inputEl.focus();
+}
+
+function showStickerPicker(): void {
+  stickerPicker.hidden = false;
+  stickerPickerBtn.classList.add("is-active");
+  renderStickerPicker();
+}
+
+function hideStickerPicker(): void {
+  stickerPicker.hidden = true;
+  stickerPickerBtn.classList.remove("is-active");
+}
+
+stickerPickerBtn.addEventListener("click", (e) => {
+  e.stopPropagation();
+  if (stickerPicker.hidden) showStickerPicker();
+  else hideStickerPicker();
+});
+
+document.addEventListener("click", (e) => {
+  if (stickerPicker.hidden) return;
+  if (!stickerPicker.contains(e.target as Node) && e.target !== stickerPickerBtn) {
+    hideStickerPicker();
+  }
+});
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && !stickerPicker.hidden) hideStickerPicker();
+});
+
 function buildModelMessages(): Array<{ role: "user" | "model"; content: string }> {
   return messages
     .filter((message) => message.content.trim())
     .slice(-16)
     .map((message) => ({
       role: message.role,
-      content: message.content,
+      content: message.content.replace(/\[sticker:([^\]]+)\]/g, (_match, id) => {
+        const desc = getStickerDescription(id);
+        return `（用户发送表情包：${desc}）`;
+      }),
     }));
 }
 
@@ -1154,11 +1254,15 @@ async function send(): Promise<void> {
   await refreshModelConfig();
   chatHintEl.textContent = currentModelConfig?.connected ? `${currentModelConfig.model} 思考中…` : "模型未连接";
 
+  const stickerMatch = fullUserText.match(/\[sticker:([^\]]+)\]/);
+  const userStickerId = stickerMatch ? stickerMatch[1] : null;
+
   const userMsg: Message = {
     id: String(Date.now()),
     role: "user",
     content: fullUserText,
     at: Date.now(),
+    sticker: userStickerId,
   };
   messages.push(userMsg);
   inputEl.value = "";
@@ -1179,7 +1283,7 @@ async function send(): Promise<void> {
     let autoSpeakTriggered = false;
     textMouthStarted = false;
     let pendingTtsCachePromise: Promise<{ cacheKey: string } | null> | null = null;
-    let sticker: StickerId | null = null;
+    let sticker: string | null = null;
     let pendingWeatherCard: Record<string, unknown> | null = null;
 
     // 终态信号：由事件流的 RUN_FINISHED/RUN_ERROR 触发 resolve，
@@ -1700,6 +1804,7 @@ void (async () => {
   await bootstrap();
   installSchedulerEventListener();
   void initModelConfig();
+  void loadEnabledStickers();
 })();
 
 // main → renderer：设置面板点列表/新对话时，让窗口切到指定 session

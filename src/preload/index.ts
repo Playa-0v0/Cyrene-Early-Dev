@@ -23,6 +23,7 @@ const chatApi = {
   toggleMaximize: () => ipcRenderer.send(IPC.CHAT_TOGGLE_MAXIMIZE),
   isMaximized: () => ipcRenderer.invoke(IPC.CHAT_IS_MAXIMIZED),
   sendMessage: (messages: unknown[], style: string) => ipcRenderer.invoke(IPC.CHAT_SEND_MESSAGE, messages, style),
+  getEnabledStickers: () => ipcRenderer.invoke(IPC.STICKERS_GET_ENABLED),
   /** 从 dataTransfer.files 或 fileInput.files 提取路径后批量摄入。
    *  路径提取在 preload（webUtils.getPathForFile），避免 Electron 33 中 File.path 不可用的问题。 */
   ingestDroppedFiles: async (files: File[]): Promise<unknown[]> => {

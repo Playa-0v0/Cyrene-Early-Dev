@@ -6,7 +6,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
 import { app } from "electron";
-import { BUILT_IN_STICKER_FILES } from "./sticker-descriptions";
+import { BUILT_IN_STICKER_FILES, BUILT_IN_STICKER_DESCRIPTIONS } from "./sticker-descriptions";
 import { BUILT_IN_STICKER_IDS } from "../shared/sticker-types";
 import type { UserStickerMeta, StickerConfigItem } from "../shared/sticker-types";
 
@@ -125,11 +125,13 @@ export function getAllStickerConfig(
   // 内置
   for (const id of BUILT_IN_STICKER_IDS) {
     const file = BUILT_IN_STICKER_FILES[id];
+    const desc = BUILT_IN_STICKER_DESCRIPTIONS[id];
     items.push({
       id,
       src: `/stickers/${file}`,
       enabled: stickerSettings[id] !== false,
       builtIn: true,
+      description: desc ? desc.phrases.join("，") : id,
     });
   }
 

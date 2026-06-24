@@ -1651,7 +1651,7 @@ function createSettingsWindow(section?: string): void {
   const display = screen.getPrimaryDisplay();
   const { x: dx, y: dy, width: dw, height: dh } = display.workArea;
   const width = 1060;
-  const height = 640;
+  const height = 920;
   settingsWindow = new BrowserWindow({
     x: dx + Math.max(0, Math.floor((dw - width) / 2)),
     y: dy + Math.max(0, Math.floor((dh - height) / 2)),
@@ -2151,6 +2151,11 @@ ipcMain.handle(IPC.STICKERS_DELETE, async (_event, id: string) => {
     throw err;
   }
   return getStickerManagerConfig();
+});
+
+ipcMain.handle(IPC.STICKERS_GET_ENABLED, () => {
+  const stickerSettings = loadStickerSettings();
+  return getAllStickerConfig(stickerSettings).filter((s) => s.enabled);
 });
 
 

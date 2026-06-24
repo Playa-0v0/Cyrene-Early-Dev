@@ -90,6 +90,7 @@ export const IPC = {
 	  STICKERS_PICK_FILE: "stickers:pick-file",
 	  STICKERS_ADD: "stickers:add",
 	  STICKERS_DELETE: "stickers:delete",
+	  STICKERS_GET_ENABLED: "stickers:get-enabled",
 
   // public model config updates (no API key)
   MODEL_CONFIG_GET: "model-config:get",
