@@ -12,6 +12,7 @@ declare global {
       setDragging: (isDragging: boolean) => void;
       captureFrame: () => Promise<string | null>;
       getCursorPosition: () => Promise<{ x: number; y: number } | null>;
+      onPetZoom: (callback: (zoom: number) => void) => () => void;
     };
   }
 }

@@ -15,6 +15,11 @@ const cyreneApi = {
     ipcRenderer.send(IPC.WINDOW_SET_DRAGGING, isDragging),
   captureFrame: () => ipcRenderer.invoke(IPC.WINDOW_CAPTURE_FRAME),
   getCursorPosition: () => ipcRenderer.invoke(IPC.WINDOW_GET_CURSOR_POSITION),
+  onPetZoom: (callback: (zoom: number) => void) => {
+    const listener = (_e: unknown, zoom: number) => callback(zoom);
+    ipcRenderer.on(IPC.PET_ZOOM, listener);
+    return () => ipcRenderer.off(IPC.PET_ZOOM, listener);
+  },
 };
 
 const chatApi = {
@@ -118,6 +123,7 @@ const settingsApi = {
   closeTasks: () => ipcRenderer.send(IPC.SETTINGS_CLOSE_TASKS),
   setPetAlwaysOnTop: (value: boolean) => ipcRenderer.send(IPC.SETTINGS_SET_PET_ALWAYS_ON_TOP, value),
   setPetVisible: (value: boolean) => ipcRenderer.send(IPC.SETTINGS_SET_PET_VISIBLE, value),
+  setPetZoom: (value: number) => ipcRenderer.send(IPC.SETTINGS_SET_PET_ZOOM, value),
   previewRuntimeSync: (value: "off" | "local" | "llm") => ipcRenderer.send(IPC.SETTINGS_PREVIEW_RUNTIME_SYNC, value),
   openStickerManager: () => ipcRenderer.invoke(IPC.SETTINGS_OPEN_STICKER_MANAGER),
   stickerPickFile: () => ipcRenderer.invoke(IPC.STICKERS_PICK_FILE),

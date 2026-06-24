@@ -217,6 +217,8 @@ interface GeneralSettings {
   soundVolume: number;
   petAlwaysOnTop: boolean;
   petVisible: boolean;
+  /** 桌宠缩放因子：1.0=默认，0.5~2.0，窗口与模型同步等比缩放。 */
+  petZoom: number;
   launchAtLogin: boolean;
   language: "zh-CN";
   // TTS 配置
@@ -279,6 +281,10 @@ interface ChatReplyPayload {
 const RUNTIME_STATUSES: RuntimeStatus[] = ["陪伴中", "思考中", "工作中", "聆听中", "提醒中", "离线"];
 const RUNTIME_FEELINGS: RuntimeFeeling[] = ["平静", "开心", "温柔", "激动", "撒娇", "担心", "难过", "感动", "害羞"];
 const CHAT_REQUEST_TIMEOUT_MS = 180000; // FC 总预算：12 轮 × 推理模型 ~10-15s 需 180s 余量
+
+/** 桌宠窗口的基础尺寸（zoom=1.0 时）。缩放因子改变窗口与模型尺寸，二者同步。 */
+const PET_WINDOW_BASE_WIDTH = 400;
+const PET_WINDOW_BASE_HEIGHT = 500;
 let runtimeState: RuntimeState = {
     status: "陪伴中",
     feeling: "平静",
@@ -309,6 +315,7 @@ const DEFAULT_GENERAL_SETTINGS: GeneralSettings = {
   soundVolume: 70,
   petAlwaysOnTop: true,
   petVisible: true,
+  petZoom: 1,
   launchAtLogin: false,
   language: "zh-CN",
   ttsEngine: "off",
@@ -640,6 +647,7 @@ function normalizeGeneralSettings(input: Partial<GeneralSettings> | null | undef
     soundVolume: clamp(input?.soundVolume, DEFAULT_GENERAL_SETTINGS.soundVolume),
     petAlwaysOnTop: Boolean(input?.petAlwaysOnTop),
     petVisible: input?.petVisible === undefined ? DEFAULT_GENERAL_SETTINGS.petVisible : Boolean(input.petVisible),
+    petZoom: typeof input?.petZoom === "number" ? Math.max(0.5, Math.min(2, input.petZoom)) : DEFAULT_GENERAL_SETTINGS.petZoom,
     launchAtLogin: Boolean(input?.launchAtLogin),
     language: "zh-CN",
     // TTS 配置
@@ -682,6 +690,19 @@ function applyGeneralSettings(settings: GeneralSettings): void {
   if (settings.petVisible) mainWindow?.show();
   else mainWindow?.hide();
   app.setLoginItemSettings({ openAtLogin: settings.launchAtLogin });
+  applyPetZoom(settings.petZoom);
+}
+
+/**
+ * 按缩放因子调整桌宠窗口尺寸，并通知渲染进程重算模型 scale。
+ * 窗口与模型同步等比缩放，比例不变，故模型始终塞满窗口、不被裁剪。
+ */
+function applyPetZoom(zoom: number): void {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  const width = Math.round(PET_WINDOW_BASE_WIDTH * zoom);
+  const height = Math.round(PET_WINDOW_BASE_HEIGHT * zoom);
+  mainWindow.setSize(width, height);
+  sendToLive2DWindow(IPC.PET_ZOOM, zoom);
 }
 
 function saveGeneralSettings(settings: Partial<GeneralSettings>): GeneralSettings {
@@ -1424,8 +1445,8 @@ function attachExternalLinkHandler(win: BrowserWindow): void {
 }
 function createWindow(): void {
   mainWindow = new BrowserWindow({
-    width: 400,
-    height: 500,
+    width: PET_WINDOW_BASE_WIDTH,
+    height: PET_WINDOW_BASE_HEIGHT,
     transparent: true,
     frame: false,
     skipTaskbar: true,
@@ -1990,6 +2011,11 @@ ipcMain.on(IPC.SETTINGS_SET_PET_ALWAYS_ON_TOP, (_event, value: boolean) => {
 
 ipcMain.on(IPC.SETTINGS_SET_PET_VISIBLE, (_event, value: boolean) => {
   saveGeneralSettings({ ...loadGeneralSettings(), petVisible: Boolean(value) });
+});
+
+ipcMain.on(IPC.SETTINGS_SET_PET_ZOOM, (_event, value: number) => {
+  const saved = saveGeneralSettings({ ...loadGeneralSettings(), petZoom: Number(value) });
+  applyPetZoom(saved.petZoom);
 });
 
 ipcMain.handle(IPC.MODEL_CONFIG_GET, () => {

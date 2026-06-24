@@ -248,6 +248,7 @@ interface GeneralSettings {
   soundVolume: number;
   petAlwaysOnTop: boolean;
   petVisible: boolean;
+  petZoom: number;
   launchAtLogin: boolean;
   language: "zh-CN";
 }
@@ -314,6 +315,7 @@ interface SettingsApi {
   closeTasks: () => void;
   setPetAlwaysOnTop: (value: boolean) => void;
   setPetVisible: (value: boolean) => void;
+  setPetZoom: (value: number) => void;
   previewRuntimeSync: (value: "off" | "local" | "llm") => void;
   openStickerManager: () => Promise<{ ok: boolean; error?: string }>;
   stickerPickFile?: () => Promise<string | null>;
@@ -439,7 +441,7 @@ if (!window.settings) {
         stickerSize: "standard",
       }),
     saveConfig: (c) => Promise.resolve(c as ModelSettings),
-    getGeneral: () => Promise.resolve({ musicEnabled: false, musicVolume: 60, soundEnabled: true, soundVolume: 70, petAlwaysOnTop: true, petVisible: true, launchAtLogin: false, language: "zh-CN" }),
+    getGeneral: () => Promise.resolve({ musicEnabled: false, musicVolume: 60, soundEnabled: true, soundVolume: 70, petAlwaysOnTop: true, petVisible: true, petZoom: 1, launchAtLogin: false, language: "zh-CN" }),
     saveGeneral: (c) => Promise.resolve(c as GeneralSettings),
     openSidebar: () => {},
     closeSidebar: () => {},
@@ -447,6 +449,7 @@ if (!window.settings) {
     closeTasks: () => {},
     setPetAlwaysOnTop: () => {},
     setPetVisible: () => {},
+    setPetZoom: () => {},
     openStickerManager: async () => ({ ok: false, error: "settings api unavailable" }),
     stickerPickFile: async () => null,
     stickerAdd: async () => { throw new Error("settings api unavailable"); },
@@ -562,6 +565,8 @@ const soundEnabledInput = document.getElementById("sound-enabled") as HTMLInputE
 const soundVolumeInput = document.getElementById("sound-volume") as HTMLInputElement;
 const petAlwaysOnTopInput = document.getElementById("pet-always-on-top") as HTMLInputElement;
 const petVisibleInput = document.getElementById("pet-visible") as HTMLInputElement;
+const petZoomInput = document.getElementById("pet-zoom") as HTMLInputElement;
+const petZoomVal = document.getElementById("pet-zoom-val") as HTMLElement;
 const launchAtLoginInput = document.getElementById("launch-at-login") as HTMLInputElement;
 const languageSelect = document.getElementById("language-select") as HTMLElement;
 const sidebarVisibleInput = document.getElementById("sidebar-visible") as HTMLInputElement;
@@ -853,6 +858,8 @@ async function loadGeneralSettings(): Promise<void> {
     soundVolumeInput.value = String(cfg.soundVolume);
     petAlwaysOnTopInput.checked = cfg.petAlwaysOnTop;
     petVisibleInput.checked = cfg.petVisible;
+    petZoomInput.value = String(cfg.petZoom ?? 1);
+    petZoomVal.textContent = Math.round((cfg.petZoom ?? 1) * 100) + "%";
     launchAtLoginInput.checked = cfg.launchAtLogin;
     applyLanguageSelection("zh-CN");
     setGeneralSaveStatus("等待保存");
@@ -912,6 +919,12 @@ soundVolumeInput.addEventListener("input", () => setGeneralSaveStatus("有未保
 
 petAlwaysOnTopInput.addEventListener("change", () => window.settings?.setPetAlwaysOnTop(petAlwaysOnTopInput.checked));
 petVisibleInput.addEventListener("change", () => window.settings?.setPetVisible(petVisibleInput.checked));
+petZoomInput.addEventListener("input", () => {
+  petZoomVal.textContent = Math.round(Number(petZoomInput.value) * 100) + "%";
+});
+petZoomInput.addEventListener("change", () => {
+  window.settings?.setPetZoom(Number(petZoomInput.value));
+});
 
 openStickerManagerBtn.addEventListener("click", async () => {
   console.log("[settings] open sticker manager clicked");
@@ -1497,6 +1510,7 @@ generalForm.addEventListener("submit", async (e) => {
       soundVolume: Number(soundVolumeInput.value),
       petAlwaysOnTop: petAlwaysOnTopInput.checked,
       petVisible: petVisibleInput.checked,
+      petZoom: Number(petZoomInput.value),
       launchAtLogin: launchAtLoginInput.checked,
       language: "zh-CN",
     });

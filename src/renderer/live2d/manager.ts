@@ -4,6 +4,14 @@ import type { HitAreaDef } from "./interaction";
 
 export type { HitAreaDef } from "./interaction";
 
+/**
+ * Base window dimensions at zoom = 1.0. Must stay in sync with the matching
+ * constants in src/main/index.ts (PET_WINDOW_BASE_WIDTH/HEIGHT). baseScale is
+ * always computed against these fixed values so it stays zoom-invariant.
+ */
+const PET_WINDOW_BASE_WIDTH = 400;
+const PET_WINDOW_BASE_HEIGHT = 500;
+
 export interface Live2DManagerOptions {
   canvas: HTMLCanvasElement;
   width: number;
@@ -53,6 +61,12 @@ export class Live2DManager {
   private hitAreaDefs: HitAreaDef[] = [];
   private options: Live2DManagerOptions;
   private disposed = false;
+  /** Scale that fits the model into the base window (zoom=1.0). Cached once
+   *  at load so applyZoom can multiply it by the user's zoom factor. */
+  private baseScale = 1;
+  /** Current zoom factor (1.0 = default). Window size is driven separately by
+   *  the main process; this only scales the model relative to baseScale. */
+  private zoom = 1;
 
   constructor(options: Live2DManagerOptions) {
     this.options = options;
@@ -104,16 +118,33 @@ export class Live2DManager {
     this.model = model;
     this.hitAreaDefs = buildHitAreaDefs(json);
     this.app.stage.addChild(this.model);
-    const appWidth = this.options.width;
-    const appHeight = this.options.height;
     this.model.anchor.set(0.5, 0.5);
-    this.model.x = appWidth / 2;
-    this.model.y = appHeight / 2;
-    const scaleX = appWidth / this.model.width;
-    const scaleY = appHeight / this.model.height;
-    const scale = Math.min(scaleX, scaleY, 1.0);
-    this.model.scale.set(scale);
+    // baseScale is always computed against the *base* window size, never the
+    // current (possibly zoomed) one. The main process resizes the window to
+    // base × zoom before the renderer loads, so reading the live window here
+    // would fold zoom into baseScale and then applyZoom would double-count
+    // it. Using fixed base dimensions keeps baseScale zoom-invariant.
+    const baseScaleX = PET_WINDOW_BASE_WIDTH / this.model.width;
+    const baseScaleY = PET_WINDOW_BASE_HEIGHT / this.model.height;
+    this.baseScale = Math.min(baseScaleX, baseScaleY, 1.0);
+    this.applyZoom(this.zoom);
     this.options.onLoad?.();
+  }
+
+  /**
+   * Apply the user's zoom factor on top of the cached base scale. The window
+   * itself is resized separately by the main process (window = base × zoom),
+   * so this just sets model scale = baseScale × zoom and re-centres it in the
+   * (now resized) canvas. Reads the live window size rather than the stale
+   * constructor options, since the main process has already resized the
+   * window by the time this is invoked. Proportions never change, so the
+   * model always fills the window and is never clipped.
+   */
+  applyZoom(zoom: number): void {
+    this.zoom = zoom;
+    if (!this.model) return;
+    this.model.scale.set(this.baseScale * zoom);
+    this.resize(window.innerWidth, window.innerHeight);
   }
 
   getModel(): Live2DModel | null {

@@ -20,6 +20,7 @@ if (!window.cyrene) {
     setDragging: (_isDragging: boolean) => {},
     captureFrame: () => Promise.resolve(null),
     getCursorPosition: () => Promise.resolve(null),
+    onPetZoom: (_cb: (zoom: number) => void) => () => {},
   };
 }
 
@@ -39,6 +40,7 @@ let expressionReset: ExpressionResetController | null = null;
 let mouthSync: MouthSyncController | null = null;
 let speakingMotion: SpeakingMotionController | null = null;
 let clickThrough: ClickThroughController | null = null;
+let petZoomOff: (() => void) | null = null;
 let live2dSpeechOffs: Array<() => void> = [];
 
 const manager = new Live2DManager({
@@ -85,6 +87,11 @@ const manager = new Live2DManager({
       onInteractive: (interactive) => void window.cyrene.setInteractive(interactive),
     });
 
+    // Apply the persisted zoom on load and track future changes. The main
+    // process has already resized the window to base × zoom; this rescales
+    // the model to match.
+    petZoomOff = window.cyrene.onPetZoom((zoom) => manager.applyZoom(zoom));
+
     (window as unknown as { __cyrene: unknown }).__cyrene = {
       manager,
       interaction,
@@ -118,6 +125,8 @@ window.addEventListener("beforeunload", () => {
   focus = null;
   clickThrough?.dispose();
   clickThrough = null;
+  petZoomOff?.();
+  petZoomOff = null;
   interaction?.dispose();
   interaction = null;
   manager.dispose();

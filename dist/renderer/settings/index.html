@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>昔涟 · 设置</title>
-  <script type="module" crossorigin src="../assets/settings-BAGgM9j7.js"></script>
+  <script type="module" crossorigin src="../assets/settings-D6gygtiL.js"></script>
   <link rel="modulepreload" crossorigin href="../assets/base-CVzNOcnc.js">
   <link rel="modulepreload" crossorigin href="../assets/chat-ui-kPmAHPjl.js">
   <link rel="stylesheet" crossorigin href="../assets/base-BTHABN_A.css">
@@ -221,6 +221,17 @@
                 <span>隐藏或显示 Live2D 桌宠本体。</span>
               </div>
               <span class="switch"><input id="pet-visible" type="checkbox" /><span class="switch__track"><span class="switch__thumb"></span></span></span>
+            </label>
+
+            <label class="setting-row">
+              <div>
+                <strong>桌宠缩放</strong>
+                <span>调整 Live2D 模型大小（0.5× ~ 2.0×），窗口与模型同步缩放。</span>
+              </div>
+              <div class="range-row">
+                <input id="pet-zoom" type="range" min="0.5" max="2" step="0.1" />
+                <span id="pet-zoom-val" class="range-val">100%</span>
+              </div>
             </label>
 
             <label class="setting-row">
