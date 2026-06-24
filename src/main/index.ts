@@ -1784,7 +1784,8 @@ async function createStickerManagerWindow(): Promise<{ ok: boolean; error?: stri
 }
 
 function createTray(): void {
-  const icon = nativeImage.createEmpty();
+  const iconPath = path.join(__dirname, "..", "..", "..", "assets", "tray-icon.ico");
+  const icon = nativeImage.createFromPath(iconPath);
   tray = new Tray(icon);
 
   const contextMenu = Menu.buildFromTemplate([
