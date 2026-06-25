@@ -957,7 +957,64 @@ export { loadTodos, onTodosChange, getTodos as getCurrentTodos } from "./todo-st
 // 通用设计：question + options 结构不绑死 Excel，PPT/Word/图片生成都能用。
 
 import { requestUserChoice, type ChoiceOption } from "../user-choice";
+import { runSubAgent, setDelegateSettings } from "./sub-agent";
 
+export { setDelegateSettings };
+// 把重任务委托给独立 FC 循环执行，子代理有自己的 conversation（用完即弃）。
+// 执行完只返回结构化摘要给主 agent，不被重工具的过程数据（skill 正文、XML 文件等）污染。
+toolRegistry.register({
+  id: "delegate_task",
+  name: "委托子任务",
+  description:
+    "把一个需要多步工具调用的子任务委托给子代理独立执行。子代理有自己的上下文（不占用主对话空间），" +
+    "执行完返回结构化摘要（状态 + 摘要 + 产出文件 + 关键数据）。\n\n" +
+    "何时用：\n" +
+    "- 任务需要 ≥2 步工具调用且中间结果不需要用户确认\n" +
+    "- 涉及大量中间数据（如读取 skill 文档 + 生成文件），不想让中间内容占用主对话上下文\n" +
+    "- 例：「用 xlsx skill 生成带公式的 Excel」→ 子代理内部读 create.md + format.md + 写 XML，主对话只看到最终摘要\n\n" +
+    "不要用于：\n" +
+    "- 单步操作（直接调对应工具即可）\n" +
+    "- 需要跟用户交互的任务（子代理不能弹卡片）\n" +
+    "- 简单表格生成（直接用 write_excel）\n\n" +
+    "参数：task（子任务的完整描述，子代理会独立理解并执行）。" ,
+  enabled: true,
+  risk: "safe",
+  inputSchema: {
+    type: "object",
+    properties: {
+      task: { type: "string", description: "子任务的完整描述。要足够详细让子代理能独立执行，如「读取 test20.txt 的商品价格，查汇率换算成人民币，用 write_excel 生成深色风格 Excel 存到桌面 test 文件夹」" },
+    },
+    required: ["task"],
+  },
+  execute: async (args) => {
+    const task = String(args.task || "");
+    if (!task) return "[错误] task 不能为空";
+
+    console.log(LOG_PREFIX, "delegate_task:", task.slice(0, 100));
+    const result = await runSubAgent(task);
+
+    if (result.status === "success") {
+      let output = `[delegate_task] 子代理执行成功：${result.summary}`;
+      if (result.artifacts && result.artifacts.length > 0) {
+        output += `\n产出文件：${result.artifacts.join(", ")}`;
+      }
+      if (result.key_facts) {
+        output += `\n关键数据：${JSON.stringify(result.key_facts)}`;
+      }
+      return output;
+    }
+
+    let output = `[delegate_task] 子代理执行失败：${result.summary}`;
+    if (result.recoverable) {
+      output += "\n（可恢复：可尝试换方案或直接用对应工具执行）";
+    }
+    return output;
+  },
+});
+
+console.log(LOG_PREFIX, "已注册：fetch_url / run_shell / install_mcp_server / weather / web_search / ask_user_choice / delegate_task");
+
+// ── 工具：ask_user_choice（歧义消解器）─────────────────────
 toolRegistry.register({
   id: "ask_user_choice",
   name: "询问用户选择",
@@ -1021,5 +1078,3 @@ toolRegistry.register({
     return `[ask_user_choice] 用户自定义输入：${userChoice}。请按此要求执行。`;
   },
 });
-
-console.log(LOG_PREFIX, "已注册：fetch_url / run_shell / install_mcp_server / weather / web_search / ask_user_choice");

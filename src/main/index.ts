@@ -39,7 +39,7 @@ import { registerChatsIpc } from "./chats/chats-ipc";
 import { recordUsage, getUsage, flush as flushTokenUsage } from "./token-usage-store";
 import { uploadFile as ttsUploadFile, cloneVoice as ttsCloneVoice, synthesize as ttsSynthesize } from "./tts/minimax-engine";
 import { registerAgUiIpc, type AguiRunInput } from "./agui-bridge";
-import { setWeatherConfig, setSearchConfig, loadTodos, onTodosChange } from "./orchestrator/built-in-tools";
+import { setWeatherConfig, setSearchConfig, loadTodos, onTodosChange, setDelegateSettings } from "./orchestrator/built-in-tools";
 import { registerRecallHistoryTool } from "./orchestrator/history-tools";
 import { registerDocumentTools } from "./orchestrator/document-tools";
 import { registerLifeTools, setTranslateConfig } from "./orchestrator/life-tools";
@@ -1538,6 +1538,12 @@ function createWindow(): void {
 
   // 注入出行工具 amapKey 获取器（复用 GeneralSettings 中的 amapKey）
   setTravelConfig(() => loadGeneralSettings().amapKey);
+
+  // 注入子代理 LLM 配置（delegate_task 工具用，复用主模型配置）
+  setDelegateSettings(() => {
+    const s = loadModelSettings();
+    return { provider: s.provider, baseUrl: s.baseUrl, model: s.model, apiKey: s.apiKey };
+  });
 
   mainWindow.on("closed", () => {
     mainWindow = null;
