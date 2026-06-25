@@ -1,8 +1,9 @@
 // Orchestrator — unified entry point
 // Function Calling 模式下，Orchestrator 只负责构建 always-on 上下文（世界书 + L0/L1）
 // 工具的选择和执行由 function-calling.ts 的 runFunctionCallingLoop 处理
-import { searchWorldbook, getPermanentWorldbookEntries, getAllWorldbookTriggerWords } from "../rag";
+import { searchWorldbook, getPermanentWorldbookEntries, getAllWorldbookTriggerWords, searchMemory } from "../rag";
 import { memoryStore } from "../memory/memory-store";
+import { entityGraph } from "../memory/entity-graph";
 import { toolRegistry } from "./tool-registry";
 
 export { ToolCallResult } from "./types";
@@ -22,6 +23,58 @@ let topicState: TopicState = {
 };
 
 const TOPIC_CLEAR_WORDS = ["换个话题", "算了", "好了不说了", "先不聊"];
+
+/**
+ * 构建相关记忆注入：自动检索 top-N 相关 L2 记忆和导入文档，
+ * 注入到 system prompt 中，让模型无需主动调用 tool 也能感知到相关信息。
+ * 原有 tool 保留，模型仍可深度搜索。
+ */
+export async function buildMemoryInjection(
+  userInput: string,
+): Promise<string> {
+  const parts: string[] = [];
+
+  try {
+    // 检索 top-3 L2 用户记忆
+    const userMemories = await searchMemory(userInput, "user_memory", 5);
+    if (userMemories.length > 0) {
+      // 标注可能存在冲突的记忆
+      const allL2 = await memoryStore.getAllL2();
+      const conflictAnnotated = userMemories.map((m) => {
+        const l2Entry = allL2.find((l) => l.content === m && l.conflictWith && l.conflictWith.length > 0);
+        if (l2Entry) {
+          return `· ${m} ⚠️（该信息可能存在矛盾记录）`;
+        }
+        return `· ${m}`;
+      });
+      parts.push("【相关记忆】\n" + conflictAnnotated.join("\n"));
+    }
+  } catch (err) {
+    console.warn("[Orchestrator] user_memory search failed:", err);
+  }
+
+  try {
+    // 检索 top-2 导入文档片段
+    const docResults = await searchMemory(userInput, "imported_doc", 2);
+    if (docResults.length > 0) {
+      parts.push("【相关文档】\n" + docResults.map((d) => "· " + d).join("\n"));
+    }
+  } catch (err) {
+    console.warn("[Orchestrator] imported_doc search failed:", err);
+  }
+
+  try {
+    // 实体关系图谱
+    const entityInfo = entityGraph.search(userInput);
+    if (entityInfo) {
+      parts.push("【人物关系】\n" + entityInfo);
+    }
+  } catch (err) {
+    console.warn("[Orchestrator] entity graph search failed:", err);
+  }
+
+  return parts.join("\n\n");
+}
 
 /**
  * 构建 always-on 上下文：世界书 + L0/L1 画像。

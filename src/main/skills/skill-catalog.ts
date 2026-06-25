@@ -31,11 +31,12 @@ const AMBIGUITY_POLICY = [
   "",
   "### 工具选择",
   "- 简单表格 / 数据整理 → 直接用 write_excel（已内置美观样式），不要走 invoke_skill(xlsx)",
-  "- Excel/Word/PDF 生成 → 用对应 write_* 工具，不升级到 Skill 层",
-  "- 用户通过 ask_user_choice 选择了风格 → 用 write_excel 的 style 参数对应生成，不要走 skill 手写 XML",
-  "- write_excel 支持 5 种主题：default / simple-business / dark / colorful / financial",
+  "- 简单文档 / 报告 / 总结 → 直接用 write_word（已内置美观样式），不要走 invoke_skill(docx)",
+  "- 用户通过 ask_user_choice 选择了风格 → 用对应 write_* 工具的 style 参数直接生成，不要走 skill 手写 XML",
+  "- write_excel 支持 5 种主题：default / dark / colorful / simple-business / financial",
+  "- write_word 支持 5 种主题：default / academic / clean / elegant / formal",
   "- 用户给了自定义颜色要求（如「粉色表头」「深灰背景」）→ 用 write_excel 的 colors 参数传 ARGB hex 值，你负责把颜色名翻译成 hex",
-  "- 只有用户明确要求「公式」「财务格式标准」「条件格式」「编辑已有 xlsx」等具体高级需求时，才考虑 invoke_skill",
+  "- 只有用户明确要求「公式」「财务格式标准」「条件格式」「编辑已有 xlsx」「页眉页脚/目录/图片」等具体高级需求时，才考虑 invoke_skill",
 ].join("\n");
 
 /**

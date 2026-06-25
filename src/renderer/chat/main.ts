@@ -529,7 +529,8 @@ function formatTime(at: number): string {
   return `${hh}:${mm}`;
 }
 
-/** 渲染左上角任务进度面板。todos 为空时收起并稍后移除。 */
+/** 渲染左上角任务进度面板。todos 为空时收起并稍后移除。
+ *  面板可收缩/展开：点击 header 或 toggle 按钮切换。 */
 function renderTodoPanel(state: TodoState | null): void {
   let panel = document.querySelector(".todo-panel") as HTMLElement | null;
 
@@ -568,33 +569,49 @@ function renderTodoPanel(state: TodoState | null): void {
     return "";
   };
 
+  // 检查当前是否已收缩（保留状态）
+  const wasCollapsed = panel.classList.contains("todo-panel--collapsed");
+
   panel.innerHTML = `
     <div class="todo-panel__header">
       <div>
         <div class="todo-panel__title">📋 任务进度</div>
         <div class="todo-panel__count">${done}/${total} 已完成</div>
       </div>
-      <span class="todo-panel__close" title="收起">×</span>
+      <span class="todo-panel__toggle">${wasCollapsed ? "▸" : "▾"}</span>
     </div>
-    <hr class="todo-panel__divider" />
-    <div class="todo-panel__progress">
-      <div class="todo-progress__track"><div class="todo-progress__fill" style="width:${pct}%"></div></div>
-      <span class="todo-progress__label">${pct}%</span>
-    </div>
-    <div class="todo-list">
-      ${state.todos.map(t => `
-        <div class="todo-item ${t.status}">
-          <span class="todo-item__icon">${statusIcon(t.status)}</span>
-          <span class="todo-item__text">${escapeHtml(t.content)}</span>
-          <span class="todo-item__meta">${priorityBadge(t.priority || "")}</span>
-        </div>
-      `).join("")}
+    <div class="todo-panel__body">
+      <hr class="todo-panel__divider" />
+      <div class="todo-panel__progress">
+        <div class="todo-progress__track"><div class="todo-progress__fill" style="width:${pct}%"></div></div>
+        <span class="todo-progress__label">${pct}%</span>
+      </div>
+      <div class="todo-list">
+        ${state.todos.map(t => `
+          <div class="todo-item ${t.status}">
+            <span class="todo-item__icon">${statusIcon(t.status)}</span>
+            <span class="todo-item__text">${escapeHtml(t.content)}</span>
+            <span class="todo-item__meta">${priorityBadge(t.priority || "")}</span>
+          </div>
+        `).join("")}
+      </div>
     </div>
   `;
 
-  panel.querySelector(".todo-panel__close")?.addEventListener("click", () => {
-    panel!.classList.add("empty");
-    setTimeout(() => panel!.remove(), 300);
+  if (wasCollapsed) panel.classList.add("todo-panel--collapsed");
+
+  // 收缩/展开 toggle
+  const togglePanel = () => {
+    if (!panel) return;
+    const collapsed = panel.classList.toggle("todo-panel--collapsed");
+    const toggleBtn = panel.querySelector(".todo-panel__toggle");
+    if (toggleBtn) toggleBtn.textContent = collapsed ? "▸" : "▾";
+  };
+
+  panel.querySelector(".todo-panel__header")?.addEventListener("click", togglePanel);
+  panel.querySelector(".todo-panel__toggle")?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    togglePanel();
   });
 }
 

@@ -3,9 +3,11 @@ import * as fs from "fs";
 import { app } from "electron";
 import { getEmbeddingProvider, resetEmbeddingProvider, EmbeddingProvider, switchEmbeddingModel as switchModel, getCurrentModelDims } from "./embedding";
 import { JsonVectorStore } from "./vectorstore";
+import type { MemoryEntry } from "./vectorstore";
 import { HybridRetriever } from "./retriever";
 import { WorldbookManager } from "./worldbook";
 import { chunkText } from "./chunk";
+import { feedEntityNamesToJieba } from "../memory/entity-graph";
 
 // ── Global RAG instances ──
 let store: JsonVectorStore | null = null;
@@ -30,6 +32,10 @@ export async function initRAG(
   retriever = new HybridRetriever(store, provider);
   worldbook = new WorldbookManager(path.join(app.getAppPath(), "prompts", "worldbook"));
   await worldbook.loadFromDirectory();
+
+  // 把实体图谱中的已有实体名灌入 jieba 自定义词典
+  // 防止 "昔涟"、"小鹿" 等 AI 伴侣核心名词被错误切分
+  await feedEntityNamesToJieba();
 
   console.log("[RAG] initialized. Mode:", ragMode, "Provider:", provider.name, "Dims:", provider.dims, "Memories:", store.stats.total);
 }
@@ -187,6 +193,17 @@ export function resetRAG(): void {
 
 export function getRAGStats() {
   return store?.stats ?? { total: 0, sources: {} };
+}
+
+/**
+ * 获取指定 source 的所有向量条目（含 embedding），用于记忆压缩 / 聚类。
+ * 返回浅拷贝，调用方不应修改返回的 embedding。
+ */
+export function getEntriesBySource(source: string): Array<{ id: string; text: string; embedding: number[]; createdAt: number; weight: number }> {
+  if (!store) return [];
+  return ((store as any).entries as MemoryEntry[])
+    .filter((e) => e.source === source)
+    .map((e) => ({ id: e.id, text: e.text, embedding: e.embedding, createdAt: e.createdAt, weight: e.weight }));
 }
 
 export function deleteImportedDoc(importId: string, fileName?: string): number {

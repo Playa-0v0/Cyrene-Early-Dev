@@ -1,7 +1,7 @@
 import * as fs from "fs"
 import * as path from "path"
 import { app } from "electron"
-import { L0Profile, L1Profile, L2Memory, MemoryStore } from "./memory-types"
+import { L0Profile, L1Profile, L2Memory, MemoryStore, ReflectionLog } from "./memory-types"
 
 const DEFAULT_L0: L0Profile = {
   nickname: "",
@@ -26,6 +26,7 @@ const DEFAULT_STORE: MemoryStore = {
   l0: { ...DEFAULT_L0 },
   l1: { ...DEFAULT_L1 },
   l2: [],
+  reflectionLogs: [],
   version: 1,
 }
 
@@ -47,6 +48,7 @@ class MemoryStoreManager {
           l0: { ...DEFAULT_L0, ...parsed.l0 },
           l1: { ...DEFAULT_L1, ...parsed.l1 },
           l2: Array.isArray(parsed.l2) ? parsed.l2 : [],
+          reflectionLogs: Array.isArray(parsed.reflectionLogs) ? parsed.reflectionLogs : [],
           version: typeof parsed.version === "number" ? parsed.version : 1,
         }
       } else {
@@ -155,6 +157,59 @@ class MemoryStoreManager {
   async getAllL2(): Promise<L2Memory[]> {
     const store = await this.load()
     return store.l2
+  }
+
+  async addReflectionLog(log: Omit<ReflectionLog, "id" | "createdAt">): Promise<void> {
+    const store = await this.load()
+    const entry: ReflectionLog = {
+      ...log,
+      id: `ref_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      createdAt: Date.now(),
+    }
+    if (!store.reflectionLogs) store.reflectionLogs = []
+    store.reflectionLogs.push(entry)
+    // 最多保留 50 条日志，防止文件膨胀
+    if (store.reflectionLogs.length > 50) {
+      store.reflectionLogs = store.reflectionLogs.slice(-50)
+    }
+    await this.save(store)
+  }
+
+  async getReflectionLogs(): Promise<ReflectionLog[]> {
+    const store = await this.load()
+    return store.reflectionLogs ?? []
+  }
+
+  /** 批量更新 L2 条目的 status */
+  async updateL2Status(ids: string[], status: L2Memory["status"]): Promise<void> {
+    const store = await this.load()
+    for (const mem of store.l2) {
+      if (ids.includes(mem.id)) {
+        mem.status = status
+      }
+    }
+    await this.save(store)
+  }
+
+  /** 批量插入新的 L2 条目（压缩总结用） */
+  async addL2Batch(inputs: Array<Omit<L2Memory, "id" | "createdAt" | "lastAccessedAt" | "accessCount" | "weight" | "status">>): Promise<L2Memory[]> {
+    const store = await this.load()
+    const results: L2Memory[] = []
+    for (const input of inputs) {
+      const memory: L2Memory = {
+        ...input,
+        id: `l2_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+        createdAt: Date.now(),
+        lastAccessedAt: Date.now(),
+        accessCount: 0,
+        weight: 0,
+        status: "active",
+      }
+      store.l2.push(memory)
+      results.push(memory)
+    }
+    await this.save(store)
+    return results
   }
 }
 

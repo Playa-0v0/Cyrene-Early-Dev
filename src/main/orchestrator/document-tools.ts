@@ -44,6 +44,48 @@ function desktopPath(filename: string): string {
   return path.join(app.getPath("desktop"), filename);
 }
 
+// ── 样式加载器（Excel + Word 共用）──
+// 从 skills/{skillId}/styles/ 目录加载 json 风格文件，带缓存。
+interface StyleCacheEntry { [styleId: string]: Record<string, unknown> }
+const styleCache = new Map<string, StyleCacheEntry>();
+const styleLoaded = new Set<string>();
+
+function loadStylesDir(skillId: string): StyleCacheEntry {
+  if (styleLoaded.has(skillId)) return styleCache.get(skillId) ?? {};
+  styleLoaded.add(skillId);
+  const cache: StyleCacheEntry = {};
+  try {
+    const candidates = [
+      path.join(app.getAppPath(), "skills", skillId, "styles"),
+      path.join(process.cwd(), "skills", skillId, "styles"),
+    ];
+    let stylesDir = "";
+    for (const c of candidates) {
+      if (fs.existsSync(c)) { stylesDir = c; break; }
+    }
+    if (!stylesDir) return {};
+
+    for (const f of fs.readdirSync(stylesDir)) {
+      if (!f.endsWith(".json")) continue;
+      const styleId = f.replace(/\.json$/, "");
+      try {
+        cache[styleId] = JSON.parse(fs.readFileSync(path.join(stylesDir, f), "utf8"));
+      } catch { /* 跳过坏文件 */ }
+    }
+    console.log(LOG_PREFIX, `已加载 ${skillId} 样式:`, Object.keys(cache).join(", ") || "(无)");
+  } catch { /* 目录不存在 */ }
+  styleCache.set(skillId, cache);
+  return cache;
+}
+
+/** 把 hex 颜色转成 ARGB（FF 前缀），docx 库用 6 位 RRGGBB 不带 FF 前缀。 */
+function toHexColor(color: string): string {
+  const c = color.replace("#", "").toUpperCase();
+  if (c.length === 8) return c.slice(2);  // FFRRGGBB → RRGGBB
+  if (c.length === 6) return c;
+  return "1F4E79"; // 兜底
+}
+
 export function registerDocumentTools(): void {
   // ── 样式系统 ──
   // 从 skills/xlsx/styles/ 目录加载预设风格 json，取代硬编码。
@@ -325,23 +367,27 @@ export function registerDocumentTools(): void {
     id: "write_word",
     name: "写 Word",
     description:
-      "生成一个 Word 文档（.docx）保存到桌面。\n\n" +
+      "生成一个美观的 Word 文档（.docx）。支持多种预设风格主题。\n" +
+      "已内置：标题样式（颜色/字号/字体）、正文行距/字体/颜色、段落间距。\n\n" +
       "何时用：\n" +
       "- 用户要写报告/总结/方案/请假条\n" +
-      "- 需要「导出成 Word」「做成 docx」\n\n" +
+      "- 需要「导出成 Word」「做成 docx」\n" +
+      "- 用户通过 ask_user_choice 选择了风格 → 用对应 style 参数直接生成\n\n" +
       "不要用于：\n" +
       "- 表格数据（用 write_excel）\n" +
-      "- 正式合同/简历（用 write_pdf）\n" +
-      "- 轻量笔记（用 write_markdown）\n\n" +
-      "参数：filename（.docx 结尾），title（标题），paragraphs（段落数组）。",
+      "- 轻量笔记（用 write_markdown）\n" +
+      "- 需要复杂排版（页眉页脚/目录/图片/表格）→ 才考虑 invoke_skill(docx)\n\n" +
+      "style 可选值（见 skills/docx/styles/catalog.md）：default(商务) / academic(学术) / clean(极简) / elegant(优雅) / formal(公文)。\n" +
+      "参数：filename（.docx 结尾，可含子目录），title（标题），paragraphs（段落数组），style（可选预设风格）。",
     enabled: true,
     risk: "fs-write",
     inputSchema: {
       type: "object",
       properties: {
-        filename:   { type: "string", description: "文件名（.docx 结尾）" },
+        filename:   { type: "string", description: "文件名，可含子目录如 'test/report.docx'（.docx 结尾）" },
         title:      { type: "string", description: "文档标题" },
         paragraphs: { type: "array", description: "段落字符串数组", items: { type: "string" } },
+        style:      { type: "string", description: "预设风格：default(商务) / academic(学术) / clean(极简) / elegant(优雅) / formal(公文)" },
       },
       required: ["filename", "title", "paragraphs"],
     },
@@ -351,16 +397,48 @@ export function registerDocumentTools(): void {
       const outputPath = resolveOutputPath(filename);
       if (!outputPath) return "[错误] 路径不合法（禁止目录穿越或绝对路径）: " + filename;
 
+      // 加载风格
+      const styles = loadStylesDir("docx");
+      const styleId = args.style ? String(args.style) : "default";
+      const theme = (styles[styleId] ?? styles["default"]) as {
+        name?: string; titleColor?: string; titleSize?: number; titleFont?: string;
+        bodyFont?: string; bodySize?: number; bodyColor?: string; lineSpacing?: number; headingColor?: string;
+      } | undefined;
+
+      const titleColor = toHexColor(theme?.titleColor ?? "FF1F4E79");
+      const titleSize = theme?.titleSize ?? 28;
+      const titleFont = theme?.titleFont ?? "微软雅黑";
+      const bodyFont = theme?.bodyFont ?? "微软雅黑";
+      const bodySize = theme?.bodySize ?? 24;
+      const bodyColor = toHexColor(theme?.bodyColor ?? "FF333333");
+      const lineSpacing = theme?.lineSpacing ?? 360;
+      const headingColor = toHexColor(theme?.headingColor ?? "FF1F4E79");
+
+      console.log(LOG_PREFIX, "Word 主题:", theme?.name ?? "默认商务", "style=" + styleId);
+
       const { Document, Packer, Paragraph, HeadingLevel, TextRun } = await import("docx");
       const doc = new Document({
+        styles: {
+          default: {
+            document: {
+              run: { font: bodyFont, size: bodySize, color: bodyColor },
+              paragraph: { spacing: { line: lineSpacing } },
+            },
+          },
+        },
         sections: [{
           children: [
             new Paragraph({
               text: String(args.title || ""),
               heading: HeadingLevel.HEADING_1,
+              run: { font: titleFont, size: titleSize, bold: true, color: titleColor },
+              spacing: { after: 200, line: lineSpacing },
             }),
             ...((args.paragraphs as string[]) || []).map(p =>
-              new Paragraph({ children: [new TextRun(p)] })
+              new Paragraph({
+                children: [new TextRun({ text: p, font: bodyFont, size: bodySize, color: bodyColor })],
+                spacing: { line: lineSpacing, after: 120 },
+              })
             ),
           ],
         }],

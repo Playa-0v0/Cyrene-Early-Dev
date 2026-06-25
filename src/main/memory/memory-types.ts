@@ -39,6 +39,20 @@ export interface L2Memory {
   status: "active" | "aging" | "archived"
   embedding?: number[]
   ragId?: string
+  /** 是否为压缩总结条目（由 Reflection 生成） */
+  isSummary?: boolean
+  /** 被本条压缩的原始条目 id 列表 */
+  subEntryIds?: string[]
+  /** 冲突标记：与该记忆语义相矛盾的其他条目 ragId 列表 */
+  conflictWith?: string[]
+}
+
+export interface ReflectionLog {
+  id: string
+  createdAt: number
+  type: "compression" | "l0_update" | "l1_update" | "conflict_detected"
+  summary: string
+  details?: string
 }
 
 export interface MemoryCandidate {
@@ -53,5 +67,6 @@ export interface MemoryStore {
   l0: L0Profile
   l1: L1Profile
   l2: L2Memory[]
+  reflectionLogs?: ReflectionLog[]
   version: number
 }

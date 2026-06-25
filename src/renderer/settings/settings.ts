@@ -1085,6 +1085,48 @@ async function loadWeatherConfig(): Promise<void> {
 }
 void loadWeatherConfig();
 
+// ── 🚗出行工具 ──
+const travelEnabledCheckbox = document.getElementById("plugin-travel-enabled") as HTMLInputElement | null;
+const travelConfig = document.getElementById("plugin-travel-config") as HTMLElement | null;
+const travelAmapKeyInput = document.getElementById("travel-amap-key") as HTMLInputElement | null;
+
+function syncTravelConfigVisibility(): void {
+  if (travelConfig) travelConfig.style.display = travelEnabledCheckbox?.checked ? "block" : "none";
+}
+travelEnabledCheckbox?.addEventListener("change", () => {
+  syncTravelConfigVisibility();
+  void saveTravelField("travelEnabled", travelEnabledCheckbox.checked);
+});
+travelAmapKeyInput?.addEventListener("change", () => {
+  // 存到同一个 amapKey 字段（与天气查询共用）
+  void saveTravelField("amapKey", travelAmapKeyInput.value.trim());
+});
+
+async function saveTravelField(field: string, value: unknown): Promise<void> {
+  if (!window.tts) return;
+  try {
+    await window.tts.saveSettings({ [field]: value });
+  } catch (err) {
+    console.warn("[plugins] 保存出行配置失败:", field, err);
+  }
+}
+
+async function loadTravelConfig(): Promise<void> {
+  try {
+    const cfg = await window.tts?.loadSettings();
+    if (cfg && travelEnabledCheckbox) {
+      travelEnabledCheckbox.checked = Boolean(cfg.travelEnabled);
+    }
+    if (cfg && travelAmapKeyInput) {
+      travelAmapKeyInput.value = String(cfg.amapKey ?? "");
+    }
+    syncTravelConfigVisibility();
+  } catch (err) {
+    console.warn("[plugins] 加载出行配置失败", err);
+  }
+}
+void loadTravelConfig();
+
 // ── 联网搜索插件（博查/Tavily/火山/MiniMax）──
 const searchEnabledCheckbox = document.getElementById("plugin-search-enabled") as HTMLInputElement | null;
 const searchConfig = document.getElementById("plugin-search-config") as HTMLElement | null;
