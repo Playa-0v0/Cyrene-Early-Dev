@@ -9,6 +9,44 @@ import { skillRegistry } from "./skill-registry";
 
 const LOG_PREFIX = "[SkillTools]";
 
+// skill 正文 / reference 返回时的字符上限。CyreneAgent 的 FC 循环把 tool 返回值
+// 永久留在 conversation 里，超大正文（xlsx 8.5KB、skill-creator 33KB、docx 的
+// openxml_encyclopedia 单个 144KB）会顶过推理模型单轮 30s 预算导致连续超时。
+// 官方 skill 系统靠宿主 agent（Claude Code 等）的上下文压缩兜底，我们没那层，得自己截断。
+const SKILL_BODY_MAX_CHARS = 6000;
+const SKILL_REF_MAX_CHARS = 8000;
+
+/** 截断文本到 maxChars，超长时末尾附提示。保留前部（任务路由表/关键规则通常在前）。 */
+function truncateForContext(text: string, maxChars: number, hint: string): string {
+  if (text.length <= maxChars) return text;
+  return text.slice(0, maxChars) +
+    "\n\n[...正文过长已截断，仅显示前 " + maxChars + " 字符。" + hint + "...]";
+}
+
+/**
+ * 每轮对话的 reference 已读记录（skill_id + ref → true）。
+ * FC 循环开始时调 resetReadRefs() 清空。防止模型在同一轮任务里重复读同一文件。
+ */
+const readRefs = new Set<string>();
+
+/** 每轮 FC 循环开始前调，清空已读记录。由 cyrene-agent.ts 在循环入口调。 */
+export function resetReadRefs(): void {
+  readRefs.clear();
+}
+
+/**
+ * 执行纪律提示，拼在 invoke_skill 返回内容末尾。
+ * 约束模型"够用即执行、不重复读、不探索式遍历"，避免浪费轮数。
+ */
+const EXECUTION_DISCIPLINE =
+  "\n\n---\n" +
+  "【执行纪律 — 必须遵守】\n" +
+  "1. 只读完成任务所需的最少 reference，读到能执行就立即开始，不要把所有文档都读一遍。\n" +
+  "2. 同一 reference 文件不要重复读取（系统会拦截重复读取）。\n" +
+  "3. 不要用 list_dir 遍历 templates/scripts 目录——模板和脚本路径上文已给出，直接用。\n" +
+  "4. 信息足够后立即用其他工具执行产出，不要继续研究。\n" +
+  "5. 若预计轮数紧张，优先输出可交付版本而非继续优化格式。";
+
 /**
  * 注册 skill 系统的两个 meta-tool 进 toolRegistry。
  * 标 risk:"safe"（只读本地 skill 文件），免权限打扰。
@@ -47,8 +85,13 @@ export function registerSkillTools(): void {
       const refList = skill.references.length > 0
         ? `\n\n可用 references（需要详情时调 read_skill_reference 读取）：\n${skill.references.map(r => "- " + r).join("\n")}`
         : "";
-      console.log(LOG_PREFIX, "invoke_skill:", id);
-      return `[已加载 skill: ${id}]\n${body}${refList}`;
+      console.log(LOG_PREFIX, "invoke_skill:", id, "bodyLen=" + body.length);
+      const truncatedBody = truncateForContext(
+        body,
+        SKILL_BODY_MAX_CHARS,
+        "如需完整指令或特定部分，可用 read_skill_reference 精准读取对应 reference 文件",
+      );
+      return `[已加载 skill: ${id}]\n${truncatedBody}${refList}${EXECUTION_DISCIPLINE}`;
     },
   });
 
@@ -77,12 +120,24 @@ export function registerSkillTools(): void {
       if (!skill || !skill.enabled) {
         return `[read_skill_reference] skill not found: ${id}`;
       }
+      // 去重：同一轮内同一 reference 不重复返回（内容已在对话历史里，再读浪费轮数+token）
+      const readKey = `${id}/${ref}`;
+      if (readRefs.has(readKey)) {
+        return `[read_skill_reference] "${ref}" 已在本轮读过，内容已在对话中，不要重复读取。` +
+          `如需其他文件，可读：${skill.references.filter(r => !readRefs.has(`${id}/${r}`)).join(", ") || "(全部已读)"}`;
+      }
       const content = skillRegistry.getReference(id, ref);
       if (content === null) {
         return `[read_skill_reference] 读取失败（ref 不在清单或文件不存在）: ${ref}。可用: ${skill.references.join(", ") || "(无)"}`;
       }
-      console.log(LOG_PREFIX, "read_skill_reference:", id, ref);
-      return content;
+      readRefs.add(readKey);
+      console.log(LOG_PREFIX, "read_skill_reference:", id, ref, "len=" + content.length);
+      const truncated = truncateForContext(
+        content,
+        SKILL_REF_MAX_CHARS,
+        "如需后半部分内容，请分段读取或说明你需要的具体章节",
+      );
+      return truncated;
     },
   });
 

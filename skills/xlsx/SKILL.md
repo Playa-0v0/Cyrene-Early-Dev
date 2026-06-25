@@ -14,6 +14,34 @@ metadata:
 
 直接处理请求。**禁止**生成子 agent。始终将输出文件写入用户请求的路径。
 
+## ⚠️ 先判断：是否需要本 Skill
+
+在开始任何操作前，先判断任务复杂度：
+
+- **简单表格生成**（数据整理、换算导出、清单列表）→ **直接用 `write_excel` 工具**，不要继续读本 Skill。
+  `write_excel` 已内置美观样式（表头加粗、边框、斑马纹、列宽自适应、冻结首行）和支持自定义颜色。
+
+  如果用户要求"美观""好看"等模糊风格，先读 `styles/catalog.md`（样式目录），
+  从中选 2-4 个风格作为选项，用 `ask_user_choice` 弹卡片让用户选择。
+  **第一个选项固定是 `default`（默认深蓝）**，后面由你根据任务场景自选。
+  用户选完后将风格名传给 `write_excel` 的 `style` 参数即可。
+  用户也可以在卡片里自定义输入，你把颜色描述翻译成 ARGB hex 传给 `colors` 参数。
+
+- **需要以下任一才继续本 Skill**：
+  - Excel 公式（`SUM`、`VLOOKUP`、跨表引用等）
+  - 编辑已有 xlsx 文件（保留原有格式/宏/透视表）
+  - 财务格式化标准（蓝/黑/绿颜色编码）
+  - 公式验证与重算
+
+## 脚本路径
+
+本 Skill 的脚本在 `SKILL_DIR/scripts/` 下，模板在 `SKILL_DIR/templates/` 下。
+`SKILL_DIR` 的实际路径在 invoke_skill 返回的清单中已标注，或可通过以下命令快速定位：
+```bash
+python3 -c "import os,glob; print([p for p in glob.glob(os.path.expanduser('~/Desktop/**/xlsx_pack.py'),recursive=True)][:1])"
+```
+**不要**花多轮搜索路径——拿到路径后立即开始执行。
+
 ## 任务路由
 
 | 任务 | 方法 | 指南 |
@@ -23,6 +51,14 @@ metadata:
 | **EDIT** — 修改已有 xlsx | XML 解包→编辑→打包 | `references/edit.md`（如需样式参见 `format.md`） |
 | **FIX** — 修复已有 xlsx 中损坏的公式 | XML 解包→修复 `<f>` 节点→打包 | `references/fix.md` |
 | **VALIDATE** — 检查公式 | `formula_check.py` | `references/validate.md` |
+
+### 执行纪律（必须遵守）
+
+1. **只读完成任务所需的最少 reference**——读完能执行就立即开始，不要把所有文档都读一遍。
+2. **同一 reference 文件不要重复读取**（系统会拦截重复读取）。
+3. **不要用 list_dir 遍历 templates/scripts 目录**——路径上文已给出，直接用。
+4. **信息足够后立即执行**——不要继续研究格式文档。
+5. **若预计轮数紧张，优先输出可交付版本**而非继续优化格式。
 
 ## READ — 分析数据（先阅读 `references/read-analyze.md`）
 
@@ -35,6 +71,8 @@ metadata:
 ## CREATE — XML 模板（阅读 `references/create.md` + `references/format.md`）
 
 复制 `templates/minimal_xlsx/` → 直接编辑 XML → 使用 `xlsx_pack.py` 打包。每个派生值必须为 Excel 公式（`<f>SUM(B2:B9)</f>`），**禁止**硬编码数字。按照 `format.md` 应用字体颜色。
+
+**注意**：仅当需要 Excel 公式时才走此路径。简单数据表格用 `write_excel` 工具即可。
 
 ## EDIT — XML 直接编辑（先阅读 `references/edit.md`）
 
@@ -118,11 +156,12 @@ python3 SKILL_DIR/scripts/xlsx_pack.py /tmp/xlsx_work/ output.xlsx
 
 ## 关键规则
 
-1. **公式优先**：每个计算单元格**必须**使用 Excel 公式，**禁止**硬编码数字
-2. **CREATE → XML 模板**：复制最小模板，直接编辑 XML，使用 `xlsx_pack.py` 打包
-3. **EDIT → XML**：**禁止** openpyxl 往返操作。使用解包/编辑/打包脚本
-4. **始终生成输出文件** — 这是最高优先级
-5. **交付前验证**：`formula_check.py` 退出码 0 = 安全
+1. **先判断复杂度**：简单表格用 `write_excel`，需要公式/编辑才用本 Skill
+2. **公式优先**：每个计算单元格**必须**使用 Excel 公式，**禁止**硬编码数字
+3. **CREATE → XML 模板**：复制最小模板，直接编辑 XML，使用 `xlsx_pack.py` 打包
+4. **EDIT → XML**：**禁止** openpyxl 往返操作。使用解包/编辑/打包脚本
+5. **始终生成输出文件** — 这是最高优先级
+6. **交付前验证**：`formula_check.py` 退出码 0 = 安全
 
 ## 实用脚本
 

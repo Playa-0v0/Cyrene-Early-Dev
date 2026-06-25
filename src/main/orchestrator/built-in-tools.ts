@@ -126,6 +126,42 @@ interface ShellResult {
   truncated: boolean;
 }
 
+/**
+ * 把 args 规范化成 argv 数组。模型常把 "--version" 当字符串传（schema 要求数组），
+ * 不容错的话 Array.isArray 判否 → cmdArgs=[] → 裸启动 python/node 的交互式 REPL，卡死。
+ */
+function normalizeArgs(raw: unknown): string[] {
+  if (Array.isArray(raw)) return raw.map((x) => String(x));
+  if (typeof raw === "string" && raw.trim()) return tokenizeArgs(raw);
+  return [];
+}
+
+/** 简易 argv 分词：尊重单/双引号，处理转义空格。不引 shell（避免注入）。 */
+function tokenizeArgs(s: string): string[] {
+  const out: string[] = [];
+  const re = /"([^"]*)"|'([^']*)'|(\S+)/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(s)) !== null) {
+    out.push(m[1] ?? m[2] ?? m[3]);
+  }
+  return out;
+}
+
+/** 可靠终止进程树。Windows 上 child.kill("SIGKILL") 只杀直接子进程，杀不掉孙进程。 */
+function killTree(child: ReturnType<typeof spawn>): void {
+  if (child.pid == null) return;
+  if (process.platform === "win32") {
+    // /T=含整棵子树  /F=强制  砍掉进程树，避免孙进程成为孤儿
+    spawn("taskkill", ["/pid", String(child.pid), "/T", "/F"], {
+      windowsHide: true,
+      shell: false,
+      stdio: "ignore",
+    });
+  } else {
+    try { child.kill("SIGKILL"); } catch { /* 已退出则忽略 */ }
+  }
+}
+
 function runShellOnce(command: string, args: string[], cwd?: string): Promise<ShellResult> {
   return new Promise((resolve) => {
     const child = spawn(command, args, {
@@ -133,13 +169,16 @@ function runShellOnce(command: string, args: string[], cwd?: string): Promise<Sh
       shell: false,
       windowsHide: true,
       env: process.env,
+      // stdin→/dev/null(NUL)：误启动交互式进程(python/node REPL)时让它读到 EOF 立即退出，
+      // 不再卡在"等 stdin 输入"上耗满超时。stdout/stderr 仍 pipe 来收集输出。
+      stdio: ["ignore", "pipe", "pipe"],
     });
     let stdout = "";
     let stderr = "";
     let truncated = false;
     const timeoutTimer = setTimeout(() => {
-      console.warn(LOG_PREFIX, "run_shell 超时，kill:", command);
-      child.kill("SIGKILL");
+      console.warn(LOG_PREFIX, "run_shell 超时，kill 进程树:", command);
+      killTree(child);
     }, SHELL_TIMEOUT_MS);
 
     child.stdout?.on("data", (chunk: Buffer) => {
@@ -182,7 +221,8 @@ function runShellOnce(command: string, args: string[], cwd?: string): Promise<Sh
 
 async function executeRunShell(args: Record<string, unknown>): Promise<string> {
   const cmd = String(args.command || "").trim();
-  const cmdArgs = Array.isArray(args.args) ? (args.args as unknown[]).map((x) => String(x)) : [];
+  // 容错：模型常把 args 当字符串传（如 "--version"），normalizeArgs 会自动拆成 argv 数组
+  const cmdArgs = normalizeArgs(args.args);
   const cwd = args.cwd ? String(args.cwd) : undefined;
   if (!cmd) return "[错误] command 不能为空";
 
@@ -910,4 +950,75 @@ toolRegistry.register({
 // 暴露给 index.ts 在 startup 调用，避免 tree-shake 掉
 export { loadTodos, onTodosChange, getTodos as getCurrentTodos } from "./todo-store";
 
-console.log(LOG_PREFIX, "已注册：fetch_url / run_shell / install_mcp_server / weather / web_search");
+// ── 工具：ask_user_choice（歧义消解器）─────────────────────
+// 当用户需求模糊（"美观""好看""专业"）时，弹卡片让用户从选项中选择。
+// 阻塞工具执行，等用户选完返回选中的 value 给 LLM。
+// 通用设计：question + options 结构不绑死 Excel，PPT/Word/图片生成都能用。
+
+import { requestUserChoice, type ChoiceOption } from "../user-choice";
+
+toolRegistry.register({
+  id: "ask_user_choice",
+  name: "询问用户选择",
+  description:
+    "当用户需求模糊（如「美观」「好看」「专业」「好看一点」）需要明确具体方向时，" +
+    "弹卡片让用户从选项中选择。工具会阻塞等待用户选择后返回结果。\n\n" +
+    "何时用：\n" +
+    "- 用户说「美观」「好看」「专业」但没给具体要求\n" +
+    "- 需要在多个方案间让用户选择\n" +
+    "- 用户的需求有多种合理解读\n\n" +
+    "不要用于：\n" +
+    "- 用户需求已经很明确（直接执行）\n" +
+    "- 用户说「你自己决定」「看着办」（按默认策略执行，不要弹窗）\n\n" +
+    "参数：question（问题文本），options（选项数组，每项含 label/value/description），" +
+    "default（可选，超时时的默认选择值）。",
+  enabled: true,
+  risk: "safe",
+  inputSchema: {
+    type: "object",
+    properties: {
+      question: { type: "string", description: "要问用户的问题，如「请选择 Excel 风格」" },
+      options: {
+        type: "array",
+        description: "选项数组（2-5 个），每项含 label（显示名）/ value（返回值）/ description（说明，可选）",
+        items: {
+          type: "object",
+          properties: {
+            label: { type: "string", description: "选项显示名，如「简洁商务」" },
+            value: { type: "string", description: "选项返回值，如「simple-business」" },
+            description: { type: "string", description: "选项说明，如「表头加粗+边框+斑马纹」" },
+          },
+        },
+      },
+      default: { type: "string", description: "可选，超时（120s）时的默认选择值" },
+    },
+    required: ["question", "options"],
+  },
+  execute: async (args) => {
+    const question = String(args.question || "");
+    const options = (args.options || []) as ChoiceOption[];
+    const defaultValue = args.default ? String(args.default) : undefined;
+
+    if (!question) return "[错误] question 不能为空";
+    if (!Array.isArray(options) || options.length < 2) {
+      return "[错误] options 至少需要 2 个选项";
+    }
+
+    console.log(LOG_PREFIX, "ask_user_choice:", question, options.length + " 个选项");
+    const userChoice = await requestUserChoice(question, options, defaultValue);
+    console.log(LOG_PREFIX, "用户选择了:", userChoice);
+
+    if (!userChoice) {
+      return "[ask_user_choice] 用户未选择（超时），请按默认方案执行。";
+    }
+    // 找到用户选的选项，返回 label + value 方便 LLM 理解
+    const selected = options.find(o => o.value === userChoice);
+    if (selected) {
+      return `[ask_user_choice] 用户选择了：${selected.label}（${userChoice}）。请按此选择执行。`;
+    }
+    // 用户自定义输入（value 不在预设选项里）
+    return `[ask_user_choice] 用户自定义输入：${userChoice}。请按此要求执行。`;
+  },
+});
+
+console.log(LOG_PREFIX, "已注册：fetch_url / run_shell / install_mcp_server / weather / web_search / ask_user_choice");

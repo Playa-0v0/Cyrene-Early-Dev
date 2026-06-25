@@ -9,7 +9,7 @@ import { STATUS_KEYWORDS } from "./status-keywords";
 import { initRAG, buildMemoryContext, addMemory, importDocument, switchEmbeddingModel, deleteImportedDoc } from "./rag";
 import { getEmbeddingProvider, getSceneEmbeddingProvider } from "./rag/embedding";
 import { ingestPaths } from "./rag/file-ingest";
-import { buildAlwaysOnContext, runFunctionCallingLoop, scheduleMemoryWrite } from "./orchestrator";
+import { buildAlwaysOnContext, buildMemoryInjection, runFunctionCallingLoop, scheduleMemoryWrite } from "./orchestrator";
 import { buildToneInjection } from "./orchestrator/tone-injector";
 import { getAdapter, buildVendorUrl } from "./orchestrator/vendors";
 import { getCapability } from "./orchestrator/vendors/capabilities";
@@ -22,6 +22,7 @@ import "./orchestrator/fs-tools";
 import { initMcpManager, addMcpServer, removeMcpServer, listMcpServers } from "./orchestrator/mcp-manager";
 import { buildEnvironmentContext } from "./orchestrator/environment";
 import { initPermissionFromDisk, registerPermissionIpc, getCurrentLevel } from "./permission";
+import { registerChoiceIpc, setChoiceCardSender } from "./user-choice";
 import { enqueueLLMTask } from "./llm-queue";
 import { getEmbeddingStatus, downloadEmbeddingModel, deleteEmbeddingModel } from "./embedding-manager";
 import { BUILT_IN_STICKER_DESCRIPTIONS } from "./sticker-descriptions";
@@ -42,6 +43,7 @@ import { setWeatherConfig, setSearchConfig, loadTodos, onTodosChange } from "./o
 import { registerRecallHistoryTool } from "./orchestrator/history-tools";
 import { registerDocumentTools } from "./orchestrator/document-tools";
 import { registerLifeTools, setTranslateConfig } from "./orchestrator/life-tools";
+import { registerTravelTools, setTravelConfig } from "./orchestrator/travel-tools";
 import { initSkills, skillRegistry, buildSkillCatalog, parseSlashCommand, setSkillEnabled, listSkillsForUi } from "./skills";
 import { initGameBot } from "./game-bot";
 import { getSchedulerStore } from "./scheduler/scheduler-store";
@@ -242,6 +244,8 @@ interface GeneralSettings {
   weatherEnabled: boolean;
   /** 高德天气 key（https://lbs.amap.com 注册 Web服务 key） */
   amapKey: string;
+  /** 🚗出行工具是否启用 */
+  travelEnabled: boolean;
   // 联网搜索：选哪个搜索源 + 对应 key
   searchEngine: "off" | "bocha" | "tavily" | "minimax";
   searchBochaKey: string;
@@ -282,7 +286,7 @@ interface ChatReplyPayload {
 
 const RUNTIME_STATUSES: RuntimeStatus[] = ["陪伴中", "思考中", "工作中", "聆听中", "提醒中", "离线"];
 const RUNTIME_FEELINGS: RuntimeFeeling[] = ["平静", "开心", "温柔", "激动", "撒娇", "担心", "难过", "感动", "害羞"];
-const CHAT_REQUEST_TIMEOUT_MS = 180000; // FC 总预算：12 轮 × 推理模型 ~10-15s 需 180s 余量
+const CHAT_REQUEST_TIMEOUT_MS = 300000; // FC 总预算：20 轮 × 推理模型 ~10-15s 需 300s 余量
 
 /** 桌宠窗口的基础尺寸（zoom=1.0 时）。缩放因子改变窗口与模型尺寸，二者同步。 */
 const PET_WINDOW_BASE_WIDTH = 400;
@@ -336,6 +340,7 @@ const DEFAULT_GENERAL_SETTINGS: GeneralSettings = {
   weatherSource: "open-meteo",
   weatherEnabled: false,
   amapKey: "",
+  travelEnabled: false,
   searchEngine: "off",
   searchBochaKey: "",
   searchTavilyKey: "",
@@ -669,6 +674,7 @@ function normalizeGeneralSettings(input: Partial<GeneralSettings> | null | undef
       : "open-meteo",
     weatherEnabled: Boolean(input?.weatherEnabled),
     amapKey: typeof input?.amapKey === "string" ? input.amapKey : "",
+    travelEnabled: Boolean(input?.travelEnabled),
     searchEngine: ["off", "bocha", "tavily", "minimax"].includes(String(input?.searchEngine))
       ? (input!.searchEngine as "off" | "bocha" | "tavily" | "minimax")
       : "off",
@@ -1281,6 +1287,14 @@ async function requestModelReply(inputMessages: unknown, styleFile = "01_default
     console.warn("[Cyrene] always-on context build failed:", err);
   }
 
+  // 1.1 自动注入相关记忆（L2 + 导入文档），让模型无需调 tool 也能感知
+  let memoryInjection = "";
+  try {
+    memoryInjection = await buildMemoryInjection(latestUserText);
+  } catch (err) {
+    console.warn("[Cyrene] memory injection failed:", err);
+  }
+
   // 1.5 环境上下文（Step 1）：当前日期 / OS / 桌面真实路径 / 权限档位 / 工具可用情况 / 模型视觉能力
   // 放在 always-on 之后、system prompt 末尾，让模型最近读到的就是机器事实，
   // 降低"桌面在哪"这类低级幻觉。失败不影响主流程。
@@ -1311,6 +1325,7 @@ async function requestModelReply(inputMessages: unknown, styleFile = "01_default
   const systemContent =
     (environmentContext ? environmentContext + "\n\n" : "") +
     (alwaysOnContext ? alwaysOnContext + "\n\n" : "") +
+    (memoryInjection ? memoryInjection + "\n\n" : "") +
     buildSystemPrompt(styleFile) +
     (skillCatalog ? "\n\n---\n\n" + skillCatalog : "") +
     skillActivation +
@@ -1503,12 +1518,26 @@ function createWindow(): void {
     },
   );
 
+  // 注入用户选择卡片回调：工具调 ask_user_choice 时发 Custom 事件给聊天窗口
+  setChoiceCardSender((cardData) => {
+    if (chatWindow && !chatWindow.isDestroyed()) {
+      chatWindow.webContents.send(IPC.AGUI_EVENT, {
+        type: "CUSTOM",
+        name: "cyrene.choice",
+        value: cardData,
+      });
+    }
+  });
+
   // 注入搜索配置获取器
   setSearchConfig(
     () => loadGeneralSettings().searchEngine,
     () => loadGeneralSettings().searchBochaKey,
     () => loadGeneralSettings().searchTavilyKey,
   );
+
+  // 注入出行工具 amapKey 获取器（复用 GeneralSettings 中的 amapKey）
+  setTravelConfig(() => loadGeneralSettings().amapKey);
 
   mainWindow.on("closed", () => {
     mainWindow = null;
@@ -2533,6 +2562,9 @@ app.whenReady().then(async () => {
   });
   registerLifeTools();
 
+  // 出行工具（路线规划——驾车/步行/骑行/公交，复用 amapKey）
+  registerTravelTools();
+
   // Skill 系统：扫描双源 skills + 注册 meta-tool
   initSkills();
 
@@ -2734,6 +2766,7 @@ app.whenReady().then(async () => {
   // 权限模块初始化：必须在 createWindow 之后但任意工具调用之前
   initPermissionFromDisk();
   registerPermissionIpc();
+  registerChoiceIpc();
   console.log("[Cyrene] 当前 agent 权限档位:", getCurrentLevel());
   try {
     const modelSettings = loadModelSettings();

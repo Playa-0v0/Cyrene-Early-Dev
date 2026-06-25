@@ -75,6 +75,11 @@ interface SchedulerEventsApi {
   onEvent: (callback: (event: unknown) => void) => () => void;
 }
 
+/** 用户选择卡片 API（window.choice）。卡片展示走 AGUI_EVENT CUSTOM，resolve 走独立 IPC。 */
+interface ChoiceApi {
+  resolve: (id: string, value: string) => Promise<unknown>;
+}
+
 /** AG-UI BaseEvent 的最小本地类型（只取我们关心的字段）。 */
 interface AguiBaseEvent {
   type: string;
@@ -123,6 +128,7 @@ declare global {
     agui?: AguiApi;
     schedulerEvents?: SchedulerEventsApi;
     modelConfig?: ModelConfigApi;
+    choice?: ChoiceApi;
   }
 }
 
@@ -596,6 +602,86 @@ function escapeHtml(s: string): string {
   return s.replace(/[&<>"']/g, c => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
   }[c]!));
+}
+
+/** 构建用户选择卡片 DOM 元素（歧义消解器），插入聊天流让用户选选项。 */
+function buildChoiceCardEl(data: {
+  id: string;
+  question: string;
+  options: Array<{ label: string; value: string; description?: string }>;
+  default?: string;
+}): HTMLElement {
+  const card = document.createElement("div");
+  card.className = "choice-card";
+  card.dataset.choiceId = data.id;
+
+  // 标题
+  const title = document.createElement("div");
+  title.className = "choice-card__title";
+  title.textContent = data.question;
+  card.appendChild(title);
+
+  // 选项列表
+  const list = document.createElement("div");
+  list.className = "choice-card__list";
+  for (const opt of data.options) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "choice-card__option";
+    btn.dataset.value = opt.value;
+
+    const labelEl = document.createElement("span");
+    labelEl.className = "choice-card__option-label";
+    labelEl.textContent = opt.label;
+    btn.appendChild(labelEl);
+
+    if (opt.description) {
+      const descEl = document.createElement("span");
+      descEl.className = "choice-card__option-desc";
+      descEl.textContent = opt.description;
+      btn.appendChild(descEl);
+    }
+
+    btn.addEventListener("click", () => {
+      // 标记已选，禁用所有按钮
+      card.classList.add("choice-card--resolved");
+      card.querySelectorAll<HTMLButtonElement>(".choice-card__option").forEach(b => b.disabled = true);
+      btn.classList.add("choice-card__option--selected");
+      void window.choice?.resolve(data.id, opt.value);
+    });
+    list.appendChild(btn);
+  }
+  card.appendChild(list);
+
+  // 自定义输入
+  const customWrap = document.createElement("div");
+  customWrap.className = "choice-card__custom";
+  const customInput = document.createElement("input");
+  customInput.type = "text";
+  customInput.className = "choice-card__custom-input";
+  customInput.placeholder = "或输入自定义要求...";
+  customWrap.appendChild(customInput);
+
+  const customBtn = document.createElement("button");
+  customBtn.type = "button";
+  customBtn.className = "choice-card__custom-btn";
+  customBtn.textContent = "确认";
+  customBtn.addEventListener("click", () => {
+    const val = customInput.value.trim();
+    if (!val) return;
+    card.classList.add("choice-card--resolved");
+    card.querySelectorAll<HTMLButtonElement>(".choice-card__option").forEach(b => b.disabled = true);
+    customInput.disabled = true;
+    customBtn.disabled = true;
+    void window.choice?.resolve(data.id, val);
+  });
+  customInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") { e.preventDefault(); customBtn.click(); }
+  });
+  customWrap.appendChild(customBtn);
+  card.appendChild(customWrap);
+
+  return card;
 }
 
 /** 构建天气卡片 DOM 元素（不插入，由调用方决定位置）。 */
@@ -1407,7 +1493,7 @@ async function send(): Promise<void> {
             }
             break;
           case "CUSTOM":
-            // 主进程发的自定义事件：sticker / 天气卡片 / 任务清单
+            // 主进程发的自定义事件：sticker / 天气卡片 / 任务清单 / 选择卡片
             if (event.name === "cyrene.sticker") {
               sticker = (event.value as StickerId | null) ?? null;
             } else if (event.name === "cyrene.weather") {
@@ -1416,6 +1502,12 @@ async function send(): Promise<void> {
               pendingWeatherCard = event.value as Record<string, unknown>;
             } else if (event.name === "cyrene.todos") {
               renderTodoPanel(event.value as TodoState | null);
+            } else if (event.name === "cyrene.choice") {
+              // 选择卡片：立即插入聊天流（不等 runDone，因为要即时交互）
+              const choiceData = event.value as { id: string; question: string; options: Array<{ label: string; value: string; description?: string }>; default?: string };
+              const card = buildChoiceCardEl(choiceData);
+              messagesEl.appendChild(card);
+              messagesEl.scrollTop = messagesEl.scrollHeight;
             }
             break;
           case "RUN_FINISHED":

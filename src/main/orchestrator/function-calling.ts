@@ -13,9 +13,15 @@ import {
 } from "./vendors";
 import { extractLastUserQuery, type ToolContext } from "./tool-context";
 import { recordUsage } from "../token-usage-store";
+import { resetReadRefs } from "../skills/skill-tools";
 
 const LOG_PREFIX = "[FunctionCalling]";
-const MAX_TOOL_ROUNDS = 12; // 推理模型 + skill 多步任务需更多轮；到顶强制无工具总结兜底
+const MAX_TOOL_ROUNDS = 20; // 多步任务（写 Excel 多 sheet、生成图片等）可能耗多轮；到顶强制无工具总结兜底
+const PER_ROUND_TIMEOUT_MS = 75000; // 推理模型带 thinking，30s 偏紧，放宽到 75s
+const FORCE_SUMMARY_TIMEOUT_MS = 90000; // 强制总结兜底：对话历史此时已很长，30s 不够，放宽到 90s
+// 连续超时即退出：超时后重试只会让上下文更长更慢，形成"超时→加消息→更慢→再超时"死循环。
+// 连续 MAX_CONSECUTIVE_TIMEOUTS 次超时直接跳出走强制总结，不再空转浪费时间。
+const MAX_CONSECUTIVE_TIMEOUTS = 2;
 
 /** 调度层传入的厂商配置（结构兼容 main/index.ts 的 ModelSettings，避免循环依赖）。 */
 interface LoopSettings {
@@ -36,6 +42,29 @@ function buildToolSpecs(): ToolSpec[] {
       required: t.inputSchema.required,
     },
   }));
+}
+
+/**
+ * 强制总结也失败时的降级文案。用已收集的工具结果拼一个"任务中断"回复，
+ * 避免整个 run 抛错让用户彻底看不到任何回复。
+ * （与 cyrene-agent.ts 中的版本保持一致，但不引入其 AG-UI 依赖）
+ */
+function buildFallbackReply(toolResults: ToolCallResult[], reason: string): string {
+  const lines: string[] = [
+    "抱歉，任务执行到一半被中断了。",
+    "",
+    "中断原因：" + reason,
+  ];
+  if (toolResults.length > 0) {
+    lines.push("", "以下是中断前已经完成的步骤：");
+    for (const r of toolResults) {
+      const preview = r.output.length > 200 ? r.output.slice(0, 200) + "…" : r.output;
+      lines.push("- 「" + r.toolId + "」：" + preview);
+    }
+  } else {
+    lines.push("", "（暂无已完成的步骤信息）");
+  }
+  return lines.join("\n");
 }
 
 /**
@@ -64,12 +93,16 @@ export async function runFunctionCallingLoop(
   // 累加所有轮次的 token 用量（工具循环可能多轮，每轮都有 usage）
   let accInput = 0;
   let accOutput = 0;
+  let consecutiveTimeouts = 0; // 连续超时计数：达到上限直接跳出走强制总结
 
   console.log(LOG_PREFIX, `provider=${settings.provider} transport=${adapter.transport} model=${settings.model}`);
   console.log(LOG_PREFIX, "可用工具:", tools.map(t => t.name).join(", ") || "(无)");
   console.log(LOG_PREFIX, "消息数:", messages.length, "最后一角色:", messages[messages.length - 1]?.role);
 
   let conversation: ChatMessage[] = messages.map(m => ({ ...m }));
+
+  // 清空本轮 skill reference 已读记录，防止跨对话污染
+  resetReadRefs();
 
   for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
     const roundStart = Date.now();
@@ -94,7 +127,7 @@ export async function runFunctionCallingLoop(
     console.log(LOG_PREFIX, "请求:", http.url);
 
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeoutMs - (Date.now() - startTime));
+    const timer = setTimeout(() => controller.abort(), PER_ROUND_TIMEOUT_MS);
     let response: Response;
     try {
       response = await fetch(http.url, {
@@ -103,6 +136,20 @@ export async function runFunctionCallingLoop(
         headers: http.headers,
         body: http.body,
       });
+    } catch (err) {
+      if (err instanceof Error && err.name === "AbortError") {
+        consecutiveTimeouts++;
+        console.warn(LOG_PREFIX, "第 " + (round + 1) + " 轮 LLM 请求超时（" + PER_ROUND_TIMEOUT_MS + "ms），连续第 " + consecutiveTimeouts + " 次");
+        clearTimeout(timer);
+        // 连续超时即退出：再重试只会让上下文更长更慢，注定超时。
+        // 不再往 conversation 塞"超时提示"消息（雪上加霜），直接跳出走强制总结。
+        if (consecutiveTimeouts >= MAX_CONSECUTIVE_TIMEOUTS) {
+          console.warn(LOG_PREFIX, "连续 " + MAX_CONSECUTIVE_TIMEOUTS + " 次超时，跳出 FC 循环走强制总结");
+          break;
+        }
+        continue;
+      }
+      throw err;
     } finally {
       clearTimeout(timer);
     }
@@ -129,6 +176,9 @@ export async function runFunctionCallingLoop(
       " toolCalls=" + chat.toolCalls.length + " thinking=" + (chat.thinking ? "有" : "无") +
       " 耗时=" + (Date.now() - roundStart) + "ms",
     );
+
+    // 请求成功，重置连续超时计数
+    consecutiveTimeouts = 0;
 
     // 把 assistant 消息加入对话（adapter 已保留 thinking / rawAssistant 供下轮回传）
     conversation.push(chat.assistantMessage);
@@ -223,7 +273,9 @@ export async function runFunctionCallingLoop(
   console.log(LOG_PREFIX, "请求:", http.url);
 
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 30000);
+  // 强制总结是最后兜底：对话历史此时往往已很长，30s 不够模型生成完会被 abort，
+  // 导致整个 run 抛错用户彻底没回复。放宽到 90s，且失败时降级返回已有工具结果。
+  const timer = setTimeout(() => controller.abort(), FORCE_SUMMARY_TIMEOUT_MS);
   try {
     const response = await fetch(http.url, {
       method: "POST",
@@ -247,6 +299,16 @@ export async function runFunctionCallingLoop(
     }
     const totalUsage = (accInput > 0 || accOutput > 0) ? { input: accInput, output: accOutput } : undefined;
     return { reply: chat.text, toolResults: allToolResults, totalUsage };
+  } catch (err) {
+    // 兜底再失败也别让整个 run 崩掉（抛错会让用户彻底没回复）。
+    // 用已收集的工具结果拼一个"任务中断"文案降级返回。
+    const reason = err instanceof Error && err.name === "AbortError"
+      ? "总结请求超时"
+      : (err instanceof Error ? err.message : String(err));
+    console.error(LOG_PREFIX, "强制总结也失败，降级返回已有结果:", reason);
+    const fallback = buildFallbackReply(allToolResults, reason);
+    const totalUsage = (accInput > 0 || accOutput > 0) ? { input: accInput, output: accOutput } : undefined;
+    return { reply: fallback, toolResults: allToolResults, totalUsage };
   } finally {
     clearTimeout(timer);
   }

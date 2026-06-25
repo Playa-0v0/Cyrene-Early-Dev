@@ -1404,3 +1404,122 @@ body {
   from { opacity: 0; transform: translateX(-50%) scale(0.95); }
   to { opacity: 1; transform: translateX(-50%) scale(1); }
 }
+
+/* ── 用户选择卡片（歧义消解器：模糊需求时弹卡片让用户选）── */
+.choice-card {
+  margin: 4px 0 8px 46px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  max-width: 400px;
+  width: fit-content;
+  min-width: 280px;
+  align-self: flex-start;
+  flex-shrink: 0;
+  animation: choice-fade-in 0.3s ease-out;
+  backdrop-filter: blur(10px);
+}
+@keyframes choice-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.choice-card__title {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.9);
+  margin-bottom: 10px;
+}
+
+.choice-card__list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.choice-card__option {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.05);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  text-align: left;
+}
+.choice-card__option:hover:not(:disabled) {
+  background: rgba(255,255,255,0.12);
+  border-color: rgba(255,255,255,0.25);
+}
+.choice-card__option:disabled {
+  cursor: default;
+  opacity: 0.4;
+}
+.choice-card__option--selected {
+  opacity: 1 !important;
+  background: rgba(31,78,121,0.35);
+  border-color: rgba(120,160,210,0.6);
+}
+
+.choice-card__option-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.92);
+}
+.choice-card__option-desc {
+  font-size: 11px;
+  color: rgba(255,255,255,0.5);
+}
+
+.choice-card__custom {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+.choice-card__custom-input {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.9);
+  font-size: 12px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.choice-card__custom-input:focus {
+  border-color: rgba(120,160,210,0.6);
+}
+.choice-card__custom-input::placeholder {
+  color: rgba(255,255,255,0.35);
+}
+.choice-card__custom-input:disabled {
+  opacity: 0.4;
+}
+.choice-card__custom-btn {
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: none;
+  background: rgba(31,78,121,0.8);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+.choice-card__custom-btn:hover:not(:disabled) {
+  background: rgba(31,78,121,1);
+}
+.choice-card__custom-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* 已解决状态：整卡片变暗 */
+.choice-card--resolved {
+  opacity: 0.6;
+}

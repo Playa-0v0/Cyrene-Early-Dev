@@ -178,5 +178,10 @@ export const IPC = {
   PERMISSION_APPROVAL_REQUEST: "permission:approval-request",
   // renderer → main：审批结果回传
   PERMISSION_APPROVAL_RESOLVE: "permission:approval-resolve",
+
+  // user choice card (ambiguity resolver)
+  // 卡片展示走 AGUI_EVENT 的 CUSTOM 事件（与天气卡片同通道）
+  // renderer → main：回传用户选择
+  CHOICE_RESOLVE: "choice:resolve",
 } as const;
 
