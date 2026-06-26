@@ -589,6 +589,7 @@ const NAV_LABELS: Record<string, { emoji: string; title: string; hint: string }>
   api: { emoji: "🔑", title: "API 设置", hint: "选择预设后只需要填写 API Key。" },
   cyrene: { emoji: "🌸", title: "昔涟设置", hint: "管理 Agent 行为、记忆、RAG 与权限" },
   tts: { emoji: "🎙️", title: "TTS 设置", hint: "语音合成与朗读偏好" },
+  asr: { emoji: "🎧", title: "ASR 设置", hint: "语音识别与通话配置" },
   tokens: { emoji: "📊", title: "Token 用量", hint: "查看 API 调用统计与消耗" },
   disclaimer: { emoji: "📜", title: "免责声明", hint: "使用条款与隐私说明" },
 };
@@ -1943,6 +1944,7 @@ function switchSection(section: string): void {
   const isSkills = section === "skills";
   const isTokens = section === "tokens";
   const isTts = section === "tts";
+  const isAsr = section === "asr";
   apiForm.classList.toggle("is-hidden", !isApi);
   generalForm.classList.toggle("is-hidden", !isGeneral);
   cyrenePanel.classList.toggle("is-hidden", !isCyrene);
@@ -1968,9 +1970,11 @@ function switchSection(section: string): void {
   if (tokenPanel) tokenPanel.classList.toggle("is-hidden", !isTokens);
   const ttsPanel = document.getElementById("tts-panel");
   if (ttsPanel) ttsPanel.classList.toggle("is-hidden", !isTts);
-  placeholderPanel.classList.toggle("is-hidden", isApi || isGeneral || isCyrene || isDisclaimer || isMemory || isUser || isChat || isTasks || isIdentity || isPlugins || isSkills || isTokens || isTts);
+  const asrPanel = document.getElementById("asr-panel");
+  if (asrPanel) asrPanel.classList.toggle("is-hidden", !isAsr);
+  placeholderPanel.classList.toggle("is-hidden", isApi || isGeneral || isCyrene || isDisclaimer || isMemory || isUser || isChat || isTasks || isIdentity || isPlugins || isSkills || isTokens || isTts || isAsr);
 
-  if (!isApi && !isGeneral && !isCyrene && !isDisclaimer && !isMemory && !isUser && !isChat && !isTasks && !isIdentity && !isPlugins && !isSkills && !isTokens && !isTts) {
+  if (!isApi && !isGeneral && !isCyrene && !isDisclaimer && !isMemory && !isUser && !isChat && !isTasks && !isIdentity && !isPlugins && !isSkills && !isTokens && !isTts && !isAsr) {
     placeholderIcon.textContent = label.emoji;
     placeholderTitle.textContent = label.title;
     placeholderCopy.textContent = "这个模块先占位，等核心聊天与 API 接通后再继续扩展。";
