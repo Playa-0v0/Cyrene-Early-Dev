@@ -92,6 +92,14 @@ const manager = new Live2DManager({
     // the model to match.
     petZoomOff = window.cyrene.onPetZoom((zoom) => manager.applyZoom(zoom));
 
+    // 启动竞态修复：主进程在渲染进程就绪前发的 PET_ZOOM 事件会被丢弃。
+    // 注册监听后主动从磁盘读一次 petZoom 并应用，确保重启后模型大小生效。
+    window.settings?.getGeneral().then((cfg) => {
+      if (cfg?.petZoom && cfg.petZoom !== 1) {
+        manager.applyZoom(cfg.petZoom);
+      }
+    }).catch(() => { /* 设置读取失败不影响加载 */ });
+
     (window as unknown as { __cyrene: unknown }).__cyrene = {
       manager,
       interaction,
