@@ -44,6 +44,7 @@ import { registerRecallHistoryTool } from "./orchestrator/history-tools";
 import { registerDocumentTools } from "./orchestrator/document-tools";
 import { registerLifeTools, setTranslateConfig } from "./orchestrator/life-tools";
 import { registerTravelTools, setTravelConfig } from "./orchestrator/travel-tools";
+import { registerEmailTools, setEmailConfig } from "./orchestrator/email-tools";
 import { initSkills, skillRegistry, buildSkillCatalog, parseSlashCommand, setSkillEnabled, listSkillsForUi } from "./skills";
 import { initGameBot } from "./game-bot";
 import { getSchedulerStore } from "./scheduler/scheduler-store";
@@ -1574,6 +1575,17 @@ function createWindow(): void {
   // 注入出行工具 amapKey 获取器（复用 GeneralSettings 中的 amapKey）
   setTravelConfig(() => loadGeneralSettings().amapKey);
 
+  // 注入邮件工具 SMTP 配置获取器（每次执行实时读 GeneralSettings）
+  setEmailConfig(
+    () => loadGeneralSettings().emailEnabled,
+    () => loadGeneralSettings().emailSmtpHost,
+    () => loadGeneralSettings().emailSmtpPort,
+    () => loadGeneralSettings().emailSmtpSecure,
+    () => loadGeneralSettings().emailSmtpUser,
+    () => loadGeneralSettings().emailSmtpPass,
+    () => loadGeneralSettings().emailFromName,
+  );
+
   // 注入子代理 LLM 配置（delegate_task 工具用，复用主模型配置）
   setDelegateSettings(() => {
     const s = loadModelSettings();
@@ -2603,6 +2615,9 @@ app.whenReady().then(async () => {
 
   // 出行工具（路线规划——驾车/步行/骑行/公交，复用 amapKey）
   registerTravelTools();
+
+  // 邮件发送工具（SMTP 直发，需在设置里配置 SMTP 授权码）
+  registerEmailTools();
 
   // Skill 系统：扫描双源 skills + 注册 meta-tool
   initSkills();
