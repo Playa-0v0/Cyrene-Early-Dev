@@ -45,6 +45,8 @@ import { registerDocumentTools } from "./orchestrator/document-tools";
 import { registerLifeTools, setTranslateConfig } from "./orchestrator/life-tools";
 import { registerTravelTools, setTravelConfig } from "./orchestrator/travel-tools";
 import { registerEmailTools, setEmailConfig } from "./orchestrator/email-tools";
+import { setAsrConfig } from "./asr/volcano-asr-engine";
+import { setCallWindow, registerCallIpc, setCallSettings, stopCall } from "./call/call-manager";
 import { initSkills, skillRegistry, buildSkillCatalog, parseSlashCommand, setSkillEnabled, listSkillsForUi } from "./skills";
 import { initGameBot } from "./game-bot";
 import { getSchedulerStore } from "./scheduler/scheduler-store";
@@ -60,6 +62,7 @@ let sidebarWindow: BrowserWindow | null = null;
 let tasksWindow: BrowserWindow | null = null;
 let settingsWindow: BrowserWindow | null = null;
 let stickerManagerWindow: BrowserWindow | null = null;
+let callWindow: BrowserWindow | null = null;
 let schedulerEngine: SchedulerEngine | null = null;
 // 聊天窗口当前活跃的会话 id（通过 IPC 由聊天窗口上报）；
 // 设置面板"删除当前会话"差异化提示用。聊天窗口关闭时由 closed 事件置 null。
@@ -1617,6 +1620,28 @@ function createWindow(): void {
     () => loadGeneralSettings().emailFromName,
   );
 
+  // 注入 ASR 配置获取器（通话功能用，实时读 GeneralSettings）
+  setAsrConfig(() => {
+    const s = loadGeneralSettings();
+    if (s.asrEngine !== "volcano") return null;
+    return { appId: s.asrVolcanoAppId, apiKey: s.asrVolcanoApiKey, language: s.asrLanguage, engine: s.asrEngine };
+  });
+
+  // 注入通话模型/TTS 配置获取器
+  setCallSettings(
+    () => {
+      const s = loadModelSettings();
+      return { provider: s.provider, baseUrl: s.baseUrl, model: s.model, apiKey: s.apiKey };
+    },
+    () => {
+      const s = loadGeneralSettings();
+      return {
+        ttsEngine: s.ttsEngine, ttsMinimaxKey: s.ttsMinimaxKey, ttsMinimaxVoiceId: s.ttsMinimaxVoiceId,
+        ttsSpeed: s.ttsSpeed, ttsVolume: s.ttsVolume, ttsMinimaxModel: s.ttsMinimaxModel,
+      };
+    },
+  );
+
   // 注入子代理 LLM 配置（delegate_task 工具用，复用主模型配置）
   setDelegateSettings(() => {
     const s = loadModelSettings();
@@ -1913,6 +1938,64 @@ async function createStickerManagerWindow(): Promise<{ ok: boolean; error?: stri
   return { ok: true };
 }
 
+/** 创建通话窗口（720×1280 竖屏，语音通话）。 */
+function createCallWindow(): void {
+  if (callWindow && !callWindow.isDestroyed()) {
+    callWindow.show();
+    callWindow.focus();
+    return;
+  }
+
+  const display = screen.getPrimaryDisplay();
+  const { width: dw, height: dh } = display.workArea;
+  const CALL_W = 720;
+  const CALL_H = 1280;
+  const cx = Math.max(0, Math.floor((dw - CALL_W) / 2));
+  const cy = Math.max(0, Math.floor((dh - CALL_H) / 2));
+
+  callWindow = new BrowserWindow({
+    x: display.workArea.x + cx,
+    y: display.workArea.y + cy,
+    width: CALL_W,
+    height: CALL_H,
+    minWidth: 480,
+    minHeight: 800,
+    title: "Cyrene · 语音通话",
+    icon: APP_ICON_PATH,
+    backgroundColor: "#00000000",
+    autoHideMenuBar: true,
+    show: false,
+    frame: false,
+    transparent: true,
+    resizable: true,
+    webPreferences: {
+      preload: path.join(__dirname, "..", "..", "preload", "preload", "index.js"),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: false,
+    },
+  });
+
+  if (isDev) {
+    callWindow.loadURL("http://localhost:5173/call/");
+  } else {
+    callWindow.loadFile(path.join(__dirname, "..", "..", "renderer", "call", "index.html"));
+  }
+
+  callWindow.once("ready-to-show", () => {
+    callWindow?.show();
+  });
+
+  callWindow.on("closed", () => {
+    callWindow = null;
+    stopCall();
+    setCallWindow(null);
+  });
+
+  // 绑定给 call-manager
+  setCallWindow(callWindow);
+}
+
 function createTray(): void {
   const icon = nativeImage.createFromPath(APP_ICON_PATH);
   tray = new Tray(icon);
@@ -2089,6 +2172,10 @@ ipcMain.on(IPC.SIDEBAR_OPEN_TASKS, () => {
 
 ipcMain.on(IPC.SIDEBAR_OPEN_SETTINGS, (_event, section?: string) => {
   createSettingsWindow(section);
+});
+
+ipcMain.on(IPC.SIDEBAR_OPEN_CALL, () => {
+  createCallWindow();
 });
 
 ipcMain.on(IPC.TASKS_MINIMIZE, () => {
@@ -2852,6 +2939,7 @@ app.whenReady().then(async () => {
   initPermissionFromDisk();
   registerPermissionIpc();
   registerChoiceIpc();
+  registerCallIpc();
   console.log("[Cyrene] 当前 agent 权限档位:", getCurrentLevel());
   try {
     const modelSettings = loadModelSettings();
