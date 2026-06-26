@@ -748,7 +748,7 @@ function normalizeGeneralSettings(input: Partial<GeneralSettings> | null | undef
       ? (input!.asrLanguage as "zh" | "en" | "auto")
       : "zh",
     asrVadSilenceMs: typeof input?.asrVadSilenceMs === "number"
-      ? Math.max(500, Math.min(2000, Math.round(input.asrVadSilenceMs)))
+      ? Math.max(300, Math.min(30000, Math.round(input.asrVadSilenceMs)))
       : DEFAULT_GENERAL_SETTINGS.asrVadSilenceMs,
     asrShowTranscript: Boolean(input?.asrShowTranscript),
     ttsVoxcpm2Url: typeof input?.ttsVoxcpm2Url === "string" ? input.ttsVoxcpm2Url : DEFAULT_GENERAL_SETTINGS.ttsVoxcpm2Url,

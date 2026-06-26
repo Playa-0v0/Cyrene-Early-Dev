@@ -1225,7 +1225,6 @@ const asrVolcanoAppIdInput = document.getElementById("asr-volcano-app-id") as HT
 const asrVolcanoApiKeyInput = document.getElementById("asr-volcano-api-key") as HTMLInputElement | null;
 const asrLanguageSelect = document.getElementById("asr-language") as HTMLSelectElement | null;
 const asrVadSilenceInput = document.getElementById("asr-vad-silence") as HTMLInputElement | null;
-const asrVadValueEl = document.getElementById("asr-vad-value") as HTMLElement | null;
 const asrShowTranscriptCheckbox = document.getElementById("asr-show-transcript") as HTMLInputElement | null;
 
 function syncAsrVolcanoVisibility(): void {
@@ -1242,8 +1241,7 @@ asrVolcanoAppIdInput?.addEventListener("input", () => debouncedSaveAsr("asrVolca
 asrVolcanoApiKeyInput?.addEventListener("input", () => debouncedSaveAsr("asrVolcanoApiKey", asrVolcanoApiKeyInput.value.trim()));
 asrLanguageSelect?.addEventListener("change", () => void saveAsrField("asrLanguage", asrLanguageSelect.value));
 asrVadSilenceInput?.addEventListener("input", () => {
-  if (asrVadValueEl) asrVadValueEl.textContent = asrVadSilenceInput.value;
-  void saveAsrField("asrVadSilenceMs", Number(asrVadSilenceInput.value));
+  void saveAsrField("asrVadSilenceMs", Number(asrVadSilenceInput.value) || 1000);
 });
 asrShowTranscriptCheckbox?.addEventListener("change", () => void saveAsrField("asrShowTranscript", asrShowTranscriptCheckbox.checked));
 
@@ -1271,7 +1269,6 @@ async function loadAsrConfig(): Promise<void> {
       if (asrVolcanoApiKeyInput) asrVolcanoApiKeyInput.value = String(cfg.asrVolcanoApiKey ?? "");
       if (asrLanguageSelect) asrLanguageSelect.value = String(cfg.asrLanguage ?? "zh");
       if (asrVadSilenceInput) asrVadSilenceInput.value = String(cfg.asrVadSilenceMs ?? 1000);
-      if (asrVadValueEl) asrVadValueEl.textContent = String(cfg.asrVadSilenceMs ?? 1000);
       if (asrShowTranscriptCheckbox) asrShowTranscriptCheckbox.checked = Boolean(cfg.asrShowTranscript);
     }
     syncAsrVolcanoVisibility();
