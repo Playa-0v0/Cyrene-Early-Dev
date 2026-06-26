@@ -10,6 +10,8 @@ import { IPC } from "../../shared/ipc-channels";
 import { VolcanoAsrStream, getAsrConfig } from "../asr/volcano-asr-engine";
 import { synthesize as minimaxSynthesize } from "../tts/minimax-engine";
 import { runFunctionCallingLoop } from "../orchestrator";
+import { getAdapter, buildVendorUrl } from "../orchestrator/vendors";
+import type { ChatMessage } from "../orchestrator/vendors/types";
 
 const LOG_PREFIX = "[CallManager]";
 
@@ -30,16 +32,23 @@ let ttsSettingsGetter: (() => {
   ttsSpeed: number; ttsVolume: number; ttsMinimaxModel: "speech-2.8-hd" | "speech-2.8-turbo";
 }) | null = null;
 
-/** index.ts 启动时注入模型配置和 TTS 配置的获取器。 */
+/** index.ts 启动时注入模型配置、TTS 配置和 system prompt 构建器。 */
+let systemPromptBuilder: ((userText: string) => Promise<string>) | null = null;
+let weatherHandler: ((userText: string) => Promise<string | null>) | null = null;
+
 export function setCallSettings(
   modelGetter: () => { provider: string; baseUrl: string; model: string; apiKey: string },
   ttsGetter: () => {
     ttsEngine: string; ttsMinimaxKey: string; ttsMinimaxVoiceId: string;
     ttsSpeed: number; ttsVolume: number; ttsMinimaxModel: "speech-2.8-hd" | "speech-2.8-turbo";
   },
+  systemPromptFn: (userText: string) => Promise<string>,
+  weatherFn: (userText: string) => Promise<string | null>,
 ): void {
   modelSettingsGetter = modelGetter;
   ttsSettingsGetter = ttsGetter;
+  systemPromptBuilder = systemPromptFn;
+  weatherHandler = weatherFn;
 }
 
 /** 绑定通话窗口（createCallWindow 调一次）。 */
@@ -192,20 +201,60 @@ export function handleAudioFrame(frame: Buffer): void {
   }
 }
 
-/** 调 agent 获取回复文本（复用现有 FC loop）。 */
+/** 天气关键词正则匹配 */
+const WEATHER_REGEX = /天气|今天.*热|今天.*冷|下雨|下雪|气温|几度|多少度|穿什么/;
+
+/**
+ * 获取回复文本。
+ * 1. 先正则匹配天气 → 直接查天气
+ * 2. 否则直接调 LLM（不走 FC loop，不调工具），用通话专用 system prompt
+ * 3. 回复过滤掉 [sticker:xxx] 表情包标记
+ */
 async function runAgentTurn(userText: string): Promise<string | null> {
   try {
+    // 1. 天气正则匹配
+    if (WEATHER_REGEX.test(userText) && weatherHandler) {
+      const weatherReply = await weatherHandler(userText);
+      if (weatherReply) return weatherReply;
+    }
+
+    // 2. 直接调 LLM（不走 FC loop）
     const ms = modelSettingsGetter?.();
     if (!ms || !ms.apiKey) return null;
 
-    const result = await runFunctionCallingLoop(
+    const adapter = getAdapter(ms.provider);
+    if (!adapter) return null;
+
+    const url = buildVendorUrl(ms.provider, ms.baseUrl);
+    const systemPrompt = await systemPromptBuilder?.(userText) ?? "";
+    const messages: ChatMessage[] = [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userText },
+    ];
+
+    const req = adapter.buildRequest(
+      { model: ms.model, messages, temperature: 0.8 },
       { provider: ms.provider, baseUrl: ms.baseUrl, model: ms.model, apiKey: ms.apiKey },
-      [{ role: "user", content: userText }],
-      60000,
     );
-    return result?.reply ?? null;
+
+    const httpResp = await fetch(url, {
+      method: "POST",
+      headers: { ...req.headers, "Content-Type": "application/json" },
+      body: req.body,
+    });
+
+    if (!httpResp.ok) {
+      console.error(LOG_PREFIX, "LLM 请求失败:", httpResp.status);
+      return null;
+    }
+
+    const raw = await httpResp.json();
+    const resp = adapter.parseResponse(raw);
+    // 过滤掉表情包标记
+    const reply = (resp.text || "").replace(/\[sticker:[^\]]+\]/g, "").trim();
+    return reply || null;
   } catch (err) {
-    console.error(LOG_PREFIX, "agent 调用失败:", err);
+    console.error(LOG_PREFIX, "LLM 调用失败:", err);
     return null;
   }
 }

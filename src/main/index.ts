@@ -1644,6 +1644,69 @@ function createWindow(): void {
         ttsSpeed: s.ttsSpeed, ttsVolume: s.ttsVolume, ttsMinimaxModel: s.ttsMinimaxModel,
       };
     },
+    // 通话专用 system prompt 构建器（时间+常驻+记忆+phone人设+skill+语气，不要环境上下文）
+    async (userText: string) => {
+      const messages = [{ role: "user" as const, content: userText }];
+
+      // ① 时间日期
+      const now = new Date();
+      const timeStr = `当前时间：${now.toLocaleDateString("zh-CN")} ${now.toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" })}`;
+
+      // ② 常驻上下文（世界书 + L0/L1 画像）
+      let alwaysOnContext = "";
+      try { alwaysOnContext = await buildAlwaysOnContext(userText, messages); } catch { /* ignore */ }
+
+      // ③ 记忆注入
+      let memoryInjection = "";
+      try { memoryInjection = await buildMemoryInjection(userText); } catch { /* ignore */ }
+
+      // ④ 通话专用人设 prompt
+      const phoneParts: string[] = [];
+      const phoneSystem = loadPromptFile("phone_system.md");
+      if (phoneSystem) phoneParts.push(phoneSystem);
+      const phoneIdentity = loadPromptFile("phone_identity.md");
+      if (phoneIdentity) phoneParts.push(phoneIdentity);
+      const soul = loadPromptFile("soul.md");
+      if (soul) phoneParts.push(soul);
+      const canon = loadPromptFile("canon_quotes.md");
+      if (canon) phoneParts.push(canon);
+      const phoneStyle = loadPromptFile("phone_style.md");
+      if (phoneStyle) phoneParts.push(phoneStyle);
+      const phonePrompt = phoneParts.join("\n\n---\n\n");
+
+      // ⑤ Skill 约束
+      const skillCatalog = buildSkillCatalog(skillRegistry.getEnabled());
+      const skillActivation = resolveSlashActivation(messages);
+
+      // ⑥ 语气注入
+      let toneInjection = "";
+      if (sceneEmbeddingIndex) {
+        try { toneInjection = await buildToneInjection(userText, messages, getSceneEmbeddingProvider(), sceneEmbeddingIndex); } catch { /* ignore */ }
+      }
+
+      return timeStr + "\n\n" +
+        (alwaysOnContext ? alwaysOnContext + "\n\n" : "") +
+        (memoryInjection ? memoryInjection + "\n\n" : "") +
+        phonePrompt +
+        (skillCatalog ? "\n\n---\n\n" + skillCatalog : "") +
+        skillActivation +
+        toneInjection;
+    },
+    // 天气快捷处理：正则匹配到天气关键词 → 调 weather 工具的 execute
+    async (userText: string) => {
+      try {
+        const weatherTool = toolRegistry.getById("weather");
+        if (!weatherTool) return null;
+        // 提取城市名（简单匹配：XX天气 / XX的天气）
+        const cityMatch = userText.match(/([北京上海广州深圳成都杭州南京武汉西安重庆天津苏州长沙郑州青岛大连沈阳哈尔滨长春济南太原合肥南昌福州昆明贵阳拉萨乌鲁木齐呼和浩特]+)/);
+        const city = cityMatch?.[1] ?? "";
+        const result = await weatherTool.execute({ city }, undefined);
+        return result;
+      } catch (err) {
+        console.warn("[Call] 天气查询失败:", err);
+        return null;
+      }
+    },
   );
 
   // 注入子代理 LLM 配置（delegate_task 工具用，复用主模型配置）
