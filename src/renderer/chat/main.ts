@@ -798,8 +798,9 @@ function setAvatar(slot: HTMLElement, role: Role): void {
 
 function render(): void {
   // 空态：当前会话还没有消息时（新建/全清）显示"昔涟期待与你聊天哦 ✨"占位
+  // thinking 状态（昔涟主动开场/流式回复中）也算有消息，胶囊应立即消失
   const emptyEl = document.getElementById("chat-empty");
-  const hasMessages = messages.some((m) => m.content.trim());
+  const hasMessages = messages.some((m) => m.content.trim() || m.thinking);
   if (emptyEl) emptyEl.toggleAttribute("hidden", hasMessages);
 
   messagesEl.replaceChildren();
