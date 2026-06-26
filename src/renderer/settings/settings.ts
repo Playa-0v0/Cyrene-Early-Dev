@@ -1056,6 +1056,14 @@ weatherSourceSelect?.addEventListener("change", () => {
 amapKeyInput?.addEventListener("change", () => {
   void saveWeatherField("amapKey", amapKeyInput.value.trim());
 });
+// 防抖保存：粘贴后 800ms 自动保存
+amapKeyInput?.addEventListener("input", () => {
+  clearTimeout(amapKeyDebounceTimer);
+  amapKeyDebounceTimer = setTimeout(() => {
+    void saveWeatherField("amapKey", amapKeyInput.value.trim());
+  }, 800);
+});
+let amapKeyDebounceTimer: ReturnType<typeof setTimeout> | undefined;
 
 async function saveWeatherField(field: string, value: unknown): Promise<void> {
   if (!window.tts) return;
@@ -1101,6 +1109,14 @@ travelAmapKeyInput?.addEventListener("change", () => {
   // 存到同一个 amapKey 字段（与天气查询共用）
   void saveTravelField("amapKey", travelAmapKeyInput.value.trim());
 });
+// 防抖保存：粘贴后 800ms 自动保存
+let travelAmapKeyDebounceTimer: ReturnType<typeof setTimeout> | undefined;
+travelAmapKeyInput?.addEventListener("input", () => {
+  clearTimeout(travelAmapKeyDebounceTimer);
+  travelAmapKeyDebounceTimer = setTimeout(() => {
+    void saveTravelField("amapKey", travelAmapKeyInput.value.trim());
+  }, 800);
+});
 
 async function saveTravelField(field: string, value: unknown): Promise<void> {
   if (!window.tts) return;
@@ -1126,6 +1142,80 @@ async function loadTravelConfig(): Promise<void> {
   }
 }
 void loadTravelConfig();
+
+// ── ✉️邮件发送插件 ──
+const emailEnabledCheckbox = document.getElementById("plugin-email-enabled") as HTMLInputElement | null;
+const emailConfig = document.getElementById("plugin-email-config") as HTMLElement | null;
+const emailSmtpHostInput = document.getElementById("email-smtp-host") as HTMLInputElement | null;
+const emailSmtpPortInput = document.getElementById("email-smtp-port") as HTMLInputElement | null;
+const emailSmtpSecureInput = document.getElementById("email-smtp-secure") as HTMLInputElement | null;
+const emailSmtpUserInput = document.getElementById("email-smtp-user") as HTMLInputElement | null;
+const emailSmtpPassInput = document.getElementById("email-smtp-pass") as HTMLInputElement | null;
+const emailFromNameInput = document.getElementById("email-from-name") as HTMLInputElement | null;
+
+function syncEmailConfigVisibility(): void {
+  if (emailConfig) emailConfig.style.display = emailEnabledCheckbox?.checked ? "block" : "none";
+}
+emailEnabledCheckbox?.addEventListener("change", () => {
+  syncEmailConfigVisibility();
+  void saveEmailField("emailEnabled", emailEnabledCheckbox.checked);
+});
+
+// 防抖保存：粘贴后 800ms 自动保存
+let emailDebounceTimer: ReturnType<typeof setTimeout> | undefined;
+function debouncedSaveEmail(field: string, value: unknown): void {
+  clearTimeout(emailDebounceTimer);
+  emailDebounceTimer = setTimeout(() => {
+    void saveEmailField(field, value);
+  }, 800);
+}
+
+emailSmtpHostInput?.addEventListener("input", () => debouncedSaveEmail("emailSmtpHost", emailSmtpHostInput.value.trim()));
+emailSmtpPortInput?.addEventListener("input", () => debouncedSaveEmail("emailSmtpPort", Number(emailSmtpPortInput.value) || 465));
+emailSmtpSecureInput?.addEventListener("change", () => void saveEmailField("emailSmtpSecure", emailSmtpSecureInput.checked));
+emailSmtpUserInput?.addEventListener("input", () => debouncedSaveEmail("emailSmtpUser", emailSmtpUserInput.value.trim()));
+emailSmtpPassInput?.addEventListener("input", () => debouncedSaveEmail("emailSmtpPass", emailSmtpPassInput.value.trim()));
+emailFromNameInput?.addEventListener("input", () => debouncedSaveEmail("emailFromName", emailFromNameInput.value.trim()));
+
+async function saveEmailField(field: string, value: unknown): Promise<void> {
+  if (!window.tts) return;
+  try {
+    await window.tts.saveSettings({ [field]: value });
+  } catch (err) {
+    console.warn("[plugins] 保存邮件配置失败:", field, err);
+  }
+}
+
+async function loadEmailConfig(): Promise<void> {
+  try {
+    const cfg = await window.tts?.loadSettings();
+    if (cfg && emailEnabledCheckbox) {
+      emailEnabledCheckbox.checked = Boolean(cfg.emailEnabled);
+    }
+    if (cfg && emailSmtpHostInput) {
+      emailSmtpHostInput.value = String(cfg.emailSmtpHost ?? "");
+    }
+    if (cfg && emailSmtpPortInput) {
+      emailSmtpPortInput.value = String(cfg.emailSmtpPort ?? 465);
+    }
+    if (cfg && emailSmtpSecureInput) {
+      emailSmtpSecureInput.checked = Boolean(cfg.emailSmtpSecure);
+    }
+    if (cfg && emailSmtpUserInput) {
+      emailSmtpUserInput.value = String(cfg.emailSmtpUser ?? "");
+    }
+    if (cfg && emailSmtpPassInput) {
+      emailSmtpPassInput.value = String(cfg.emailSmtpPass ?? "");
+    }
+    if (cfg && emailFromNameInput) {
+      emailFromNameInput.value = String(cfg.emailFromName ?? "");
+    }
+    syncEmailConfigVisibility();
+  } catch (err) {
+    console.warn("[plugins] 加载邮件配置失败", err);
+  }
+}
+void loadEmailConfig();
 
 // ── 联网搜索插件（博查/Tavily/火山/MiniMax）──
 const searchEnabledCheckbox = document.getElementById("plugin-search-enabled") as HTMLInputElement | null;
@@ -1185,12 +1275,20 @@ searchEngineSelect?.addEventListener("change", () => {
   void saveSearchField("searchEngine", searchEngineSelect.value);
 });
 
-// 各源 key 输入：失焦保存
+// 各源 key 输入：失焦保存 + 输入时防抖保存（防粘贴后未失焦就丢失）
+const searchKeyDebounceTimers: Record<string, ReturnType<typeof setTimeout> | undefined> = {};
 for (const [engine, input] of Object.entries(SEARCH_KEY_INPUT_MAP)) {
   if (!input) continue;
   const field = SEARCH_KEY_FIELD_MAP[engine];
   input.addEventListener("change", () => { void saveSearchField(field, input.value.trim()); });
   input.addEventListener("blur", () => { void saveSearchField(field, input.value.trim()); });
+  // 输入时防抖保存：粘贴或打字后 800ms 自动保存，不依赖失焦
+  input.addEventListener("input", () => {
+    clearTimeout(searchKeyDebounceTimers[engine]);
+    searchKeyDebounceTimers[engine] = setTimeout(() => {
+      void saveSearchField(field, input.value.trim());
+    }, 800);
+  });
 }
 
 async function saveSearchField(field: string, value: unknown): Promise<void> {
@@ -3563,7 +3661,7 @@ ttsEl("tts-speed").addEventListener("change", () => saveTtsField("ttsSpeed", Num
 ttsEl("tts-volume").addEventListener("input", updateTtsSliderLabels);
 ttsEl("tts-volume").addEventListener("change", () => saveTtsField("ttsVolume", Number(ttsEl("tts-volume").value)));
 
-// 配置输入框 change 时保存
+// 配置输入框 change 时保存 + input 时防抖保存（防粘贴后未失焦就丢失）
 const ttsSaveFields: Array<[string, string]> = [
   ["tts-minimax-key", "ttsMinimaxKey"],
   ["tts-minimax-voice", "ttsMinimaxVoiceId"],
@@ -3571,8 +3669,16 @@ const ttsSaveFields: Array<[string, string]> = [
   ["tts-voxcpm2-url", "ttsVoxcpm2Url"],
   ["tts-voxcpm2-preset", "ttsVoxcpm2Preset"],
 ];
+const ttsDebounceTimers: Record<string, ReturnType<typeof setTimeout> | undefined> = {};
 for (const [elId, field] of ttsSaveFields) {
   ttsEl(elId).addEventListener("change", () => saveTtsField(field, ttsEl(elId).value));
+  // 防抖保存：输入或粘贴后 800ms 自动保存，不依赖失焦
+  ttsEl(elId).addEventListener("input", () => {
+    clearTimeout(ttsDebounceTimers[field]);
+    ttsDebounceTimers[field] = setTimeout(() => {
+      void saveTtsField(field, ttsEl(elId).value);
+    }, 800);
+  });
 }
 
 // MiniMax 测试发音
