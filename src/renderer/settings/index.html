@@ -837,6 +837,46 @@
               </label>
             </article>
 
+            <article class="plugin-card" id="plugin-email-card">
+              <div class="plugin-card__icon">✉️</div>
+              <div class="plugin-card__body">
+                <h2>邮件发送</h2>
+                <p>通过 SMTP 发送邮件，可带附件。需填写邮箱 SMTP 授权码（非登录密码）。</p>
+                <div class="plugin-config" id="plugin-email-config">
+                  <div class="tts-field">
+                    <label for="email-smtp-host">SMTP 主机</label>
+                    <input type="text" id="email-smtp-host" placeholder="如 smtp.qq.com" autocomplete="off" />
+                  </div>
+                  <div class="tts-field">
+                    <label for="email-smtp-port">端口</label>
+                    <input type="number" id="email-smtp-port" placeholder="465" />
+                  </div>
+                  <div class="tts-field">
+                    <label for="email-smtp-secure">使用 SSL/TLS</label>
+                    <input type="checkbox" id="email-smtp-secure" />
+                    <span class="user-field-hint">465 端口通常勾选，587 通常不勾</span>
+                  </div>
+                  <div class="tts-field">
+                    <label for="email-smtp-user">发件邮箱</label>
+                    <input type="text" id="email-smtp-user" placeholder="your@qq.com" autocomplete="off" />
+                  </div>
+                  <div class="tts-field">
+                    <label for="email-smtp-pass">SMTP 授权码</label>
+                    <input type="password" id="email-smtp-pass" placeholder="非邮箱登录密码" autocomplete="off" />
+                  </div>
+                  <div class="tts-field">
+                    <label for="email-from-name">发件人名称（可选）</label>
+                    <input type="text" id="email-from-name" placeholder="如 昔涟" autocomplete="off" />
+                  </div>
+                  <p class="user-field-hint">QQ邮箱 → 设置 → 账户 → 开启 SMTP → 获取授权码；163/Gmail 同理。</p>
+                </div>
+              </div>
+              <label class="plugin-switch" aria-label="启用邮件发送">
+                <input type="checkbox" id="plugin-email-enabled" />
+                <span></span>
+              </label>
+            </article>
+
             <article class="plugin-card" id="plugin-file-card">
               <div class="plugin-card__icon">📁</div>
               <div class="plugin-card__body">
