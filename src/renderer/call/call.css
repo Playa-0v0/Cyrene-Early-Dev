@@ -1,0 +1,136 @@
+/* 通话窗口样式 —— 720×1280 竖屏，粒子背景 + 头像电波环 + 柱状胶囊波形 + 挂断键 */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body { overflow: hidden; }
+
+.call {
+  width: 100vw; height: 100vh; position: relative; overflow: hidden;
+  border-radius: 32px;
+  background: radial-gradient(ellipse at 30% 20%, rgba(120, 40, 100, 0.35) 0%, transparent 50%),
+              radial-gradient(ellipse at 70% 80%, rgba(80, 30, 120, 0.3) 0%, transparent 50%),
+              linear-gradient(180deg, #0a0815 0%, #14091f 50%, #1a0a28 100%);
+  border: 1px solid rgba(255, 190, 226, 0.42);
+}
+
+.call__particles {
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+}
+
+.call__body {
+  position: relative; z-index: 1; height: 100%;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 20px 40px 50px;
+}
+
+/* 标题栏 */
+.call__titlebar {
+  width: 100%; display: flex; justify-content: space-between; align-items: center;
+  padding: 4px 0 16px;
+  -webkit-app-region: drag;
+}
+.call__title {
+  font-size: 14px; color: rgba(255, 255, 255, 0.5); letter-spacing: 1px;
+}
+.call__close {
+  -webkit-app-region: no-drag;
+  background: rgba(255, 255, 255, 0.06); border: none; border-radius: 50%;
+  width: 28px; height: 28px; color: rgba(255, 255, 255, 0.5); cursor: pointer;
+  font-size: 14px; transition: background 0.15s;
+}
+.call__close:hover { background: rgba(255, 255, 255, 0.12); color: rgba(255, 255, 255, 0.8); }
+
+/* 状态文字 */
+.call__status {
+  color: rgba(255, 255, 255, 0.7); font-size: 18px; letter-spacing: 1px;
+  margin-bottom: 60px; transition: color 0.3s;
+}
+.call__status--error { color: #ff6b6b; }
+.call__status--thinking { color: rgba(180, 160, 255, 0.8); }
+
+/* 头像区域（整体下移 20px） */
+.call__avatar-zone {
+  position: relative; width: 280px; height: 280px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 50px; margin-top: 20px;
+}
+
+/* 电波环（SPEAKING 时显示） */
+.call__avatar-ring { position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: 0; transition: opacity 0.2s; }
+.call__avatar-ring.is-active { opacity: 1; }
+.call__avatar-ring::before, .call__avatar-ring::after, .call__avatar-ring span {
+  content: ''; position: absolute; inset: 0; border-radius: 50%;
+  border: 2px solid rgba(236, 72, 153, 0.5);
+  animation: ring-pulse 2s ease-out infinite;
+}
+.call__avatar-ring::after { animation-delay: 0.6s; }
+.call__avatar-ring span { animation-delay: 1.2s; display: block; }
+@keyframes ring-pulse {
+  0% { transform: scale(0.85); opacity: 0.8; border-color: rgba(236, 72, 153, 0.6); }
+  100% { transform: scale(1.35); opacity: 0; border-color: rgba(168, 85, 247, 0.1); }
+}
+
+/* 音量波形 canvas（LISTENING/THINKING 时显示，绕头像一圈） */
+.call__waveform {
+  position: absolute; inset: -20px; z-index: 2; pointer-events: none;
+  opacity: 0; transition: opacity 0.2s;
+}
+.call__waveform.is-active { opacity: 1; }
+
+/* 头像 */
+.call__avatar {
+  width: 240px; height: 240px; border-radius: 50%;
+  z-index: 3; position: relative;
+  object-fit: cover;
+  border: 3px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 40px rgba(236, 72, 153, 0.3);
+  background: linear-gradient(135deg, #2a1a40, #1a0a28);
+}
+
+/* 转写区（只显示当前一轮） */
+.call__transcript {
+  flex: 1; width: 100%; max-width: 600px; overflow-y: auto;
+  padding: 0 20px;
+}
+.call__transcript::-webkit-scrollbar { width: 4px; }
+.call__transcript::-webkit-scrollbar-thumb { background: rgba(236, 72, 153, 0.3); border-radius: 2px; }
+
+.call__transcript-user {
+  text-align: right; color: rgba(255, 255, 255, 0.85); font-size: 16px;
+  margin-bottom: 12px; line-height: 1.6;
+}
+.call__transcript-bot {
+  text-align: left; color: rgba(255, 200, 230, 0.9); font-size: 16px;
+  margin-bottom: 12px; line-height: 1.6;
+}
+
+/* 底部操作区 */
+.call__actions {
+  margin-top: auto; display: flex; flex-direction: column; align-items: center;
+  gap: 30px; margin-bottom: 50px;
+}
+
+/* 柱状胶囊波形（用户说话时跳动，色值 #F7BDD6） */
+.call__mic-wave {
+  display: flex; align-items: flex-end; justify-content: center; gap: 12px;
+  height: 90px; transition: opacity 0.2s; opacity: 0;
+}
+.call__mic-wave.is-active { opacity: 1; }
+.call__mic-wave-bar {
+  width: 16px; border-radius: 8px;
+  background: #F7BDD6;
+  height: 10px;
+  transition: height 0.08s ease-out;
+}
+
+/* 挂断键 */
+.call__hangup {
+  width: 100px; height: 100px; border-radius: 50%; border: none; cursor: pointer;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  box-shadow: 0 8px 30px rgba(239, 68, 68, 0.4);
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.call__hangup:hover { transform: scale(1.05); box-shadow: 0 12px 40px rgba(239, 68, 68, 0.5); }
+.call__hangup:active { transform: scale(0.95); }
+.call__hangup svg { width: 44px; height: 44px; fill: #fff; }
