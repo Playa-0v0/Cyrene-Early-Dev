@@ -52,8 +52,107 @@ export function setEmailConfig(
 // ══════════════════════════════════════════════════════════
 
 async function executeSendEmail(args: Record<string, unknown>): Promise<string> {
-  // 占位，Task 4 实现
-  return "[send_email] 暂未实现";
+  // 1. 读配置 + 启用检查
+  const enabled = emailEnabledGetter?.() ?? false;
+  if (!enabled) {
+    return "[错误] 邮件功能未启用，请在设置里开启";
+  }
+  const host = smtpHostGetter?.() ?? "";
+  const user = smtpUserGetter?.() ?? "";
+  const pass = smtpPassGetter?.() ?? "";
+  if (!host || !user || !pass) {
+    return "[错误] SMTP 配置不完整：缺少 主机/用户名/授权码";
+  }
+  const port = smtpPortGetter?.() ?? 465;
+  const secure = smtpSecureGetter?.() ?? (port === 465);
+  const fromName = fromNameGetter?.() ?? "";
+
+  // 2. 校验收件人
+  const to = (args.to as unknown[] ?? []).map(String).map(s => s.trim()).filter(Boolean);
+  if (to.length === 0) {
+    return "[错误] 收件人列表为空";
+  }
+  const invalidTo = to.find(addr => !EMAIL_REGEX.test(addr));
+  if (invalidTo) {
+    return `[错误] 收件人邮箱无效：${invalidTo}`;
+  }
+  const cc = (args.cc as unknown[] ?? []).map(String).map(s => s.trim()).filter(Boolean);
+  const invalidCc = cc.find(addr => !EMAIL_REGEX.test(addr));
+  if (invalidCc) {
+    return `[错误] 抄送邮箱无效：${invalidCc}`;
+  }
+
+  // 3. 正文
+  const subject = String(args.subject ?? "").trim();
+  const body = String(args.body ?? "").trim();
+  const html = args.html ? String(args.html) : undefined;
+  if (!subject) {
+    return "[错误] 邮件主题不能为空";
+  }
+  if (!body && !html) {
+    return "[错误] 邮件正文不能为空";
+  }
+
+  // 4. 【前置校验】附件存在性
+  const attachments = (args.attachments as unknown[] ?? []).map(String).map(s => s.trim()).filter(Boolean);
+  for (const p of attachments) {
+    if (!fs.existsSync(p)) {
+      return `[错误] 附件不存在：${p}`;
+    }
+  }
+
+  // 5. 确认卡片（实现注意点 12.4：摘要只取 body 纯文本，不截取 html）
+  const bodyPreview = body.length > 100 ? body.slice(0, 100) + "…" : body;
+  const attachNames = attachments.length > 0
+    ? attachments.map(p => path.basename(p)).join(", ")
+    : "（无）";
+  const question = [
+    "确认发送邮件？",
+    `收件人：${to.join(", ")}`,
+    cc.length > 0 ? `抄送：${cc.join(", ")}` : null,
+    `主题：${subject}`,
+    `正文摘要：${bodyPreview}`,
+    `附件：${attachNames}`,
+  ].filter(Boolean).join("\n");
+  const options: ChoiceOption[] = [
+    { label: "发送", value: "send" },
+    { label: "取消", value: "cancel" },
+  ];
+  const choice = await requestUserChoice(question, options, "cancel");
+  if (choice !== "send") {
+    return "[send_email] 用户取消发送";
+  }
+
+  // 6. 发送（实现注意点 12.2：fromName 转义；12.3：cc 空数组传 undefined；12.5：每次新建 transport）
+  try {
+    // 实现注意点 12.5：每次 execute 新建 transport，不缓存模块级实例
+    const transport = nodemailer.createTransport({
+      host,
+      port,
+      secure,
+      auth: { user, pass },
+    });
+    // 实现注意点 12.2：fromName 双引号转义（RFC 5322）
+    const safeName = fromName.replace(/"/g, '\\"');
+    const from = fromName ? `"${safeName}" <${user}>` : user;
+    // 实现注意点 12.3：cc 为空数组时传 undefined，避免空 CC 头
+    const ccField = cc.length > 0 ? cc.join(", ") : undefined;
+    const info = await transport.sendMail({
+      from,
+      to: to.join(", "),
+      cc: ccField,
+      subject,
+      text: body,
+      html,
+      attachments: attachments.map(p => ({ filename: path.basename(p), path: p })),
+    });
+    console.log(LOG_PREFIX, "已发送：", info.messageId);
+    return `[send_email] 已发送：${to.join(", ")} 主题：${subject}`;
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error(LOG_PREFIX, "发送失败：", msg);
+    return `[错误] 发送失败：${msg}`;
+  }
 }
 
 // ══════════════════════════════════════════════════════════
