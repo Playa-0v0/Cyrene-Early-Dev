@@ -101,6 +101,7 @@ const sidebarApi = {
   toggleAlwaysOnTop: () => ipcRenderer.invoke(IPC.SIDEBAR_TOGGLE_ALWAYS_ON_TOP),
   openTasks: () => ipcRenderer.send(IPC.SIDEBAR_OPEN_TASKS),
   openSettings: (section?: string) => ipcRenderer.send(IPC.SIDEBAR_OPEN_SETTINGS, section),
+  openCall: () => ipcRenderer.send(IPC.SIDEBAR_OPEN_CALL),
 };
 
 const tasksApi = {
@@ -110,6 +111,37 @@ const tasksApi = {
 
 contextBridge.exposeInMainWorld("sidebar", sidebarApi);
 contextBridge.exposeInMainWorld("tasks", tasksApi);
+
+// 通话窗口 API
+const callApi = {
+  start: () => ipcRenderer.send(IPC.CALL_START),
+  sendAudioFrame: (frame: ArrayBuffer) => ipcRenderer.send(IPC.CALL_AUDIO_FRAME, frame),
+  turnEnd: () => ipcRenderer.send(IPC.CALL_TURN_END),
+  ttsDone: () => ipcRenderer.send(IPC.CALL_TTS_DONE),
+  stop: () => ipcRenderer.send(IPC.CALL_STOP),
+  onState: (callback: (state: string) => void) => {
+    const handler = (_event: unknown, data: { state: string }) => callback(data.state);
+    ipcRenderer.on(IPC.CALL_STATE, handler);
+    return () => ipcRenderer.removeListener(IPC.CALL_STATE, handler);
+  },
+  onAsrResult: (callback: (data: { partial?: string; final?: string }) => void) => {
+    const handler = (_event: unknown, data: { partial?: string; final?: string }) => callback(data);
+    ipcRenderer.on(IPC.CALL_ASR_RESULT, handler);
+    return () => ipcRenderer.removeListener(IPC.CALL_ASR_RESULT, handler);
+  },
+  onTtsAudio: (callback: (data: { base64: string }) => void) => {
+    const handler = (_event: unknown, data: { base64: string }) => callback(data);
+    ipcRenderer.on(IPC.CALL_TTS_AUDIO, handler);
+    return () => ipcRenderer.removeListener(IPC.CALL_TTS_AUDIO, handler);
+  },
+  onError: (callback: (data: { message: string }) => void) => {
+    const handler = (_event: unknown, data: { message: string }) => callback(data);
+    ipcRenderer.on(IPC.CALL_ERROR, handler);
+    return () => ipcRenderer.removeListener(IPC.CALL_ERROR, handler);
+  },
+};
+contextBridge.exposeInMainWorld("call", callApi);
+
 const settingsApi = {
   minimize: () => ipcRenderer.send(IPC.SETTINGS_MINIMIZE),
   close: () => ipcRenderer.send(IPC.SETTINGS_CLOSE),

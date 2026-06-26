@@ -36,6 +36,7 @@ interface SidebarApi {
   toggleAlwaysOnTop: () => Promise<boolean>;
   openTasks: () => void;
   openSettings: (section?: string) => void;
+  openCall: () => void;
 }
 
 declare global {
@@ -54,6 +55,7 @@ if (!window.sidebar) {
     toggleAlwaysOnTop: () => Promise.resolve(false),
     openTasks: () => {},
     openSettings: (_section?: string) => {},
+    openCall: () => {},
   };
 }
 
@@ -64,6 +66,7 @@ const pinBtn = document.getElementById("pin-btn") as HTMLButtonElement;
 const settingsBtn = document.getElementById("settings-btn") as HTMLButtonElement;
 const modelSwitchBtn = document.getElementById("model-switch-btn") as HTMLButtonElement;
 const openChatBtn = document.getElementById("open-chat-btn") as HTMLButtonElement;
+const callBtn = document.getElementById("call-btn") as HTMLButtonElement;
 const onlineStatusLabel = document.getElementById("online-status-label") as HTMLElement;
 const statusEmojiEl = document.getElementById("status-emoji") as HTMLElement;
 const statusLabelEl = document.getElementById("status-label") as HTMLElement;
@@ -171,6 +174,10 @@ settingsBtn.addEventListener("click", () => {
 modelSwitchBtn.addEventListener("click", () => {
   // "切换模型"直奔 API 配置标签，而不是默认的通用标签
   window.sidebar?.openSettings("api");
+});
+
+callBtn.addEventListener("click", () => {
+  window.sidebar?.openCall();
 });
 
 // "打开聊天"：拿到最近一条会话 id，让 main 打开聊天窗口并加载它；
