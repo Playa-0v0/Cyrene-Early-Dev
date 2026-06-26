@@ -19,6 +19,7 @@ export class VolcanoAsrStream {
   private stopped = false;
   private audioBuffer = Buffer.alloc(0);
   private taskId = randomUUID().replace(/-/g, "");
+  private appKey = "";
 
   constructor(
     private readonly onPartial: (text: string) => void,
@@ -27,6 +28,7 @@ export class VolcanoAsrStream {
 
   /** 开始识别会话：获取 token → 连 WebSocket → 发 StartTranscription */
   async start(appKey: string, accessKeyId: string, accessKeySecret: string, language: string): Promise<void> {
+    this.appKey = appKey;
     console.log(LOG_PREFIX, `获取 token... appKey=${appKey}`);
     let token: string;
     try {
@@ -108,6 +110,7 @@ export class VolcanoAsrStream {
         task_id: this.taskId,
         namespace: "SpeechTranscriber",
         name: "StopTranscription",
+        appkey: this.appKey,
       },
     };
     try { this.ws.send(JSON.stringify(msg)); } catch { /* ignore */ }

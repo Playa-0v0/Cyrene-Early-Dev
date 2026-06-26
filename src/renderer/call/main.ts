@@ -244,6 +244,7 @@ let micStream: MediaStream | null = null;
 let vadSilenceTimer: ReturnType<typeof setTimeout> | null = null;
 let vadSilenceMs = 1000;
 let vadThreshold = 0.02; // 音量阈值
+let hasSpoken = false; // 用户是否已开始说话（VAD 只在说过话后检测静默）
 
 async function startMicrophone(): Promise<void> {
   try {
@@ -297,21 +298,22 @@ function startVAD(): void {
     for (let i = 0; i < analyserData.length; i++) sum += analyserData[i];
     const avg = sum / analyserData.length / 255;
 
-    if (avg < vadThreshold) {
-      // 静默
-      if (!vadSilenceTimer) {
-        vadSilenceTimer = setTimeout(() => {
-          // 静默超时，结束本轮
-          console.log("[Call] VAD 静默检测触发，结束本轮");
-          window.call?.turnEnd();
-          vadSilenceTimer = null;
-        }, vadSilenceMs);
-      }
-    } else {
-      // 有声音，重置静默计时
+    if (avg >= vadThreshold) {
+      // 有声音：标记已开始说话，重置静默计时
+      hasSpoken = true;
       if (vadSilenceTimer) {
         clearTimeout(vadSilenceTimer);
         vadSilenceTimer = null;
+      }
+    } else if (hasSpoken) {
+      // 静默且之前说过话：开始静默计时
+      if (!vadSilenceTimer) {
+        vadSilenceTimer = setTimeout(() => {
+          console.log("[Call] VAD 静默检测触发，结束本轮");
+          window.call?.turnEnd();
+          vadSilenceTimer = null;
+          hasSpoken = false;
+        }, vadSilenceMs);
       }
     }
   }, 100);
