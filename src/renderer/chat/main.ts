@@ -1401,6 +1401,10 @@ function onPresetClick(preset: QuickPreset): void {
 async function triggerCyreneGreeting(): Promise<void> {
   if (sending || !currentSessionId) return;
 
+  // 立即隐藏空态（胶囊），不等 refreshModelConfig 异步完成
+  const emptyEl = document.getElementById("chat-empty");
+  if (emptyEl) emptyEl.setAttribute("hidden", "");
+
   sending = true;
   sendBtn.disabled = true;
   await refreshModelConfig();
