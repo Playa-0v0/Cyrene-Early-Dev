@@ -1336,6 +1336,279 @@ async function getModelReply(): Promise<ChatReplyPayload> {
 
 let sending = false;
 
+// ── 快捷预设胶囊 ──────────────────────────────────────────
+// 空对话时在 empty-state 下方显示的半透明胶囊，点击后：
+// - fill 模式：预设提示词填入输入框，用户修改后发送
+// - chat 模式：昔涟主动开口（注入隐藏种子消息触发 agent）
+
+interface QuickPreset {
+  id: string;
+  label: string;
+  icon: string;
+  mode: "chat" | "fill";
+  prompt?: string;
+}
+
+const QUICK_PRESETS: QuickPreset[] = [
+  { id: "chat",     label: "和昔涟聊天", icon: "💬",  mode: "chat" },
+  { id: "schedule", label: "设置定时任务", icon: "⏰", mode: "fill", prompt: "帮我设置一个定时任务：" },
+  { id: "weather",  label: "查看天气",   icon: "🌤️", mode: "fill", prompt: "帮我查一下今天的天气" },
+  { id: "document", label: "生成文档",   icon: "📄", mode: "fill", prompt: "帮我生成一份文档：" },
+  { id: "email",    label: "发送邮件",   icon: "✉️", mode: "fill", prompt: "帮我发一封邮件：" },
+];
+
+/** 动态生成胶囊 DOM 并绑定点击。bootstrap 末尾调一次。 */
+function buildQuickPresets(): void {
+  const container = document.getElementById("quick-presets");
+  if (!container) return;
+  container.replaceChildren();
+  for (const preset of QUICK_PRESETS) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "chat__preset";
+    btn.dataset.presetId = preset.id;
+    const icon = document.createElement("span");
+    icon.className = "chat__preset-icon";
+    icon.textContent = preset.icon;
+    const label = document.createElement("span");
+    label.className = "chat__preset-label";
+    label.textContent = preset.label;
+    btn.appendChild(icon);
+    btn.appendChild(label);
+    btn.addEventListener("click", () => onPresetClick(preset));
+    container.appendChild(btn);
+  }
+}
+
+function onPresetClick(preset: QuickPreset): void {
+  if (preset.mode === "fill") {
+    inputEl.value = preset.prompt ?? "";
+    inputEl.focus();
+    const len = inputEl.value.length;
+    inputEl.setSelectionRange(len, len);
+    autosize();
+  } else {
+    void triggerCyreneGreeting();
+  }
+}
+
+/**
+ * 「和昔涟聊天」胶囊：让昔涟主动开口。
+ * 注入隐藏种子消息触发 agent（不推入 messages 数组、不渲染），
+ * 复用现有 AG-UI 流式回复机制。
+ */
+async function triggerCyreneGreeting(): Promise<void> {
+  if (sending || !currentSessionId) return;
+
+  sending = true;
+  sendBtn.disabled = true;
+  await refreshModelConfig();
+  chatHintEl.textContent = currentModelConfig?.connected ? `${currentModelConfig.model} 思考中…` : "模型未连接";
+
+  let streamMsgId = "";
+  try {
+    streamMsgId = String(Date.now() + 1);
+    const streamMsg = { id: streamMsgId, role: "model" as const, content: "", at: Date.now(), thinking: true };
+    messages.push(streamMsg);
+    render();
+
+    let streamContent = "";
+    let ttsContent = "";
+    let autoSpeakTriggered = false;
+    textMouthStarted = false;
+    let pendingTtsCachePromise: Promise<{ cacheKey: string } | null> | null = null;
+    let sticker: string | null = null;
+    let pendingWeatherCard: Record<string, unknown> | null = null;
+
+    let finishRun!: () => void;
+    let failRun!: (err: Error) => void;
+    const runDone = new Promise<void>((resolve, reject) => {
+      finishRun = resolve;
+      failRun = reject;
+    });
+
+    const deltaQueue: string[] = [];
+    let playbackTimer: number | null = null;
+    let runFinishedArrived = false;
+    const getStreamingBubble = (): HTMLElement | null => {
+      const row = messagesEl.querySelector(`[data-msg-id="${streamMsgId}"]`);
+      return row ? row.querySelector(".msg__bubble") as HTMLElement : null;
+    };
+    const tryFinish = (): void => {
+      if (runFinishedArrived && deltaQueue.length === 0 && playbackTimer === null) {
+        finishRun();
+      }
+    };
+    const startPlayback = (): void => {
+      if (playbackTimer !== null) return;
+      playbackTimer = window.setInterval(() => {
+        const next = deltaQueue.shift();
+        if (next !== undefined) {
+          streamContent += next;
+          const bubble = getStreamingBubble();
+          if (bubble) {
+            const span = document.createElement("span");
+            span.className = "msg__char";
+            span.textContent = next;
+            bubble.appendChild(span);
+          }
+          messagesEl.scrollTop = messagesEl.scrollHeight;
+          return;
+        }
+        if (playbackTimer !== null) { clearInterval(playbackTimer); playbackTimer = null; }
+        tryFinish();
+      }, 40);
+    };
+    const offEvent = window.agui!.onEvent((rawEvent) => {
+      try {
+        const event = rawEvent as AguiBaseEvent;
+        const msg = messages.find(m => m.id === streamMsgId);
+        switch (event.type) {
+          case "TOOL_CALL_START": {
+            const bubble = getStreamingBubble();
+            if (bubble) {
+              bubble.classList.remove("msg__bubble--thinking");
+              bubble.replaceChildren();
+              const tip = document.createElement("div");
+              tip.className = "msg__tool-tip";
+              tip.dataset.toolCallId = event.toolCallId ?? "";
+              const icon = document.createElement("span");
+              icon.className = "msg__tool-icon";
+              icon.textContent = "🔧";
+              const text = document.createElement("span");
+              text.className = "msg__tool-text";
+              text.textContent = "调用中：" + (event.toolCallName ?? "工具");
+              tip.appendChild(icon);
+              tip.appendChild(text);
+              bubble.appendChild(tip);
+            }
+            break;
+          }
+          case "TOOL_CALL_END": {
+            const bubble = getStreamingBubble();
+            if (bubble) {
+              const tip = bubble.querySelector(".msg__tool-tip");
+              if (tip) {
+                const textEl = tip.querySelector(".msg__tool-text");
+                if (textEl) textEl.textContent = "已完成";
+                tip.classList.add("msg__tool-tip--done");
+              }
+            }
+            break;
+          }
+          case "TEXT_MESSAGE_START":
+            if (msg) { msg.thinking = false; render(); }
+            break;
+          case "TEXT_MESSAGE_CONTENT":
+            if (event.delta) {
+              ttsContent += event.delta;
+              deltaQueue.push(event.delta);
+              if (!textMouthStarted) {
+                void loadTtsSettings().then((settings) => {
+                  if (settings && !settings.ttsAutoRead) {
+                    startTextModeMouth();
+                  }
+                });
+              }
+              if (msg) { msg.thinking = false; }
+              startPlayback();
+            }
+            break;
+          case "TEXT_MESSAGE_END":
+            if (!autoSpeakTriggered && ttsContent.trim()) {
+              autoSpeakTriggered = true;
+              pendingTtsCachePromise = autoSpeakIfEnabled(ttsContent);
+            }
+            break;
+          case "CUSTOM":
+            if (event.name === "cyrene.sticker") {
+              sticker = (event.value as StickerId | null) ?? null;
+            } else if (event.name === "cyrene.weather") {
+              pendingWeatherCard = event.value as Record<string, unknown>;
+            } else if (event.name === "cyrene.todos") {
+              renderTodoPanel(event.value as TodoState | null);
+            } else if (event.name === "cyrene.choice") {
+              const choiceData = event.value as { id: string; question: string; options: Array<{ label: string; value: string; description?: string }>; default?: string };
+              const card = buildChoiceCardEl(choiceData);
+              messagesEl.appendChild(card);
+              messagesEl.scrollTop = messagesEl.scrollHeight;
+            }
+            break;
+          case "RUN_FINISHED":
+            runFinishedArrived = true;
+            tryFinish();
+            break;
+          case "RUN_ERROR":
+            failRun(new Error(event.content || "模型请求失败"));
+            break;
+          default:
+            break;
+        }
+      } catch (err) {
+        console.error("[Chat] onEvent回调抛错:", err);
+      }
+    });
+
+    // 种子消息：不推入 messages 数组、不渲染，只作为 agent 输入触发昔涟主动开口
+    const ack = await window.agui!.run({
+      messages: [{ role: "user", content: "[internal] 用户点击了「和昔涟聊天」，请你主动开口聊几句，像朋友打招呼一样自然开场。" }],
+      style: getCurrentStyle(),
+      sessionId: currentSessionId || undefined,
+    });
+    if (!ack.success) {
+      offEvent();
+      throw new Error(ack.error || "模型请求发起失败");
+    }
+
+    await runDone;
+    offEvent();
+
+    const msg = messages.find(m => m.id === streamMsgId);
+    if (msg) {
+      msg.thinking = false;
+      msg.content = streamContent;
+      msg.sticker = sticker;
+    }
+    void saveSession();
+    const finishedMsgId = streamMsgId;
+    void pendingTtsCachePromise?.then((cache) => {
+      if (!cache) return;
+      const latestMsg = messages.find(m => m.id === finishedMsgId);
+      if (!latestMsg) return;
+      latestMsg.ttsCacheKey = cache.cacheKey;
+      void saveSession();
+    });
+    render();
+    if (pendingWeatherCard) {
+      const card = buildWeatherCardEl(pendingWeatherCard);
+      messagesEl.appendChild(card);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+      pendingWeatherCard = null;
+    }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "模型请求失败";
+    const msg = messages.find(m => m.id === streamMsgId);
+    if (msg) {
+      msg.thinking = false;
+      msg.content = "连接模型失败：" + message;
+    } else {
+      messages.push({
+        id: String(Date.now() + 2),
+        role: "model",
+        content: "连接模型失败：" + message,
+        at: Date.now(),
+      });
+    }
+    void saveSession();
+    render();
+  } finally {
+    sending = false;
+    sendBtn.disabled = false;
+    chatHintEl.textContent = formatModelHint(currentModelConfig);
+    inputEl.focus();
+  }
+}
+
 async function send(): Promise<void> {
   const text = inputEl.value.trim();
   if ((!text && attachedFiles.length === 0) || sending) return;
@@ -1946,6 +2219,7 @@ if (particlesCtx) {
 // 启动：迁移老 localStorage → 选会话 → render
 void (async () => {
   await bootstrap();
+  buildQuickPresets();
   installSchedulerEventListener();
   void initModelConfig();
   void loadEnabledStickers();

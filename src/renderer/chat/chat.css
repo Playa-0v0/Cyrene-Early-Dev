@@ -1213,6 +1213,51 @@ body {
   letter-spacing: 0.5px;
 }
 
+/* 快捷预设胶囊：空对话时显示在 empty-state 文本下方，水平居中折行 */
+.chat__quick-presets {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  max-width: 420px;
+  margin-top: 8px;
+  pointer-events: auto; /* 父容器 #chat-empty 是 pointer-events:none，必须单独开启 */
+}
+
+.chat__preset {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--rb-radius-full);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 182, 220, 0.22);
+  backdrop-filter: blur(10px);
+  color: var(--rb-text-default);
+  font: var(--rb-text-small-em);
+  cursor: pointer;
+  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.chat__preset:hover {
+  border-color: rgba(236, 72, 153, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(236, 72, 153, 0.18);
+}
+
+.chat__preset:active {
+  transform: translateY(0);
+}
+
+.chat__preset-icon {
+  font-size: 15px;
+  line-height: 1;
+}
+
+.chat__preset-label {
+  white-space: nowrap;
+}
+
 /* ── 任务进度面板（todo_write 工具触发，顶部居中浮层，毛玻璃风格）── */
 .todo-panel {
   position: absolute;
