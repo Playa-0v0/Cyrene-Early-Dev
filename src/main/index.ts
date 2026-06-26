@@ -266,6 +266,18 @@ interface GeneralSettings {
   emailSmtpPass: string;
   /** 发件人显示名（可选） */
   emailFromName: string;
+  /** 🎧ASR 服务商：off(关闭) | volcano(火山引擎) | local(本地,占位) */
+  asrEngine: "off" | "volcano" | "local";
+  /** 火山引擎 ASR AppId */
+  asrVolcanoAppId: string;
+  /** 火山引擎 ASR ApiKey */
+  asrVolcanoApiKey: string;
+  /** ASR 识别语言：zh(中文) | en(英文) | auto(自动) */
+  asrLanguage: "zh" | "en" | "auto";
+  /** VAD 静默检测阈值（毫秒），500~2000，默认 1000 */
+  asrVadSilenceMs: number;
+  /** 通话中显示文字转写 */
+  asrShowTranscript: boolean;
 }
 
 
@@ -367,6 +379,12 @@ const DEFAULT_GENERAL_SETTINGS: GeneralSettings = {
   emailSmtpUser: "",
   emailSmtpPass: "",
   emailFromName: "",
+  asrEngine: "off",
+  asrVolcanoAppId: "",
+  asrVolcanoApiKey: "",
+  asrLanguage: "zh",
+  asrVadSilenceMs: 1000,
+  asrShowTranscript: false,
 };
 
 function getSettingsPath(): string {
@@ -717,6 +735,19 @@ function normalizeGeneralSettings(input: Partial<GeneralSettings> | null | undef
     emailSmtpUser: typeof input?.emailSmtpUser === "string" ? input.emailSmtpUser : "",
     emailSmtpPass: typeof input?.emailSmtpPass === "string" ? input.emailSmtpPass : "",
     emailFromName: typeof input?.emailFromName === "string" ? input.emailFromName : "",
+    // ASR（语音识别）配置
+    asrEngine: ["off", "volcano", "local"].includes(String(input?.asrEngine))
+      ? (input!.asrEngine as "off" | "volcano" | "local")
+      : "off",
+    asrVolcanoAppId: typeof input?.asrVolcanoAppId === "string" ? input.asrVolcanoAppId : "",
+    asrVolcanoApiKey: typeof input?.asrVolcanoApiKey === "string" ? input.asrVolcanoApiKey : "",
+    asrLanguage: ["zh", "en", "auto"].includes(String(input?.asrLanguage))
+      ? (input!.asrLanguage as "zh" | "en" | "auto")
+      : "zh",
+    asrVadSilenceMs: typeof input?.asrVadSilenceMs === "number"
+      ? Math.max(500, Math.min(2000, Math.round(input.asrVadSilenceMs)))
+      : DEFAULT_GENERAL_SETTINGS.asrVadSilenceMs,
+    asrShowTranscript: Boolean(input?.asrShowTranscript),
     ttsVoxcpm2Url: typeof input?.ttsVoxcpm2Url === "string" ? input.ttsVoxcpm2Url : DEFAULT_GENERAL_SETTINGS.ttsVoxcpm2Url,
     ttsVoxcpm2Preset: typeof input?.ttsVoxcpm2Preset === "string" ? input.ttsVoxcpm2Preset : "",
   };

@@ -34,6 +34,7 @@ export const IPC = {
   SIDEBAR_TOGGLE_ALWAYS_ON_TOP: "sidebar:toggle-always-on-top",
   SIDEBAR_OPEN_SETTINGS: "sidebar:open-settings",
   SIDEBAR_OPEN_TASKS: "sidebar:open-tasks",
+  SIDEBAR_OPEN_CALL: "sidebar:open-call",
 
   // tasks window (read-only display, no per-element interactions)
   TASKS_CLOSE: "tasks:close",
@@ -183,5 +184,17 @@ export const IPC = {
   // 卡片展示走 AGUI_EVENT 的 CUSTOM 事件（与天气卡片同通道）
   // renderer → main：回传用户选择
   CHOICE_RESOLVE: "choice:resolve",
+
+  // call window (voice call)
+  CALL_OPEN: "call:open",                 // sidebar → main：打开通话窗口
+  CALL_START: "call:start",               // renderer → main：开始通话（初始化 ASR）
+  CALL_AUDIO_FRAME: "call:audio-frame",    // renderer → main：PCM 音频帧
+  CALL_ASR_RESULT: "call:asr-result",     // main → renderer：ASR 识别结果
+  CALL_TURN_END: "call:turn-end",         // renderer → main：VAD 静默，结束本轮
+  CALL_TTS_AUDIO: "call:tts-audio",       // main → renderer：TTS 音频
+  CALL_TTS_DONE: "call:tts-done",         // renderer → main：TTS 播放完毕
+  CALL_STATE: "call:state",               // main → renderer：状态变更
+  CALL_ERROR: "call:error",               // main → renderer：错误
+  CALL_STOP: "call:stop",                 // renderer → main：挂断
 } as const;
 
