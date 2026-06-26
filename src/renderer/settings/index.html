@@ -31,6 +31,7 @@
         <button type="button" class="nav-item" data-section="api"><span>🔑</span>API 设置</button>
         <button type="button" class="nav-item" data-section="cyrene"><span>🌸</span>昔涟设置</button>
         <button type="button" class="nav-item" data-section="tts"><span>🎙️</span>TTS 设置</button>
+        <button type="button" class="nav-item" data-section="asr"><span>🎧</span>ASR 设置</button>
         <button type="button" class="nav-item" data-section="tokens"><span>📊</span>Token 用量</button>
         <hr class="nav-divider" />
         <button type="button" class="nav-item" data-section="disclaimer"><span>📜</span>免责声明</button>
@@ -1250,6 +1251,68 @@
             </div>
 
             <p class="tts-hint">💡 云端引擎需在 MiniMax 控制台用昔涟配音素材训练音色，拿到音色 ID 填入上方。本地引擎需自行安装 Voxcpm2 并起 HTTP 服务。</p>
+          </div>
+        </section>
+
+
+        <section class="settings-panel is-hidden" id="asr-panel" data-panel="asr">
+          <div class="panel-heading">
+            <div class="panel-heading__icon">🎧</div>
+            <div>
+              <h1>ASR 设置</h1>
+              <p>语音识别与通话配置</p>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="tts-section">
+              <h2 class="tts-section__title">语音识别引擎</h2>
+              <div class="tts-field">
+                <label for="asr-engine">ASR 服务商</label>
+                <select id="asr-engine">
+                  <option value="off">关闭</option>
+                  <option value="volcano">火山引擎（云端）</option>
+                  <option value="local">本地（占位，敬请期待）</option>
+                </select>
+              </div>
+              <p class="tts-hint">选择「火山引擎」后填入下方配置。本地引擎为占位，后续支持。</p>
+            </div>
+
+            <div class="tts-section" id="asr-volcano-config">
+              <h2 class="tts-section__title">🌋 火山引擎配置</h2>
+              <div class="tts-field">
+                <label for="asr-volcano-app-id">App ID</label>
+                <input type="text" id="asr-volcano-app-id" placeholder="火山引擎控制台 → 语音技术 → 应用" autocomplete="off" />
+              </div>
+              <div class="tts-field">
+                <label for="asr-volcano-api-key">API Key</label>
+                <input type="password" id="asr-volcano-api-key" placeholder="火山引擎 Access Token" autocomplete="off" />
+              </div>
+              <div class="tts-field">
+                <label for="asr-language">识别语言</label>
+                <select id="asr-language">
+                  <option value="zh">中文</option>
+                  <option value="en">英文</option>
+                  <option value="auto">自动检测</option>
+                </select>
+              </div>
+              <p class="tts-hint">火山引擎 → 控制台 → 语音技术 → 流式语音识别（大模型版），创建应用获取 App ID 和 Access Token。</p>
+            </div>
+
+            <div class="tts-section">
+              <h2 class="tts-section__title">通话设置</h2>
+              <div class="tts-field">
+                <label for="asr-vad-silence">VAD 静默阈值（毫秒）：<span id="asr-vad-value">1000</span>ms</label>
+                <input type="range" id="asr-vad-silence" min="500" max="2000" step="100" value="1000" />
+              </div>
+              <p class="tts-hint">用户说话后停顿多久判定为说完。太短会打断，太长感觉迟钝。推荐 800~1200ms。</p>
+              <label class="setting-row">
+                <div>
+                  <strong>通话中显示文字转写</strong>
+                  <p class="tts-hint">开启后通话窗口显示实时识别文字和昔涟回复文字</p>
+                </div>
+                <input type="checkbox" id="asr-show-transcript" />
+              </label>
+            </div>
           </div>
         </section>
 

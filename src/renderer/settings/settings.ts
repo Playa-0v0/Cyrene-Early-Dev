@@ -1217,6 +1217,69 @@ async function loadEmailConfig(): Promise<void> {
 }
 void loadEmailConfig();
 
+// ── 🎧ASR 设置 ──
+const asrEngineSelect = document.getElementById("asr-engine") as HTMLSelectElement | null;
+const asrVolcanoConfig = document.getElementById("asr-volcano-config");
+const asrVolcanoAppIdInput = document.getElementById("asr-volcano-app-id") as HTMLInputElement | null;
+const asrVolcanoApiKeyInput = document.getElementById("asr-volcano-api-key") as HTMLInputElement | null;
+const asrLanguageSelect = document.getElementById("asr-language") as HTMLSelectElement | null;
+const asrVadSilenceInput = document.getElementById("asr-vad-silence") as HTMLInputElement | null;
+const asrVadValueEl = document.getElementById("asr-vad-value") as HTMLElement | null;
+const asrShowTranscriptCheckbox = document.getElementById("asr-show-transcript") as HTMLInputElement | null;
+
+function syncAsrVolcanoVisibility(): void {
+  if (asrVolcanoConfig) {
+    (asrVolcanoConfig as HTMLElement).style.display = asrEngineSelect?.value === "volcano" ? "block" : "none";
+  }
+}
+
+asrEngineSelect?.addEventListener("change", () => {
+  syncAsrVolcanoVisibility();
+  void saveAsrField("asrEngine", asrEngineSelect.value);
+});
+asrVolcanoAppIdInput?.addEventListener("input", () => debouncedSaveAsr("asrVolcanoAppId", asrVolcanoAppIdInput.value.trim()));
+asrVolcanoApiKeyInput?.addEventListener("input", () => debouncedSaveAsr("asrVolcanoApiKey", asrVolcanoApiKeyInput.value.trim()));
+asrLanguageSelect?.addEventListener("change", () => void saveAsrField("asrLanguage", asrLanguageSelect.value));
+asrVadSilenceInput?.addEventListener("input", () => {
+  if (asrVadValueEl) asrVadValueEl.textContent = asrVadSilenceInput.value;
+  void saveAsrField("asrVadSilenceMs", Number(asrVadSilenceInput.value));
+});
+asrShowTranscriptCheckbox?.addEventListener("change", () => void saveAsrField("asrShowTranscript", asrShowTranscriptCheckbox.checked));
+
+let asrDebounceTimer: ReturnType<typeof setTimeout> | undefined;
+function debouncedSaveAsr(field: string, value: unknown): void {
+  clearTimeout(asrDebounceTimer);
+  asrDebounceTimer = setTimeout(() => void saveAsrField(field, value), 800);
+}
+
+async function saveAsrField(field: string, value: unknown): Promise<void> {
+  if (!window.tts) return;
+  try {
+    await window.tts.saveSettings({ [field]: value });
+  } catch (err) {
+    console.warn("[asr] 保存 ASR 配置失败:", field, err);
+  }
+}
+
+async function loadAsrConfig(): Promise<void> {
+  try {
+    const cfg = await window.tts?.loadSettings();
+    if (cfg) {
+      if (asrEngineSelect) asrEngineSelect.value = String(cfg.asrEngine ?? "off");
+      if (asrVolcanoAppIdInput) asrVolcanoAppIdInput.value = String(cfg.asrVolcanoAppId ?? "");
+      if (asrVolcanoApiKeyInput) asrVolcanoApiKeyInput.value = String(cfg.asrVolcanoApiKey ?? "");
+      if (asrLanguageSelect) asrLanguageSelect.value = String(cfg.asrLanguage ?? "zh");
+      if (asrVadSilenceInput) asrVadSilenceInput.value = String(cfg.asrVadSilenceMs ?? 1000);
+      if (asrVadValueEl) asrVadValueEl.textContent = String(cfg.asrVadSilenceMs ?? 1000);
+      if (asrShowTranscriptCheckbox) asrShowTranscriptCheckbox.checked = Boolean(cfg.asrShowTranscript);
+    }
+    syncAsrVolcanoVisibility();
+  } catch (err) {
+    console.warn("[asr] 加载 ASR 配置失败", err);
+  }
+}
+void loadAsrConfig();
+
 // ── 联网搜索插件（博查/Tavily/火山/MiniMax）──
 const searchEnabledCheckbox = document.getElementById("plugin-search-enabled") as HTMLInputElement | null;
 const searchConfig = document.getElementById("plugin-search-config") as HTMLElement | null;
