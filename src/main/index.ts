@@ -2069,7 +2069,15 @@ function createTray(): void {
 
   const contextMenu = Menu.buildFromTemplate([
     {
-      label: "Show/Hide",
+      label: "打开状态面板",
+      click: () => { createSidebarWindow(); },
+    },
+    {
+      label: "设置",
+      click: () => { createSettingsWindow(); },
+    },
+    {
+      label: "显示/隐藏桌宠",
       click: () => {
         if (mainWindow) {
           mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show();
@@ -2078,10 +2086,8 @@ function createTray(): void {
     },
     { type: "separator" },
     {
-      label: "Quit",
-      click: () => {
-        app.quit();
-      },
+      label: "退出",
+      click: () => { app.quit(); },
     },
   ]);
 
