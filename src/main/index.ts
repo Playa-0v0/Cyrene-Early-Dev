@@ -1737,7 +1737,7 @@ function createChatWindow(sessionId?: string): void {
     x: layout.chat.x,
     y: layout.chat.y,
     width: 1280,
-    height: 720,
+    height: 760,
     minWidth: 960,
     minHeight: 540,
     title: "Cyrene · 聊天",
