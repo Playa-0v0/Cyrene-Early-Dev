@@ -33,16 +33,14 @@ function spawnParticle(): Particle {
 function resizeParticles(): void {
   if (!canvas || !ctx) return;
   const dpr = window.devicePixelRatio || 1;
-  particlesW = canvas.clientWidth || window.innerWidth;
-  particlesH = canvas.clientHeight || window.innerHeight;
+  // 直接用窗口尺寸，不依赖 clientWidth（可能被 body 层遮挡读到错误值）
+  particlesW = window.innerWidth;
+  particlesH = window.innerHeight;
   canvas.width = particlesW * dpr;
   canvas.height = particlesH * dpr;
+  canvas.style.width = particlesW + "px";
+  canvas.style.height = particlesH + "px";
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  // 窗口刚加载时 clientWidth 可能还没准备好，延迟重试一次
-  if (particlesW < 10 || particlesH < 10) {
-    requestAnimationFrame(resizeParticles);
-    return;
-  }
 }
 
 function drawParticles(): void {
