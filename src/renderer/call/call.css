@@ -72,7 +72,8 @@ body { overflow: hidden; }
 
 /* 音量波形 canvas（LISTENING/THINKING 时显示，绕头像一圈） */
 .call__waveform {
-  position: absolute; inset: -8px; z-index: 2; pointer-events: none;
+  position: absolute; top: 50%; left: 50%; width: 200px; height: 200px;
+  transform: translate(-50%, -50%); z-index: 2; pointer-events: none;
   opacity: 0; transition: opacity 0.2s;
 }
 .call__waveform.is-active { opacity: 1; }
