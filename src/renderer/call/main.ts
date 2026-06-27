@@ -171,7 +171,7 @@ const waveformCtx = waveformCanvas?.getContext("2d") ?? null;
 function initWaveformCanvas(): void {
   if (!waveformCanvas || !waveformCtx) return;
   const dpr = window.devicePixelRatio || 1;
-  const size = 320; // 比 avatar-zone 大一圈
+  const size = 200; // 比 avatar-zone(150px) 大一圈
   waveformCanvas.width = size * dpr;
   waveformCanvas.height = size * dpr;
   waveformCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -186,7 +186,7 @@ function drawWaveform(): void {
   if (!waveformCtx || !waveformCanvas) { requestAnimationFrame(drawWaveform); return; }
   const cx = waveformCanvas.width / (window.devicePixelRatio || 1) / 2;
   const cy = waveformCanvas.height / (window.devicePixelRatio || 1) / 2;
-  const innerRadius = 150; // 头像外圈
+  const innerRadius = 80; // 头像半径（150px / 2 ≈ 75，留一点边）
   waveformCtx.clearRect(0, 0, waveformCanvas.width, waveformCanvas.height);
 
   for (const b of waveBars) {
