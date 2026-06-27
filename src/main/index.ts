@@ -2005,7 +2005,7 @@ async function createStickerManagerWindow(): Promise<{ ok: boolean; error?: stri
   return { ok: true };
 }
 
-/** 创建通话窗口（720×1280 竖屏，语音通话）。 */
+/** 创建通话窗口（450×800 竖屏，语音通话）。 */
 function createCallWindow(): void {
   if (callWindow && !callWindow.isDestroyed()) {
     callWindow.show();
@@ -2015,8 +2015,8 @@ function createCallWindow(): void {
 
   const display = screen.getPrimaryDisplay();
   const { width: dw, height: dh } = display.workArea;
-  const CALL_W = 720;
-  const CALL_H = 1280;
+  const CALL_W = 450;
+  const CALL_H = 800;
   const cx = Math.max(0, Math.floor((dw - CALL_W) / 2));
   const cy = Math.max(0, Math.floor((dh - CALL_H) / 2));
 
