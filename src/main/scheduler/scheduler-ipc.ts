@@ -1,4 +1,4 @@
-import { ipcMain } from "electron";
+import { ipcMain, BrowserWindow } from "electron";
 import { IPC } from "../../shared/ipc-channels";
 import type { ToolDefinition } from "../orchestrator/tool-registry";
 import type { SchedulerEngine } from "./scheduler-engine";
@@ -21,6 +21,15 @@ export interface SchedulerToolInfo {
   risk: string;
 }
 
+/** 通知所有窗口任务列表已变更 */
+function broadcastChanged(): void {
+  for (const win of BrowserWindow.getAllWindows()) {
+    if (!win.isDestroyed()) {
+      try { win.webContents.send(IPC.SCHEDULER_CHANGED); } catch { /* ignore */ }
+    }
+  }
+}
+
 export function registerSchedulerIpc(
   store: SchedulerStoreLike,
   engine: SchedulerEngine,
@@ -31,16 +40,16 @@ export function registerSchedulerIpc(
 
   ipcMain.handle(IPC.SCHEDULER_LIST, () => ok(store.getTasks()));
   ipcMain.handle(IPC.SCHEDULER_ADD, (_event, input: NewScheduledTaskInput) => {
-    try { return ok(store.addTask(input)); } catch (err) { return fail(err); }
+    try { const r = ok(store.addTask(input)); broadcastChanged(); return r; } catch (err) { return fail(err); }
   });
   ipcMain.handle(IPC.SCHEDULER_UPDATE, (_event, id: string, patch: ScheduledTaskPatch) => {
-    try { return ok(store.updateTask(id, patch)); } catch (err) { return fail(err); }
+    try { const r = ok(store.updateTask(id, patch)); broadcastChanged(); return r; } catch (err) { return fail(err); }
   });
   ipcMain.handle(IPC.SCHEDULER_DELETE, (_event, id: string) => {
-    try { return ok(store.deleteTask(id)); } catch (err) { return fail(err); }
+    try { const r = ok(store.deleteTask(id)); broadcastChanged(); return r; } catch (err) { return fail(err); }
   });
   ipcMain.handle(IPC.SCHEDULER_TOGGLE, (_event, id: string, enabled: boolean) => {
-    try { return ok(store.toggleTask(id, enabled)); } catch (err) { return fail(err); }
+    try { const r = ok(store.toggleTask(id, enabled)); broadcastChanged(); return r; } catch (err) { return fail(err); }
   });
   ipcMain.handle(IPC.SCHEDULER_GET_HISTORY, (_event, taskId: string, limit?: number) => {
     try { return ok(store.getHistory(taskId, limit)); } catch (err) { return fail(err); }

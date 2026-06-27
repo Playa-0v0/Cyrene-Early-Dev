@@ -149,6 +149,7 @@ export const IPC = {
   SCHEDULER_FIRE_NOW: "scheduler:fire-now",
   SCHEDULER_GET_HISTORY: "scheduler:get-history",
   SCHEDULER_GET_TOOLS: "scheduler:get-tools",
+  SCHEDULER_CHANGED: "scheduler:changed",  // main → renderer：任务列表变更通知
 
   // game-bot（游戏代肝）
   GAME_BOT_GET_CONFIG: "game-bot:get-config",

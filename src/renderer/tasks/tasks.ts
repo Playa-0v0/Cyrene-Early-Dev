@@ -38,6 +38,7 @@ declare global {
     tokenUsage?: { get: (days: number) => Promise<TokenDayData[]> };
     cyreneScheduler?: { list: () => Promise<{ ok: boolean; value?: ScheduledTask[]; error?: string }> };
     schedulerEvents?: { onEvent: (cb: (event: unknown) => void) => () => void };
+    tasks?: { onSchedulerChanged?: (callback: () => void) => () => void };
     sidebar?: { openSettings: (section?: string) => void };
   }
 }
@@ -294,6 +295,11 @@ function init(): void {
 
   // 事件驱动：scheduler 触发后立即刷新（用量和任务都会变）
   window.schedulerEvents?.onEvent((_event) => {
+    void refreshAll();
+  });
+
+  // 任务增删改后立即刷新（不再等 30s 轮询）
+  window.tasks?.onSchedulerChanged?.(() => {
     void refreshAll();
   });
 }

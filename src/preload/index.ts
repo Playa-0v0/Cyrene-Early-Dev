@@ -107,6 +107,11 @@ const sidebarApi = {
 const tasksApi = {
   minimize: () => ipcRenderer.send(IPC.TASKS_MINIMIZE),
   close: () => ipcRenderer.send(IPC.TASKS_CLOSE),
+  onSchedulerChanged: (callback: () => void) => {
+    const handler = () => callback();
+    ipcRenderer.on(IPC.SCHEDULER_CHANGED, handler);
+    return () => ipcRenderer.removeListener(IPC.SCHEDULER_CHANGED, handler);
+  },
 };
 
 contextBridge.exposeInMainWorld("sidebar", sidebarApi);
