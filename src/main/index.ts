@@ -901,7 +901,7 @@ function computeLayout(): {
   const CHAT_W = 1280;
   const SB_W = 320;
   const TK_W = 320;
-  const WIN_H = 720;
+  const WIN_H = 760;
   const cy = dy + Math.max(0, Math.floor((dh - WIN_H) / 2));
   const chatX = dx + Math.max(0, Math.floor((dw - CHAT_W) / 2));
   return {
@@ -1796,7 +1796,7 @@ function createSidebarWindow(): void {
     x: layout.sidebar.x,
     y: layout.sidebar.y,
     width: 320,
-    height: 720,
+    height: 760,
     minWidth: 56,
     minHeight: 540,
     title: "昔涟 · 状态",
@@ -1844,7 +1844,7 @@ function createTasksWindow(): void {
     x: layout.tasks.x,
     y: layout.tasks.y,
     width: 320,
-    height: 720,
+    height: 760,
     minHeight: 540,
     title: "昔涟 · 今日日程",
     icon: APP_ICON_PATH,
