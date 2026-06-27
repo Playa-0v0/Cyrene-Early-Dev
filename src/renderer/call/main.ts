@@ -33,11 +33,16 @@ function spawnParticle(): Particle {
 function resizeParticles(): void {
   if (!canvas || !ctx) return;
   const dpr = window.devicePixelRatio || 1;
-  particlesW = canvas.clientWidth;
-  particlesH = canvas.clientHeight;
+  particlesW = canvas.clientWidth || window.innerWidth;
+  particlesH = canvas.clientHeight || window.innerHeight;
   canvas.width = particlesW * dpr;
   canvas.height = particlesH * dpr;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  // 窗口刚加载时 clientWidth 可能还没准备好，延迟重试一次
+  if (particlesW < 10 || particlesH < 10) {
+    requestAnimationFrame(resizeParticles);
+    return;
+  }
 }
 
 function drawParticles(): void {
