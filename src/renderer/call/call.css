@@ -48,14 +48,14 @@ body { overflow: hidden; }
 .call__status--error { color: #ff6b6b; }
 .call__status--thinking { color: rgba(180, 160, 255, 0.8); }
 
-/* 头像区域 */
+/* 头像区域（和头像同尺寸，环和波形相对它定位） */
 .call__avatar-zone {
-  position: relative; width: 170px; height: 170px;
+  position: relative; width: 150px; height: 150px;
   display: flex; align-items: center; justify-content: center;
   margin-bottom: 30px; margin-top: 12px;
 }
 
-/* 电波环（SPEAKING 时显示） */
+/* 电波环（SPEAKING 时显示，从头像边缘往外扩散） */
 .call__avatar-ring { position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: 0; transition: opacity 0.2s; }
 .call__avatar-ring.is-active { opacity: 1; }
 .call__avatar-ring::before, .call__avatar-ring::after, .call__avatar-ring span {
@@ -72,7 +72,7 @@ body { overflow: hidden; }
 
 /* 音量波形 canvas（LISTENING/THINKING 时显示，绕头像一圈） */
 .call__waveform {
-  position: absolute; inset: -12px; z-index: 2; pointer-events: none;
+  position: absolute; inset: -8px; z-index: 2; pointer-events: none;
   opacity: 0; transition: opacity 0.2s;
 }
 .call__waveform.is-active { opacity: 1; }
