@@ -47,16 +47,19 @@ export async function synthesize(opts: GptsovitsSynthesizeOptions): Promise<Gpts
     throw new Error(`参考音频文件不存在: ${opts.refAudioPath}`);
   }
 
-  // 2) 构造 JSON body（GPT-SoVITS api_v2 用 FastAPI/Pydantic，期望 application/json）
+  // 2) 构造 JSON body（GPT-SoVITS api_v2 用 FastAPI/Pydantic）
+  // 服务端期望字段都包在 "data" 对象里（422 报错 loc=["body","data"] 表明）
   const body = JSON.stringify({
-    refer_wav_path: opts.refAudioPath,
-    prompt_text: opts.promptText,
-    text: opts.text,
-    text_lang: "中英混合",
-    prompt_lang: "中英混合",
-    speed_factor: opts.speed ?? 1,
-    streaming: false,
-    format: format,
+    data: {
+      refer_wav_path: opts.refAudioPath,
+      prompt_text: opts.promptText,
+      text: opts.text,
+      text_lang: "中英混合",
+      prompt_lang: "中英混合",
+      speed_factor: opts.speed ?? 1,
+      streaming: false,
+      format,
+    },
   });
 
   // baseUrl 去掉尾部斜杠，拼 /api/tts
