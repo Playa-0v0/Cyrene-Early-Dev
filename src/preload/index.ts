@@ -347,6 +347,18 @@ const ttsApi = {
     model?: string; format?: "mp3" | "wav" | "pcm";
     expectedCacheKey?: string;
   }) => ipcRenderer.invoke(IPC.TTS_SYNTHESIZE_CACHED, payload),
+  // GPT-SoVITS 本地 TTS（独立通道，payload 与 minimax 不同）
+  synthesizeGptsovits: (payload: {
+    baseUrl: string; refAudioPath: string; promptText: string; text: string;
+    speed?: number; format?: "wav" | "mp3";
+  }) => ipcRenderer.invoke(IPC.TTS_SYNTHESIZE_GPTSOVITS, payload),
+  synthesizeCachedGptsovits: (payload: {
+    baseUrl: string; refAudioPath: string; promptText: string; text: string;
+    speed?: number; format?: "wav" | "mp3";
+    expectedCacheKey?: string;
+  }) => ipcRenderer.invoke(IPC.TTS_SYNTHESIZE_CACHED_GPTSOVITS, payload),
+  // 选择音频文件（复用 TTS_PICK_AUDIO，gptsovits 选 ref audio 也用这个）
+  pickAudioFile: () => ipcRenderer.invoke(IPC.TTS_PICK_AUDIO),
   saveSettings: (tts: Record<string, unknown>) => ipcRenderer.invoke(IPC.TTS_SAVE_SETTINGS, tts),
   loadSettings: () => ipcRenderer.invoke(IPC.TTS_LOAD_SETTINGS),
 };

@@ -172,6 +172,8 @@ export const IPC = {
   TTS_SAVE_SETTINGS: "tts:save-settings",   // 保存 TTS 配置
   TTS_LOAD_SETTINGS: "tts:load-settings",   // 加载 TTS 配置
   TTS_PICK_AUDIO: "tts:pick-audio",         // 选择音频文件（dialog）
+  TTS_SYNTHESIZE_GPTSOVITS: "tts:synthesize-gptsovits",             // GPT-SoVITS 合成 → base64
+  TTS_SYNTHESIZE_CACHED_GPTSOVITS: "tts:synthesize-cached-gptsovits", // GPT-SoVITS 合成 + 本地缓存
 
   // agent permission level (file/shell access)
   PERMISSION_GET_LEVEL: "permission:get-level",
