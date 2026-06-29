@@ -230,6 +230,8 @@ interface ModelPreset {
   baseUrl: string;
   mainModels: string[];
   iconUrl: string;
+  // 厂商官网链接，显示在预设下拉框旁边，方便用户直接跳转注册/查看文档。
+  websiteUrl?: string;
   // 视觉模型的 OpenAI 兼容 baseUrl。仅当主配走 Anthropic 入口、视觉要走 OpenAI 入口时才标
   // （如 MiniMax 主配 /anthropic，视觉走 /v1）。勾选"同步主模型"时 UI 用它填视觉框。
   visionBaseUrl?: string;
@@ -358,6 +360,7 @@ const MODEL_PRESETS: ModelPreset[] = [
     baseUrl: "https://api.minimaxi.com/anthropic",
     mainModels: ["MiniMax-M3", "MiniMax-M2.7", "MiniMax-M2.5"],
     iconUrl: "https://unpkg.com/@lobehub/icons-static-svg@latest/icons/minimax.svg",
+    websiteUrl: "https://platform.minimaxi.com/",
     // 主配走 /anthropic，但视觉要走 OpenAI 入口 /v1。勾"同步"时 UI 自动用这个，用户不用手改。
     visionBaseUrl: "https://api.minimaxi.com/v1",
     supportsVision: true,
@@ -371,6 +374,7 @@ const MODEL_PRESETS: ModelPreset[] = [
     baseUrl: "https://api.deepseek.com",
     mainModels: ["deepseek-v4-pro", "deepseek-v4-flash"],
     iconUrl: "https://unpkg.com/@lobehub/icons-static-svg@latest/icons/deepseek.svg",
+    websiteUrl: "https://platform.deepseek.com/",
   },
   {
     providerName: "火山 AgentPlan（火山引擎）",
@@ -378,6 +382,7 @@ const MODEL_PRESETS: ModelPreset[] = [
     baseUrl: "https://ark.cn-beijing.volces.com/api/plan/v3",
     mainModels: ["ark-code-latest"],
     iconUrl: "https://unpkg.com/@lobehub/icons-static-svg@latest/icons/doubao.svg",
+    websiteUrl: "https://www.volcengine.com/product/agent-plan",
     // 火山方舟是聚合平台，路由到 doubao-seed 等多模态子模型时支持视觉
     supportsVision: true,
   },
@@ -387,6 +392,7 @@ const MODEL_PRESETS: ModelPreset[] = [
     baseUrl: "https://open.bigmodel.cn/api/paas/v4",
     mainModels: ["glm-5.1", "glm-5-turbo", "glm-4.7"],
     iconUrl: "https://unpkg.com/@lobehub/icons-static-svg@latest/icons/zhipu.svg",
+    websiteUrl: "https://open.bigmodel.cn/",
   },
   {
     providerName: "Kimi（月之暗面）",
@@ -394,6 +400,7 @@ const MODEL_PRESETS: ModelPreset[] = [
     baseUrl: "https://api.moonshot.cn/v1",
     mainModels: ["kimi-k2.6", "kimi-k2.5", "kimi-k2-thinking"],
     iconUrl: "https://unpkg.com/@lobehub/icons-static-svg@latest/icons/moonshot.svg",
+    websiteUrl: "https://platform.moonshot.cn/",
     // k2.6 / k2.7-code 支持 image_url 多模态
     supportsVision: true,
   },
@@ -403,6 +410,7 @@ const MODEL_PRESETS: ModelPreset[] = [
     baseUrl: "https://dashscope.aliyuncs.com/compatible-mode/v1",
     mainModels: ["qwen-max", "qwen-plus", "qwen-turbo"],
     iconUrl: "https://unpkg.com/@lobehub/icons-static-svg@latest/icons/qwen.svg",
+    websiteUrl: "https://bailian.console.aliyun.com/",
   },
   {
     providerName: "ChatGPT（OpenAI）",
@@ -411,6 +419,7 @@ const MODEL_PRESETS: ModelPreset[] = [
     // 国内多数用户走中转站，型号命名各家不一；预设留空，由用户在型号输入框里自行填写。
     mainModels: [],
     iconUrl: "https://unpkg.com/@lobehub/icons-static-svg@latest/icons/openai.svg",
+    websiteUrl: "https://platform.openai.com/",
   },
   {
     providerName: "Claude（Anthropic）",
@@ -419,6 +428,7 @@ const MODEL_PRESETS: ModelPreset[] = [
     // 同上，且 Anthropic 协议尚未接入，暂禁选。
     mainModels: [],
     iconUrl: "https://unpkg.com/@lobehub/icons-static-svg@latest/icons/claude.svg",
+    websiteUrl: "https://console.anthropic.com/",
     // Anthropic 的请求体不是 OpenAI 兼容格式（messages / system / 流式都不一样），
     // 在专属 vendor adapter 接好之前先 disabled，避免用户选到后调用直接报 4xx。
     disabled: true,
@@ -526,6 +536,7 @@ let schedulerTools: SchedulerToolInfo[] = [];
 let editingSchedulerTaskId: string | null = null;
 
 const presetSelect = document.getElementById("preset-select") as HTMLSelectElement;
+const presetWebsiteLink = document.getElementById("preset-website-link") as HTMLAnchorElement;
 // 模式按钮已删除——baseUrl 永远可改、模型名永远可手填（datalist 出预设建议）
 // provider 不再暴露给用户（从预设内部拿，保证 capabilities 匹配不出错）。
 // 用户看到的是"昵称"框——给模型起自定义名字，状态栏"正在喂养"显示它。
@@ -788,6 +799,15 @@ function applyPreset(providerName: string, preferredModel?: string, preferredApi
   // apiKey：优先用缓存；否则**显式清空**——避免上一家厂商的 key 残留在输入框里被用户误点保存。
   // 这是 v1 切厂商行为里的关键不变量：apiKey 永远只跟当前厂商绑定。
   apiKeyInput.value = preferredApiKey ?? "";
+
+  // 官网链接：有 websiteUrl 就显示并指向，没有就隐藏。
+  if (preset.websiteUrl) {
+    presetWebsiteLink.href = preset.websiteUrl;
+    presetWebsiteLink.title = `前往 ${preset.shortName} 官网`;
+    presetWebsiteLink.style.display = "";
+  } else {
+    presetWebsiteLink.style.display = "none";
+  }
 
   activeProvider = preset.providerName;
 }
@@ -1162,21 +1182,19 @@ emailEnabledCheckbox?.addEventListener("change", () => {
   void saveEmailField("emailEnabled", emailEnabledCheckbox.checked);
 });
 
-// 防抖保存：粘贴后 800ms 自动保存
-let emailDebounceTimer: ReturnType<typeof setTimeout> | undefined;
-function debouncedSaveEmail(field: string, value: unknown): void {
-  clearTimeout(emailDebounceTimer);
-  emailDebounceTimer = setTimeout(() => {
-    void saveEmailField(field, value);
-  }, 800);
-}
+// 防抖保存：每个字段独立 timer，避免连续填写多个字段时只有最后一个被保存
+let emailSmtpHostTimer: ReturnType<typeof setTimeout> | undefined;
+let emailSmtpPortTimer: ReturnType<typeof setTimeout> | undefined;
+let emailSmtpUserTimer: ReturnType<typeof setTimeout> | undefined;
+let emailSmtpPassTimer: ReturnType<typeof setTimeout> | undefined;
+let emailFromNameTimer: ReturnType<typeof setTimeout> | undefined;
 
-emailSmtpHostInput?.addEventListener("input", () => debouncedSaveEmail("emailSmtpHost", emailSmtpHostInput.value.trim()));
-emailSmtpPortInput?.addEventListener("input", () => debouncedSaveEmail("emailSmtpPort", Number(emailSmtpPortInput.value) || 465));
+emailSmtpHostInput?.addEventListener("input", () => { clearTimeout(emailSmtpHostTimer); emailSmtpHostTimer = setTimeout(() => void saveEmailField("emailSmtpHost", emailSmtpHostInput.value.trim()), 800); });
+emailSmtpPortInput?.addEventListener("input", () => { clearTimeout(emailSmtpPortTimer); emailSmtpPortTimer = setTimeout(() => void saveEmailField("emailSmtpPort", Number(emailSmtpPortInput.value) || 465), 800); });
 emailSmtpSecureInput?.addEventListener("change", () => void saveEmailField("emailSmtpSecure", emailSmtpSecureInput.checked));
-emailSmtpUserInput?.addEventListener("input", () => debouncedSaveEmail("emailSmtpUser", emailSmtpUserInput.value.trim()));
-emailSmtpPassInput?.addEventListener("input", () => debouncedSaveEmail("emailSmtpPass", emailSmtpPassInput.value.trim()));
-emailFromNameInput?.addEventListener("input", () => debouncedSaveEmail("emailFromName", emailFromNameInput.value.trim()));
+emailSmtpUserInput?.addEventListener("input", () => { clearTimeout(emailSmtpUserTimer); emailSmtpUserTimer = setTimeout(() => void saveEmailField("emailSmtpUser", emailSmtpUserInput.value.trim()), 800); });
+emailSmtpPassInput?.addEventListener("input", () => { clearTimeout(emailSmtpPassTimer); emailSmtpPassTimer = setTimeout(() => void saveEmailField("emailSmtpPass", emailSmtpPassInput.value.trim()), 800); });
+emailFromNameInput?.addEventListener("input", () => { clearTimeout(emailFromNameTimer); emailFromNameTimer = setTimeout(() => void saveEmailField("emailFromName", emailFromNameInput.value.trim()), 800); });
 
 async function saveEmailField(field: string, value: unknown): Promise<void> {
   if (!window.tts) return;
@@ -1238,20 +1256,19 @@ asrEngineSelect?.addEventListener("change", () => {
   syncAsrVisibility();
   void saveAsrField("asrEngine", asrEngineSelect.value);
 });
-asrAliyunAppKeyInput?.addEventListener("input", () => debouncedSaveAsr("asrAliyunAppKey", asrAliyunAppKeyInput.value.trim()));
-asrAliyunAccessKeyIdInput?.addEventListener("input", () => debouncedSaveAsr("asrAliyunAccessKeyId", asrAliyunAccessKeyIdInput.value.trim()));
-asrAliyunAccessKeySecretInput?.addEventListener("input", () => debouncedSaveAsr("asrAliyunAccessKeySecret", asrAliyunAccessKeySecretInput.value.trim()));
+// 防抖保存：每个字段独立 timer，避免连续填写多个字段时只有最后一个被保存
+let asrAliyunAppKeyTimer: ReturnType<typeof setTimeout> | undefined;
+let asrAliyunAccessKeyIdTimer: ReturnType<typeof setTimeout> | undefined;
+let asrAliyunAccessKeySecretTimer: ReturnType<typeof setTimeout> | undefined;
+
+asrAliyunAppKeyInput?.addEventListener("input", () => { clearTimeout(asrAliyunAppKeyTimer); asrAliyunAppKeyTimer = setTimeout(() => void saveAsrField("asrAliyunAppKey", asrAliyunAppKeyInput.value.trim()), 800); });
+asrAliyunAccessKeyIdInput?.addEventListener("input", () => { clearTimeout(asrAliyunAccessKeyIdTimer); asrAliyunAccessKeyIdTimer = setTimeout(() => void saveAsrField("asrAliyunAccessKeyId", asrAliyunAccessKeyIdInput.value.trim()), 800); });
+asrAliyunAccessKeySecretInput?.addEventListener("input", () => { clearTimeout(asrAliyunAccessKeySecretTimer); asrAliyunAccessKeySecretTimer = setTimeout(() => void saveAsrField("asrAliyunAccessKeySecret", asrAliyunAccessKeySecretInput.value.trim()), 800); });
 asrLanguageSelect?.addEventListener("change", () => void saveAsrField("asrLanguage", asrLanguageSelect.value));
 asrVadSilenceInput?.addEventListener("input", () => {
   void saveAsrField("asrVadSilenceMs", Number(asrVadSilenceInput.value) || 1000);
 });
 asrShowTranscriptCheckbox?.addEventListener("change", () => void saveAsrField("asrShowTranscript", asrShowTranscriptCheckbox.checked));
-
-let asrDebounceTimer: ReturnType<typeof setTimeout> | undefined;
-function debouncedSaveAsr(field: string, value: unknown): void {
-  clearTimeout(asrDebounceTimer);
-  asrDebounceTimer = setTimeout(() => void saveAsrField(field, value), 800);
-}
 
 async function saveAsrField(field: string, value: unknown): Promise<void> {
   if (!window.tts) return;
@@ -3606,6 +3623,17 @@ interface TtsApi {
     speed?: number; volume?: number; pitch?: number;
     model?: string; format?: "mp3" | "wav" | "pcm";
   }) => Promise<string>; // base64 音频
+  // GPT-SoVITS（返回 base64 + cacheKey + cached + format）
+  synthesizeGptsovits: (payload: {
+    baseUrl: string; refAudioPath: string; promptText: string; text: string;
+    speed?: number; format?: "wav" | "mp3";
+  }) => Promise<{ base64: string; cacheKey: string; cached: boolean; format: "wav" | "mp3" }>;
+  synthesizeCachedGptsovits: (payload: {
+    baseUrl: string; refAudioPath: string; promptText: string; text: string;
+    speed?: number; format?: "wav" | "mp3";
+    expectedCacheKey?: string;
+  }) => Promise<{ base64: string; cacheKey: string; cached: boolean; format: "wav" | "mp3" }>;
+  pickAudioFile: () => Promise<string | null>;
   saveSettings: (tts: Record<string, unknown>) => Promise<unknown>;
   loadSettings: () => Promise<Record<string, unknown>>;
 }
@@ -3661,9 +3689,12 @@ async function loadTtsConfig(): Promise<void> {
   (ttsEl("tts-minimax-model") as HTMLSelectElement).value =
     ttsConfig.ttsMinimaxModel === "speech-2.8-hd" ? "speech-2.8-hd" : "speech-2.8-turbo";
 
-  // Voxcpm2
-  ttsEl("tts-voxcpm2-url").value = String(ttsConfig.ttsVoxcpm2Url ?? "http://localhost:5000");
-  ttsEl("tts-voxcpm2-preset").value = String(ttsConfig.ttsVoxcpm2Preset ?? "");
+  // GPT-SoVITS
+  ttsEl("tts-gptsovits-url").value = String(ttsConfig.ttsGptsovitsBaseUrl ?? "http://localhost:9880");
+  ttsEl("tts-gptsovits-ref-audio").value = String(ttsConfig.ttsGptsovitsRefAudioPath ?? "");
+  ttsEl("tts-gptsovits-prompt-text").value = String(ttsConfig.ttsGptsovitsPromptText ?? "");
+  (ttsEl("tts-gptsovits-format") as HTMLSelectElement).value =
+    ttsConfig.ttsGptsovitsFormat === "mp3" ? "mp3" : "wav";
 }
 
 function updateTtsSliderLabels(): void {
@@ -3684,11 +3715,12 @@ async function saveTtsField(field: string, value: unknown): Promise<void> {
   }
 }
 
-// 播放 base64 音频
-function playTtsAudio(base64: string): void {
+// 播放 base64 音频。format 决定 Blob MIME（minimax 默认 mp3，gptsovits 默认 wav）
+function playTtsAudio(base64: string, format: "wav" | "mp3" = "mp3"): void {
   try {
     const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
-    const blob = new Blob([bytes], { type: "audio/mp3" });
+    const mime = format === "wav" ? "audio/wav" : "audio/mp3";
+    const blob = new Blob([bytes], { type: mime });
     const url = URL.createObjectURL(blob);
     const audio = new Audio(url);
     audio.play().catch((err) => console.warn("[TTS] 播放失败:", err));
@@ -3733,8 +3765,9 @@ const ttsSaveFields: Array<[string, string]> = [
   ["tts-minimax-key", "ttsMinimaxKey"],
   ["tts-minimax-voice", "ttsMinimaxVoiceId"],
   ["tts-minimax-model", "ttsMinimaxModel"],
-  ["tts-voxcpm2-url", "ttsVoxcpm2Url"],
-  ["tts-voxcpm2-preset", "ttsVoxcpm2Preset"],
+  ["tts-gptsovits-url", "ttsGptsovitsBaseUrl"],
+  ["tts-gptsovits-ref-audio", "ttsGptsovitsRefAudioPath"],
+  ["tts-gptsovits-prompt-text", "ttsGptsovitsPromptText"],
 ];
 const ttsDebounceTimers: Record<string, ReturnType<typeof setTimeout> | undefined> = {};
 for (const [elId, field] of ttsSaveFields) {
@@ -3747,6 +3780,48 @@ for (const [elId, field] of ttsSaveFields) {
     }, 800);
   });
 }
+
+// GPT-SoVITS 格式选择（select，change 时直接保存）
+(ttsEl("tts-gptsovits-format") as HTMLSelectElement).addEventListener("change", () => {
+  void saveTtsField("ttsGptsovitsFormat", (ttsEl("tts-gptsovits-format") as HTMLSelectElement).value as "wav" | "mp3");
+});
+
+// GPT-SoVITS 选择参考音频
+document.getElementById("tts-gptsovits-ref-pick")?.addEventListener("click", async () => {
+  if (!window.tts) return;
+  const filePath = await window.tts.pickAudioFile();
+  if (filePath) {
+    ttsEl("tts-gptsovits-ref-audio").value = filePath;
+    void saveTtsField("ttsGptsovitsRefAudioPath", filePath);
+  }
+});
+
+// GPT-SoVITS 测试发音
+document.getElementById("tts-gptsovits-test")?.addEventListener("click", async () => {
+  if (!window.tts) return;
+  const baseUrl = ttsEl("tts-gptsovits-url").value.trim();
+  const refAudioPath = ttsEl("tts-gptsovits-ref-audio").value.trim();
+  const promptText = ttsEl("tts-gptsovits-prompt-text").value.trim();
+  const format = (ttsEl("tts-gptsovits-format") as HTMLSelectElement).value as "wav" | "mp3";
+  if (!baseUrl) { window.alert("请先填写 GPT-SoVITS API 地址"); return; }
+  if (!refAudioPath) { window.alert("请先选择参考音频文件"); return; }
+  if (!promptText) { window.alert("请先填写参考音频对应的文本"); return; }
+
+  const btn = document.getElementById("tts-gptsovits-test") as HTMLButtonElement;
+  btn.disabled = true;
+  btn.textContent = "合成中…";
+  try {
+    const result = await window.tts.synthesizeGptsovits({
+      baseUrl, refAudioPath, promptText, text: TTS_TEST_TEXT, format,
+    });
+    playTtsAudio(result.base64, result.format);
+  } catch (err) {
+    window.alert("测试失败: " + (err instanceof Error ? err.message : String(err)));
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "🔊 测试发音";
+  }
+});
 
 // MiniMax 测试发音
 document.getElementById("tts-minimax-test")?.addEventListener("click", async () => {
