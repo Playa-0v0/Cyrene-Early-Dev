@@ -20,7 +20,7 @@ export interface GptsovitsSynthesizeResult {
 }
 
 const DEFAULT_TIMEOUT_MS = 60000;
-const TTS_PATH = "/api/tts";
+const TTS_PATH = "/tts";
 
 /**
  * 调 GPT-SoVITS api_v2。
@@ -47,19 +47,18 @@ export async function synthesize(opts: GptsovitsSynthesizeOptions): Promise<Gpts
     throw new Error(`参考音频文件不存在: ${opts.refAudioPath}`);
   }
 
-  // 2) 构造 JSON body（GPT-SoVITS api_v2 用 FastAPI/Pydantic）
-  // 服务端期望字段都包在 "data" 对象里（422 报错 loc=["body","data"] 表明）
+  // 2) 构造 JSON body（裸对象，不包 data）
+  // 契约参考 GPT-SoVITS api_v2.py: POST /tts，body 是 TTS_Request 模型
+  // 必需字段：text / text_lang / ref_audio_path / prompt_lang
   const body = JSON.stringify({
-    data: {
-      refer_wav_path: opts.refAudioPath,
-      prompt_text: opts.promptText,
-      text: opts.text,
-      text_lang: "中英混合",
-      prompt_lang: "中英混合",
-      speed_factor: opts.speed ?? 1,
-      streaming: false,
-      format,
-    },
+    text: opts.text,
+    text_lang: "zh",
+    ref_audio_path: opts.refAudioPath,
+    prompt_text: opts.promptText,
+    prompt_lang: "zh",
+    speed_factor: opts.speed ?? 1,
+    streaming_mode: false,
+    media_type: format,
   });
 
   // baseUrl 去掉尾部斜杠，拼 /api/tts
