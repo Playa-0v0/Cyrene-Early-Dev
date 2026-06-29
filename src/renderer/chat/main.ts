@@ -986,9 +986,15 @@ interface TtsSettings {
   ttsAutoRead: boolean;
   ttsSpeed: number;
   ttsVolume: number;
+  // MiniMax
   ttsMinimaxKey: string;
   ttsMinimaxVoiceId: string;
   ttsMinimaxModel: "speech-2.8-hd" | "speech-2.8-turbo";
+  // GPT-SoVITS
+  ttsGptsovitsBaseUrl: string;
+  ttsGptsovitsRefAudioPath: string;
+  ttsGptsovitsPromptText: string;
+  ttsGptsovitsFormat: "wav" | "mp3";
 }
 
 interface TtsApi {
@@ -1001,6 +1007,12 @@ interface TtsApi {
     speed?: number; volume?: number; model?: string; format?: "mp3" | "wav" | "pcm";
     expectedCacheKey?: string;
   }) => Promise<{ base64: string; cacheKey: string; cached: boolean }>;
+  // GPT-SoVITS（返回 base64 + cacheKey + cached + format）
+  synthesizeCachedGptsovits: (payload: {
+    baseUrl: string; refAudioPath: string; promptText: string; text: string;
+    speed?: number; format?: "wav" | "mp3";
+    expectedCacheKey?: string;
+  }) => Promise<{ base64: string; cacheKey: string; cached: boolean; format: "wav" | "mp3" }>;
   loadSettings: () => Promise<Record<string, unknown>>;
 }
 
@@ -1059,6 +1071,10 @@ async function loadTtsSettings(): Promise<TtsSettings | null> {
       ttsMinimaxKey: String(raw.ttsMinimaxKey ?? ""),
       ttsMinimaxVoiceId: String(raw.ttsMinimaxVoiceId ?? ""),
       ttsMinimaxModel: raw.ttsMinimaxModel === "speech-2.8-hd" ? "speech-2.8-hd" : "speech-2.8-turbo",
+      ttsGptsovitsBaseUrl: String(raw.ttsGptsovitsBaseUrl ?? ""),
+      ttsGptsovitsRefAudioPath: String(raw.ttsGptsovitsRefAudioPath ?? ""),
+      ttsGptsovitsPromptText: String(raw.ttsGptsovitsPromptText ?? ""),
+      ttsGptsovitsFormat: raw.ttsGptsovitsFormat === "mp3" ? "mp3" : "wav",
     };
   } catch {
     return null;
@@ -1094,11 +1110,12 @@ function waitForAudioMetadata(audio: HTMLAudioElement): Promise<number | null> {
   });
 }
 
-function playTtsBase64(base64: string): void {
+function playTtsBase64(base64: string, format: "wav" | "mp3" = "mp3"): void {
   stopCurrentTts();
   const token = nextSpeechToken();
   const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
-  const blob = new Blob([bytes], { type: "audio/mp3" });
+  const mime = format === "wav" ? "audio/wav" : "audio/mp3";
+  const blob = new Blob([bytes], { type: mime });
   const url = URL.createObjectURL(blob);
   const audio = new Audio(url);
   audio.preload = "auto";
@@ -1139,57 +1156,101 @@ async function synthesizeAndPlayCached(
 ): Promise<{ cacheKey: string } | null> {
   if (!window.tts) return null;
 
-  // 回听优先：如果旧消息有 ttsCacheKey，直接尝试读缓存文件播放，不需要 apiKey/voiceId。
-  // 只有缓存文件不存在、需要合成新音频时才检查 apiKey/voiceId。
+  // 回听优先：如果旧消息有 ttsCacheKey，直接尝试读缓存文件播放，不需要任何引擎配置。
+  // 只有缓存文件不存在、需要合成新音频时才检查引擎配置。
   const settings = await loadTtsSettings();
   if (!settings || settings.ttsEngine === "off") return null;
 
+  // 缓存回听：按 cacheKey 前缀分发到对应引擎的 _CACHED IPC
+  // （minimax 缓存走 TTS_SYNTHESIZE_CACHED，gptsovits 缓存走 TTS_SYNTHESIZE_CACHED_GPTSOVITS）
   if (existing?.ttsCacheKey) {
+    const isGptsovitsCache = existing.ttsCacheKey.startsWith("gptsovits-");
     try {
-      // 先尝试用旧 key 直接读缓存
-      const result = await window.tts.synthesizeCached({
-        apiKey: "cache-only",     // 占位，缓存命中不会用到
-        voiceId: "cache-only",    // 占位
-        text,
-        speed: settings.ttsSpeed,
-        volume: settings.ttsVolume,
-        model: settings.ttsMinimaxModel,
-        expectedCacheKey: existing.ttsCacheKey,
-      });
-      // 缓存命中 → 直接播放
-      if (result.cached) {
-        console.log("[TTS] 缓存命中，直接播放");
-        playTtsBase64(result.base64);
-        return { cacheKey: result.cacheKey };
+      if (isGptsovitsCache) {
+        const result = await window.tts.synthesizeCachedGptsovits({
+          baseUrl: "cache-only",        // 占位，缓存命中不会用到
+          refAudioPath: "cache-only",   // 占位
+          promptText: "cache-only",     // 占位
+          text,
+          speed: settings.ttsSpeed,
+          format: settings.ttsGptsovitsFormat,
+          expectedCacheKey: existing.ttsCacheKey,
+        });
+        if (result.cached) {
+          console.log("[TTS] gptsovits 缓存命中，直接播放");
+          playTtsBase64(result.base64, result.format);
+          return { cacheKey: result.cacheKey };
+        }
+      } else {
+        // minimax 缓存回听（保持原逻辑）
+        const result = await window.tts.synthesizeCached({
+          apiKey: "cache-only",
+          voiceId: "cache-only",
+          text,
+          speed: settings.ttsSpeed,
+          volume: settings.ttsVolume,
+          model: settings.ttsMinimaxModel,
+          expectedCacheKey: existing.ttsCacheKey,
+        });
+        if (result.cached) {
+          console.log("[TTS] minimax 缓存命中，直接播放");
+          playTtsBase64(result.base64);
+          return { cacheKey: result.cacheKey };
+        }
       }
     } catch {
       // 缓存读取失败，继续走正常合成流程
     }
   }
 
-  // 需要合成新音频 → 检查 apiKey/voiceId
-  if (settings.ttsEngine !== "minimax") return null;
-  if (!settings.ttsMinimaxKey || !settings.ttsMinimaxVoiceId) {
-    console.warn("[TTS] 缺少 apiKey 或 voiceId，无法合成新音频");
-    return null;
+  // 需要合成新音频 → 按 engine 分发
+  if (settings.ttsEngine === "minimax") {
+    if (!settings.ttsMinimaxKey || !settings.ttsMinimaxVoiceId) {
+      console.warn("[TTS] 缺少 apiKey 或 voiceId，无法合成新音频");
+      return null;
+    }
+    try {
+      const result = await window.tts.synthesizeCached({
+        apiKey: settings.ttsMinimaxKey,
+        voiceId: settings.ttsMinimaxVoiceId,
+        text,
+        speed: settings.ttsSpeed,
+        volume: settings.ttsVolume,
+        model: settings.ttsMinimaxModel,
+        expectedCacheKey: existing?.ttsCacheKey,
+      });
+      playTtsBase64(result.base64);
+      return { cacheKey: result.cacheKey };
+    } catch (err) {
+      console.warn("[TTS] 合成失败:", err);
+      return null;
+    }
   }
 
-  try {
-    const result = await window.tts.synthesizeCached({
-      apiKey: settings.ttsMinimaxKey,
-      voiceId: settings.ttsMinimaxVoiceId,
-      text,
-      speed: settings.ttsSpeed,
-      volume: settings.ttsVolume,
-      model: settings.ttsMinimaxModel,
-      expectedCacheKey: existing?.ttsCacheKey,
-    });
-    playTtsBase64(result.base64);
-    return { cacheKey: result.cacheKey };
-  } catch (err) {
-    console.warn("[TTS] 合成失败:", err);
-    return null;
+  if (settings.ttsEngine === "gptsovits") {
+    if (!settings.ttsGptsovitsBaseUrl || !settings.ttsGptsovitsRefAudioPath || !settings.ttsGptsovitsPromptText) {
+      console.warn("[TTS] 缺少 GPT-SoVITS 配置（baseUrl/refAudioPath/promptText）");
+      return null;
+    }
+    try {
+      const result = await window.tts.synthesizeCachedGptsovits({
+        baseUrl: settings.ttsGptsovitsBaseUrl,
+        refAudioPath: settings.ttsGptsovitsRefAudioPath,
+        promptText: settings.ttsGptsovitsPromptText,
+        text,
+        speed: settings.ttsSpeed,
+        format: settings.ttsGptsovitsFormat,
+        expectedCacheKey: existing?.ttsCacheKey,
+      });
+      playTtsBase64(result.base64, result.format);
+      return { cacheKey: result.cacheKey };
+    } catch (err) {
+      console.warn("[TTS] GPT-SoVITS 合成失败:", err);
+      return null;
+    }
   }
+
+  return null;
 }
 
 async function speakMessage(message: Message): Promise<void> {
@@ -1319,9 +1380,16 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string)
 }
 
 
+function isTalkMode(): boolean {
+  const active = document.querySelector("#mode-dropdown .dm-opt.is-active") as HTMLElement | null;
+  return active?.dataset?.value === "talk";
+}
+
 function getCurrentStyle(): string {
   const active = document.querySelector("#style-dropdown .dm-opt.is-active") as HTMLElement | null;
-  return (active && active.dataset && active.dataset.value) || "01_default.md";
+  const style = (active && active.dataset && active.dataset.value) || "01_default.md";
+  // 日常聊天模式：前缀 "talk" 触发后端走 talk_system.md + tools:[]
+  return isTalkMode() ? "talk" : style;
 }
 async function getModelReply(): Promise<ChatReplyPayload> {
   if (!window.chat?.sendMessage) {
@@ -2070,14 +2138,16 @@ clearBtn.addEventListener("click", clearChat);
 
 
 
-/* ===== Dropdown: style + reasoning (body-level menus) ===== */
+/* ===== Dropdown: mode + style + reasoning (body-level menus) ===== */
 (function() {
   var triggers = document.querySelectorAll(".dropdown-trigger");
   var menus = {
+    "mode-dropdown": document.getElementById("mode-dropdown"),
     "style-dropdown": document.getElementById("style-dropdown"),
     "reasoning-dropdown": document.getElementById("reasoning-dropdown")
   };
   var values = {
+    "mode-dropdown": document.getElementById("mode-val"),
     "style-dropdown": document.getElementById("style-val"),
     "reasoning-dropdown": document.getElementById("reasoning-val")
   };
