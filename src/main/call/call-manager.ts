@@ -8,7 +8,8 @@
 import { BrowserWindow, ipcMain } from "electron";
 import { IPC } from "../../shared/ipc-channels";
 import { VolcanoAsrStream, getAsrConfig } from "../asr/volcano-asr-engine";
-import { synthesize as minimaxSynthesize } from "../tts/minimax-engine";
+import { synthesizeByEngine } from "../tts/tts-dispatcher";
+import type { TtsEngine } from "../../shared/tts-types";
 import { runFunctionCallingLoop } from "../orchestrator";
 import { getAdapter, buildVendorUrl } from "../orchestrator/vendors";
 import type { ChatMessage } from "../orchestrator/vendors/types";
@@ -23,13 +24,22 @@ let currentState: CallState = "IDLE";
 let finalText = "";
 let active = false;
 
+/** 通话上下文：保留最近 N 轮对话历史（每轮 = user + assistant 一对）。 */
+const MAX_CALL_CONTEXT_TURNS = 5;
+const callHistory: ChatMessage[] = [];
+
 // 注入的配置 getter（由 index.ts 启动时设置，避免循环依赖）
 let modelSettingsGetter: (() => {
   provider: string; baseUrl: string; model: string; apiKey: string;
 }) | null = null;
 let ttsSettingsGetter: (() => {
-  ttsEngine: string; ttsMinimaxKey: string; ttsMinimaxVoiceId: string;
-  ttsSpeed: number; ttsVolume: number; ttsMinimaxModel: "speech-2.8-hd" | "speech-2.8-turbo";
+  ttsEngine: TtsEngine;
+  ttsMinimaxKey: string; ttsMinimaxVoiceId: string;
+  ttsMinimaxModel: "speech-2.8-hd" | "speech-2.8-turbo";
+  ttsSpeed: number; ttsVolume: number;
+  // GPT-SoVITS
+  ttsGptsovitsBaseUrl: string; ttsGptsovitsRefAudioPath: string;
+  ttsGptsovitsPromptText: string; ttsGptsovitsFormat: "wav" | "mp3";
 }) | null = null;
 
 /** index.ts 启动时注入模型配置、TTS 配置和 system prompt 构建器。 */
@@ -39,8 +49,12 @@ let weatherHandler: ((userText: string) => Promise<string | null>) | null = null
 export function setCallSettings(
   modelGetter: () => { provider: string; baseUrl: string; model: string; apiKey: string },
   ttsGetter: () => {
-    ttsEngine: string; ttsMinimaxKey: string; ttsMinimaxVoiceId: string;
-    ttsSpeed: number; ttsVolume: number; ttsMinimaxModel: "speech-2.8-hd" | "speech-2.8-turbo";
+    ttsEngine: TtsEngine;
+    ttsMinimaxKey: string; ttsMinimaxVoiceId: string;
+    ttsMinimaxModel: "speech-2.8-hd" | "speech-2.8-turbo";
+    ttsSpeed: number; ttsVolume: number;
+    ttsGptsovitsBaseUrl: string; ttsGptsovitsRefAudioPath: string;
+    ttsGptsovitsPromptText: string; ttsGptsovitsFormat: "wav" | "mp3";
   },
   systemPromptFn: (userText: string) => Promise<string>,
   weatherFn: (userText: string) => Promise<string | null>,
@@ -100,6 +114,7 @@ export function startCall(): void {
 
   active = true;
   finalText = "";
+  callHistory.length = 0;
   startAsrStream(cfg);
   sendState("LISTENING");
 }
@@ -140,26 +155,53 @@ export async function endTurn(): Promise<void> {
       return;
     }
 
-    // TTS 合成
+    // TTS 合成（按 ttsEngine 分发到对应引擎）
     const tts = ttsSettingsGetter?.();
-    if (!tts || tts.ttsEngine === "off" || !tts.ttsMinimaxKey || !tts.ttsMinimaxVoiceId) {
-      sendError("TTS 未配置：请在设置中配置 MiniMax TTS");
+    if (!tts || tts.ttsEngine === "off") {
+      sendError("TTS 未配置：请在设置中启用 TTS 引擎");
+      sendState("LISTENING");
+      restartAsr();
+      return;
+    }
+
+    // 引擎配置完整性检查
+    if (tts.ttsEngine === "minimax" && (!tts.ttsMinimaxKey || !tts.ttsMinimaxVoiceId)) {
+      sendError("TTS 未配置：请在设置中配置 MiniMax API Key 和音色 ID");
+      sendState("LISTENING");
+      restartAsr();
+      return;
+    }
+    if (tts.ttsEngine === "gptsovits" && (!tts.ttsGptsovitsBaseUrl || !tts.ttsGptsovitsRefAudioPath || !tts.ttsGptsovitsPromptText)) {
+      sendError("TTS 未配置：请在设置中配置 GPT-SoVITS baseUrl、参考音频和文本");
       sendState("LISTENING");
       restartAsr();
       return;
     }
 
     sendState("SPEAKING");
-    const audioBuffer = await minimaxSynthesize({
-      apiKey: tts.ttsMinimaxKey,
-      voiceId: tts.ttsMinimaxVoiceId,
-      text: reply,
-      speed: tts.ttsSpeed,
-      volume: tts.ttsVolume,
-      model: tts.ttsMinimaxModel,
-    });
-    sendTtsAudio(audioBuffer.toString("base64"));
-    // 等渲染端 CALL_TTS_DONE 后恢复 LISTENING
+    try {
+      const result = await synthesizeByEngine(tts.ttsEngine, {
+        text: reply,
+        speed: tts.ttsSpeed,
+        volume: tts.ttsVolume,
+        // minimax
+        apiKey: tts.ttsMinimaxKey,
+        voiceId: tts.ttsMinimaxVoiceId,
+        model: tts.ttsMinimaxModel,
+        // gptsovits
+        baseUrl: tts.ttsGptsovitsBaseUrl,
+        refAudioPath: tts.ttsGptsovitsRefAudioPath,
+        promptText: tts.ttsGptsovitsPromptText,
+        format: tts.ttsGptsovitsFormat,
+      });
+      sendTtsAudio(result.audio.toString("base64"));
+      // 等渲染端 CALL_TTS_DONE 后恢复 LISTENING
+    } catch (ttsErr) {
+      const msg = ttsErr instanceof Error ? ttsErr.message : String(ttsErr);
+      sendError("TTS 合成失败：" + msg);
+      sendState("LISTENING");
+      restartAsr();
+    }
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     sendError("通话出错：" + msg);
@@ -187,6 +229,7 @@ function restartAsr(): void {
 /** 挂断：清理一切。 */
 export function stopCall(): void {
   active = false;
+  callHistory.length = 0;
   if (asrStream) {
     asrStream.stop();
     asrStream = null;
@@ -215,7 +258,12 @@ async function runAgentTurn(userText: string): Promise<string | null> {
     // 1. 天气正则匹配
     if (WEATHER_REGEX.test(userText) && weatherHandler) {
       const weatherReply = await weatherHandler(userText);
-      if (weatherReply) return weatherReply;
+      if (weatherReply) {
+        // 天气走快捷路径，也记入上下文
+        callHistory.push({ role: "user", content: userText });
+        callHistory.push({ role: "assistant", content: weatherReply });
+        return weatherReply;
+      }
     }
 
     // 2. 直接调 LLM（不走 FC loop）
@@ -229,6 +277,8 @@ async function runAgentTurn(userText: string): Promise<string | null> {
     const systemPrompt = await systemPromptBuilder?.(userText) ?? "";
     const messages: ChatMessage[] = [
       { role: "system", content: systemPrompt },
+      // 取最近 MAX_CALL_CONTEXT_TURNS 轮历史（每轮 2 条：user + assistant）
+      ...callHistory.slice(-MAX_CALL_CONTEXT_TURNS * 2),
       { role: "user", content: userText },
     ];
 
@@ -252,6 +302,13 @@ async function runAgentTurn(userText: string): Promise<string | null> {
     const resp = adapter.parseResponse(raw);
     // 过滤掉表情包标记
     const reply = (resp.text || "").replace(/\[sticker:[^\]]+\]/g, "").trim();
+
+    // 记入通话上下文
+    if (reply) {
+      callHistory.push({ role: "user", content: userText });
+      callHistory.push({ role: "assistant", content: reply });
+    }
+
     return reply || null;
   } catch (err) {
     console.error(LOG_PREFIX, "LLM 调用失败:", err);
