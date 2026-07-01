@@ -1273,6 +1273,30 @@
             </div>
 
             <p class="tts-hint">💡 云端引擎需在 MiniMax 控制台用昔涟配音素材训练音色，拿到音色 ID 填入上方。本地引擎需自行启动 GPT-SoVITS 服务（api_v2 端点），并提供参考音频与文本。baseUrl 不含路径，路径硬编码 /api/tts。</p>
+
+            <hr class="api-section-divider" />
+            <div class="tts-section">
+              <h2 class="tts-section__title">主动开口</h2>
+              <p class="tts-hint">昔涟会在你没主动聊天时，偶尔自己冒一句话关心你（基于时间/空闲/天气）。走预合成音频，0 token。</p>
+              <div class="tts-engines" role="radiogroup" aria-label="主动开口档位">
+                <button type="button" class="opener-mode is-active" data-mode="off" role="radio" aria-checked="true">
+                  <span class="tts-engine__icon">🔇</span>
+                  <span class="tts-engine__name">关闭</span>
+                </button>
+                <button type="button" class="opener-mode" data-mode="quiet" role="radio" aria-checked="false">
+                  <span class="tts-engine__icon">🌙</span>
+                  <span class="tts-engine__name">安静</span>
+                </button>
+                <button type="button" class="opener-mode" data-mode="normal" role="radio" aria-checked="false">
+                  <span class="tts-engine__icon">🌸</span>
+                  <span class="tts-engine__name">普通</span>
+                </button>
+                <button type="button" class="opener-mode" data-mode="lively" role="radio" aria-checked="false">
+                  <span class="tts-engine__icon">✨</span>
+                  <span class="tts-engine__name">活泼</span>
+                </button>
+              </div>
+            </div>
           </div>
         </section>
 

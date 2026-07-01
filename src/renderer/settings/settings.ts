@@ -3695,6 +3695,14 @@ async function loadTtsConfig(): Promise<void> {
   ttsEl("tts-gptsovits-prompt-text").value = String(ttsConfig.ttsGptsovitsPromptText ?? "");
   (ttsEl("tts-gptsovits-format") as HTMLSelectElement).value =
     ttsConfig.ttsGptsovitsFormat === "mp3" ? "mp3" : "wav";
+
+  // Opener 主动开口档位
+  const openerMode = String(ttsConfig.openerMode ?? "off");
+  document.querySelectorAll<HTMLButtonElement>(".opener-mode").forEach((btn) => {
+    const isActive = btn.dataset.mode === openerMode;
+    btn.classList.toggle("is-active", isActive);
+    btn.setAttribute("aria-checked", isActive ? "true" : "false");
+  });
 }
 
 function updateTtsSliderLabels(): void {
@@ -3746,6 +3754,20 @@ document.querySelectorAll<HTMLButtonElement>(".tts-engine").forEach((btn) => {
       if (config) config.hidden = false;
     }
     void saveTtsField("ttsEngine", engine);
+  });
+});
+
+// Opener 主动开口档位切换
+document.querySelectorAll<HTMLButtonElement>(".opener-mode").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const mode = btn.dataset.mode || "off";
+    document.querySelectorAll<HTMLButtonElement>(".opener-mode").forEach((b) => {
+      b.classList.remove("is-active");
+      b.setAttribute("aria-checked", "false");
+    });
+    btn.classList.add("is-active");
+    btn.setAttribute("aria-checked", "true");
+    void saveTtsField("openerMode", mode);
   });
 });
 

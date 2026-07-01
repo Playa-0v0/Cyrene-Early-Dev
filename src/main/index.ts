@@ -321,6 +321,8 @@ interface GeneralSettings {
   asrVadSilenceMs: number;
   /** 通话中显示文字转写 */
   asrShowTranscript: boolean;
+  /** Opener 主动开口档位 */
+  openerMode: "off" | "quiet" | "normal" | "lively";
 }
 
 
@@ -431,6 +433,7 @@ const DEFAULT_GENERAL_SETTINGS: GeneralSettings = {
   asrLanguage: "zh",
   asrVadSilenceMs: 1000,
   asrShowTranscript: false,
+  openerMode: "off",
 };
 
 function getSettingsPath(): string {
@@ -795,6 +798,9 @@ function normalizeGeneralSettings(input: Partial<GeneralSettings> | null | undef
       ? Math.max(300, Math.min(30000, Math.round(input.asrVadSilenceMs)))
       : DEFAULT_GENERAL_SETTINGS.asrVadSilenceMs,
     asrShowTranscript: Boolean(input?.asrShowTranscript),
+    openerMode: ["off", "quiet", "normal", "lively"].includes(String(input?.openerMode))
+      ? (input!.openerMode as "off" | "quiet" | "normal" | "lively")
+      : "off",
     ttsGptsovitsBaseUrl: typeof input?.ttsGptsovitsBaseUrl === "string" ? input.ttsGptsovitsBaseUrl : DEFAULT_GENERAL_SETTINGS.ttsGptsovitsBaseUrl,
     ttsGptsovitsRefAudioPath: typeof input?.ttsGptsovitsRefAudioPath === "string" ? input.ttsGptsovitsRefAudioPath : "",
     ttsGptsovitsPromptText: typeof input?.ttsGptsovitsPromptText === "string" ? input.ttsGptsovitsPromptText : "",
