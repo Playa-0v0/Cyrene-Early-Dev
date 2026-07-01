@@ -108,6 +108,9 @@ export const IPC = {
   LIVE2D_SPEECH_PREPARE: "live2d:speech-prepare",
   LIVE2D_MOUTH_START: "live2d:mouth-start",
   LIVE2D_MOUTH_STOP: "live2d:mouth-stop",
+  // Opener 主动开口
+  LIVE2D_SHOW_BUBBLE: "live2d:show-bubble",       // 主进程 → 桌宠窗口：显示气泡+播 wav
+  OPENER_FEEDBACK: "opener:feedback",             // 渲染端 → 主进程：点气泡反馈
   // embedding model status
   EMBEDDING_GET_STATUS: "embedding:get-status",
   EMBEDDING_DOWNLOAD: "embedding:download",

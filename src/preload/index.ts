@@ -274,8 +274,20 @@ const live2dSpeechApi = {
     ipcRenderer.on(IPC.LIVE2D_MOUTH_STOP, listener);
     return () => ipcRenderer.removeListener(IPC.LIVE2D_MOUTH_STOP, listener);
   },
+  onShowBubble: (callback: (payload: import("../main/opener/opener-types").ShowBubblePayload) => void) => {
+    const listener = (_event: Electron.IpcRendererEvent, payload: import("../main/opener/opener-types").ShowBubblePayload) => callback(payload);
+    ipcRenderer.on(IPC.LIVE2D_SHOW_BUBBLE, listener);
+    return () => ipcRenderer.removeListener(IPC.LIVE2D_SHOW_BUBBLE, listener);
+  },
 };
 contextBridge.exposeInMainWorld("live2dSpeech", live2dSpeechApi);
+
+// Opener 主动开口反馈（渲染端 → 主进程）
+const openerApi = {
+  feedback: (payload: { type: "clicked"; sceneId: string; itemId: string }) =>
+    ipcRenderer.send(IPC.OPENER_FEEDBACK, payload),
+};
+contextBridge.exposeInMainWorld("opener", openerApi);
 
 // 聊天会话存储（多对话历史）
 const chatStoreApi = {
