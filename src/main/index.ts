@@ -39,7 +39,7 @@ import { registerChatsIpc } from "./chats/chats-ipc";
 import { recordUsage, getUsage, flush as flushTokenUsage } from "./token-usage-store";
 import { uploadFile as ttsUploadFile, cloneVoice as ttsCloneVoice, synthesize as ttsSynthesize } from "./tts/minimax-engine";
 import { synthesize as gptsovitsSynthesize } from "./tts/gptsovits-engine";
-import { startOpener, stopOpener, setLive2dWindow, reloadManifest, handleBubbleClick, handleChatWindowOpened } from "./opener/opener-runner";
+import { startOpener, stopOpener, setLive2dWindow, reloadManifest, handleBubbleClick, handleChatWindowOpened, testFire } from "./opener/opener-runner";
 import { registerAgUiIpc, type AguiRunInput } from "./agui-bridge";
 import { setWeatherConfig, setSearchConfig, loadTodos, onTodosChange, setDelegateSettings } from "./orchestrator/built-in-tools";
 import { registerRecallHistoryTool } from "./orchestrator/history-tools";
@@ -2761,6 +2761,9 @@ app.whenReady().then(async () => {
       handleBubbleClick(payload.sceneId, payload.itemId);
     }
   });
+
+  // Opener 手动测试气泡
+  ipcMain.handle(IPC.OPENER_TEST_FIRE, async () => { await testFire(); });
 
   // 上传音频文件 → file_id
   ipcMain.handle(IPC.TTS_UPLOAD, async (_event, payload: { apiKey: string; filePath: string; purpose: "voice_clone" | "prompt_audio" }) => {

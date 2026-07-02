@@ -111,6 +111,7 @@ export const IPC = {
   // Opener 主动开口
   LIVE2D_SHOW_BUBBLE: "live2d:show-bubble",       // 主进程 → 桌宠窗口：显示气泡+播 wav
   OPENER_FEEDBACK: "opener:feedback",             // 渲染端 → 主进程：点气泡反馈
+  OPENER_TEST_FIRE: "opener:test-fire",           // 渲染端 → 主进程：手动测试气泡
   // embedding model status
   EMBEDDING_GET_STATUS: "embedding:get-status",
   EMBEDDING_DOWNLOAD: "embedding:download",

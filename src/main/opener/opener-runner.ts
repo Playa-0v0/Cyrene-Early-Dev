@@ -178,3 +178,30 @@ export function handleChatWindowOpened(): void {
   saveState(state2);
   console.log(`[Opener] ${scene} 被接话（打开 chat）`);
 }
+
+/** 手动测试：直接读第一条可用 wav 发气泡，不走 Desire/state 逻辑。 */
+export async function testFire(): Promise<void> {
+  if (!manifest || !live2dWindow || live2dWindow.isDestroyed()) {
+    console.warn("[Opener] testFire: manifest 或桌宠窗口未就绪");
+    return;
+  }
+  for (const [sceneId, pack] of Object.entries(manifest.packs)) {
+    for (const item of pack.items) {
+      const wav = resolveAudioPath(item.audio);
+      if (wav) {
+        const payload: ShowBubblePayload = {
+          text: item.text,
+          audioBase64: readWavBase64(wav),
+          format: "wav",
+          durationMs: readWavDurationMs(wav),
+          sceneId,
+          itemId: item.id,
+        };
+        live2dWindow.webContents.send(IPC.LIVE2D_SHOW_BUBBLE, payload);
+        console.log(`[Opener] testFire: ${sceneId}/${item.id}`);
+        return;
+      }
+    }
+  }
+  console.warn("[Opener] testFire: 无可用音频");
+}

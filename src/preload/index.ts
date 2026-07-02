@@ -286,6 +286,7 @@ contextBridge.exposeInMainWorld("live2dSpeech", live2dSpeechApi);
 const openerApi = {
   feedback: (payload: { type: "clicked"; sceneId: string; itemId: string }) =>
     ipcRenderer.send(IPC.OPENER_FEEDBACK, payload),
+  testFire: () => ipcRenderer.invoke(IPC.OPENER_TEST_FIRE),
 };
 contextBridge.exposeInMainWorld("opener", openerApi);
 
