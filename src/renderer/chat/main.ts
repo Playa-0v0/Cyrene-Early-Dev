@@ -1174,6 +1174,7 @@ async function streamAndPlayCached(
 ): Promise<{ cacheKey: string } | null> {
   if (!window.tts) return null;
 
+  stopCurrentTts();  // 先停当前 TTS（含 stopLive2dMouth），再拿 token，否则 token 立刻失效
   const token = nextSpeechToken();
   let mediaSource: MediaSource | null = null;
   let sourceBuffer: SourceBuffer | null = null;
@@ -1277,8 +1278,7 @@ async function streamAndPlayCached(
     audioEl = new Audio(url);
     currentTtsAudio = audioEl;
 
-    stopLive2dMouth();
-    window.live2dSpeech?.prepare();
+    window.live2dSpeech?.prepare();  // stopLive2dMouth 已在开头 stopCurrentTts 里调过
 
     audioEl.onended = () => {
       URL.revokeObjectURL(url);
