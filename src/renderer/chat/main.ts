@@ -1195,6 +1195,7 @@ async function streamAndPlayCached(
 
   // 轮询 flush：每 30ms 检查一次，能 append 就 append，结束且队列空就 endOfStream + resolve
   const startPolling = (resolve: (v: { cacheKey: string } | null) => void) => {
+    let startedPlayback = false;
     pollTimer = setInterval(() => {
       if (speechToken !== token) {
         cleanup();
@@ -1202,14 +1203,24 @@ async function streamAndPlayCached(
         resolve(null);
         return;
       }
+      // append 队列里的 chunk（如果 sourceBuffer 空闲）
       if (sourceBuffer && !sourceBuffer.updating && chunkQueue.length > 0) {
         const chunk = chunkQueue.shift()!;
         try {
           sourceBuffer.appendBuffer(chunk);
         } catch {
-          // 队列满或冲突，放回下次
           chunkQueue.unshift(chunk);
         }
+      }
+      // 第一块 append 成功后（buffered 有数据）开始播放
+      if (!startedPlayback && sourceBuffer && sourceBuffer.buffered.length > 0 && audioEl && audioEl.paused) {
+        startedPlayback = true;
+        void audioEl.play().then(() => {
+          console.log(`[TTS-Stream] play() 开始 +${Math.round(performance.now() - t0)}ms`);
+          if (speechToken !== token) return;
+          const estDurationMs = Math.max(2000, Array.from(text).length * 180);
+          window.live2dSpeech?.startMouth(estDurationMs);
+        }).catch((err) => console.warn("[TTS-Stream] play 失败:", err));
       }
       // 结束且队列空 → endOfStream
       if (ended && chunkQueue.length === 0 && sourceBuffer && !sourceBuffer.updating && !done) {
@@ -1281,12 +1292,7 @@ async function streamAndPlayCached(
         sourceBuffer = mediaSource!.addSourceBuffer("audio/mpeg");
         sourceBuffer.mode = "sequence";
         console.log(`[TTS-Stream] sourceBuffer 创建成功`);
-        void audioEl!.play().then(() => {
-          console.log(`[TTS-Stream] play() 开始 +${Math.round(performance.now() - t0)}ms`);
-          if (speechToken !== token) return;
-          const estDurationMs = Math.max(2000, Array.from(text).length * 180);
-          window.live2dSpeech?.startMouth(estDurationMs);
-        }).catch((err) => console.warn("[TTS-Stream] play 失败:", err));
+        // 不立即 play——等轮询里第一块 append 成功（buffered.length>0）再 play
       } catch (err) {
         console.warn("[TTS-Stream] SourceBuffer 创建失败:", err);
       }
