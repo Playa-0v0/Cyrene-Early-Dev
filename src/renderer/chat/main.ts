@@ -1216,6 +1216,7 @@ async function streamAndPlayCached(
         done = true;
         try { mediaSource?.endOfStream(); } catch { /* */ }
         cleanup();
+        console.log(`[TTS-Stream] resolve +${Math.round(performance.now() - t0)}ms cacheKey=${resolvedCacheKey?.slice(0,20)}`);
         resolve(resolvedCacheKey ? { cacheKey: resolvedCacheKey } : null);
       }
     }, 30);
@@ -1223,7 +1224,8 @@ async function streamAndPlayCached(
 
   try {
     // 启动流式合成
-    await window.tts.streamStart({
+    const t0 = performance.now();
+    const startResult = await window.tts.streamStart({
       apiKey: settings.ttsMinimaxKey,
       voiceId: settings.ttsMinimaxVoiceId,
       text,
@@ -1233,20 +1235,27 @@ async function streamAndPlayCached(
       format: "mp3",
       expectedCacheKey: existing?.ttsCacheKey,
     });
+    console.log(`[TTS-Stream] streamStart 返回 +${Math.round(performance.now() - t0)}ms started=${startResult.started} cached=${startResult.cached}`);
 
     // 注册监听（只注册一次）
+    let firstChunkAt = 0;
     offChunk = window.tts.onAudioChunk((payload) => {
       if (speechToken !== token) return;
+      if (!firstChunkAt) {
+        firstChunkAt = performance.now();
+        console.log(`[TTS-Stream] 第一个 chunk +${Math.round(firstChunkAt - t0)}ms`);
+      }
       const bytes = Uint8Array.from(atob(payload.base64), (c) => c.charCodeAt(0));
       chunkQueue.push(bytes);
     });
     offEnd = window.tts.onStreamEnd((payload) => {
       ended = true;
       resolvedCacheKey = payload.cacheKey;
+      console.log(`[TTS-Stream] STREAM_END +${Math.round(performance.now() - t0)}ms chunks=${chunkQueue.length}`);
     });
     offErr = window.tts.onStreamError((payload) => {
-      console.warn("[TTS] 流式错误:", payload.message);
-      ended = true;  // 当作结束，让轮询 resolve
+      console.warn(`[TTS-Stream] ERROR +${Math.round(performance.now() - t0)}ms:`, payload.message);
+      ended = true;
       cleanup();
       try { mediaSource?.endOfStream(); } catch { /* */ }
     });
@@ -1267,17 +1276,19 @@ async function streamAndPlayCached(
     };
 
     mediaSource.addEventListener("sourceopen", () => {
+      console.log(`[TTS-Stream] sourceopen +${Math.round(performance.now() - t0)}ms`);
       try {
         sourceBuffer = mediaSource!.addSourceBuffer("audio/mpeg");
         sourceBuffer.mode = "sequence";
+        console.log(`[TTS-Stream] sourceBuffer 创建成功`);
         void audioEl!.play().then(() => {
+          console.log(`[TTS-Stream] play() 开始 +${Math.round(performance.now() - t0)}ms`);
           if (speechToken !== token) return;
-          // 嘴动 + 荡秋千（用文本字数粗估时长）
           const estDurationMs = Math.max(2000, Array.from(text).length * 180);
           window.live2dSpeech?.startMouth(estDurationMs);
-        }).catch((err) => console.warn("[TTS] 流式播放失败:", err));
+        }).catch((err) => console.warn("[TTS-Stream] play 失败:", err));
       } catch (err) {
-        console.warn("[TTS] SourceBuffer 创建失败:", err);
+        console.warn("[TTS-Stream] SourceBuffer 创建失败:", err);
       }
     });
 
