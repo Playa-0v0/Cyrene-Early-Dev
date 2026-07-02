@@ -1176,6 +1176,7 @@ async function streamAndPlayCached(
 
   stopCurrentTts();  // 先停当前 TTS（含 stopLive2dMouth），再拿 token，否则 token 立刻失效
   const token = nextSpeechToken();
+  const t0 = performance.now();  // 诊断时间戳基准（startPolling 闭包要用，必须在 try 外声明）
   let mediaSource: MediaSource | null = null;
   let sourceBuffer: SourceBuffer | null = null;
   let audioEl: HTMLAudioElement | null = null;
@@ -1236,7 +1237,6 @@ async function streamAndPlayCached(
 
   try {
     // 启动流式合成
-    const t0 = performance.now();
     const startResult = await window.tts.streamStart({
       apiKey: settings.ttsMinimaxKey,
       voiceId: settings.ttsMinimaxVoiceId,
