@@ -30,7 +30,7 @@ export class OpenerBubbleController {
 
     // 点击气泡 = 接话
     this.bubbleEl.onclick = () => {
-      window.opener?.feedback({ type: "clicked", sceneId: payload.sceneId, itemId: payload.itemId });
+      window.openerBridge?.feedback({ type: "clicked", sceneId: payload.sceneId, itemId: payload.itemId });
     };
 
     // prepare（停当前 motion + 嘴动 reset）

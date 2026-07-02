@@ -288,7 +288,7 @@ const openerApi = {
     ipcRenderer.send(IPC.OPENER_FEEDBACK, payload),
   testFire: () => ipcRenderer.invoke(IPC.OPENER_TEST_FIRE),
 };
-contextBridge.exposeInMainWorld("opener", openerApi);
+contextBridge.exposeInMainWorld("openerBridge", openerApi);
 
 // 聊天会话存储（多对话历史）
 const chatStoreApi = {

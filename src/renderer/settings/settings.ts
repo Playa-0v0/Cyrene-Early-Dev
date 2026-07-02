@@ -3773,8 +3773,8 @@ document.querySelectorAll<HTMLButtonElement>(".opener-mode").forEach((btn) => {
 
 // Opener 测试气泡（手动触发一次，看样式）
 document.getElementById("opener-test-fire")?.addEventListener("click", () => {
-  const win = window as unknown as { opener?: { testFire?: () => Promise<void> } };
-  void win.opener?.testFire?.();
+  const win = window as unknown as { openerBridge?: { testFire?: () => Promise<void> } };
+  void win.openerBridge?.testFire?.();
 });
 
 // 自动朗读开关
