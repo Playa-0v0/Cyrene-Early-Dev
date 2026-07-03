@@ -42,6 +42,7 @@ import type {
   OutgoingPart,
 } from "../../types";
 import { loadChannelsSettings } from "../../settings-store";
+import { getAudioDurationMs } from "./audio-duration";
 
 const LOG = "[FeishuAdapter]";
 
@@ -193,12 +194,18 @@ async function sendLark(channel: LarkChannel, targetId: string, part: OutgoingPa
       break;
     }
     case "audio": {
-      // 飞书 audio: { audio: { source: path/Buffer, duration?: number } }
-      // SDK 内部会调 im/v1/files upload 拿 file_key 再发 audio 消息
+      // 飞书 audio: { audio: { source: path/Buffer, duration } } (duration 是毫秒, 必填)
+      // SDK 内部 MediaUploader.resolveDuration 只对 Opus 自动解析;
+      // 我们 TTS 输出 mp3 → 必须先解析 mp3 时长再传 duration, 否则 SDK 报
+      // "duration could not be determined for audio; pass it explicitly"
+      const duration = await getAudioDurationMs(part.filePath);
+      if (!duration) {
+        throw new Error(`无法解析音频时长: ${part.filePath}`);
+      }
       result = (await channel.send(targetId, {
         audio: {
           source: part.filePath,
-          // 不强制 duration: 飞书后台会从 mp3 头自动读
+          duration,
         },
       } as SendInput)) ?? null;
       break;
