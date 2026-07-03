@@ -13,6 +13,9 @@
 // capability 降级：
 //   把 OutgoingMessage 按目标渠道的 cap 翻译 —— image→text 描述 / card→markdown / sticker 跳过。
 import { createHash } from "crypto";
+import * as fs from "fs";
+import * as path from "path";
+import { app } from "electron";
 import type {
   ChannelCapability,
   ChannelId,
@@ -22,6 +25,7 @@ import type {
 } from "./types";
 import { channelManager, type ChannelManager } from "./manager";
 import { loadChannelsSettings, type ChannelsSettings } from "./settings-store";
+import { appendLog, reloadLogFromDisk } from "./message-log";
 
 const LOG = "[ChannelDispatcher]";
 
@@ -99,6 +103,18 @@ export interface DispatcherDeps {
   getChatWindow?: () => { webContents: { isDestroyed(): boolean; send: (channel: string, ...args: unknown[]) => void }; isDestroyed(): boolean } | null;
   /** Phase 1+：完整 agent 调用。Phase 0 留空，返回纯 echo。 */
   buildAndRunAgent?: (msg: IncomingMessage, sessionId: string) => Promise<string>;
+  /** Phase 3：可选 — 把文本合成成音频 (mp3 buffer)。失败返回 null，dispatcher 会跳过 audio。 */
+  synthesizeTts?: (text: string) => Promise<Buffer | null>;
+  /** Phase 3：可选 — 桌面端镜像广播：bot 入站/出站消息通知给 chatWindow。 */
+  broadcastChat?: (event: {
+    type: "bot:incoming" | "bot:outgoing";
+    channel: string;
+    senderId: string;
+    senderName?: string;
+    chatId: string;
+    text: string;
+    at: number;
+  }) => void;
 }
 
 export class ChannelDispatcher {
@@ -110,6 +126,7 @@ export class ChannelDispatcher {
     this.deps = deps;
     this.settings = loadChannelsSettings();
     this.limiter = new RateLimiter(this.settings);
+    reloadLogFromDisk();
   }
 
   /** 重新加载 settings（UI 改了限速配置时调） */
@@ -133,6 +150,38 @@ export class ChannelDispatcher {
     const sessionId = makeSessionId(msg.channel, msg.senderId);
     recordSession(msg.channel, msg.senderId, sessionId);
 
+    // Phase 3：入站消息广播到桌面端 chatWindow（让用户看到 bot 在和谁聊天）
+    if (this.settings.mirrorToDesktop) {
+      try {
+        this.deps.broadcastChat?.({
+          type: "bot:incoming",
+          channel: msg.channel,
+          senderId: msg.senderId,
+          senderName: msg.senderName,
+          chatId: msg.chatId,
+          text: msg.text,
+          at: msg.at.getTime(),
+        });
+      } catch (err) {
+        console.warn(LOG, "broadcastChat (incoming) 失败:", err);
+      }
+    }
+
+    // Phase 3.4：入站消息写日志
+    try {
+      appendLog({
+        dir: "incoming",
+        channel: msg.channel,
+        senderId: msg.senderId,
+        senderName: msg.senderName,
+        chatId: msg.chatId,
+        text: msg.text,
+        hasAttachments: (msg.attachments?.length ?? 0) > 0,
+      });
+    } catch (err) {
+      console.warn(LOG, "appendLog (incoming) 失败:", err);
+    }
+
     // Phase 1 实装的 agent 调用；Phase 0 没有 → echo
     let replyText: string;
     if (this.deps.buildAndRunAgent) {
@@ -147,12 +196,68 @@ export class ChannelDispatcher {
       console.log(LOG, "Phase 0 echo (无 buildAndRunAgent):", replyText);
     }
 
+    // 构造 OutgoingMessage parts
+    const parts: OutgoingPart[] = [{ kind: "text", text: replyText }];
+
+    // Phase 3：TTS 音频自动追加（如果启用且适配器支持 audio）
+    if (this.settings.ttsEnabled && this.deps.synthesizeTts) {
+      const adapterCap = this.deps.manager.getAdapter(msg.channel)?.capability;
+      if (adapterCap?.audio) {
+        try {
+          const audioBuf = await this.deps.synthesizeTts(replyText);
+          if (audioBuf && audioBuf.length > 0) {
+            // 写到 userData/channels/audio/<messageId>.mp3 缓存
+            const audioDir = path.join(app.getPath("userData"), "channels", "audio");
+            fs.mkdirSync(audioDir, { recursive: true });
+            const audioPath = path.join(audioDir, `${msg.channel}-${Date.now()}.mp3`);
+            fs.writeFileSync(audioPath, audioBuf);
+            parts.push({ kind: "audio", filePath: audioPath, mime: "audio/mpeg" });
+            console.log(LOG, `TTS 合成完成: ${audioBuf.length} bytes → ${audioPath}`);
+          }
+        } catch (err) {
+          console.warn(LOG, "TTS 合成失败（跳过音频）:", err instanceof Error ? err.message : err);
+        }
+      }
+    }
+
+    // Phase 3：出站消息广播到桌面端
+    if (this.settings.mirrorToDesktop) {
+      try {
+        this.deps.broadcastChat?.({
+          type: "bot:outgoing",
+          channel: msg.channel,
+          senderId: msg.senderId,
+          senderName: msg.senderName,
+          chatId: msg.chatId,
+          text: replyText,
+          at: Date.now(),
+        });
+      } catch (err) {
+        console.warn(LOG, "broadcastChat (outgoing) 失败:", err);
+    }
+    }
+
+    // Phase 3.4：出站消息写日志（仅文本 part，附件路径不写进 JSONL）
+    try {
+      appendLog({
+        dir: "outgoing",
+        channel: msg.channel,
+        senderId: msg.senderId,
+        senderName: msg.senderName,
+        chatId: msg.chatId,
+        text: replyText,
+        hasAttachments: parts.some((p) => p.kind === "audio"),
+      });
+    } catch (err) {
+      console.warn(LOG, "appendLog (outgoing) 失败:", err);
+    }
+
     // 构造 OutgoingMessage，capability 降级
     const outgoing: OutgoingMessage = {
       channel: msg.channel,
       targetId: msg.chatId,
       threadId: msg.threadId,
-      parts: [{ kind: "text", text: replyText }],
+      parts,
     };
     return this.downgradeToCapability(outgoing, this.deps.manager.getAdapter(msg.channel)?.capability);
   }
@@ -202,4 +307,24 @@ export function setDispatcherBuildAndRunAgent(
   fn: (msg: IncomingMessage, sessionId: string) => Promise<string>,
 ): void {
   channelDispatcher.deps.buildAndRunAgent = fn;
+}
+
+/** Phase 3.1：注入 TTS 合成（返回 mp3 Buffer 或 null） */
+export function setDispatcherSynthesizeTts(fn: (text: string) => Promise<Buffer | null>): void {
+  channelDispatcher.deps.synthesizeTts = fn;
+}
+
+/** Phase 3.2：注入桌面端镜像广播（chatWindow 推送 bot 入站/出站消息） */
+export function setDispatcherBroadcastChat(
+  fn: (event: {
+    type: "bot:incoming" | "bot:outgoing";
+    channel: string;
+    senderId: string;
+    senderName?: string;
+    chatId: string;
+    text: string;
+    at: number;
+  }) => void,
+): void {
+  channelDispatcher.deps.broadcastChat = fn;
 }

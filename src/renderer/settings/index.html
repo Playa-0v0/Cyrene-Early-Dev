@@ -709,6 +709,17 @@
         </section>
 
         <section class="settings-panel is-hidden" id="channels-panel" data-panel="channels">
+          <details class="channels-log" id="channels-log-details">
+            <summary>💬 消息日志（最近 100 条）</summary>
+            <div class="channels-log__actions">
+              <button type="button" class="btn-secondary" id="channels-log-refresh">刷新</button>
+              <button type="button" class="btn-secondary" id="channels-log-clear">清空</button>
+            </div>
+            <div class="channels-log__list" id="channels-log-list">
+              <p class="empty-hint">暂无消息。</p>
+            </div>
+          </details>
+          <h1>连接手机</h1>
           <h1>连接手机</h1>
           <p class="panel-hint">把 Cyrene 接到微信、飞书等聊天平台。在外部渠道里的每个用户会拥有独立的对话上下文与记忆。</p>
 

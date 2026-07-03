@@ -17,6 +17,8 @@ import { getAdapter, buildVendorUrl } from "./orchestrator/vendors";
 import { getCapability } from "./orchestrator/vendors/capabilities";
 import type { VisionConfig } from "./orchestrator/vision-captioner";
 import { toolRegistry, type ToolDefinition } from "./orchestrator/tool-registry";
+import type { ToolRiskLevel } from "./permission";
+import { loadChannelsSettings } from "./channels/settings-store";
 // 触发 built-in-tools 的副作用注册（fetch_url / run_shell / install_mcp_server）
 import "./orchestrator/built-in-tools";
 // 触发 fs-tools 的副作用注册（read_file / list_dir / write_file / read_image）
@@ -54,7 +56,7 @@ import { setCallWindow, registerCallIpc, setCallSettings, stopCall } from "./cal
 import { initSkills, skillRegistry, buildSkillCatalog, parseSlashCommand, setSkillEnabled, listSkillsForUi } from "./skills";
 import { initGameBot } from "./game-bot";
 import { initChannels, shutdownChannels } from "./channels/init";
-import { setDispatcherBuildAndRunAgent } from "./channels/dispatcher";
+import { setDispatcherBuildAndRunAgent, setDispatcherSynthesizeTts, setDispatcherBroadcastChat } from "./channels/dispatcher";
 import {
   buildAgentRunOptions,
   onAgentRunFinished,
@@ -3114,8 +3116,20 @@ app.whenReady().then(async () => {
   // 游戏代肝：IPC + game_bot_start 工具
   initGameBot();
 
-  // 多渠道（微信/飞书/...）：先注入 dispatcher 的 buildAndRunAgent，让 channels 模块拿到真 agent
+  // 多渠道（微信/飞书/...）：先注入 dispatcher 的 buildAndRunAgent + TTS + 镜像广播，
+  // 让 channels 模块拿到真 agent + 出站增强能力。
   setDispatcherBuildAndRunAgent(async (msg, sessionId) => {
+    // Phase 3.3：按 toolSandbox 过滤可用工具
+    const sandbox = loadChannelsSettings().toolSandbox;
+    const allTools = toolRegistry.getEnabledTools();
+    const filteredTools: ToolDefinition[] = sandbox === "safe-only"
+      ? allTools.filter((t) => (t.risk ?? "safe") === ("safe" as ToolRiskLevel))
+      : allTools;
+    console.log(
+      "[Channels] bot run:",
+      `msg.channel=${msg.channel} sandbox=${sandbox} tools=${filteredTools.length}/${allTools.length}`,
+    );
+
     // 把 IncomingMessage 转成 AguiRunInput，调 CyreneAgent
     const { options } = await buildAgentRunOptions(
       {
@@ -3129,6 +3143,9 @@ app.whenReady().then(async () => {
       },
       buildOptionsDeps,
     );
+    // 把过滤后的 tools 注入 options（覆盖默认的 getEnabledTools）
+    options.tools = filteredTools;
+
     const threadId = `thread-${sessionId}-${Date.now()}`;
     const agent = new CyreneAgent({ threadId, description: `bot:${msg.channel}:${msg.senderId}` });
     const reply = await new Promise<string>((resolve, reject) => {
@@ -3146,6 +3163,45 @@ app.whenReady().then(async () => {
     void indexConversationTurn(sessionId, msg.text, reply);
     return reply;
   });
+
+  // Phase 3.1：注入 TTS 合成 —— dispatcher 在 reply 后会用这个生成 mp3
+  setDispatcherSynthesizeTts(async (text: string) => {
+    const cfg = loadGeneralSettings();
+    if (cfg.ttsEngine === "off") return null;
+    if (!cfg.ttsMinimaxKey || !cfg.ttsMinimaxVoiceId) return null;
+    // 限制 TTS 文本长度（飞书 audio 100M 限制 + 用户体验，太长应截断）
+    const ttsText = text.length > 1000 ? text.slice(0, 1000) + "…" : text;
+    try {
+      const buf = await ttsSynthesize({
+        apiKey: cfg.ttsMinimaxKey,
+        voiceId: cfg.ttsMinimaxVoiceId,
+        text: ttsText,
+        speed: cfg.ttsSpeed,
+        volume: cfg.ttsVolume,
+        format: "mp3",
+      });
+      return buf;
+    } catch (err) {
+      console.warn("[Channels] TTS 合成失败:", err instanceof Error ? err.message : err);
+      return null;
+    }
+  });
+
+  // Phase 3.2：注入桌面端镜像广播 —— 把 bot 入站/出站消息推到 chatWindow
+  setDispatcherBroadcastChat((event) => {
+    const win = chatWindow;
+    if (!win || win.isDestroyed()) return;
+    try {
+      win.webContents.send(IPC.AGUI_EVENT, {
+        type: "CUSTOM",
+        name: "cyrene.botMessage",
+        value: event,
+      });
+    } catch (err) {
+      console.warn("[Channels] botMessage 广播失败:", err);
+    }
+  });
+
   void initChannels();
 
   // 任务清单（todo_write 工具的持久化 + 事件广播）：

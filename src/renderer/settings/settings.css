@@ -2846,3 +2846,47 @@ body {
 .channels-feedback--ok { color: rgba(74, 222, 128, 0.95); }
 .channels-feedback--err { color: rgba(248, 113, 113, 0.92); }
 .channels-feedback--info { color: rgba(250, 204, 21, 0.92); }
+
+.channels-log {
+  margin: 12px 0 24px 0;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 182, 220, 0.12);
+}
+.channels-log > summary {
+  cursor: pointer;
+  font-size: 13px;
+  color: rgba(254, 247, 255, 0.85);
+  user-select: none;
+}
+.channels-log__actions {
+  display: flex;
+  gap: 8px;
+  margin: 10px 0;
+}
+.channels-log__list {
+  max-height: 320px;
+  overflow-y: auto;
+  font-family: ui-monospace, "Cascadia Code", Menlo, monospace;
+  font-size: 11px;
+}
+.channels-log__entry {
+  padding: 6px 8px;
+  margin-bottom: 4px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.03);
+  border-left: 3px solid rgba(168, 85, 247, 0.5);
+}
+.channels-log__entry--incoming { border-left-color: rgba(74, 222, 128, 0.7); }
+.channels-log__entry--outgoing { border-left-color: rgba(255, 110, 199, 0.9); }
+.channels-log__meta {
+  color: rgba(254, 247, 255, 0.5);
+  font-size: 10px;
+  margin-bottom: 2px;
+}
+.channels-log__text {
+  color: rgba(254, 247, 255, 0.92);
+  white-space: pre-wrap;
+  word-break: break-word;
+}

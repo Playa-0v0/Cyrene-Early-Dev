@@ -15,6 +15,7 @@ import { channelManager } from "./manager";
 import { channelDispatcher } from "./dispatcher";
 import { startInboundServer, stopInboundServer } from "./inbound-server";
 import { FeishuAdapter } from "./adapters/feishu";
+import { getRecentLog, clearLog } from "./message-log";
 
 const LOG = "[ChannelsInit]";
 
@@ -121,6 +122,16 @@ function registerChannelsIpc(): void {
       ok: true,
       message: "长连接模式不需要公网 URL — SDK 已自动建立 WSS 连接",
     };
+  });
+
+  // Phase 3.4：消息日志
+  ipcMain.handle(IPC.CHANNELS_LOG_GET, (_e, limit: unknown) => {
+    const n = typeof limit === "number" && limit > 0 ? limit : 100;
+    return getRecentLog(n);
+  });
+  ipcMain.handle(IPC.CHANNELS_LOG_CLEAR, () => {
+    clearLog();
+    return { ok: true };
   });
 }
 

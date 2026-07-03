@@ -2204,6 +2204,8 @@ async function loadChannelsPanel(): Promise<void> {
     const status = (await window.settings.channelsGetStatus()) as Record<string, { phase: string; message?: string }>;
     renderChannelStatus(channelsWechatStatusEl, status.wechat?.phase ?? "offline", status.wechat?.message);
     renderChannelStatus(channelsFeishuStatusEl, status.feishu?.phase ?? "offline", status.feishu?.message);
+    // Phase 3.4：拉一次消息日志
+    void refreshChannelsLog();
   } catch (err) {
     console.warn("[Channels] loadChannelsPanel 失败:", err);
   }
@@ -2294,6 +2296,67 @@ function setFeishuFeedback(kind: "info" | "ok" | "err", msg: string): void {
   else if (kind === "err") channelsFeishuFeedbackEl.classList.add("channels-feedback--err");
   else channelsFeishuFeedbackEl.classList.add("channels-feedback--info");
 }
+
+// ===== Phase 3.4：消息日志 =====
+const channelsLogListEl = document.getElementById("channels-log-list");
+const channelsLogRefreshBtn = document.getElementById("channels-log-refresh");
+const channelsLogClearBtn = document.getElementById("channels-log-clear");
+
+interface LogEntry {
+  at: string;
+  dir: "incoming" | "outgoing";
+  channel: string;
+  senderId: string;
+  senderName?: string;
+  chatId: string;
+  text: string;
+  hasAttachments?: boolean;
+}
+
+function renderChannelsLog(entries: LogEntry[]): void {
+  if (!channelsLogListEl) return;
+  if (entries.length === 0) {
+    channelsLogListEl.innerHTML = '<p class="empty-hint">暂无消息。</p>';
+    return;
+  }
+  const html = entries
+    .map((e) => {
+      const t = new Date(e.at);
+      const hh = String(t.getHours()).padStart(2, "0");
+      const mm = String(t.getMinutes()).padStart(2, "0");
+      const ss = String(t.getSeconds()).padStart(2, "0");
+      const dir = e.dir === "incoming" ? "← 收到" : "→ 回复";
+      const who = e.senderName ? `${e.senderName} (${e.senderId})` : e.senderId;
+      const safe = (s: string) =>
+        s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      const text = e.text.length > 280 ? safe(e.text.slice(0, 280)) + "…" : safe(e.text);
+      return `<div class="channels-log__entry channels-log__entry--${e.dir}">
+        <div class="channels-log__meta">${hh}:${mm}:${ss} · ${dir} · ${safe(e.channel)} · ${safe(who)}</div>
+        <div class="channels-log__text">${text}</div>
+      </div>`;
+    })
+    .join("");
+  channelsLogListEl.innerHTML = html;
+}
+
+async function refreshChannelsLog(): Promise<void> {
+  try {
+    const entries = (await window.settings.channelsLogGet(100)) as LogEntry[];
+    renderChannelsLog(entries);
+  } catch (err) {
+    console.warn("[Channels] refreshChannelsLog 失败:", err);
+  }
+}
+
+channelsLogRefreshBtn?.addEventListener("click", () => void refreshChannelsLog());
+channelsLogClearBtn?.addEventListener("click", async () => {
+  if (!confirm("确认清空所有 bot 消息日志？")) return;
+  await window.settings.channelsLogClear();
+  await refreshChannelsLog();
+});
+
+// 首次进入 channels panel 时拉一次日志
+// （也可以在用户展开 details 时再拉，但保持简单直接拉）
 void loadChannelsPanel();
 // 启动时读 URL hash 决定初始标签（main 通过 loadURL 带 #api 实现"切换模型按钮跳 API"）。
 // 无 hash 默认 general。
