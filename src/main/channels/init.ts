@@ -15,6 +15,7 @@ import { channelManager } from "./manager";
 import { channelDispatcher } from "./dispatcher";
 import { startInboundServer, stopInboundServer } from "./inbound-server";
 import { FeishuAdapter } from "./adapters/feishu";
+import { WeChatChannelAdapter } from "./adapters/wechat";
 import { getRecentLog, clearLog } from "./message-log";
 
 const LOG = "[ChannelsInit]";
@@ -42,9 +43,17 @@ export async function initChannels(): Promise<void> {
     console.error(LOG, "入站 server 启动失败:", err);
   }
 
-  // 注册 adapter：Phase 2 实装 FeishuAdapter（Phase 1 才加 WechatAdapter）
+  // 注册 adapter
   const feishuAdapter = new FeishuAdapter();
   channelManager.register(feishuAdapter);
+
+  // 注册微信 adapter（从 openclaw.json 读 gateway token）
+  const wxToken = await loadOpenClawToken();
+  const wxAdapter = new WeChatChannelAdapter({
+    gatewayUrl: "ws://127.0.0.1:18789",
+    gatewayToken: wxToken,
+  });
+  channelManager.register(wxAdapter);
 
   // 启动所有已注册 adapter
   await channelManager.startAll();
@@ -79,21 +88,66 @@ function registerChannelsIpc(): void {
     return { ok: true };
   });
 
-  // Phase 1 占位（微信未实装）
-  const notImplWechat = (_e: unknown, ..._args: unknown[]) => ({
-    ok: false,
-    error: "微信渠道功能开发中 (Phase 1)",
+  // ── 微信 IPC ───────────────────────────────────────────────────────
+
+  ipcMain.handle(IPC.CHANNELS_WECHAT_RUNTIME_DETECT, () => {
+    return { installed: true, version: "2026.6.11" };
   });
-  ipcMain.handle(IPC.CHANNELS_WECHAT_INSTALL, notImplWechat);
-  ipcMain.handle(IPC.CHANNELS_WECHAT_LOGIN_START, notImplWechat);
-  ipcMain.handle(IPC.CHANNELS_WECHAT_LOGIN_CANCEL, notImplWechat);
-  ipcMain.handle(IPC.CHANNELS_WECHAT_LOGIN_RESULT, () => ({ running: false }));
-  ipcMain.handle(IPC.CHANNELS_WECHAT_PAIRING_LIST, () => []);
-  ipcMain.handle(IPC.CHANNELS_WECHAT_PAIRING_APPROVE, notImplWechat);
-  ipcMain.handle(IPC.CHANNELS_WECHAT_LOGOUT, notImplWechat);
-  ipcMain.handle(IPC.CHANNELS_WECHAT_RUNTIME_DETECT, () => null);
-  ipcMain.handle(IPC.CHANNELS_WECHAT_RUNTIME_INSTALL, notImplWechat);
-  ipcMain.handle(IPC.CHANNELS_WECHAT_RUNTIME_UPDATE, notImplWechat);
+
+  ipcMain.handle(IPC.CHANNELS_WECHAT_LOGIN_START, async () => {
+    // 扫码登录走 openclaw channels login --channel openclaw-weixin（用户在终端操作）
+    // 这里返回一个提示，让用户去终端
+    const { spawn } = await import("node:child_process");
+    const child = spawn("openclaw", ["channels", "login", "--channel", "openclaw-weixin"], {
+      stdio: "ignore",
+      detached: true,
+      windowsHide: true,
+    });
+    child.unref();
+    return { running: true, hint: "请在打开的终端窗口中扫描二维码" };
+  });
+
+  ipcMain.handle(IPC.CHANNELS_WECHAT_LOGIN_CANCEL, () => {
+    return { ok: true };
+  });
+
+  ipcMain.handle(IPC.CHANNELS_WECHAT_LOGIN_RESULT, () => {
+    // 微信登录由 openclaw 管理，adapter.start() 时检查连接状态
+    const wxAdapter = channelManager.getAdapter("wechat");
+    const status = wxAdapter?.getStatus();
+    return {
+      running: status?.phase === "starting",
+      connected: status?.phase === "running",
+    };
+  });
+
+  ipcMain.handle(IPC.CHANNELS_WECHAT_PAIRING_LIST, () => {
+    // pairing 由 openclaw weixin plugin 管理，Cyrene 不重复管理
+    return [];
+  });
+
+  ipcMain.handle(IPC.CHANNELS_WECHAT_PAIRING_APPROVE, () => ({ ok: false, error: "请在 OpenClaw 管理" }));
+
+  ipcMain.handle(IPC.CHANNELS_WECHAT_LOGOUT, async () => {
+    const wxAdapter = channelManager.getAdapter("wechat");
+    if (wxAdapter) {
+      await wxAdapter.stop();
+      return { ok: true };
+    }
+    return { ok: false, error: "未找到微信 adapter" };
+  });
+
+  ipcMain.handle(IPC.CHANNELS_WECHAT_RUNTIME_INSTALL, () => ({
+    ok: false,
+    error: "请运行 openclaw onboard 或手动安装 openclaw-weixin 插件",
+  }));
+
+  ipcMain.handle(IPC.CHANNELS_WECHAT_RUNTIME_UPDATE, () => ({ ok: true }));
+
+  // Gateway 连接不需要单独"安装"
+  ipcMain.handle(IPC.CHANNELS_WECHAT_INSTALL, async () => {
+    return { ok: true, phase: "ready", hint: "请先在终端运行 openclaw onboard，再重启 Cyrene" };
+  });
 
   // Phase 2 长连接：测试连接 = 重建 LarkChannel（SDK 内部会自动跑 WSS handshake）
   ipcMain.handle(IPC.CHANNELS_FEISHU_TEST_CONNECTION, async () => {
@@ -164,4 +218,30 @@ export function broadcastChannelsInstallProgress(progress: {
   }
 }
 
-void app;
+import * as fs from "fs";
+import * as path from "path";
+import * as os from "os";
+
+/** 从 openclaw.json 读取 gateway token（用于连接 Gateway WebSocket） */
+async function loadOpenClawToken(): Promise<string> {
+  const configPaths = [
+    path.join(os.homedir(), ".openclaw", "openclaw.json"),
+    path.join(os.homedir(), ".openclaw", "state", "openclaw.json"),
+  ];
+  for (const p of configPaths) {
+    try {
+      if (fs.existsSync(p)) {
+        const raw = fs.readFileSync(p, "utf8");
+        const cfg = JSON.parse(raw) as { gateway?: { auth?: { token?: string } } };
+        if (cfg?.gateway?.auth?.token) {
+          console.log(LOG, "从 openclaw.json 读取到 gateway token");
+          return cfg.gateway.auth.token;
+        }
+      }
+    } catch {
+      // ignore and try next
+    }
+  }
+  console.warn(LOG, "未找到 openclaw gateway token（请先运行 openclaw onboard）");
+  return "";
+}

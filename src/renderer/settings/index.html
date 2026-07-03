@@ -734,12 +734,15 @@
                 <span class="channels-status__text">未启用</span>
               </div>
               <p class="channels-card__hint">
-                基于腾讯官方 OpenClaw 运行时连接个人微信。功能开发中 (Phase 1)。
+                基于腾讯官方 OpenClaw 运行时连接微信。先在终端运行
+                <code>openclaw onboard</code> + <code>openclaw channels login --channel openclaw-weixin</code>
+                完成扫码绑定，Cyrene 重启后自动连接。
               </p>
               <div class="channels-card__actions">
-                <button type="button" class="btn-secondary" disabled>扫码登录</button>
-                <button type="button" class="btn-secondary" disabled>重新探测 Runtime</button>
+                <button type="button" class="btn-secondary" id="channels-wechat-login">扫码登录</button>
+                <button type="button" class="btn-secondary" id="channels-wechat-restart">重启连接</button>
               </div>
+              <div class="channels-feedback" id="channels-wechat-feedback"></div>
             </div>
           </div>
 

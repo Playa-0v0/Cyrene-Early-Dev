@@ -2157,6 +2157,10 @@ const channelsFeishuAppIdEl = document.getElementById("channels-feishu-app-id") 
 const channelsFeishuAppSecretEl = document.getElementById("channels-feishu-app-secret") as HTMLInputElement | null;
 const channelsFeishuAppSecretRevealBtn = document.getElementById("channels-feishu-app-secret-reveal");
 const channelsFeishuSaveBtn = document.getElementById("channels-feishu-save");
+// 微信按钮
+const channelsWechatLoginBtn = document.getElementById("channels-wechat-login");
+const channelsWechatRestartBtn = document.getElementById("channels-wechat-restart");
+const channelsWechatFeedbackEl = document.getElementById("channels-wechat-feedback");
 const channelsFeishuFeedbackEl = document.getElementById("channels-feishu-feedback");
 
 let channelsInitialized = false;
@@ -2284,6 +2288,43 @@ async function loadChannelsPanel(): Promise<void> {
       }
     } catch (err) {
       setFeishuFeedback("err", err instanceof Error ? err.message : String(err));
+    }
+  });
+
+  // ===== 微信交互（Phase 1：扫码登录走 openclaw CLI，重启走 channelsRestart） =====
+
+  function setWechatFeedback(kind: "info" | "ok" | "err", msg: string): void {
+    if (!channelsWechatFeedbackEl) return;
+    channelsWechatFeedbackEl.textContent = msg;
+    channelsWechatFeedbackEl.className = "channels-feedback";
+    if (kind === "ok") channelsWechatFeedbackEl.classList.add("channels-feedback--ok");
+    else if (kind === "err") channelsWechatFeedbackEl.classList.add("channels-feedback--err");
+    else channelsWechatFeedbackEl.classList.add("channels-feedback--info");
+  }
+
+  // 扫码登录：在终端打开 openclaw channels login（用户自己扫码）
+  channelsWechatLoginBtn?.addEventListener("click", async () => {
+    setWechatFeedback("info", "正在启动扫码…");
+    try {
+      const result = await window.settings.channelsWechatLoginStart();
+      if (result.running) {
+        setWechatFeedback("ok", result.hint ?? "请在打开的终端窗口中扫描二维码");
+      } else {
+        setWechatFeedback("err", result.error ?? "启动失败");
+      }
+    } catch (err) {
+      setWechatFeedback("err", err instanceof Error ? err.message : String(err));
+    }
+  });
+
+  // 重启连接
+  channelsWechatRestartBtn?.addEventListener("click", async () => {
+    setWechatFeedback("info", "重启连接中…");
+    try {
+      await window.settings.channelsRestart();
+      setWechatFeedback("ok", "已重启");
+    } catch (err) {
+      setWechatFeedback("err", err instanceof Error ? err.message : String(err));
     }
   });
 }
