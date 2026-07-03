@@ -26,6 +26,13 @@ import type {
 import { channelManager, type ChannelManager } from "./manager";
 import { loadChannelsSettings, type ChannelsSettings } from "./settings-store";
 import { appendLog, reloadLogFromDisk } from "./message-log";
+import { appendHistory as appendChannelHistory } from "./history-log";
+
+/** Phase A：用于拼接历史对话的轻量 ChatMessage 形状（与 orchestrator ChatMessage 兼容）。 */
+interface ChatMessage {
+  role: "user" | "assistant" | "system" | "tool";
+  content?: string;
+}
 
 const LOG = "[ChannelDispatcher]";
 
@@ -102,7 +109,9 @@ export interface DispatcherDeps {
   /** 渲染端 chatWindow 用于镜像显示（可选） */
   getChatWindow?: () => { webContents: { isDestroyed(): boolean; send: (channel: string, ...args: unknown[]) => void }; isDestroyed(): boolean } | null;
   /** Phase 1+：完整 agent 调用。Phase 0 留空，返回纯 echo。 */
-  buildAndRunAgent?: (msg: IncomingMessage, sessionId: string) => Promise<string>;
+  buildAndRunAgent?: (msg: IncomingMessage, sessionId: string, priorMessages?: ChatMessage[]) => Promise<string>;
+  /** Phase A：读这个 sessionId 最近 N 条对话历史（按时间顺序）。不提供时不拼历史，行为同 Phase 0。 */
+  loadRecentChannelHistory?: (sessionId: string, limit: number) => Promise<ChatMessage[]>;
   /** Phase 3：可选 — 把文本合成成音频 (mp3 buffer)。失败返回 null，dispatcher 会跳过 audio。 */
   synthesizeTts?: (text: string) => Promise<Buffer | null>;
   /** Phase 3：可选 — 桌面端镜像广播：bot 入站/出站消息通知给 chatWindow。 */
@@ -182,11 +191,29 @@ export class ChannelDispatcher {
       console.warn(LOG, "appendLog (incoming) 失败:", err);
     }
 
+    // Phase A2：入站消息落对话历史（下一步 LLM 取的滑窗数据源）
+    try {
+      appendChannelHistory(sessionId, "user", msg.text);
+    } catch (err) {
+      console.warn(LOG, "appendHistory (incoming) 失败:", err);
+    }
+
     // Phase 1 实装的 agent 调用；Phase 0 没有 → echo
     let replyText: string;
     if (this.deps.buildAndRunAgent) {
+      // Phase A：拼接最近 16 条历史 (同桌面端 buildModelMessages 行为).
+      // 加载失败/未注入 → 不拼历史 (兼容旧实现).
+      let priorMessages: ChatMessage[] | undefined;
+      if (this.deps.loadRecentChannelHistory) {
+        try {
+          priorMessages = await this.deps.loadRecentChannelHistory(sessionId, 16);
+        } catch (err) {
+          console.warn(LOG, "loadRecentChannelHistory 失败 (继续不带历史):", err);
+          priorMessages = undefined;
+        }
+      }
       try {
-        replyText = await this.deps.buildAndRunAgent(msg, sessionId);
+        replyText = await this.deps.buildAndRunAgent(msg, sessionId, priorMessages);
       } catch (err) {
         console.error(LOG, "agent 调用失败:", err instanceof Error ? err.message : err);
         return null;
@@ -255,6 +282,13 @@ export class ChannelDispatcher {
       console.warn(LOG, "appendLog (outgoing) 失败:", err);
     }
 
+    // Phase A2：出站消息落对话历史（assistant 角色）
+    try {
+      appendChannelHistory(sessionId, "assistant", replyText);
+    } catch (err) {
+      console.warn(LOG, "appendHistory (outgoing) 失败:", err);
+    }
+
     // 构造 OutgoingMessage，capability 降级
     const outgoing: OutgoingMessage = {
       channel: msg.channel,
@@ -307,14 +341,21 @@ export const channelDispatcher = new ChannelDispatcher({
 
 /** 给 index.ts 调：注入 buildAndRunAgent（让 dispatcher 真正跑 agent） */
 export function setDispatcherBuildAndRunAgent(
-  fn: (msg: IncomingMessage, sessionId: string) => Promise<string>,
+  fn: (msg: IncomingMessage, sessionId: string, priorMessages?: { role: "user" | "assistant" | "system"; content?: string }[]) => Promise<string>,
 ): void {
-  channelDispatcher.deps.buildAndRunAgent = fn;
+  channelDispatcher.deps.buildAndRunAgent = fn as never;
 }
 
 /** Phase 3.1：注入 TTS 合成（返回 mp3 Buffer 或 null） */
 export function setDispatcherSynthesizeTts(fn: (text: string) => Promise<Buffer | null>): void {
   channelDispatcher.deps.synthesizeTts = fn;
+}
+
+/** Phase A：注入最近对话历史读取（index.ts 注入一个用 history-log 实现的闭包） */
+export function setDispatcherLoadRecentHistory(
+  fn: (sessionId: string, limit: number) => Promise<{ role: "user" | "assistant"; content?: string }[]>,
+): void {
+  channelDispatcher.deps.loadRecentChannelHistory = fn;
 }
 
 /** Phase 3.2：注入桌面端镜像广播（chatWindow 推送 bot 入站/出站消息） */

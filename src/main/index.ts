@@ -56,7 +56,7 @@ import { setCallWindow, registerCallIpc, setCallSettings, stopCall } from "./cal
 import { initSkills, skillRegistry, buildSkillCatalog, parseSlashCommand, setSkillEnabled, listSkillsForUi } from "./skills";
 import { initGameBot } from "./game-bot";
 import { initChannels, shutdownChannels } from "./channels/init";
-import { setDispatcherBuildAndRunAgent, setDispatcherSynthesizeTts, setDispatcherBroadcastChat } from "./channels/dispatcher";
+import { setDispatcherBuildAndRunAgent, setDispatcherSynthesizeTts, setDispatcherBroadcastChat, setDispatcherLoadRecentHistory } from "./channels/dispatcher";
 import {
   buildAgentRunOptions,
   onAgentRunFinished,
@@ -3116,9 +3116,15 @@ app.whenReady().then(async () => {
   // 游戏代肝：IPC + game_bot_start 工具
   initGameBot();
 
-  // 多渠道（微信/飞书/...）：先注入 dispatcher 的 buildAndRunAgent + TTS + 镜像广播，
-  // 让 channels 模块拿到真 agent + 出站增强能力。
-  setDispatcherBuildAndRunAgent(async (msg, sessionId) => {
+  // 多渠道（微信/飞书/...）：先注入 dispatcher 的 buildAndRunAgent + TTS + 镜像广播 + 最近历史读取，
+  // 让 channels 模块拿到真 agent + 出站增强能力 + 对话上下文。
+  setDispatcherLoadRecentHistory(async (sessionId, limit) => {
+    // 委托给 history-log：读 userData/channels/history/<sessionId>.jsonl 最新 N 条
+    const { loadRecentHistory } = await import("./channels/history-log");
+    return loadRecentHistory(sessionId, limit);
+  });
+
+  setDispatcherBuildAndRunAgent(async (msg, sessionId, priorMessages) => {
     // Phase 3.3：按 toolSandbox 过滤可用工具
     const sandbox = loadChannelsSettings().toolSandbox;
     const allTools = toolRegistry.getEnabledTools();
@@ -3127,13 +3133,25 @@ app.whenReady().then(async () => {
       : allTools;
     console.log(
       "[Channels] bot run:",
-      `msg.channel=${msg.channel} sandbox=${sandbox} tools=${filteredTools.length}/${allTools.length}`,
+      `msg.channel=${msg.channel} sandbox=${sandbox} tools=${filteredTools.length}/${allTools.length} priorMsgs=${priorMessages?.length ?? 0}`,
     );
+
+    // Phase A：拼接历史 (同桌面端 buildModelMessages 行为: 上滑窗最近 N 条).
+    // history-log 统一存 role: "user"|"assistant", 直接用即可.
+    const historyMessages = (priorMessages ?? [])
+      .filter((m) => typeof m.content === "string" && m.content.trim().length > 0)
+      .map((m) => ({
+        role: m.role as "user" | "assistant" | "system",
+        content: m.content,
+      }));
 
     // 把 IncomingMessage 转成 AguiRunInput，调 CyreneAgent
     const { options } = await buildAgentRunOptions(
       {
-        messages: [{ role: "user", content: msg.text }],
+        messages: [
+          ...historyMessages,
+          { role: "user", content: msg.text },
+        ],
         style: "01_default.md",
         sessionId,
         attachments: msg.attachments?.map((a) => ({
