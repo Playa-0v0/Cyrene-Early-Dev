@@ -181,10 +181,10 @@ async function sendLark(channel: LarkChannel, targetId: string, part: OutgoingPa
     }
     case "image": {
       if (part.filePath) {
+        // 飞书 image: { image: { source: path/Buffer } }
         result = (await channel.send(targetId, {
-          file_path: part.filePath,
-          file_name: part.caption ?? "image.png",
-        } as unknown as SendInput)) ?? null;
+          image: { source: part.filePath },
+        } as SendInput)) ?? null;
       } else if (part.url) {
         throw new Error("image URL 需要先下载到本地 filePath");
       } else {
@@ -193,9 +193,14 @@ async function sendLark(channel: LarkChannel, targetId: string, part: OutgoingPa
       break;
     }
     case "audio": {
+      // 飞书 audio: { audio: { source: path/Buffer, duration?: number } }
+      // SDK 内部会调 im/v1/files upload 拿 file_key 再发 audio 消息
       result = (await channel.send(targetId, {
-        file_path: part.filePath,
-      } as unknown as SendInput)) ?? null;
+        audio: {
+          source: part.filePath,
+          // 不强制 duration: 飞书后台会从 mp3 头自动读
+        },
+      } as SendInput)) ?? null;
       break;
     }
     case "card": {
