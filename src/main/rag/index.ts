@@ -30,7 +30,10 @@ export async function initRAG(
   provider = getEmbeddingProvider(ragMode, cloudBaseUrl, cloudApiKey, embeddingModel);
   store = new JsonVectorStore(dataDir);
   retriever = new HybridRetriever(store, provider);
-  worldbook = new WorldbookManager(path.join(app.getAppPath(), "prompts", "worldbook"));
+  worldbook = new WorldbookManager(
+    path.join(app.getAppPath(), "prompts", "worldbook"),
+    { stateFile: path.join(app.getPath("userData"), "worldbook-state.json") }
+  );
   await worldbook.loadFromDirectory();
 
   // 把实体图谱中的已有实体名灌入 jieba 自定义词典
@@ -123,21 +126,22 @@ export async function searchHistoryEntries(
   }));
 }
 
-// ── Worldbook search (keyword-only, no vector) ──
-export async function searchWorldbook(userInput: string): Promise<string[]> {
+// ── Worldbook DMAE：每轮打分（本轮用户输入 + 上轮模型回复）──
+export function updateWorldbookActivation(userText: string, modelText: string): void {
+  if (!worldbook) return;
+  worldbook.updateActivation(userText, modelText);
+}
+
+// ── Worldbook DMAE：取 Active 条目内容（阈值门控 + 注入）──
+export function getActiveWorldbookEntries(): string[] {
   if (!worldbook) return [];
-  return worldbook.retrieveByKeywords(userInput);
+  return worldbook.getActiveEntries();
 }
 
 // ── Get permanent worldbook entries ──
 export function getPermanentWorldbookEntries(): string[] {
   if (!worldbook) return [];
   return worldbook.getPermanentEntries();
-}
-
-export function getAllWorldbookTriggerWords(): string[] {
-  if (!worldbook) return [];
-  return worldbook.getAllTriggerWords();
 }
 
 // ── Import document ──
@@ -158,11 +162,14 @@ export async function importDocument(
 }
 
 // ── Build memory context (legacy, kept for compatibility) ──
+// 注意：单参签名无 modelText，故 model 奖励不触发（降级行为）。
+// 主流程已改用 orchestrator 的 buildAlwaysOnContext（会传上轮模型回复）。
 export async function buildMemoryContext(userInput: string): Promise<string> {
   const parts: string[] = [];
 
-  // 1. Worldbook
-  const wbResults = await searchWorldbook(userInput);
+  // 1. Worldbook（DMAE：打分 + 取 Active）
+  updateWorldbookActivation(userInput, "");
+  const wbResults = getActiveWorldbookEntries();
   if (wbResults.length > 0) {
     parts.push("\u3010\u76f8\u5173\u80cc\u666f\u3011\n" + wbResults.join("\n\n"));
   }

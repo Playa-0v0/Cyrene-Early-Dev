@@ -2713,3 +2713,136 @@ body {
   gap: 10px;
   margin-top: 14px;
 }
+
+/* ===== channels-panel (连接手机) ===== */
+.channels-card {
+  margin-top: 18px;
+  padding: 16px 18px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 182, 220, 0.12);
+}
+.channels-card--global { background: rgba(255, 255, 255, 0.02); }
+.channels-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.channels-card__header h2 {
+  margin: 0;
+  font-size: 16px;
+  color: rgba(254, 247, 255, 0.92);
+}
+.channels-card__hint {
+  margin: 6px 0 12px 0;
+  font-size: 12px;
+  color: rgba(254, 247, 255, 0.5);
+}
+.channels-card__actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.channels-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: rgba(254, 247, 255, 0.7);
+}
+.channels-status__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(254, 247, 255, 0.3);
+}
+.channels-status__dot--running { background: rgba(74, 222, 128, 0.9); }
+.channels-status__dot--starting { background: rgba(250, 204, 21, 0.9); }
+.channels-status__dot--offline { background: rgba(248, 113, 113, 0.7); }
+.channels-status__dot--error { background: rgba(248, 113, 113, 0.9); }
+.channels-status__dot--config_missing { background: rgba(156, 163, 175, 0.7); }
+.channels-card__body .form-row { margin-top: 10px; }
+.channels-card__body .form-row:first-child { margin-top: 0; }
+.channels-card__body .form-row--inline {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 32px;
+}
+.channels-card__body .form-row__label {
+  font-size: 13px;
+  color: rgba(254, 247, 255, 0.82);
+  cursor: pointer;
+}
+.channels-card__body .form-label {
+  display: block;
+  font-size: 12px;
+  color: rgba(254, 247, 255, 0.7);
+  margin-bottom: 4px;
+}
+.channels-card__body .form-input {
+  width: 120px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 182, 220, 0.18);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(254, 247, 255, 0.92);
+  font-size: 13px;
+}
+.btn-secondary {
+  padding: 5px 12px;
+  border-radius: 999px;
+  color: rgba(254, 247, 255, 0.88);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 182, 220, 0.18);
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btn-secondary:hover:not(:disabled) { background: rgba(255, 255, 255, 0.14); }
+.btn-secondary:disabled { opacity: 0.4; cursor: not-allowed; }
+.channels-card__body .form-input--wide {
+  width: 100%;
+  max-width: 380px;
+}
+.channels-card__body .form-input-with-action {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.channels-card__body .form-input-with-action .form-input {
+  flex: 1;
+  min-width: 0;
+}
+.btn-reveal {
+  flex: 0 0 auto;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 182, 220, 0.18);
+  color: rgba(254, 247, 255, 0.7);
+  font-size: 12px;
+  cursor: pointer;
+}
+.btn-reveal:hover { background: rgba(255, 255, 255, 0.12); }
+.channels-card__body .form-hint {
+  margin: 6px 0 0 0;
+  font-size: 11px;
+  color: rgba(254, 247, 255, 0.45);
+}
+.channels-card__body .form-hint code {
+  background: rgba(255, 255, 255, 0.06);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+}
+.channels-feedback {
+  margin-top: 10px;
+  font-size: 12px;
+  min-height: 16px;
+  color: rgba(254, 247, 255, 0.6);
+}
+.channels-feedback--ok { color: rgba(74, 222, 128, 0.95); }
+.channels-feedback--err { color: rgba(248, 113, 113, 0.92); }
+.channels-feedback--info { color: rgba(250, 204, 21, 0.92); }

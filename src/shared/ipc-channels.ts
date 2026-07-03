@@ -208,5 +208,29 @@ export const IPC = {
   CALL_STATE: "call:state",               // main → renderer：状态变更
   CALL_ERROR: "call:error",               // main → renderer：错误
   CALL_STOP: "call:stop",                 // renderer → main：挂断
+
+  // 多渠道（Phase 0 骨架，Phase 1+ 实装微信/飞书）
+  CHANNELS_GET_CONFIG: "channels:get-config",
+  CHANNELS_SAVE_CONFIG: "channels:save-config",
+  CHANNELS_LIST: "channels:list",
+  CHANNELS_RESTART: "channels:restart",
+  CHANNELS_GET_STATUS: "channels:get-status",
+  CHANNELS_INSTALL_PROGRESS: "channels:install-progress",     // main → renderer
+  CHANNELS_STATUS_CHANGED: "channels:status-changed",         // main → renderer
+  // 微信专属
+  CHANNELS_WECHAT_INSTALL: "channels:wechat:install",
+  CHANNELS_WECHAT_LOGIN_START: "channels:wechat:login-start",
+  CHANNELS_WECHAT_LOGIN_CANCEL: "channels:wechat:login-cancel",
+  CHANNELS_WECHAT_QRCODE: "channels:wechat:qrcode",
+  CHANNELS_WECHAT_LOGIN_RESULT: "channels:wechat:login-result",
+  CHANNELS_WECHAT_PAIRING_LIST: "channels:wechat:pairing-list",
+  CHANNELS_WECHAT_PAIRING_APPROVE: "channels:wechat:pairing-approve",
+  CHANNELS_WECHAT_LOGOUT: "channels:wechat:logout",
+  CHANNELS_WECHAT_RUNTIME_DETECT: "channels:wechat:runtime-detect",
+  CHANNELS_WECHAT_RUNTIME_INSTALL: "channels:wechat:runtime-install",
+  CHANNELS_WECHAT_RUNTIME_UPDATE: "channels:wechat:runtime-update",
+  // 飞书专属
+  CHANNELS_FEISHU_TEST_CONNECTION: "channels:feishu:test-connection",
+  CHANNELS_FEISHU_TEST_WEBHOOK_REACHABLE: "channels:feishu:test-webhook-reachable",
 } as const;
 

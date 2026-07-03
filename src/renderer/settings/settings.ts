@@ -1960,6 +1960,7 @@ function switchSection(section: string): void {
   const isPlugins = section === "plugins";
   const isSkills = section === "skills";
   const isTokens = section === "tokens";
+  const isChannels = section === "channels";
   const isTts = section === "tts";
   const isAsr = section === "asr";
   apiForm.classList.toggle("is-hidden", !isApi);
@@ -1985,13 +1986,35 @@ function switchSection(section: string): void {
   if (isSkills) void renderSkills();
   const tokenPanel = document.getElementById("token-panel");
   if (tokenPanel) tokenPanel.classList.toggle("is-hidden", !isTokens);
+  const channelsPanel = document.getElementById("channels-panel");
+  if (channelsPanel) channelsPanel.classList.toggle("is-hidden", !isChannels);
+  if (isChannels) void loadChannelsPanel();
   const ttsPanel = document.getElementById("tts-panel");
   if (ttsPanel) ttsPanel.classList.toggle("is-hidden", !isTts);
   const asrPanel = document.getElementById("asr-panel");
   if (asrPanel) asrPanel.classList.toggle("is-hidden", !isAsr);
-  placeholderPanel.classList.toggle("is-hidden", isApi || isGeneral || isCyrene || isDisclaimer || isMemory || isUser || isChat || isTasks || isIdentity || isPlugins || isSkills || isTokens || isTts || isAsr);
+  placeholderPanel.classList.toggle(
+    "is-hidden",
+    isApi || isGeneral || isCyrene || isDisclaimer || isMemory || isUser || isChat || isTasks || isIdentity || isPlugins || isSkills || isTokens || isChannels || isTts || isAsr,
+  );
 
-  if (!isApi && !isGeneral && !isCyrene && !isDisclaimer && !isMemory && !isUser && !isChat && !isTasks && !isIdentity && !isPlugins && !isSkills && !isTokens && !isTts && !isAsr) {
+  if (
+    !isApi &&
+    !isGeneral &&
+    !isCyrene &&
+    !isDisclaimer &&
+    !isMemory &&
+    !isUser &&
+    !isChat &&
+    !isTasks &&
+    !isIdentity &&
+    !isPlugins &&
+    !isSkills &&
+    !isTokens &&
+    !isChannels &&
+    !isTts &&
+    !isAsr
+  ) {
     placeholderIcon.textContent = label.emoji;
     placeholderTitle.textContent = label.title;
     placeholderCopy.textContent = "这个模块先占位，等核心聊天与 API 接通后再继续扩展。";
@@ -2117,6 +2140,161 @@ function initGameBotPluginCard(): void {
 initGameBotPluginCard();
 void loadConfig();
 void loadGeneralSettings();
+
+// ===== channels panel (连接手机) =====
+const channelsWechatEnabledEl = document.getElementById("channels-wechat-enabled") as HTMLInputElement | null;
+const channelsFeishuEnabledEl = document.getElementById("channels-feishu-enabled") as HTMLInputElement | null;
+const channelsWechatStatusEl = document.getElementById("channels-wechat-status");
+const channelsFeishuStatusEl = document.getElementById("channels-feishu-status");
+const channelsRateUserEl = document.getElementById("channels-rate-user") as HTMLInputElement | null;
+const channelsRateChannelEl = document.getElementById("channels-rate-channel") as HTMLInputElement | null;
+const channelsTtsEl = document.getElementById("channels-tts-enabled") as HTMLInputElement | null;
+const channelsStickerEl = document.getElementById("channels-sticker-enabled") as HTMLInputElement | null;
+const channelsMirrorEl = document.getElementById("channels-mirror-desktop") as HTMLInputElement | null;
+const channelsSandboxEl = document.getElementById("channels-tool-sandbox") as HTMLInputElement | null;
+// 飞书配置输入框（Phase 2 长连接版：只需 App ID + App Secret）
+const channelsFeishuAppIdEl = document.getElementById("channels-feishu-app-id") as HTMLInputElement | null;
+const channelsFeishuAppSecretEl = document.getElementById("channels-feishu-app-secret") as HTMLInputElement | null;
+const channelsFeishuAppSecretRevealBtn = document.getElementById("channels-feishu-app-secret-reveal");
+const channelsFeishuSaveBtn = document.getElementById("channels-feishu-save");
+const channelsFeishuFeedbackEl = document.getElementById("channels-feishu-feedback");
+
+let channelsInitialized = false;
+let channelsSaveTimer: number | null = null;
+
+function renderChannelStatus(el: HTMLElement | null, phase: string, message?: string): void {
+  if (!el) return;
+  const dot = el.querySelector(".channels-status__dot");
+  const text = el.querySelector(".channels-status__text");
+  if (dot) {
+    dot.className = "channels-status__dot";
+    if (phase === "running") dot.classList.add("channels-status__dot--running");
+    else if (phase === "starting") dot.classList.add("channels-status__dot--starting");
+    else if (phase === "error") dot.classList.add("channels-status__dot--error");
+    else if (phase === "config_missing") dot.classList.add("channels-status__dot--config_missing");
+    else dot.classList.add("channels-status__dot--offline");
+  }
+  if (text) text.textContent = message ?? (phase === "running" ? "运行中" : phase === "starting" ? "启动中" : phase === "config_missing" ? "配置缺失" : phase === "error" ? "错误" : "未启用");
+}
+
+async function loadChannelsPanel(): Promise<void> {
+  if (channelsInitialized) return;
+  channelsInitialized = true;
+  try {
+    const cfg = await window.settings.channelsGetConfig();
+    if (channelsWechatEnabledEl) channelsWechatEnabledEl.checked = !!cfg.wechat.enabled;
+    if (channelsFeishuEnabledEl) channelsFeishuEnabledEl.checked = !!cfg.feishu.enabled;
+    if (channelsRateUserEl) channelsRateUserEl.value = String(cfg.rateLimitPerUser ?? 10);
+    if (channelsRateChannelEl) channelsRateChannelEl.value = String(cfg.rateLimitPerChannel ?? 100);
+    if (channelsTtsEl) channelsTtsEl.checked = cfg.ttsEnabled !== false;
+    if (channelsStickerEl) channelsStickerEl.checked = cfg.stickerEnabled !== false;
+    if (channelsMirrorEl) channelsMirrorEl.checked = cfg.mirrorToDesktop !== false;
+    if (channelsSandboxEl) channelsSandboxEl.checked = cfg.toolSandbox === "safe-only";
+
+    // 飞书字段填充（长连接模式只需要 App ID；secret 加密存盘，UI 不回填明文）
+    if (channelsFeishuAppIdEl) channelsFeishuAppIdEl.value = cfg.feishu.appId ?? "";
+    if (channelsFeishuAppSecretEl) {
+      channelsFeishuAppSecretEl.value = "";
+      channelsFeishuAppSecretEl.placeholder = cfg.feishu.appSecret
+        ? "已保存（输入新值会覆盖）"
+        : "点击保存配置时加密保存";
+    }
+
+    // 拉一次渠道状态
+    const status = (await window.settings.channelsGetStatus()) as Record<string, { phase: string; message?: string }>;
+    renderChannelStatus(channelsWechatStatusEl, status.wechat?.phase ?? "offline", status.wechat?.message);
+    renderChannelStatus(channelsFeishuStatusEl, status.feishu?.phase ?? "offline", status.feishu?.message);
+  } catch (err) {
+    console.warn("[Channels] loadChannelsPanel 失败:", err);
+  }
+
+  // 自动保存（debounce 200ms）
+  const scheduleSave = () => {
+    if (channelsSaveTimer != null) window.clearTimeout(channelsSaveTimer);
+    channelsSaveTimer = window.setTimeout(() => {
+      void window.settings.channelsSaveConfig({
+        wechat: { enabled: channelsWechatEnabledEl?.checked ?? false },
+        feishu: { enabled: channelsFeishuEnabledEl?.checked ?? false },
+        rateLimitPerUser: Number(channelsRateUserEl?.value) || 10,
+        rateLimitPerChannel: Number(channelsRateChannelEl?.value) || 100,
+        ttsEnabled: channelsTtsEl?.checked ?? true,
+        stickerEnabled: channelsStickerEl?.checked ?? true,
+        mirrorToDesktop: channelsMirrorEl?.checked ?? true,
+        toolSandbox: channelsSandboxEl?.checked ? "safe-only" : "all",
+      });
+    }, 200);
+  };
+  for (const el of [
+    channelsWechatEnabledEl,
+    channelsFeishuEnabledEl,
+    channelsRateUserEl,
+    channelsRateChannelEl,
+    channelsTtsEl,
+    channelsStickerEl,
+    channelsMirrorEl,
+    channelsSandboxEl,
+  ]) {
+    el?.addEventListener("change", scheduleSave);
+  }
+
+  // 监听安装进度（Phase 1+ 才会收到）
+  window.settings.onChannelsInstallProgress((progress) => {
+    const target = progress.channel === "wechat" ? channelsWechatStatusEl : progress.channel === "feishu" ? channelsFeishuStatusEl : null;
+    if (target) renderChannelStatus(target, "starting", `${progress.phase} ${progress.pct}%`);
+  });
+  window.settings.onChannelsStatusChanged((status) => {
+    const s = status as Record<string, { phase: string; message?: string }>;
+    renderChannelStatus(channelsWechatStatusEl, s.wechat?.phase ?? "offline", s.wechat?.message);
+    renderChannelStatus(channelsFeishuStatusEl, s.feishu?.phase ?? "offline", s.feishu?.message);
+  });
+
+  // ===== 飞书交互（Phase 2 长连接版） =====
+
+  // 显示/隐藏 App Secret
+  channelsFeishuAppSecretRevealBtn?.addEventListener("click", () => {
+    if (!channelsFeishuAppSecretEl) return;
+    channelsFeishuAppSecretEl.type =
+      channelsFeishuAppSecretEl.type === "password" ? "text" : "password";
+  });
+
+  // 保存配置（secret 用 safeStorage 加密后落盘 + 触发长连接重连）
+  channelsFeishuSaveBtn?.addEventListener("click", async () => {
+    setFeishuFeedback("info", "保存并连接中...");
+    const patch: Record<string, unknown> = {
+      feishu: {
+        enabled: channelsFeishuEnabledEl?.checked ?? false,
+        appId: channelsFeishuAppIdEl?.value.trim() || undefined,
+      },
+    };
+    // 仅在用户输入了新值时才覆盖 secret（避免误清空）
+    if (channelsFeishuAppSecretEl?.value) {
+      (patch.feishu as Record<string, unknown>).appSecret = channelsFeishuAppSecretEl.value;
+    }
+    try {
+      await window.settings.channelsSaveConfig(patch);
+      // 保存后立即触发飞书 adapter 重建 + 重连长连接
+      await window.settings.channelsRestart();
+      setFeishuFeedback("ok", "已保存，飞书长连接正在建立…");
+      // 清空输入框（已落盘），并把 placeholder 切到"已保存"
+      if (channelsFeishuAppSecretEl) {
+        channelsFeishuAppSecretEl.value = "";
+        channelsFeishuAppSecretEl.placeholder = "已保存（输入新值会覆盖）";
+      }
+    } catch (err) {
+      setFeishuFeedback("err", err instanceof Error ? err.message : String(err));
+    }
+  });
+}
+
+function setFeishuFeedback(kind: "info" | "ok" | "err", msg: string): void {
+  if (!channelsFeishuFeedbackEl) return;
+  channelsFeishuFeedbackEl.textContent = msg;
+  channelsFeishuFeedbackEl.className = "channels-feedback";
+  if (kind === "ok") channelsFeishuFeedbackEl.classList.add("channels-feedback--ok");
+  else if (kind === "err") channelsFeishuFeedbackEl.classList.add("channels-feedback--err");
+  else channelsFeishuFeedbackEl.classList.add("channels-feedback--info");
+}
+void loadChannelsPanel();
 // 启动时读 URL hash 决定初始标签（main 通过 loadURL 带 #api 实现"切换模型按钮跳 API"）。
 // 无 hash 默认 general。
 const initialSection = (window.location.hash || "#general").slice(1);

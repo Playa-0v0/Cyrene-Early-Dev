@@ -185,6 +185,33 @@ const settingsApi = {
   addMcpServer: (config: unknown) => ipcRenderer.invoke(IPC.MCP_ADD_SERVER, config),
   removeMcpServer: (serverId: string) => ipcRenderer.invoke(IPC.MCP_REMOVE_SERVER, serverId),
   listMcpServers: () => ipcRenderer.invoke(IPC.MCP_LIST_SERVERS),
+  // 多渠道（Phase 0 骨架；Phase 1+ 实装微信/飞书）
+  channelsGetConfig: () => ipcRenderer.invoke(IPC.CHANNELS_GET_CONFIG),
+  channelsSaveConfig: (patch: unknown) => ipcRenderer.invoke(IPC.CHANNELS_SAVE_CONFIG, patch),
+  channelsList: () => ipcRenderer.invoke(IPC.CHANNELS_LIST),
+  channelsGetStatus: () => ipcRenderer.invoke(IPC.CHANNELS_GET_STATUS),
+  channelsRestart: () => ipcRenderer.invoke(IPC.CHANNELS_RESTART),
+  channelsWechatInstall: () => ipcRenderer.invoke(IPC.CHANNELS_WECHAT_INSTALL),
+  channelsWechatLoginStart: () => ipcRenderer.invoke(IPC.CHANNELS_WECHAT_LOGIN_START),
+  channelsWechatLoginCancel: () => ipcRenderer.invoke(IPC.CHANNELS_WECHAT_LOGIN_CANCEL),
+  channelsWechatPairingList: () => ipcRenderer.invoke(IPC.CHANNELS_WECHAT_PAIRING_LIST),
+  channelsWechatPairingApprove: (code: string) => ipcRenderer.invoke(IPC.CHANNELS_WECHAT_PAIRING_APPROVE, code),
+  channelsWechatLogout: () => ipcRenderer.invoke(IPC.CHANNELS_WECHAT_LOGOUT),
+  channelsWechatRuntimeDetect: () => ipcRenderer.invoke(IPC.CHANNELS_WECHAT_RUNTIME_DETECT),
+  channelsWechatRuntimeInstall: () => ipcRenderer.invoke(IPC.CHANNELS_WECHAT_RUNTIME_INSTALL),
+  channelsWechatRuntimeUpdate: () => ipcRenderer.invoke(IPC.CHANNELS_WECHAT_RUNTIME_UPDATE),
+  channelsFeishuTestConnection: () => ipcRenderer.invoke(IPC.CHANNELS_FEISHU_TEST_CONNECTION),
+  channelsFeishuTestWebhookReachable: () => ipcRenderer.invoke(IPC.CHANNELS_FEISHU_TEST_WEBHOOK_REACHABLE),
+  onChannelsInstallProgress: (callback: (p: { channel: string; phase: string; pct: number }) => void) => {
+    const listener = (_e: unknown, progress: { channel: string; phase: string; pct: number }) => callback(progress);
+    ipcRenderer.on(IPC.CHANNELS_INSTALL_PROGRESS, listener);
+    return () => ipcRenderer.off(IPC.CHANNELS_INSTALL_PROGRESS, listener);
+  },
+  onChannelsStatusChanged: (callback: (status: unknown) => void) => {
+    const listener = (_e: unknown, status: unknown) => callback(status);
+    ipcRenderer.on(IPC.CHANNELS_STATUS_CHANGED, listener);
+    return () => ipcRenderer.off(IPC.CHANNELS_STATUS_CHANGED, listener);
+  },
   // 权限档位
   getPermissionLevel: () => ipcRenderer.invoke(IPC.PERMISSION_GET_LEVEL),
   setPermissionLevel: (level: string) => ipcRenderer.invoke(IPC.PERMISSION_SET_LEVEL, level),
