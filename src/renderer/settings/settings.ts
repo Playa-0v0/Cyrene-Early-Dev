@@ -2302,9 +2302,11 @@ async function loadChannelsPanel(): Promise<void> {
     else channelsWechatFeedbackEl.classList.add("channels-feedback--info");
   }
 
-  // 扫码登录：Main Process 生成 PNG → 推到 Renderer → <img>
+  // 扫码登录：Main Process 生成 PNG → 推到 Renderer → modal 弹窗
   const channelsWechatQrEl = document.getElementById("channels-wechat-qr");
   const channelsWechatQrImgEl = document.getElementById("channels-wechat-qr-img") as HTMLImageElement | null;
+  const channelsWechatQrCloseBtn = document.getElementById("channels-wechat-qr-close");
+  const channelsWechatQrBackdrop = document.getElementById("channels-wechat-qr-backdrop");
 
   function showWechatQr(dataUrl: string): void {
     if (channelsWechatQrImgEl) channelsWechatQrImgEl.src = dataUrl;
@@ -2314,6 +2316,15 @@ async function loadChannelsPanel(): Promise<void> {
     channelsWechatQrEl?.setAttribute("hidden", "");
     if (channelsWechatQrImgEl) channelsWechatQrImgEl.src = "";
   }
+
+  // 关闭交互：点按钮 / 点背景 / 按 ESC
+  channelsWechatQrCloseBtn?.addEventListener("click", hideWechatQr);
+  channelsWechatQrBackdrop?.addEventListener("click", hideWechatQr);
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && channelsWechatQrEl && !channelsWechatQrEl.hasAttribute("hidden")) {
+      hideWechatQr();
+    }
+  });
 
   // 订阅 Main 推送的二维码（每次登录会推一次）
   window.settings.onChannelsWechatQrcode((dataUrl) => {

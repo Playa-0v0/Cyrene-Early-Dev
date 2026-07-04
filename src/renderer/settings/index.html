@@ -741,9 +741,14 @@
                 <button type="button" class="btn-secondary" id="channels-wechat-login">扫码登录</button>
                 <button type="button" class="btn-secondary" id="channels-wechat-restart">重启连接</button>
               </div>
-              <div class="channels-qr" id="channels-wechat-qr" hidden>
-                <img class="channels-qr__img" id="channels-wechat-qr-img" alt="微信登录二维码" />
-                <p class="channels-qr__tip">请用微信扫描二维码完成登录</p>
+              <div class="channels-qr-modal" id="channels-wechat-qr" hidden>
+                <div class="channels-qr-modal__backdrop" id="channels-wechat-qr-backdrop"></div>
+                <div class="channels-qr-modal__card">
+                  <h3 class="channels-qr-modal__title">扫码登录微信</h3>
+                  <img class="channels-qr-modal__img" id="channels-wechat-qr-img" alt="微信登录二维码" />
+                  <p class="channels-qr-modal__tip">请用微信扫描二维码完成登录</p>
+                  <button type="button" class="btn-secondary channels-qr-modal__close" id="channels-wechat-qr-close">关闭</button>
+                </div>
               </div>
               <div class="channels-feedback" id="channels-wechat-feedback"></div>
             </div>
