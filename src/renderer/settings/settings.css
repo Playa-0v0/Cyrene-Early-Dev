@@ -2887,8 +2887,10 @@ body {
   height: 220px;
   display: block;
   background: #f5f5f5;
-  /* 没拿到 dataURL 时不显示裂图占位 */
-  &:empty { display: none; }
+  /* JS 根据是否有 src 显隐，避免没拿到 dataURL 时显示裂图占位 */
+}
+.channels-qr-modal__img.is-empty {
+  display: none;
 }
 .channels-qr-modal__tip {
   margin: 0;

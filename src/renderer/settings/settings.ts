@@ -2309,12 +2309,18 @@ async function loadChannelsPanel(): Promise<void> {
   const channelsWechatQrBackdrop = document.getElementById("channels-wechat-qr-backdrop");
 
   function showWechatQr(dataUrl: string): void {
-    if (channelsWechatQrImgEl) channelsWechatQrImgEl.src = dataUrl;
+    if (channelsWechatQrImgEl) {
+      channelsWechatQrImgEl.src = dataUrl;
+      channelsWechatQrImgEl.classList.remove("is-empty");
+    }
     channelsWechatQrEl?.removeAttribute("hidden");
   }
   function hideWechatQr(): void {
     channelsWechatQrEl?.setAttribute("hidden", "");
-    if (channelsWechatQrImgEl) channelsWechatQrImgEl.src = "";
+    if (channelsWechatQrImgEl) {
+      channelsWechatQrImgEl.src = "";
+      channelsWechatQrImgEl.classList.add("is-empty");
+    }
   }
 
   // 关闭交互：点按钮 / 点背景 / 按 ESC
@@ -2328,6 +2334,7 @@ async function loadChannelsPanel(): Promise<void> {
 
   // 订阅 Main 推送的二维码（每次登录会推一次）
   window.settings.onChannelsWechatQrcode((dataUrl) => {
+    console.log("[WechatSettings] QR event received, dataUrl prefix:", dataUrl?.slice(0, 40), "len:", dataUrl?.length);
     showWechatQr(dataUrl);
     setWechatFeedback("info", "请用微信扫描二维码");
   });
