@@ -8,6 +8,8 @@
 // Base URL: https://ilinkai.weixin.qq.com + /ilink/bot/...
 // weclaw (Go): github.com/fastclaw-ai/weclaw
 // 协议文档:    https://www.wechatbot.dev/zh/protocol
+import { randomUUID } from "node:crypto";
+
 const BASE_URL = "https://ilinkai.weixin.qq.com";
 const LONG_POLL_TIMEOUT_MS = 35_000;
 
@@ -32,28 +34,44 @@ export interface WeixinMessage {
   msgId: string;
   fromUserId: string;
   toUserId: string;
-  msgType: number;
-  content: string;
+  msgType: number;            // 1=user, 2=bot echo
+  content: string;            // 从 item_list[].text_item.text 提取
   contextToken: string;       // ⚠️ 回复时原样带回
-  /** 媒体数据（type=2/3/4/5 时填充） */
-  media?: {
-    encryptQueryParam?: string;
-    aesKey?: string;
-    encryptType?: number;
-    fileName?: string;
-    playtime?: number;        // 语音
-    sampleRate?: number;
-  };
+  createTimeMs?: number;
   raw: unknown;
 }
 
-/** getupdates 响应 */
+/** iLink item 形状（与 SDK WireMessageItem 一致） */
+export interface WeixinItem {
+  type: ItemType;             // 1=text 2=image 3=voice 4=file 5=video
+  text_item?: { text: string };
+  image_item?: any;
+  voice_item?: any;
+  file_item?: any;
+  video_item?: any;
+}
+
+/** iLink 原始 WireMessage 形状（snake_case） */
+export interface WireMessage {
+  message_id?: number;
+  from_user_id: string;
+  to_user_id: string;
+  message_type: number;
+  message_state?: number;
+  context_token: string;
+  create_time_ms?: number;
+  item_list: WeixinItem[];
+  [k: string]: unknown;
+}
+
+/** getupdates 响应（iLink 真实字段名：snake_case + msgs） */
 interface GetUpdatesResponse {
   ret: number;
   errcode?: number;
   errmsg?: string;
-  messages?: WeixinMessage[];
+  msgs?: WireMessage[];                // ← 真实字段是 msgs，不是 messages
   get_updates_buf?: string;
+  longpolling_timeout_ms?: number;
 }
 
 interface SendMessageItem {
@@ -105,23 +123,56 @@ export class ILinkClient {
     try {
       const resp = await this.doJson<unknown>("POST", "/ilink/bot/getupdates", {
         get_updates_buf: buf,
-        base_info: { channel_version: "1.0.0" },
+        base_info: { channel_version: "2.0.0" },
       }, { signal: ctrl.signal });
 
       const data = resp as GetUpdatesResponse;
       if (data.ret === -14) {
         throw new SessionExpiredError("iLink session expired (ret=-14)");
       }
-      if (data.ret !== 0) {
+      // 注意：成功响应里通常没有 ret 字段（只有 msgs/sync_buf/get_updates_buf），
+      // 所以 "ret !== 0" 会因为 undefined !== 0 误判为错误。这里只对显式非 0 才报错。
+      if (data.ret !== undefined && data.ret !== 0) {
         throw new Error(`iLink getupdates failed: ret=${data.ret} ${data.errmsg ?? ""}`);
       }
+
+      // 诊断：每次 poll 都打一次原始响应（限长）
+      const rawMsgs = data.msgs ?? [];
+      if (rawMsgs.length > 0) {
+        console.log("[ILinkClient] getupdates returned", rawMsgs.length, "msgs:", JSON.stringify(rawMsgs).slice(0, 600));
+      } else {
+        // 空轮询也打（每 5 次打一次避免刷屏）
+        if (Math.random() < 0.2) console.log("[ILinkClient] getupdates empty poll, buf=", buf.slice(0, 20));
+      }
+
+      // 跳过 bot 自己发出去的消息（message_type=2）
+      const wires = rawMsgs.filter((m) => m.message_type === 1);
       return {
-        messages: data.messages ?? [],
+        messages: wires.map((m) => this.#wireToMessage(m)),
         buf: data.get_updates_buf ?? "",
       };
     } finally {
       clearTimeout(timer);
     }
+  }
+
+  /** 把 iLink WireMessage（snake_case + item_list）转成我们用的 WeixinMessage */
+  #wireToMessage(w: WireMessage): WeixinMessage {
+    // 提取文本：遍历 item_list 找 text_item.text
+    const text = (w.item_list ?? [])
+      .filter((it) => it.type === 1 && it.text_item?.text)
+      .map((it) => it.text_item!.text)
+      .join("");
+    return {
+      msgId: String(w.message_id ?? ""),
+      fromUserId: w.from_user_id,
+      toUserId: w.to_user_id,
+      msgType: w.message_type,
+      content: text,
+      contextToken: w.context_token,
+      createTimeMs: w.create_time_ms,
+      raw: w,
+    };
   }
 
   // ── Send ────────────────────────────────────────────────────────────────
@@ -143,11 +194,24 @@ export class ILinkClient {
     contextToken: string,
   ): Promise<{ ok: boolean; error?: string }> {
     try {
+      // iLink 真实协议（与 corespeed-io/wechatbot SDK 完全一致）：
+      //   - from_user_id: "" 空字符串（出站消息不携带 from，服务端用 token 鉴权）
+      //   - client_id: 随机 UUID（消息唯一 ID，服务端用来去重/排序）
+      //   - to_user_id: 真实接收者
+      //   - message_type: 2=bot
+      //   - message_state: 2=finish
+      //   - item_list: [{ type: 1, text_item: { text } }]
       const resp = await this.doJson<unknown>("POST", "/ilink/bot/sendmessage", {
-        context_token: contextToken,
-        msg_type: itemList[0]?.type ?? 1,
-        to_user_id: toUserId,
-        item_list: itemList,
+        msg: {
+          from_user_id: "",
+          to_user_id: toUserId,
+          client_id: randomUUID(),
+          message_type: 2,
+          message_state: 2,
+          context_token: contextToken,
+          item_list: itemList,
+        },
+        base_info: { channel_version: "2.0.0" },
       });
       const data = resp as { ret?: number; errmsg?: string };
       if (data.ret === -14) throw new SessionExpiredError("session expired on send");
@@ -192,15 +256,46 @@ export class ILinkClient {
   // ── Low level ───────────────────────────────────────────────────────────
 
   private async doJson<T>(method: string, path: string, body: unknown, init?: RequestInit): Promise<T> {
-    const res = await fetch(this.baseUrl + path, {
-      method,
-      headers: this.headers(),
-      body: JSON.stringify(body),
-      ...init,
-    });
+    const t0 = Date.now();
+    const url = this.baseUrl + path;
+    console.log(`[ILinkClient] → ${method} ${path} (t+${t0})`);
+
+    let res: Response;
+    try {
+      res = await fetch(url, {
+        method,
+        headers: this.headers(),
+        body: JSON.stringify(body),
+        ...init,
+      });
+    } catch (err) {
+      console.error(`[ILinkClient] ✗ fetch failed ${method} ${path} after ${Date.now() - t0}ms:`, err);
+      throw err;
+    }
+
     const text = await res.text();
+    const dur = Date.now() - t0;
+    const ct = res.headers.get("content-type") ?? "?";
+    console.log(`[ILinkClient] ← ${method} ${path} HTTP ${res.status} ${dur}ms (${text.length}B, ct=${ct})`);
+
+    // 详细 dump：getupdates 看完整响应（确认 msgs/get_updates_buf 真实字段）
+    // sendmessage 看请求体（确认 to_user_id / context_token 正确）
+    if (path.includes("getupdates") || path.includes("sendmessage")) {
+      console.log(`[ILinkClient]   req body: ${JSON.stringify(body).slice(0, 1500)}`);
+    }
+    if (path.includes("getupdates")) {
+      console.log(`[ILinkClient]   raw body: ${text.slice(0, 2000)}`);
+      try {
+        const j = JSON.parse(text);
+        console.log(`[ILinkClient]   parsed: ret=${j.ret} msgsLen=${Array.isArray(j.msgs) ? j.msgs.length : "?"} bufLen=${(j.get_updates_buf ?? "").length} errcode=${j.errcode ?? "-"} errmsg=${j.errmsg ?? "-"}`);
+        if (Array.isArray(j.msgs) && j.msgs.length > 0) {
+          console.log(`[ILinkClient]   >>> INBOUND MSGS: ${JSON.stringify(j.msgs).slice(0, 1500)}`);
+        }
+      } catch {}
+    }
+
     if (!res.ok) {
-      throw new Error(`HTTP ${res.status} ${method} ${path}: ${text.slice(0, 200)}`);
+      throw new Error(`HTTP ${method} ${path}: ${text.slice(0, 200)}`);
     }
     try {
       return JSON.parse(text) as T;
