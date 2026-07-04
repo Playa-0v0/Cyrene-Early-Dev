@@ -221,7 +221,8 @@ export const IPC = {
   CHANNELS_WECHAT_INSTALL: "channels:wechat:install",
   CHANNELS_WECHAT_LOGIN_START: "channels:wechat:login-start",
   CHANNELS_WECHAT_LOGIN_CANCEL: "channels:wechat:login-cancel",
-  CHANNELS_WECHAT_QRCODE: "channels:wechat:qrcode",
+  CHANNELS_WECHAT_QRCODE: "channels:wechat:qrcode",        // main → renderer, payload: dataURL string
+  CHANNELS_WECHAT_LOGIN_DONE: "channels:wechat:login-done", // main → renderer, payload: { ok, botId?, error? }
   CHANNELS_WECHAT_LOGIN_RESULT: "channels:wechat:login-result",
   CHANNELS_WECHAT_PAIRING_LIST: "channels:wechat:pairing-list",
   CHANNELS_WECHAT_PAIRING_APPROVE: "channels:wechat:pairing-approve",

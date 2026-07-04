@@ -2302,13 +2302,42 @@ async function loadChannelsPanel(): Promise<void> {
     else channelsWechatFeedbackEl.classList.add("channels-feedback--info");
   }
 
-  // 扫码登录：在终端打开 openclaw channels login（用户自己扫码）
+  // 扫码登录：Main Process 生成 PNG → 推到 Renderer → <img>
+  const channelsWechatQrEl = document.getElementById("channels-wechat-qr");
+  const channelsWechatQrImgEl = document.getElementById("channels-wechat-qr-img") as HTMLImageElement | null;
+
+  function showWechatQr(dataUrl: string): void {
+    if (channelsWechatQrImgEl) channelsWechatQrImgEl.src = dataUrl;
+    channelsWechatQrEl?.removeAttribute("hidden");
+  }
+  function hideWechatQr(): void {
+    channelsWechatQrEl?.setAttribute("hidden", "");
+    if (channelsWechatQrImgEl) channelsWechatQrImgEl.src = "";
+  }
+
+  // 订阅 Main 推送的二维码（每次登录会推一次）
+  window.settings.onChannelsWechatQrcode((dataUrl) => {
+    showWechatQr(dataUrl);
+    setWechatFeedback("info", "请用微信扫描二维码");
+  });
+  // 订阅 Main 推送的登录结果（成功 / 失败 / 二维码过期）
+  window.settings.onChannelsWechatLoginDone((payload) => {
+    hideWechatQr();
+    if (payload.ok) {
+      setWechatFeedback("ok", `已登录（botId=${payload.botId ?? "?"}）`);
+    } else {
+      setWechatFeedback("err", `登录失败：${payload.error ?? "未知错误"}`);
+    }
+  });
+
   channelsWechatLoginBtn?.addEventListener("click", async () => {
+    hideWechatQr();
     setWechatFeedback("info", "正在启动扫码…");
     try {
       const result = await window.settings.channelsWechatLoginStart();
-      if (result.running) {
-        setWechatFeedback("ok", result.hint ?? "请在打开的终端窗口中扫描二维码");
+      if (result.ok) {
+        // 二维码由 onChannelsWechatQrcode 推过来并显示；这里只刷个轻提示
+        setWechatFeedback("info", "等待二维码推送…");
       } else {
         setWechatFeedback("err", result.error ?? "启动失败");
       }

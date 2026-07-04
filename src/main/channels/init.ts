@@ -15,12 +15,14 @@ import { channelManager } from "./manager";
 import { channelDispatcher } from "./dispatcher";
 import { startInboundServer, stopInboundServer } from "./inbound-server";
 import { FeishuAdapter } from "./adapters/feishu";
-import { WeChatChannelAdapter } from "./adapters/wechat";
+import { ILinkBotAdapter, loadCredentials } from "./adapters/wechat/ilink-bot-adapter";
 import { getRecentLog, clearLog } from "./message-log";
 
 const LOG = "[ChannelsInit]";
 
 let initialized = false;
+/** 微信 adapter 全局引用（UI 登录按钮需要） */
+let wxAdapter: ILinkBotAdapter | null = null;
 
 /** app.whenReady() 调一次。idempotent。 */
 export async function initChannels(): Promise<void> {
@@ -47,12 +49,9 @@ export async function initChannels(): Promise<void> {
   const feishuAdapter = new FeishuAdapter();
   channelManager.register(feishuAdapter);
 
-  // 注册微信 adapter（从 openclaw.json 读 gateway token）
-  const wxToken = await loadOpenClawToken();
-  const wxAdapter = new WeChatChannelAdapter({
-    gatewayUrl: "ws://127.0.0.1:18789",
-    gatewayToken: wxToken,
-  });
+  // 注册微信 adapter（iLink 直连微信，不依赖 OpenClaw Gateway）
+  // 改为 module-level handle，UI 登录按钮也能拿到
+  wxAdapter = new ILinkBotAdapter();
   channelManager.register(wxAdapter);
 
   // 启动所有已注册 adapter
@@ -88,65 +87,90 @@ function registerChannelsIpc(): void {
     return { ok: true };
   });
 
-  // ── 微信 IPC ───────────────────────────────────────────────────────
+  // ── 微信 IPC (iLink 直连版) ───────────────────────────────────────────────────────
 
   ipcMain.handle(IPC.CHANNELS_WECHAT_RUNTIME_DETECT, () => {
-    return { installed: true, version: "2026.6.11" };
+    // iLink Bot API 是腾讯的远程协议，不需本地安装
+    return { installed: true, version: "ilink/1.0.0" };
   });
 
-  ipcMain.handle(IPC.CHANNELS_WECHAT_LOGIN_START, async () => {
-    // 扫码登录走 openclaw channels login --channel openclaw-weixin（用户在终端操作）
-    // 这里返回一个提示，让用户去终端
-    const { spawn } = await import("node:child_process");
-    const child = spawn("openclaw", ["channels", "login", "--channel", "openclaw-weixin"], {
-      stdio: "ignore",
-      detached: true,
-      windowsHide: true,
-    });
-    child.unref();
-    return { running: true, hint: "请在打开的终端窗口中扫描二维码" };
-  });
+	  // 扫码登录：Main Process 生成 PNG dataURL，推给 Renderer 显示 <img>
+	  ipcMain.handle(IPC.CHANNELS_WECHAT_LOGIN_START, async () => {
+	    if (!wxAdapter) return { ok: false, error: "adapter 未初始化" };
+	    try {
+	      const { fetchQrCode } = await import("./adapters/wechat/ilink-protocol-client");
+	      const { createQrDataUrl } = await import("./adapters/wechat/qr");
+
+	      // 1. 拿原始 qrcode 字符串 + liteapp 二维码 URL
+	      //    - qrcode: 32 hex ticket（轮询 get_qrcode_status 用）
+	      //    - qrcode_img_content: liteapp.weixin.qq.com/q/... URL（扫了会拉起 iLink 灰度插件）
+	      const { qrcode, qrcode_img_content } = await fetchQrCode();
+
+	      // 2. Main Process 生成 PNG dataURL（用 liteapp URL 而不是裸 ticket，
+	      //    否则微信只识别为纯文本、不会触发 iLink 确认流程）
+	      const dataUrl = await createQrDataUrl(qrcode_img_content, 256);
+
+	      // 3. 推给 Renderer
+	      const win = BrowserWindow.getFocusedWindow() ?? BrowserWindow.getAllWindows()[0];
+	      win?.webContents.send(IPC.CHANNELS_WECHAT_QRCODE, dataUrl);
+
+	      // 4. 后台轮询扫码状态
+	      void (async () => {
+	        try {
+	          const creds = await wxAdapter!.login(qrcode);
+	          await wxAdapter!.stop();
+	          await wxAdapter!.start();
+	          win?.webContents.send(IPC.CHANNELS_WECHAT_LOGIN_DONE, { ok: true, botId: creds.ilinkBotId });
+	        } catch (err) {
+	          win?.webContents.send(IPC.CHANNELS_WECHAT_LOGIN_DONE, { ok: false, error: String(err) });
+	        }
+	      })();
+
+	      return { ok: true, hint: "请扫描二维码" };
+	    } catch (err) {
+	      return { ok: false, error: String(err) };
+	    }
+	  });
 
   ipcMain.handle(IPC.CHANNELS_WECHAT_LOGIN_CANCEL, () => {
     return { ok: true };
   });
 
-  ipcMain.handle(IPC.CHANNELS_WECHAT_LOGIN_RESULT, () => {
-    // 微信登录由 openclaw 管理，adapter.start() 时检查连接状态
-    const wxAdapter = channelManager.getAdapter("wechat");
-    const status = wxAdapter?.getStatus();
+  ipcMain.handle(IPC.CHANNELS_WECHAT_LOGIN_RESULT, async () => {
+    if (!wxAdapter) return { connected: false };
+    const status = wxAdapter.getStatus();
     return {
-      running: status?.phase === "starting",
-      connected: status?.phase === "running",
+      running: status.phase === "starting",
+      connected: status.phase === "running",
+      loggedIn: wxAdapter.isLoggedIn,
     };
   });
 
   ipcMain.handle(IPC.CHANNELS_WECHAT_PAIRING_LIST, () => {
-    // pairing 由 openclaw weixin plugin 管理，Cyrene 不重复管理
+    // iLink 模式没有 pairing 概念
     return [];
   });
 
-  ipcMain.handle(IPC.CHANNELS_WECHAT_PAIRING_APPROVE, () => ({ ok: false, error: "请在 OpenClaw 管理" }));
+  ipcMain.handle(IPC.CHANNELS_WECHAT_PAIRING_APPROVE, () => ({ ok: false, error: "iLink 模式不支持 pairing" }));
 
   ipcMain.handle(IPC.CHANNELS_WECHAT_LOGOUT, async () => {
-    const wxAdapter = channelManager.getAdapter("wechat");
-    if (wxAdapter) {
-      await wxAdapter.stop();
-      return { ok: true };
-    }
-    return { ok: false, error: "未找到微信 adapter" };
+    if (!wxAdapter) return { ok: false };
+    await wxAdapter.logout();
+    return { ok: true };
   });
 
   ipcMain.handle(IPC.CHANNELS_WECHAT_RUNTIME_INSTALL, () => ({
-    ok: false,
-    error: "请运行 openclaw onboard 或手动安装 openclaw-weixin 插件",
+    ok: true,
+    hint: "iLink Bot API 是云端协议，无需本地安装",
   }));
 
   ipcMain.handle(IPC.CHANNELS_WECHAT_RUNTIME_UPDATE, () => ({ ok: true }));
 
-  // Gateway 连接不需要单独"安装"
   ipcMain.handle(IPC.CHANNELS_WECHAT_INSTALL, async () => {
-    return { ok: true, phase: "ready", hint: "请先在终端运行 openclaw onboard，再重启 Cyrene" };
+    if (!wxAdapter) return { ok: false };
+    await wxAdapter.stop();
+    await wxAdapter.start();
+    return { ok: true, phase: "ready" };
   });
 
   // Phase 2 长连接：测试连接 = 重建 LarkChannel（SDK 内部会自动跑 WSS handshake）
@@ -216,32 +240,4 @@ export function broadcastChannelsInstallProgress(progress: {
       console.warn(LOG, "广播安装进度失败:", err);
     }
   }
-}
-
-import * as fs from "fs";
-import * as path from "path";
-import * as os from "os";
-
-/** 从 openclaw.json 读取 gateway token（用于连接 Gateway WebSocket） */
-async function loadOpenClawToken(): Promise<string> {
-  const configPaths = [
-    path.join(os.homedir(), ".openclaw", "openclaw.json"),
-    path.join(os.homedir(), ".openclaw", "state", "openclaw.json"),
-  ];
-  for (const p of configPaths) {
-    try {
-      if (fs.existsSync(p)) {
-        const raw = fs.readFileSync(p, "utf8");
-        const cfg = JSON.parse(raw) as { gateway?: { auth?: { token?: string } } };
-        if (cfg?.gateway?.auth?.token) {
-          console.log(LOG, "从 openclaw.json 读取到 gateway token");
-          return cfg.gateway.auth.token;
-        }
-      }
-    } catch {
-      // ignore and try next
-    }
-  }
-  console.warn(LOG, "未找到 openclaw gateway token（请先运行 openclaw onboard）");
-  return "";
 }

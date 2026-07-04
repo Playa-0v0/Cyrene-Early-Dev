@@ -215,6 +215,18 @@ const settingsApi = {
     ipcRenderer.on(IPC.CHANNELS_STATUS_CHANGED, listener);
     return () => ipcRenderer.off(IPC.CHANNELS_STATUS_CHANGED, listener);
   },
+  // 微信扫码：订阅 Main 推送的 QR PNG dataURL
+  onChannelsWechatQrcode: (callback: (dataUrl: string) => void) => {
+    const listener = (_e: unknown, dataUrl: string) => callback(dataUrl);
+    ipcRenderer.on(IPC.CHANNELS_WECHAT_QRCODE, listener);
+    return () => ipcRenderer.off(IPC.CHANNELS_WECHAT_QRCODE, listener);
+  },
+  // 微信扫码：订阅 Main 推送的登录结果
+  onChannelsWechatLoginDone: (callback: (payload: { ok: boolean; botId?: string; error?: string }) => void) => {
+    const listener = (_e: unknown, payload: { ok: boolean; botId?: string; error?: string }) => callback(payload);
+    ipcRenderer.on(IPC.CHANNELS_WECHAT_LOGIN_DONE, listener);
+    return () => ipcRenderer.off(IPC.CHANNELS_WECHAT_LOGIN_DONE, listener);
+  },
   // 权限档位
   getPermissionLevel: () => ipcRenderer.invoke(IPC.PERMISSION_GET_LEVEL),
   setPermissionLevel: (level: string) => ipcRenderer.invoke(IPC.PERMISSION_SET_LEVEL, level),

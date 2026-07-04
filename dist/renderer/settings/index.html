@@ -4,11 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>昔涟 · 设置</title>
-  <script type="module" crossorigin src="../assets/settings-vwuHQ6Pk.js"></script>
+  <script type="module" crossorigin src="../assets/settings-CQtl4BA6.js"></script>
   <link rel="modulepreload" crossorigin href="../assets/base-Cc1qE-wh.js">
   <link rel="modulepreload" crossorigin href="../assets/chat-ui-kPmAHPjl.js">
   <link rel="stylesheet" crossorigin href="../assets/base-4LTpmnF5.css">
-  <link rel="stylesheet" crossorigin href="../assets/settings-UyFMSHl6.css">
+  <link rel="stylesheet" crossorigin href="../assets/settings-BwY5ocqW.css">
 </head>
 <body>
   <div class="settings-shell">
@@ -31,6 +31,7 @@
         <button type="button" class="nav-item is-active" data-section="general"><span>⚙️</span>设置</button>
         <button type="button" class="nav-item" data-section="api"><span>🔑</span>API 设置</button>
         <button type="button" class="nav-item" data-section="cyrene"><span>🌸</span>昔涟设置</button>
+        <button type="button" class="nav-item" data-section="channels"><span>📱</span>连接手机</button>
         <button type="button" class="nav-item" data-section="tts"><span>🎙️</span>TTS 设置</button>
         <button type="button" class="nav-item" data-section="asr"><span>🎧</span>ASR 设置</button>
         <button type="button" class="nav-item" data-section="tokens"><span>📊</span>Token 用量</button>
@@ -706,6 +707,116 @@
           <p class="panel-hint">Skill 约束 agent 如何使用工具。把含 SKILL.md 的目录放到用户数据目录的 skills/ 下即可扩展。</p>
           <div id="skills-list"></div>
           <p id="skills-empty" class="empty-hint is-hidden">还没有可用的 skill。</p>
+        </section>
+
+        <section class="settings-panel is-hidden" id="channels-panel" data-panel="channels">
+          <details class="channels-log" id="channels-log-details">
+            <summary>💬 消息日志（最近 100 条）</summary>
+            <div class="channels-log__actions">
+              <button type="button" class="btn-secondary" id="channels-log-refresh">刷新</button>
+              <button type="button" class="btn-secondary" id="channels-log-clear">清空</button>
+            </div>
+            <div class="channels-log__list" id="channels-log-list">
+              <p class="empty-hint">暂无消息。</p>
+            </div>
+          </details>
+          <h1>连接手机</h1>
+          <h1>连接手机</h1>
+          <p class="panel-hint">把 Cyrene 接到微信、飞书等聊天平台。在外部渠道里的每个用户会拥有独立的对话上下文与记忆。</p>
+
+          <div class="channels-card">
+            <div class="channels-card__header">
+              <h2>微信</h2>
+              <span class="switch"><input id="channels-wechat-enabled" type="checkbox" /><span class="switch__track"><span class="switch__thumb"></span></span></span>
+            </div>
+            <div class="channels-card__body">
+              <div class="channels-status" id="channels-wechat-status">
+                <span class="channels-status__dot channels-status__dot--offline"></span>
+                <span class="channels-status__text">未启用</span>
+              </div>
+              <p class="channels-card__hint">
+                通过腾讯 <strong>iLink Bot API</strong>（个人微信官方接入通道）直连微信，无须外部网关。
+                点击"扫码登录"在 Cyrene 内弹出二维码窗口，扫描后自动连接。
+              </p>
+              <div class="channels-card__actions">
+                <button type="button" class="btn-secondary" id="channels-wechat-login">扫码登录</button>
+                <button type="button" class="btn-secondary" id="channels-wechat-restart">重启连接</button>
+              </div>
+              <div class="channels-qr" id="channels-wechat-qr" hidden>
+                <img class="channels-qr__img" id="channels-wechat-qr-img" alt="微信登录二维码" />
+                <p class="channels-qr__tip">请用微信扫描二维码完成登录</p>
+              </div>
+              <div class="channels-feedback" id="channels-wechat-feedback"></div>
+            </div>
+          </div>
+
+          <div class="channels-card">
+            <div class="channels-card__header">
+              <h2>飞书</h2>
+              <span class="switch"><input id="channels-feishu-enabled" type="checkbox" /><span class="switch__track"><span class="switch__thumb"></span></span></span>
+            </div>
+            <div class="channels-card__body">
+              <div class="channels-status" id="channels-feishu-status">
+                <span class="channels-status__dot channels-status__dot--offline"></span>
+                <span class="channels-status__text">未启用</span>
+              </div>
+              <p class="channels-card__hint">
+                通过飞书官方 SDK 的<strong>长连接 WebSocket</strong>接收消息（无需公网/内网穿透）。
+                在
+                <a href="https://open.feishu.cn/app" target="_blank" rel="noopener">飞书开放平台</a>
+                创建自建应用 → 开启"机器人"能力 → 填入下方 App ID/Secret → 启用即可。
+              </p>
+
+              <div class="form-row">
+                <label class="form-label">App ID</label>
+                <input type="text" id="channels-feishu-app-id" class="form-input form-input--wide" placeholder="cli_xxxxxxxxxxxx" />
+              </div>
+              <div class="form-row">
+                <label class="form-label">App Secret</label>
+                <div class="form-input-with-action">
+                  <input type="password" id="channels-feishu-app-secret" class="form-input form-input--wide" placeholder="点击保存配置时自动加密保存" autocomplete="off" />
+                  <button type="button" class="btn-reveal" id="channels-feishu-app-secret-reveal" title="显示/隐藏">👁</button>
+                </div>
+              </div>
+
+              <div class="channels-card__actions">
+                <button type="button" class="btn-secondary" id="channels-feishu-save">保存并连接</button>
+              </div>
+              <div class="channels-feedback" id="channels-feishu-feedback"></div>
+            </div>
+          </div>
+
+          <div class="channels-card channels-card--global">
+            <div class="channels-card__header">
+              <h2>全局</h2>
+            </div>
+            <div class="channels-card__body">
+              <div class="form-row">
+                <label class="form-label">限速 (每用户 / 分钟)</label>
+                <input type="number" min="1" max="1000" id="channels-rate-user" class="form-input" />
+              </div>
+              <div class="form-row">
+                <label class="form-label">限速 (单渠道 / 分钟)</label>
+                <input type="number" min="1" max="10000" id="channels-rate-channel" class="form-input" />
+              </div>
+              <div class="form-row form-row--inline">
+                <span class="switch"><input id="channels-tts-enabled" type="checkbox" /><span class="switch__track"><span class="switch__thumb"></span></span></span>
+                <span class="form-row__label">发送 TTS 音频消息</span>
+              </div>
+              <div class="form-row form-row--inline">
+                <span class="switch"><input id="channels-sticker-enabled" type="checkbox" /><span class="switch__track"><span class="switch__thumb"></span></span></span>
+                <span class="form-row__label">发送表情包</span>
+              </div>
+              <div class="form-row form-row--inline">
+                <span class="switch"><input id="channels-mirror-desktop" type="checkbox" /><span class="switch__track"><span class="switch__thumb"></span></span></span>
+                <span class="form-row__label">桌面端镜像显示</span>
+              </div>
+              <div class="form-row form-row--inline">
+                <span class="switch"><input id="channels-tool-sandbox" type="checkbox" /><span class="switch__track"><span class="switch__thumb"></span></span></span>
+                <span class="form-row__label">工具沙箱: 仅 safe 类 (禁用文件/shell 工具)</span>
+              </div>
+            </div>
+          </div>
         </section>
 
         <section class="settings-panel is-hidden" id="plugins-panel" data-panel="plugins">

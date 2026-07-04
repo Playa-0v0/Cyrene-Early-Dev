@@ -734,13 +734,16 @@
                 <span class="channels-status__text">未启用</span>
               </div>
               <p class="channels-card__hint">
-                基于腾讯官方 OpenClaw 运行时连接微信。先在终端运行
-                <code>openclaw onboard</code> + <code>openclaw channels login --channel openclaw-weixin</code>
-                完成扫码绑定，Cyrene 重启后自动连接。
+                通过腾讯 <strong>iLink Bot API</strong>（个人微信官方接入通道）直连微信，无须外部网关。
+                点击"扫码登录"在 Cyrene 内弹出二维码窗口，扫描后自动连接。
               </p>
               <div class="channels-card__actions">
                 <button type="button" class="btn-secondary" id="channels-wechat-login">扫码登录</button>
                 <button type="button" class="btn-secondary" id="channels-wechat-restart">重启连接</button>
+              </div>
+              <div class="channels-qr" id="channels-wechat-qr" hidden>
+                <img class="channels-qr__img" id="channels-wechat-qr-img" alt="微信登录二维码" />
+                <p class="channels-qr__tip">请用微信扫描二维码完成登录</p>
               </div>
               <div class="channels-feedback" id="channels-wechat-feedback"></div>
             </div>
