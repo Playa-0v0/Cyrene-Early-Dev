@@ -46,19 +46,19 @@ function parseArgs(argv: string[]): CliArgs {
     const v = () => valFromEq ?? next();
 
     if (key === "--scenario") args.scenario = v() as "coffee" | "mix" | "rescue";
-    else if (key === "--rewardGain") {
+    else if (key === "--userRewardBase") {
       const x = v();
       if (x.includes(",")) {
         args.rewardGainSweep = x.split(",").map(Number).filter(Number.isFinite);
       } else {
-        args.paramOverrides.rewardGain = Number(x);
+        args.paramOverrides.userRewardBase = Number(x);
       }
     }
-    else if (key === "--baseRate") args.paramOverrides.wakeBaseRate = Number(v());
-    else if (key === "--K") args.paramOverrides.wakeK = Number(v());
+    else if (key === "--wakeGamma") args.paramOverrides.wakeGamma = Number(v());
+    else if (key === "--modelRewardBase") args.paramOverrides.modelRewardBase = Number(v());
+    else if (key === "--wakeLambda") args.paramOverrides.wakeLambda = Number(v());
     else if (key === "--alpha") args.paramOverrides.decayAlpha = Number(v());
     else if (key === "--beta") args.paramOverrides.decayBeta = Number(v());
-    else if (key === "--efficiencyFloor") args.paramOverrides.efficiencyFloor = Number(v());
     else if (key === "--threshold") args.paramOverrides.promptThreshold = Number(v());
     else if (key === "--outputDir") args.outputDir = v();
     else if (key === "--no-charts") args.showCharts = false;
@@ -124,11 +124,11 @@ function runScenario(
 }
 
 function runSweep(scenario: Scenario, baseParams: DmaeParams, values: number[]): void {
-  console.log(`\n=== Parameter Sweep: rewardGain = [${values.join(", ")}] on ${scenario.name} ===\n`);
-  console.log("rewardGain  |  I=90 占用%  |  I=70 占用%  |  I=45 占用%  |  I=15 占用%  |  avgLife(I=45)");
-  console.log("------------|---------------|---------------|---------------|---------------|---------------");
+  console.log(`\n=== Parameter Sweep: userRewardBase = [${values.join(", ")}] on ${scenario.name} ===\n`);
+  console.log("Bu       |  I=90 占用%  |  I=70 占用%  |  I=45 占用%  |  I=15 占用%  |  avgLife(I=45)");
+  console.log("---------|---------------|---------------|---------------|---------------|---------------");
   for (const v of values) {
-    const params: DmaeParams = { ...baseParams, rewardGain: v };
+    const params: DmaeParams = { ...baseParams, userRewardBase: v };
     const result = runScenario(scenario, params, false);
     const tiers = [90, 70, 45, 15];
     const occByI: string[] = [];
@@ -139,7 +139,7 @@ function runSweep(scenario: Scenario, baseParams: DmaeParams, values: number[]):
     }
     const midEnt = result.entries.find((e) => Math.abs(e.intrinsicValue - 45) < 1 && !e.permanent);
     const midLife = midEnt ? (result.stats.avgActiveLife.get(midEnt.id) ?? 0).toFixed(2) : "-";
-    console.log(`${String(v).padStart(11)}  |  ${occByI[0]}        |  ${occByI[1]}        |  ${occByI[2]}        |  ${occByI[3]}        |  ${midLife}`);
+    console.log(`${String(v).padStart(7)}  |  ${occByI[0]}        |  ${occByI[1]}        |  ${occByI[2]}        |  ${occByI[3]}        |  ${midLife}`);
   }
 }
 

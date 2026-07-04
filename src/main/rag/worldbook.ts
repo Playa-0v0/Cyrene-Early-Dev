@@ -1,5 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
+import { WORLDBOOK_CONSTANTS } from "./worldbook-constants";
 
 // ── Worldbook entry ──
 export interface WorldbookEntry {
@@ -25,35 +26,44 @@ export interface EntryState {
 
 export type DmaeState = "Active" | "Dormant" | "Archived";
 
-// ── DMAE 可调参数（v3.4 收口版）──
+// ── DMAE 可调参数（v4.0 规范）──
 // 任何参数都只是默认值，不是结论。所有参数以后都通过 Simulator 调整。
+// v4.0 公式:
+//   Ru = Bu × (1 + γ · ln(1+U_old))   [仅 userHit]
+//   Rm = Bm × e^(−λ·U_old)             [仅 modelHit + Active, 实现层 clamp 保证 Rm < D]
+//   D  = (α·U_new² + β·M_new²) / √I
 export interface DmaeParams {
   maxScore: number;             // 100：物理上界
   promptThreshold: number;      // 30：>= 此值进 Prompt（业务层用）
-  wakeBaseRate: number;         // 0.1：WakeCurve 命中基数
-  wakeK: number;                // 8：WakeCurve 斜率
-  efficiencyFloor: number;      // 0.05：Efficiency 下限
-  rewardGain: number;           // 5：Reward 倍率（默认值；Simulator 跑 3/5/7/10 选最优）
-  decayAlpha: number;           // 1.0：Quadratic US 系数
-  decayBeta: number;            // 0.3：Quadratic MS 系数
+  /** 用户基础奖励：每次 userHit 至少涨多少 */
+  userRewardBase: number;       // Bu = 20（v4.0 默认）
+  /** 久别重逢增益：ln(1+U_old) 的系数，γ 越大久别奖励越猛 */
+  wakeGamma: number;            // γ = 0.5（v4.0 默认）
+  /** 模型基础奖励：modelHit + Active 时最多给多少 */
+  modelRewardBase: number;      // Bm = 8（v4.0 默认）
+  /** 模型奖励衰减率：U_old 越大 Rm 越快趋近 0 */
+  wakeLambda: number;           // λ = 0.3（v4.0 默认）
+  /** 用户沉默权重：U 不提时衰减多快（按"8 轮跌破"目标反推 = 1.5） */
+  decayAlpha: number;           // α = 1.5
+  /** 模型沉默权重：M 不复述时衰减多快（需满足 α > β） */
+  decayBeta: number;            // β = 0.3
 }
 
 export const DEFAULT_DMAE_PARAMS: DmaeParams = {
   maxScore: 100,
   promptThreshold: 30,
-  wakeBaseRate: 0.1,
-  wakeK: 8,
-  efficiencyFloor: 0.05,
-  rewardGain: 5,
-  decayAlpha: 5.0,    // 用户目标：I=60 顶多 6 轮归零；高 I 自然多赖 1-2 轮
-  decayBeta: 0.5,
+  userRewardBase: 20,
+  wakeGamma: 0.5,
+  modelRewardBase: 8,
+  wakeLambda: 0.3,
+  decayAlpha: 1.5,
+  decayBeta: 0.3,
 };
 
-// ── 策略接口（v3.4 框架固化，以后不再改）──
+// ── 策略接口（v4.0 框架固化，以后不再改）──
 export interface RewardContext {
   entry: WorldbookEntry;
   snap: { activation: number; userSilence: number; modelSilence: number };
-  userHit: boolean;
   params: DmaeParams;
 }
 export interface DecayContext {
@@ -63,29 +73,41 @@ export interface DecayContext {
 }
 
 export interface RewardStrategy {
-  // v3.4：modelHit 不入参、不给分（模型没有兴趣表达权 §7.3/§7.4）
-  compute(ctx: RewardContext): number;
+  // v4.0 §4：用户命中奖励。Ru = Bu × (1 + γ·ln(1+U_old))
+  // 仅当 userHit 时主循环才调用。
+  userReward(ctx: RewardContext): number;
+
+  // v4.0 §5：模型维护奖励。Rm = Bm × e^(−λ·U_old)
+  // 仅当 modelHit 时主循环才调用（且 state==Active），主循环负责 clamp 保证 Rm < D。
+  modelReward(ctx: RewardContext): number;
 }
 
 export interface DecayStrategy {
   compute(ctx: DecayContext): number;
 }
 
-// ── v3.4 默认 Reward 策略 ──
-// Reward = rewardGain × WakeCurve(US_old) × Efficiency(A_old)
-//   - WakeCurve(US) = baseRate + (1-baseRate) · US/(US+K)        [0~1, US=0 时给 baseRate]
-//   - Efficiency(A) = max(efficiencyFloor, 1 - A/MaxScore)       [0.05~1, A=Max 时给 floor]
-// I 不参与（避免高价值条目既涨得快又忘得慢而天然霸榜）。
+// ── v4.0 默认 Reward 策略 ──
+// Ru = Bu × (1 + γ · ln(1 + U_old))     [v4.0 §4]
+//   - 连续命中 → 至少 Bu
+//   - 沉默越久 → ln(1+U) 越大 → 久别重逢奖励越猛
+//   - ln 单调递增 + 增长变缓 → 永远不会暴涨（避免无限分）
+//
+// Rm = Bm × e^(−λ · U_old)             [v4.0 §5]
+//   - U_old=0 → 最大 Bm
+//   - U_old 越大 → 指数衰减 → 模型话语权越小
+//   - Active gating 由主循环控制（v4.0 §5 要求 "当前 Activation ≥ PromptThreshold"）
+//   - Rm<D clamp 由主循环控制（v4.0 §8/§9 不变量）
 export class DefaultRewardStrategy implements RewardStrategy {
-  compute(ctx: RewardContext): number {
-    if (!ctx.userHit) return 0;
+  userReward(ctx: RewardContext): number {
     const { snap, params } = ctx;
-    const wake = params.wakeBaseRate
-      + (1 - params.wakeBaseRate) * snap.userSilence / (snap.userSilence + params.wakeK);
-    const eff = Math.max(params.efficiencyFloor, 1 - snap.activation / params.maxScore);
-    return params.rewardGain * wake * eff;
+    return params.userRewardBase * (1 + params.wakeGamma * Math.log(1 + snap.userSilence));
+  }
+  modelReward(ctx: RewardContext): number {
+    const { snap, params } = ctx;
+    return params.modelRewardBase * Math.exp(-params.wakeLambda * snap.userSilence);
   }
 }
+// I 不参与（避免高价值条目既涨得快又忘得慢而天然霸榜）。
 
 // ── v3.4 默认 Decay 策略 ──
 // Decay = (α·US² + β·MS²) / sqrt(I)   [I 仅在 Resistance：高 I = 抵抗强 = 忘得慢]
@@ -93,7 +115,7 @@ export class DefaultRewardStrategy implements RewardStrategy {
 export class QuadraticResistanceDecay implements DecayStrategy {
   compute(ctx: DecayContext): number {
     const { entry, snap, params } = ctx;
-    const I = Math.max(1, entry.intrinsicValue);
+    const I = Math.max(WORLDBOOK_CONSTANTS.MIN_INTRINSIC_VALUE, entry.intrinsicValue);
     const resistance = 1 / Math.sqrt(I);
     const raw = params.decayAlpha * snap.userSilence * snap.userSilence
               + params.decayBeta * snap.modelSilence * snap.modelSilence;
@@ -130,11 +152,11 @@ export class WorldbookManager {
   private stateFile?: string;
   private debug: boolean;
 
-  // 终态注入上限（Scheduler 层硬上限；未来 v4 换 token-budget 背包）
-  private static readonly MAX_ACTIVE = 8;
+  // 终态注入上限（详见 worldbook-constants.ts）
+  private static readonly MAX_ACTIVE = WORLDBOOK_CONSTANTS.MAX_ACTIVE;
 
-  // 解析器：.md 未写 intrinsic value 时的缺省（v3.3 是从 DmaeParams 拿，v3.4 提到这里）
-  private static readonly DEFAULT_INTRINSIC_VALUE = 60;
+  // .md 未写 intrinsic value 时的 fallback（详见 worldbook-constants.ts）
+  private static readonly DEFAULT_INTRINSIC_VALUE = WORLDBOOK_CONSTANTS.DEFAULT_INTRINSIC_VALUE;
 
   constructor(worldbookDir: string, options?: WorldbookManagerOptions) {
     this.worldbookDir = worldbookDir;
@@ -362,9 +384,9 @@ export class WorldbookManager {
       // 所以 userHit 也重置 ms——否则用户连续提但模型不复述时 ms 累积导致 decay 上升、A 反而下降。
       const msNew = (userHit || modelHit) ? 0 : msOld + 1;
 
-      // ─ positive: reward（仅 userHit，I 不参与） ─
-      const reward = userHit
-        ? this.rewardStrategy.compute({ entry, snap: { activation: aOld, userSilence: usOld, modelSilence: msOld }, userHit: true, params })
+      // ─ positive: user reward（仅 userHit，I 不参与） ─
+      const userReward = userHit
+        ? this.rewardStrategy.userReward({ entry, snap: { activation: aOld, userSilence: usOld, modelSilence: msOld }, params })
         : 0;
 
       // ─ negative: decay（I 仅在 Resistance） ─
@@ -374,11 +396,21 @@ export class WorldbookManager {
         params,
       });
 
+      // ─ positive: model reward（仅 modelHit + Active gating） ─
+      // v4.0 §5：Rm = Bm·e^(-λ·U_old)，仅当 A ≥ PromptThreshold 时给分
+      // v4.0 §8 不变量：Rm < D 严格成立，由主循环 clamp 保证（避免 Rm ≥ D 时仍能涨分）
+      let modelReward = 0;
+      if (modelHit && deriveState(aOld, params.promptThreshold) === WORLDBOOK_CONSTANTS.STATES.ACTIVE) {
+        const rawRm = this.rewardStrategy.modelReward({ entry, snap: { activation: aOld, userSilence: usOld, modelSilence: msOld }, params });
+        // 不变量 clamp：Rm = min(Rm, D - ε)
+        modelReward = Math.max(0, Math.min(rawRm, decay - WORLDBOOK_CONSTANTS.EPSILON));
+      }
+
       // ─ commit ─
-      let aNew = aOld + reward - decay;
+      let aNew = aOld + userReward + modelReward - decay;
       aNew = Math.max(0, aNew);
       // ★ Floor 仅在 Archived 复活时触发（避免高价值条目每次命中都 floor 让 Decay/Wake 失效）
-      if (userHit && deriveState(aOld, params.promptThreshold) === "Archived") {
+      if (userHit && deriveState(aOld, params.promptThreshold) === WORLDBOOK_CONSTANTS.FLOOR_TRIGGER_STATE) {
         aNew = Math.max(aNew, entry.intrinsicValue);
       }
       aNew = Math.min(max, aNew);
@@ -389,10 +421,10 @@ export class WorldbookManager {
 
       if (this.debug && (userHit || modelHit || Math.abs(aNew - aOld) >= 0.05)) {
         const reasons: string[] = [];
-        if (userHit) reasons.push(`U+${reward.toFixed(2)}`);
-        if (modelHit) reasons.push(`[M]`);
+        if (userHit) reasons.push(`U+${userReward.toFixed(2)}`);
+        if (modelHit) reasons.push(`M+${modelReward.toFixed(2)}`);
         if (decay > 0) reasons.push(`D-${decay.toFixed(2)}`);
-        if (userHit && deriveState(aOld, params.promptThreshold) === "Archived") reasons.push(`floor→${entry.intrinsicValue}`);
+        if (userHit && deriveState(aOld, params.promptThreshold) === WORLDBOOK_CONSTANTS.FLOOR_TRIGGER_STATE) reasons.push(`floor→${entry.intrinsicValue}`);
         changed.push({ id: entry.id, aOld, aNew, reason: reasons.join(" ") });
       }
     }
@@ -453,7 +485,7 @@ export class WorldbookManager {
         if (!e.enabled || e.permanent) return false;
         const st = this.state.get(e.id);
         if (!st) return false;
-        return deriveState(st.activation, th) === "Active";
+        return deriveState(st.activation, th) === WORLDBOOK_CONSTANTS.STATES.ACTIVE;
       })
       .sort((a, b) => {
         const sa = this.state.get(a.id)!.activation;

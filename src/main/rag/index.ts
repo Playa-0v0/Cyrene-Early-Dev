@@ -6,6 +6,7 @@ import { JsonVectorStore } from "./vectorstore";
 import type { MemoryEntry } from "./vectorstore";
 import { HybridRetriever } from "./retriever";
 import { WorldbookManager } from "./worldbook";
+export { INJECTION_HEADER, INJECTION_PREAMBLE } from "./worldbook-constants";
 import { chunkText } from "./chunk";
 import { feedEntityNamesToJieba } from "../memory/entity-graph";
 

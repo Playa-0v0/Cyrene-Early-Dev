@@ -62,7 +62,7 @@ export function computeStats(result: SimResult): SimStats {
 export function printStats(result: SimResult): void {
   const { stats, entries, params } = result;
   console.log("\n=== 3 类统计 ===");
-  console.log(`参数: rewardGain=${params.rewardGain} baseRate=${params.wakeBaseRate} K=${params.wakeK} α=${params.decayAlpha} β=${params.decayBeta} floor=${params.efficiencyFloor} threshold=${params.promptThreshold}`);
+  console.log(`参数: Bu=${params.userRewardBase} γ=${params.wakeGamma} Bm=${params.modelRewardBase} λ=${params.wakeLambda} α=${params.decayAlpha} β=${params.decayBeta} threshold=${params.promptThreshold}`);
   console.log(`总轮数: ${stats.totalRounds}\n`);
 
   console.log("--- Prompt 占用率（多少轮处于 Active）---");
