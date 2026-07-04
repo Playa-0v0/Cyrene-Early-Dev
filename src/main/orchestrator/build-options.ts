@@ -215,6 +215,7 @@ export async function onAgentRunFinished(
   result: CyreneRunResult,
   latestUserText: string,
   deps: OnRunFinishedDeps,
+  channel?: "wechat" | "feishu",
 ): Promise<void> {
   const chatContent = result.reply;
   deps.scheduleMemoryWrite(latestUserText, chatContent);
@@ -253,6 +254,10 @@ export async function onAgentRunFinished(
     deps.broadcastRuntimeStateChanged();
   } else if (settings.runtimeSync === "llm") {
     deps.broadcastRuntimeStateChanged();
-    void deps.observeRuntimeState(settings, [], latestUserText, chatContent);
+    // 心情观察器在 channels bot (wechat/feishu) 上跳过：节省一次 LLM 调用、加快首条回复
+    // 桌面聊天（channel === undefined）照常跑，保持 Live2D 表情/心情跟随对话变化
+    if (channel !== "wechat" && channel !== "feishu") {
+      void deps.observeRuntimeState(settings, [], latestUserText, chatContent);
+    }
   }
 }

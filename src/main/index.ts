@@ -3175,7 +3175,7 @@ app.whenReady().then(async () => {
       });
     });
     if (agent.lastResult) {
-      await onAgentRunFinished(agent.lastResult, msg.text, onRunFinishedDeps);
+      await onAgentRunFinished(agent.lastResult, msg.text, onRunFinishedDeps, msg.channel);
     }
     // 落历史
     void indexConversationTurn(sessionId, msg.text, reply);
