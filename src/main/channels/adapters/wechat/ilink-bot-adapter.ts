@@ -211,7 +211,7 @@ export class ILinkBotAdapter implements ChannelAdapter {
       console.warn(LOG_PREFIX, "onMessage 未注入，跳过消息");
       return;
     }
-    console.log(LOG_PREFIX, `inbound from=${msg.fromUserId} type=${msg.msgType} text=${JSON.stringify((msg.content ?? "").slice(0, 80))} ctx=${msg.contextToken?.slice(0, 12)}…`);
+    console.log(LOG_PREFIX, `inbound from=${msg.fromUserId} text=${(msg.content ?? "").slice(0, 80)}`);
 
     const incoming: IncomingMessage = {
       channel: "wechat",
@@ -224,21 +224,15 @@ export class ILinkBotAdapter implements ChannelAdapter {
 
     // 主回复链：await onMessage 拿到 OutgoingMessage，直接用 contextToken 调 sendText
     void this.onMessage(incoming).then(async (outgoing) => {
-      console.log(LOG_PREFIX, `dispatcher returned outgoing=${outgoing ? "yes" : "null"}`);
       if (!outgoing || !this.client) return;
       const text = outgoing.parts
         .filter((p) => p.kind === "text")
         .map((p) => p.text)
         .join("")
         .trim();
-      console.log(LOG_PREFIX, `extracted reply text len=${text.length} preview=${JSON.stringify(text.slice(0, 80))}`);
-      if (!text) {
-        console.warn(LOG_PREFIX, "reply text is empty, skip sendText");
-        return;
-      }
+      if (!text) return;
       try {
         const result = await this.client.sendText(msg.fromUserId, text, msg.contextToken);
-        console.log(LOG_PREFIX, `sendText result: ok=${result.ok} err=${result.error ?? "-"}`);
         if (!result.ok) {
           console.error(LOG_PREFIX, "sendText failed:", result.error);
         }

@@ -136,17 +136,8 @@ export class ILinkClient {
         throw new Error(`iLink getupdates failed: ret=${data.ret} ${data.errmsg ?? ""}`);
       }
 
-      // 诊断：每次 poll 都打一次原始响应（限长）
-      const rawMsgs = data.msgs ?? [];
-      if (rawMsgs.length > 0) {
-        console.log("[ILinkClient] getupdates returned", rawMsgs.length, "msgs:", JSON.stringify(rawMsgs).slice(0, 600));
-      } else {
-        // 空轮询也打（每 5 次打一次避免刷屏）
-        if (Math.random() < 0.2) console.log("[ILinkClient] getupdates empty poll, buf=", buf.slice(0, 20));
-      }
-
       // 跳过 bot 自己发出去的消息（message_type=2）
-      const wires = rawMsgs.filter((m) => m.message_type === 1);
+      const wires = (data.msgs ?? []).filter((m) => m.message_type === 1);
       return {
         messages: wires.map((m) => this.#wireToMessage(m)),
         buf: data.get_updates_buf ?? "",
@@ -256,46 +247,15 @@ export class ILinkClient {
   // ── Low level ───────────────────────────────────────────────────────────
 
   private async doJson<T>(method: string, path: string, body: unknown, init?: RequestInit): Promise<T> {
-    const t0 = Date.now();
-    const url = this.baseUrl + path;
-    console.log(`[ILinkClient] → ${method} ${path} (t+${t0})`);
-
-    let res: Response;
-    try {
-      res = await fetch(url, {
-        method,
-        headers: this.headers(),
-        body: JSON.stringify(body),
-        ...init,
-      });
-    } catch (err) {
-      console.error(`[ILinkClient] ✗ fetch failed ${method} ${path} after ${Date.now() - t0}ms:`, err);
-      throw err;
-    }
-
+    const res = await fetch(this.baseUrl + path, {
+      method,
+      headers: this.headers(),
+      body: JSON.stringify(body),
+      ...init,
+    });
     const text = await res.text();
-    const dur = Date.now() - t0;
-    const ct = res.headers.get("content-type") ?? "?";
-    console.log(`[ILinkClient] ← ${method} ${path} HTTP ${res.status} ${dur}ms (${text.length}B, ct=${ct})`);
-
-    // 详细 dump：getupdates 看完整响应（确认 msgs/get_updates_buf 真实字段）
-    // sendmessage 看请求体（确认 to_user_id / context_token 正确）
-    if (path.includes("getupdates") || path.includes("sendmessage")) {
-      console.log(`[ILinkClient]   req body: ${JSON.stringify(body).slice(0, 1500)}`);
-    }
-    if (path.includes("getupdates")) {
-      console.log(`[ILinkClient]   raw body: ${text.slice(0, 2000)}`);
-      try {
-        const j = JSON.parse(text);
-        console.log(`[ILinkClient]   parsed: ret=${j.ret} msgsLen=${Array.isArray(j.msgs) ? j.msgs.length : "?"} bufLen=${(j.get_updates_buf ?? "").length} errcode=${j.errcode ?? "-"} errmsg=${j.errmsg ?? "-"}`);
-        if (Array.isArray(j.msgs) && j.msgs.length > 0) {
-          console.log(`[ILinkClient]   >>> INBOUND MSGS: ${JSON.stringify(j.msgs).slice(0, 1500)}`);
-        }
-      } catch {}
-    }
-
     if (!res.ok) {
-      throw new Error(`HTTP ${method} ${path}: ${text.slice(0, 200)}`);
+      throw new Error(`HTTP ${res.status} ${method} ${path}: ${text.slice(0, 200)}`);
     }
     try {
       return JSON.parse(text) as T;
