@@ -56,7 +56,7 @@ export function scoreMemoryConflict(input: ConflictScoreInput): ConflictScoreRes
   const penalties: string[] = []
   let score = 0
 
-  const ragCandidate = input.candidateSource === "rag"
+  const ragCandidate = input.candidateSource === "rag" || input.ragScore !== undefined
   const recentInjection = input.candidateSource === "recent_injection" || input.recentInjection === true
 
   if (input.correctionIntent) score += 20

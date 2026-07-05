@@ -196,6 +196,46 @@ describe("MemoryManager L2 sync", () => {
     })
   })
 
+  it("raises RAG-backed candidates when the target memory was recently injected", async () => {
+    ragMock.addMemory.mockResolvedValue("rag_new")
+    const { memoryManager } = await import("./memory-manager")
+    const { memoryStore } = await import("./memory-store")
+    const { recordRecentMemoryInjection } = await import("./recent-injected-memory")
+    const existing = await memoryStore.addL2Memory({
+      content: "用户喜欢跑步",
+      triggerText: "我喜欢跑步",
+      sourceConversationId: "test",
+      ragId: "rag_existing",
+      isPinned: false,
+    })
+    recordRecentMemoryInjection([existing.id])
+    ragMock.searchMemoryEntries.mockResolvedValue([{
+      id: "rag_existing",
+      text: "用户喜欢跑步",
+      createdAt: Date.now(),
+      score: 0.88,
+      metadata: { l2Id: existing.id },
+    }])
+    const candidate: MemoryCandidate = {
+      layer: "L2",
+      content: "用户不喜欢跑步",
+      confidence: 0.91,
+      triggerText: "我不喜欢跑步",
+    }
+
+    await memoryManager.writeMemory([candidate])
+
+    const conflictLogs = await memoryStore.getConflictLogs()
+
+    expect(conflictLogs).toHaveLength(1)
+    expect(conflictLogs[0].resolverPriority).toBe("normal")
+    expect(conflictLogs[0].scoringSignals).toMatchObject({
+      ragCandidate: true,
+      recentInjection: true,
+      localContradiction: true,
+    })
+  })
+
   it("does not write conflict logs for unrelated negative memories", async () => {
     ragMock.addMemory.mockResolvedValue("rag_new")
     ragMock.searchMemoryEntries.mockResolvedValue([{

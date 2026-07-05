@@ -3,6 +3,7 @@ import type { L0WritableField } from "./memory-store"
 import { MemoryCandidate, L0_FIELD_DESCRIPTIONS, L2Memory } from "./memory-types"
 import { findPossibleConflictCandidate } from "./memory-conflict"
 import { scoreMemoryConflict, type ConflictEvidenceLevel } from "./memory-conflict-score"
+import { wasRecentlyInjectedMemory } from "./recent-injected-memory"
 import { addMemory, searchMemoryEntries } from "../rag/index"
 
 type L1Field = "recentGoals" | "recentPreferences"
@@ -155,9 +156,10 @@ export class MemoryManager {
             detector: "local",
           })
           const score = scoreMemoryConflict({
-            candidateSource: metadataMatch ? "rag" : "local",
+            candidateSource: wasRecentlyInjectedMemory(existing.id) ? "recent_injection" : metadataMatch ? "rag" : "local",
             ragScore: metadataMatch ? matchedEntry.score : undefined,
             correctionIntent: hasCorrectionIntent(triggerText),
+            recentInjection: wasRecentlyInjectedMemory(existing.id),
             localContradiction: true,
             evidence: await this.getEvidenceLevel(newL2Id, existing.id),
             activeTarget: existing.status !== "archived",
