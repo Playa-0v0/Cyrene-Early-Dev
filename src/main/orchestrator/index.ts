@@ -1,9 +1,10 @@
 // Orchestrator — unified entry point
 // Function Calling 模式下，Orchestrator 只负责构建 always-on 上下文（世界书 + L0/L1）
 // 工具的选择和执行由 function-calling.ts 的 runFunctionCallingLoop 处理
-import { updateWorldbookActivation, getPermanentWorldbookEntries, getActiveWorldbookEntries, getCascadeWorldbookEntries, searchMemory, INJECTION_HEADER, INJECTION_PREAMBLE } from "../rag";
+import { updateWorldbookActivation, getPermanentWorldbookEntries, getActiveWorldbookEntries, getCascadeWorldbookEntries, searchMemory, searchMemoryEntries, INJECTION_HEADER, INJECTION_PREAMBLE } from "../rag";
 import { memoryStore } from "../memory/memory-store";
 import { entityGraph } from "../memory/entity-graph";
+import { recordRecentMemorySearchEntries } from "../memory/recent-injected-memory";
 import { toolRegistry } from "./tool-registry";
 
 export { ToolCallResult } from "./types";
@@ -25,11 +26,13 @@ export async function buildMemoryInjection(
 
   try {
     // 检索 top-3 L2 用户记忆
-    const userMemories = await searchMemory(userInput, "user_memory", 5);
-    if (userMemories.length > 0) {
+    const userMemoryEntries = await searchMemoryEntries(userInput, "user_memory", 5);
+    if (userMemoryEntries.length > 0) {
+      recordRecentMemorySearchEntries(userMemoryEntries);
       // 标注可能存在冲突的记忆
       const allL2 = await memoryStore.getAllL2();
-      const conflictAnnotated = userMemories.map((m) => {
+      const conflictAnnotated = userMemoryEntries.map((entry) => {
+        const m = entry.text;
         const l2Entry = allL2.find((l) => l.content === m && l.conflictWith && l.conflictWith.length > 0);
         if (l2Entry) {
           return `· ${m} ⚠️（该信息可能存在矛盾记录）`;
