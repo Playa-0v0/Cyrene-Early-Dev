@@ -100,6 +100,16 @@
             </label>
 
             <label class="field field--full">
+              <span>API 协议</span>
+              <select id="transport-select">
+                <option value="auto">自动（按 Base URL 推断）</option>
+                <option value="openai">OpenAI 兼容</option>
+                <option value="anthropic">Anthropic 兼容</option>
+              </select>
+              <span class="form-hint">默认按 Base URL 推断；如有歧义可手动指定</span>
+            </label>
+
+            <label class="field field--full">
               <span>模型名</span>
               <input id="model-input" type="text" placeholder="选厂商后自动填入，可手填覆盖" autocomplete="off" list="model-input-suggestions" />
               <datalist id="model-input-suggestions"></datalist>

@@ -11,7 +11,7 @@ import { VolcanoAsrStream, getAsrConfig } from "../asr/volcano-asr-engine";
 import { synthesizeByEngine } from "../tts/tts-dispatcher";
 import type { TtsEngine } from "../../shared/tts-types";
 import { runFunctionCallingLoop } from "../orchestrator";
-import { getAdapter, buildVendorUrl } from "../orchestrator/vendors";
+import { getAdapter, buildVendorUrlByProvider } from "../orchestrator/vendors";
 import type { ChatMessage } from "../orchestrator/vendors/types";
 
 const LOG_PREFIX = "[CallManager]";
@@ -273,7 +273,7 @@ async function runAgentTurn(userText: string): Promise<string | null> {
     const adapter = getAdapter(ms.provider);
     if (!adapter) return null;
 
-    const url = buildVendorUrl(ms.provider, ms.baseUrl);
+    const url = buildVendorUrlByProvider(ms.provider, ms.baseUrl);
     const systemPrompt = await systemPromptBuilder?.(userText) ?? "";
     const messages: ChatMessage[] = [
       { role: "system", content: systemPrompt },

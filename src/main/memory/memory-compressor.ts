@@ -14,7 +14,7 @@ import type { L2Memory } from "./memory-types";
 import * as fs from "fs";
 import * as path from "path";
 import { app } from "electron";
-import { buildVendorUrl } from "../orchestrator/vendors";
+import { getAdapterForConfig } from "../orchestrator/vendors";
 import { recordUsage } from "../token-usage-store";
 
 // ── LLM 调用（复用与 MemoryJudge 相同的 API 模式） ──
@@ -24,6 +24,7 @@ interface ModelSettings {
   baseUrl: string;
   model: string;
   apiKey: string;
+  explicitTransport?: "openai" | "anthropic" | "auto";
 }
 
 function loadModelSettings(): ModelSettings {
@@ -33,11 +34,16 @@ function loadModelSettings(): ModelSettings {
     if (!fs.existsSync(filePath)) return defaults;
     const raw = fs.readFileSync(filePath, "utf8");
     const parsed = JSON.parse(raw) as Partial<ModelSettings>;
+    const explicitTransport: ModelSettings["explicitTransport"] =
+      parsed.explicitTransport === "openai" || parsed.explicitTransport === "anthropic" || parsed.explicitTransport === "auto"
+        ? parsed.explicitTransport
+        : undefined;
     return {
       provider: typeof parsed.provider === "string" && parsed.provider.trim() ? parsed.provider.trim() : defaults.provider,
       baseUrl: typeof parsed.baseUrl === "string" && parsed.baseUrl.trim() ? parsed.baseUrl.trim() : defaults.baseUrl,
       model: typeof parsed.model === "string" && parsed.model.trim() ? parsed.model.trim() : defaults.model,
       apiKey: typeof parsed.apiKey === "string" ? parsed.apiKey.trim() : "",
+      explicitTransport,
     };
   } catch { return defaults; }
 }
@@ -49,12 +55,29 @@ async function callLLM(messages: Array<{ role: "system" | "user"; content: strin
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 30000);
 
+  const cfg = {
+    provider: settings.provider,
+    baseUrl: settings.baseUrl,
+    model: settings.model,
+    apiKey: settings.apiKey,
+    explicitTransport: settings.explicitTransport,
+  };
+
   try {
-    const response = await fetch(buildVendorUrl(settings.provider, settings.baseUrl), {
+    // 走 adapter（之前直接写 OpenAI body / Bearer / choices 解析，anthropic 端点会拿到空串）
+    const adapter = getAdapterForConfig(cfg);
+    const http = adapter.buildRequest({
+      model: cfg.model,
+      messages,
+      maxTokens,
+      stream: false,
+    }, cfg);
+
+    const response = await fetch(http.url, {
       method: "POST",
       signal: controller.signal,
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${settings.apiKey}` },
-      body: JSON.stringify({ model: settings.model, messages, max_tokens: maxTokens, stream: false }),
+      headers: http.headers,
+      body: http.body,
     });
 
     if (!response.ok) {
@@ -63,16 +86,14 @@ async function callLLM(messages: Array<{ role: "system" | "user"; content: strin
       throw new Error(errMsg || `HTTP ${response.status}`);
     }
 
-    const data = await response.json() as {
-      choices?: Array<{ message?: { content?: string } }>;
-      usage?: { prompt_tokens?: number; completion_tokens?: number };
-    };
+    const data = await response.json();
+    const parsed = adapter.parseResponse(data);
 
-    if (data.usage) {
-      recordUsage(data.usage.prompt_tokens ?? 0, data.usage.completion_tokens ?? 0, 1);
+    if (parsed.usage) {
+      recordUsage(parsed.usage.input, parsed.usage.output, 1);
     }
 
-    return data.choices?.[0]?.message?.content ?? "";
+    return parsed.text ?? "";
   } finally {
     clearTimeout(timer);
   }

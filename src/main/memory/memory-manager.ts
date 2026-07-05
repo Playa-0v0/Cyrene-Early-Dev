@@ -112,7 +112,7 @@ export class MemoryManager {
 
     // ── 冲突检测：检查新记忆是否与现有记忆矛盾 ──
     try {
-      void this.detectAndMarkConflicts(candidate.content, ragId)
+      await this.detectAndMarkConflicts(candidate.content, ragId)
     } catch (err) {
       console.warn("[MemoryManager] 冲突检测失败:", err)
     }
@@ -135,14 +135,13 @@ export class MemoryManager {
 
       if (isContradictory(content, existing.content)) {
         // 检测到矛盾：在现有条目上标记
-        const conflicts = existing.conflictWith ?? []
-        if (!conflicts.includes(newRagId)) {
-          conflicts.push(newRagId)
-          existing.conflictWith = conflicts
-          // 降低现有条目的状态
-          if (existing.status === "active") {
-            existing.status = "aging"
-          }
+        const marked = await memoryStore.markL2Conflict(existing.id, newRagId)
+        if (marked) {
+          await memoryStore.addReflectionLog({
+            type: "conflict_detected",
+            summary: "检测到记忆冲突",
+            details: `${existing.id} 与 ${newRagId}: "${preview(existing.content, 80)}" ↔ "${preview(content, 80)}"`,
+          })
           console.log(`[MemoryManager] ⚠️ 检测到记忆冲突: "${preview(existing.content, 30)}" ↔ "${preview(content, 30)}"`)
         }
       }
@@ -150,7 +149,8 @@ export class MemoryManager {
   }
 
   async runDecay(): Promise<void> {
-    console.log("[MemoryManager] 权重衰减由 RAG 系统自动处理，跳过")
+    const changed = await memoryStore.decayL2Weights()
+    console.log(`[MemoryManager] L2 权重衰减完成，更新 ${changed} 条`)
   }
 
   async onL2Recalled(ids: string[]): Promise<void> {

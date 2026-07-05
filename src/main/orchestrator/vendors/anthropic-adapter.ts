@@ -3,8 +3,8 @@
 // system 顶层 + messages[].content 为 content block 数组 + tools[].input_schema
 import {
   ChatMessage, ChatRequest, ChatResponse, ChatVendorAdapter,
-  HttpRequest, ProviderCapability, TestConnectionResult, ToolCall,
-  ToolExecutionResult, VendorConfig,
+  HttpRequest, ProviderCapability, StreamChunk, StreamEvent,
+  TestConnectionResult, ToolCall, ToolExecutionResult, VendorConfig,
 } from "./types";
 
 const ANTHROPIC_VERSION = "2023-06-01";
@@ -89,7 +89,7 @@ export class AnthropicAdapter implements ChatVendorAdapter {
     const { system, messages } = toWireMessages(req.messages);
     const body: Record<string, unknown> = {
       model: req.model,
-      max_tokens: DEFAULT_MAX_TOKENS,
+      max_tokens: req.maxTokens ?? DEFAULT_MAX_TOKENS,
       messages,
       stream: req.stream ?? false,
     };
@@ -175,6 +175,50 @@ export class AnthropicAdapter implements ChatVendorAdapter {
       : undefined;
 
     return { assistantMessage, text, thinking, toolCalls, finishReason, raw, usage };
+  }
+
+  buildStreamRequest(req: ChatRequest, cfg: VendorConfig): HttpRequest {
+    // 复用 buildRequest：adapter 内部已按 req.stream 写 body，强制 stream=true
+    return this.buildRequest({ ...req, stream: true }, cfg);
+  }
+
+  parseStreamEvent(event: StreamEvent): StreamChunk | null {
+    // Anthropic 流式：eventType 是事件名，data 是 JSON
+    let parsed: { delta?: { type?: string; text?: string; thinking?: string; partial_json?: string }; usage?: { input_tokens?: number; output_tokens?: number } };
+    try {
+      parsed = JSON.parse(event.data);
+    } catch {
+      return null;
+    }
+
+    switch (event.eventType) {
+      case "content_block_delta": {
+        const d = parsed.delta;
+        if (!d) return null;
+        const chunk: StreamChunk = {};
+        if (d.type === "text_delta" && typeof d.text === "string") chunk.deltaText = d.text;
+        if (d.type === "thinking_delta" && typeof d.thinking === "string") chunk.deltaThinking = d.thinking;
+        // 暂不实现：d.type === "input_json_delta" → 累积到 deltaToolCalls
+        // 当前三个调用点都不带 tools；未来若需要流式 tool_use 增量，单独实现 + 加测试即可。
+        return Object.keys(chunk).length > 0 ? chunk : null;
+      }
+      case "message_delta": {
+        if (parsed.usage) {
+          return {
+            usage: {
+              input: parsed.usage.input_tokens ?? 0,
+              output: parsed.usage.output_tokens ?? 0,
+            },
+          };
+        }
+        return null;
+      }
+      case "message_stop":
+        return { done: true };
+      // 其他事件（message_start / content_block_start / content_block_stop / ping 等）静默忽略
+      default:
+        return null;
+    }
   }
 
   appendToolResults(messages: ChatMessage[], results: ToolExecutionResult[]): ChatMessage[] {

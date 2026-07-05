@@ -19,14 +19,18 @@ export function scheduleMemoryWrite(userInput: string, assistantReply: string): 
   // 限流错误自动退避 5s 重试 1 次。
   // .catch 吞掉，不影响主流程（与原 setImmediate 行为一致）。
   enqueueLLMTask("MemoryJudge", async () => {
-    const candidates = await memoryJudge.judge(
-      userInput,
-      assistantReply,
-      "default",
-    );
+    try {
+      const candidates = await memoryJudge.judge(
+        userInput,
+        assistantReply,
+        "default",
+      );
 
-    if (candidates.length > 0) {
-      await memoryManager.writeMemory(candidates);
+      if (candidates.length > 0) {
+        await memoryManager.writeMemory(candidates);
+      }
+    } catch (err) {
+      console.error("[Memory] MemoryJudge/Manager 执行失败，本轮仍会计数", err);
     }
 
     const l1 = await memoryStore.getL1();

@@ -2,8 +2,8 @@
 // 请求体协议：POST {baseUrl}/chat/completions，messages + tools[].type=function
 import {
   ChatMessage, ChatRequest, ChatResponse, ChatVendorAdapter,
-  HttpRequest, ProviderCapability, TestConnectionResult, ToolCall,
-  ToolExecutionResult, VendorConfig,
+  HttpRequest, ProviderCapability, StreamChunk, StreamEvent,
+  TestConnectionResult, ToolCall, ToolExecutionResult, VendorConfig,
 } from "./types";
 
 function buildUrl(baseUrl: string): string {
@@ -61,6 +61,8 @@ export class OpenAICompatAdapter implements ChatVendorAdapter {
     // 不传时让厂商用默认值——不同型号约束不同（如 Kimi k2.6 只允许 1），
     // 硬编码兜底值会在某些模型上报错。
     if (req.temperature !== undefined) body.temperature = req.temperature;
+    // maxTokens：调用方显式传时才塞（流式场景下通常不传）
+    if (req.maxTokens !== undefined) body.max_tokens = req.maxTokens;
     const tools = toWireTools(req.tools);
     if (tools) {
       body.tools = tools;
@@ -76,6 +78,44 @@ export class OpenAICompatAdapter implements ChatVendorAdapter {
       },
       body: JSON.stringify(body),
     };
+  }
+
+  buildStreamRequest(req: ChatRequest, cfg: VendorConfig): HttpRequest {
+    // 复用 buildRequest：adapter 内部已按 req.stream 写 body，强制 stream=true
+    return this.buildRequest({ ...req, stream: true }, cfg);
+  }
+
+  parseStreamEvent(event: StreamEvent): StreamChunk | null {
+    // OpenAI 流式：eventType 始终是 "data"（createSseReader 已统一）
+    const jsonStr = event.data.trim();
+    if (!jsonStr) return null;
+    if (jsonStr === "[DONE]") return { done: true };
+    let parsed: { choices?: Array<{ delta?: { content?: unknown; reasoning_content?: unknown; tool_calls?: unknown } }>; usage?: { prompt_tokens?: number; completion_tokens?: number } };
+    try {
+      parsed = JSON.parse(jsonStr);
+    } catch {
+      return null;
+    }
+    const delta = parsed?.choices?.[0]?.delta;
+    if (!delta) {
+      // 流末尾的 usage 块（choices 为空但带 usage）
+      if (parsed?.usage) {
+        return {
+          usage: {
+            input: parsed.usage.prompt_tokens ?? 0,
+            output: parsed.usage.completion_tokens ?? 0,
+          },
+        };
+      }
+      return null;
+    }
+    const chunk: StreamChunk = {};
+    if (typeof delta.content === "string") chunk.deltaText = delta.content;
+    if (typeof delta.reasoning_content === "string") chunk.deltaThinking = delta.reasoning_content;
+    // 暂不实现：if (Array.isArray(delta.tool_calls)) chunk.deltaToolCalls = ...
+    // 当前三个调用点（MemoryJudge / memory-compressor / 心情观察器）都不带 tools，
+    // 未来若需要流式 tool_call 增量，单独实现 + 加测试即可。
+    return chunk;
   }
 
   parseResponse(raw: unknown): ChatResponse {

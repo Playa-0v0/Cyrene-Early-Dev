@@ -13,7 +13,8 @@ import { buildAlwaysOnContext, buildMemoryInjection, runFunctionCallingLoop, sch
 import { CyreneAgent } from "./orchestrator/cyrene-agent";
 import { indexConversationTurn } from "./orchestrator/history-tools";
 import { buildToneInjection } from "./orchestrator/tone-injector";
-import { getAdapter, buildVendorUrl } from "./orchestrator/vendors";
+import { getAdapter, buildVendorUrl, getAdapterForConfig, createSseReader } from "./orchestrator/vendors";
+import type { VendorConfig } from "./orchestrator/vendors";
 import { getCapability } from "./orchestrator/vendors/capabilities";
 import type { VisionConfig } from "./orchestrator/vision-captioner";
 import { toolRegistry, type ToolDefinition } from "./orchestrator/tool-registry";
@@ -179,6 +180,12 @@ interface ProviderProfile {
   model: string;
   apiKey: string;
   displayName?: string;
+  /**
+   * 用户在 settings 显式指定的 transport；"auto" = 按 baseUrl 启发式 + capabilities fallback。
+   * resolveTransport() 负责把 "auto" 解析为具体 transport。
+   * 不存 = 等价于 "auto"。
+   */
+  explicitTransport?: "openai" | "anthropic" | "auto";
 }
 
 /**
@@ -234,6 +241,11 @@ interface ModelSettings {
   baseUrl: string;
   model: string;
   apiKey: string;
+  /**
+   * 当前厂商的 explicitTransport 镜像（顶层字段是 perProvider[currentProvider] 的视图）。
+   * 详见 ProviderProfile.explicitTransport。
+   */
+  explicitTransport?: "openai" | "anthropic" | "auto";
   // 按厂商缓存：currentProvider 之外的厂商配置也保留在这里，切回来时回填。
   // 真值（source of truth）是 perProvider；顶层 baseUrl/model/apiKey 是当前厂商那一份的展开镜像，
   // 仅为兼容现有 main 进程里大量直接读 settings.baseUrl 等代码而保留。
@@ -583,11 +595,16 @@ function getStickerSettingsPath(): string {
  *      → 真值（source of truth）是 perProvider；顶层只是当前厂商配置的视图
  */
 function normalizeProviderProfile(input: Partial<ProviderProfile> | null | undefined): ProviderProfile {
+  const explicitTransport: ProviderProfile["explicitTransport"] =
+    input?.explicitTransport === "openai" || input?.explicitTransport === "anthropic" || input?.explicitTransport === "auto"
+      ? input.explicitTransport
+      : undefined;
   return {
     baseUrl: typeof input?.baseUrl === "string" ? input.baseUrl.trim() : "",
     model: typeof input?.model === "string" ? input.model.trim() : "",
     apiKey: typeof input?.apiKey === "string" ? input.apiKey.trim() : "",
-    displayName: typeof input?.displayName === "string" && input.displayName.trim() ? input.displayName.trim() : undefined,
+    displayName: typeof input?.displayName === "string" && input?.displayName.trim() ? input.displayName.trim() : undefined,
+    explicitTransport,
   };
 }
 
@@ -650,6 +667,7 @@ function normalizeModelSettings(input: Partial<ModelSettings> | null | undefined
     baseUrl: profile.baseUrl,
     model: profile.model,
     apiKey: profile.apiKey,
+    explicitTransport: profile.explicitTransport,
     perProvider,
     runtimeSync: input?.runtimeSync === "llm" ? "llm" : input?.runtimeSync === "local" ? "local" : "off",
     stickerEnabled: input?.stickerEnabled !== false,
@@ -732,6 +750,11 @@ function saveModelSettings(settings: Partial<ModelSettings>): ModelSettings {
 
   // 把传入的顶层三件套折叠到 currentProvider 下（这是渲染端目前主要的写入路径）
   const incomingProfile = perProvider[currentProvider] ?? normalizeProviderProfile(null);
+  // explicitTransport：渲染端新下拉框字段。传 "openai" | "anthropic" | "auto" 都接受；传 undefined 视为 "auto"。
+  const incomingExplicitTransport: ProviderProfile["explicitTransport"] =
+    settings.explicitTransport === "openai" || settings.explicitTransport === "anthropic" || settings.explicitTransport === "auto"
+      ? settings.explicitTransport
+      : incomingProfile.explicitTransport;
   perProvider[currentProvider] = {
     baseUrl: typeof settings.baseUrl === "string" ? settings.baseUrl.trim() : incomingProfile.baseUrl,
     model: typeof settings.model === "string" ? settings.model.trim() : incomingProfile.model,
@@ -739,6 +762,7 @@ function saveModelSettings(settings: Partial<ModelSettings>): ModelSettings {
     displayName: typeof settings.displayName === "string" && settings.displayName.trim()
       ? settings.displayName.trim()
       : incomingProfile.displayName,
+    explicitTransport: incomingExplicitTransport,
   };
 
   merged.provider = currentProvider;
@@ -1186,21 +1210,31 @@ async function callChatCompletionsStream(
   const _startTime = Date.now();
   console.log(`[TIMING] ${label} START timeout=${timeoutMs}ms msgLen=${messages.length} sysLen=${messages[0]?.content?.length ?? 0}`);
 
+  // 拼 VendorConfig（settings 顶层三件套 + 镜像字段都参与）
+  const cfg: VendorConfig = {
+    provider: settings.provider,
+    baseUrl: settings.baseUrl,
+    model: settings.model,
+    apiKey: settings.apiKey,
+    explicitTransport: settings.explicitTransport,
+  };
+
   try {
-    const response = await fetch(buildVendorUrl(settings.provider, settings.baseUrl), {
+    // adapter 三层 transport 解析（explicitTransport → baseUrl 启发式 → capabilities fallback）
+    const adapter = getAdapterForConfig(cfg);
+    // adapter 的 buildStreamRequest 内部已写 stream=true + 拼 transport 相关的 headers/body
+    const http = adapter.buildStreamRequest({
+      model: cfg.model,
+      messages,
+      ...(temperature !== undefined ? { temperature } : {}),
+      stream: true,
+    }, cfg);
+
+    const response = await fetch(http.url, {
       method: "POST",
       signal: controller.signal,
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${settings.apiKey}`,
-      },
-      body: JSON.stringify({
-        model: settings.model,
-        messages,
-        // temperature 只在显式传时才塞进 body，避免型号约束冲突（如 Kimi k2.6 只允许 1）
-        ...(temperature !== undefined ? { temperature } : {}),
-        stream: true,
-      }),
+      headers: http.headers,
+      body: http.body,
     });
 
     if (!response.ok) {
@@ -1213,47 +1247,24 @@ async function callChatCompletionsStream(
       throw new Error("响应体为空，不支持流式读取");
     }
 
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder("utf-8");
     let fullText = "";
-    let buffer = "";
     const visibleFilter = createVisibleStreamFilter();
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split("\n");
-      buffer = lines.pop() || "";
-
-      for (const line of lines) {
-        const trimmed = line.trim();
-        if (!trimmed || !trimmed.startsWith("data: ")) continue;
-
-        const jsonStr = trimmed.slice(6);
-        if (jsonStr === "[DONE]") continue;
-
-        try {
-          const parsed = JSON.parse(jsonStr) as {
-            choices?: Array<{ delta?: { content?: string } }>;
-            usage?: { prompt_tokens?: number; completion_tokens?: number };
-          };
-          const delta = parsed.choices?.[0]?.delta?.content;
-          if (delta) {
-            fullText += delta;
-            const visibleDelta = visibleFilter.push(delta);
-            if (visibleDelta) {
-              onChunk(visibleDelta);
-            }
-          }
-          // 流式末尾的 usage 块（choices 为空但带 usage），记录 token 用量
-          if (parsed.usage) {
-            recordUsage(parsed.usage.prompt_tokens ?? 0, parsed.usage.completion_tokens ?? 0, 1);
-          }
-        } catch {
-        }
+    // Reader 层切分字节流 → StreamEvent；adapter 解析为 StreamChunk
+    // 半行拼接、event 块切分等状态由 createSseReader 内部维护，adapter 保持纯函数无状态。
+    for await (const event of createSseReader(adapter, response.body)) {
+      const chunk = adapter.parseStreamEvent(event);
+      if (!chunk) continue;
+      if (chunk.deltaText) {
+        fullText += chunk.deltaText;
+        const visibleDelta = visibleFilter.push(chunk.deltaText);
+        if (visibleDelta) onChunk(visibleDelta);
       }
+      // thinking 累积但不入可见流（stripThinkBlocks 末尾统一剥）
+      if (chunk.usage) {
+        recordUsage(chunk.usage.input, chunk.usage.output, 1);
+      }
+      if (chunk.done) break;
     }
 
     const visibleTail = visibleFilter.flush();

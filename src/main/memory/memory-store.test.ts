@@ -1,0 +1,95 @@
+import * as fs from "fs"
+import * as os from "os"
+import * as path from "path"
+import { beforeEach, describe, expect, it, vi } from "vitest"
+
+const electronMock = vi.hoisted(() => ({
+  userDataDir: "",
+}))
+
+vi.mock("electron", () => ({
+  app: {
+    getPath: () => electronMock.userDataDir,
+  },
+}))
+
+describe("memoryStore", () => {
+  beforeEach(() => {
+    electronMock.userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "memory-store-"))
+    vi.resetModules()
+  })
+
+  it("persists L2 conflict markers and status changes", async () => {
+    const { memoryStore } = await import("./memory-store")
+    const existing = await memoryStore.addL2({
+      content: "用户喜欢香菇",
+      triggerText: "我喜欢香菇",
+      sourceConversationId: "test",
+      ragId: "rag_existing",
+      isPinned: false,
+    })
+
+    const marked = await memoryStore.markL2Conflict(existing.id, "rag_new")
+
+    expect(marked?.conflictWith).toEqual(["rag_new"])
+    expect(marked?.status).toBe("aging")
+
+    const persisted = JSON.parse(
+      fs.readFileSync(path.join(electronMock.userDataDir, "memory.json"), "utf8"),
+    )
+    expect(persisted.l2[0].conflictWith).toEqual(["rag_new"])
+    expect(persisted.l2[0].status).toBe("aging")
+  })
+
+  it("keeps pinned L2 memories active when marking conflicts", async () => {
+    const { memoryStore } = await import("./memory-store")
+    const existing = await memoryStore.addL2({
+      content: "用户喜欢平菇",
+      triggerText: "我喜欢平菇",
+      sourceConversationId: "test",
+      ragId: "rag_existing",
+      isPinned: true,
+    })
+
+    const marked = await memoryStore.markL2Conflict(existing.id, "rag_new")
+
+    expect(marked?.conflictWith).toEqual(["rag_new"])
+    expect(marked?.status).toBe("active")
+  })
+
+  it("decays only unpinned active L2 memories with positive weight", async () => {
+    const { memoryStore } = await import("./memory-store")
+    const active = await memoryStore.addL2({
+      content: "用户正在练琴",
+      triggerText: "我最近在练琴",
+      sourceConversationId: "test",
+      ragId: "rag_active",
+      isPinned: false,
+    })
+    const pinned = await memoryStore.addL2({
+      content: "用户固定喜欢中文",
+      triggerText: "我一直用中文",
+      sourceConversationId: "test",
+      ragId: "rag_pinned",
+      isPinned: true,
+    })
+
+    const store = await memoryStore.load()
+    const activeEntry = store.l2.find((m) => m.id === active.id)!
+    const pinnedEntry = store.l2.find((m) => m.id === pinned.id)!
+    activeEntry.weight = 10
+    pinnedEntry.weight = 10
+    await memoryStore.save(store)
+
+    const changed = await memoryStore.decayL2Weights()
+    const persisted = JSON.parse(
+      fs.readFileSync(path.join(electronMock.userDataDir, "memory.json"), "utf8"),
+    )
+
+    expect(changed).toBe(1)
+    expect(persisted.l2.find((m: { id: string }) => m.id === active.id).weight).toBe(9)
+    expect(persisted.l2.find((m: { id: string }) => m.id === active.id).status).toBe("archived")
+    expect(persisted.l2.find((m: { id: string }) => m.id === pinned.id).weight).toBe(10)
+    expect(persisted.l2.find((m: { id: string }) => m.id === pinned.id).status).toBe("active")
+  })
+})

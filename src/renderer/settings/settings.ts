@@ -136,6 +136,11 @@ interface ProviderProfile {
   model: string;
   apiKey: string;
   displayName?: string;
+  /**
+   * 用户在 settings 显式指定的 transport；"auto" = 按 baseUrl 启发式 + capabilities fallback。
+   * main 进程的 resolveTransport() 负责把 "auto" 解析为具体 transport。
+   */
+  explicitTransport?: "openai" | "anthropic" | "auto";
 }
 
 interface ModelSettings {
@@ -146,6 +151,11 @@ interface ModelSettings {
   baseUrl: string;
   model: string;
   apiKey: string;
+  /**
+   * 当前厂商的 explicitTransport 镜像（顶层字段是 main 进程 perProvider[currentProvider] 的视图）。
+   * UI 改动 transport-select 时，saveConfig 把这个值带给 main 进程折叠回 perProvider。
+   */
+  explicitTransport?: "openai" | "anthropic" | "auto";
   // 按厂商缓存：切回该厂商时，从这里恢复 baseUrl / model / apiKey
   perProvider?: Record<string, ProviderProfile>;
   runtimeSync: "off" | "local" | "llm";
@@ -547,6 +557,8 @@ const modelInput = document.getElementById("model-input") as HTMLInputElement;
 const modelInputSuggestions = document.getElementById("model-input-suggestions") as HTMLDataListElement;
 const apiKeyInput = document.getElementById("api-key") as HTMLInputElement;
 const testConnectionBtn = document.getElementById("test-connection-btn") as HTMLButtonElement | null;
+// API 协议下拉（auto / openai / anthropic）—— 用户显式 override transport
+const transportSelect = document.getElementById("transport-select") as HTMLSelectElement;
 
 // 视觉模型配置区元素
 // 同步主模型改为胶囊按钮组：[与主聊天模型相同] / [独立配置]
@@ -741,6 +753,7 @@ function captureActiveProviderProfile(): void {
     model: getCurrentModelValue().trim(),
     apiKey: apiKeyInput.value.trim(),
     displayName: displayNameInput.value.trim(),
+    explicitTransport: transportSelect.value as ProviderProfile["explicitTransport"],
   };
 }
 
@@ -779,7 +792,7 @@ function setVisionSyncState(synced: boolean): void {
   visionSyncIndepBtn.setAttribute("aria-pressed", String(!synced));
 }
 
-function applyPreset(providerName: string, preferredModel?: string, preferredApiKey?: string, preferredBaseUrl?: string, preferredDisplayName?: string): void {
+function applyPreset(providerName: string, preferredModel?: string, preferredApiKey?: string, preferredBaseUrl?: string, preferredDisplayName?: string, preferredExplicitTransport?: "openai" | "anthropic" | "auto"): void {
   const preset = findPreset(providerName);
 
   // 模式按钮已删除——ChatGPT / Claude 这种没预设型号的厂商，input 框空着让用户手填，
@@ -799,6 +812,10 @@ function applyPreset(providerName: string, preferredModel?: string, preferredApi
   // apiKey：优先用缓存；否则**显式清空**——避免上一家厂商的 key 残留在输入框里被用户误点保存。
   // 这是 v1 切厂商行为里的关键不变量：apiKey 永远只跟当前厂商绑定。
   apiKeyInput.value = preferredApiKey ?? "";
+
+  // explicitTransport：优先用缓存（用户自定义过），其次默认 "auto"
+  // （切厂商时上一家的 explicitTransport 不应该延续，preset 自带 capabilities transport 兜底）
+  transportSelect.value = preferredExplicitTransport ?? "auto";
 
   // 官网链接：有 websiteUrl 就显示并指向，没有就隐藏。
   if (preset.websiteUrl) {
@@ -828,11 +845,12 @@ async function loadConfig(): Promise<void> {
             displayName: typeof (value as { displayName?: unknown }).displayName === "string"
               ? (value as { displayName: string }).displayName
               : undefined,
+            explicitTransport: (value as { explicitTransport?: "openai" | "anthropic" | "auto" }).explicitTransport,
           };
         }
       }
     }
-    applyPreset(cfg.provider, cfg.model, cfg.apiKey, cfg.baseUrl, cfg.displayName);
+    applyPreset(cfg.provider, cfg.model, cfg.apiKey, cfg.baseUrl, cfg.displayName, cfg.explicitTransport);
     applyRuntimeSyncSelection(cfg.runtimeSync);
     stickerEnabledInput.checked = cfg.stickerEnabled !== false;
     applyStickerSizeSelection(cfg.stickerSize);
@@ -1525,6 +1543,7 @@ presetSelect.addEventListener("change", () => {
     cached?.apiKey,
     cached?.baseUrl,
     cached?.displayName,
+    cached?.explicitTransport,
   );
   setSaveStatus(cached ? "已切回上次配置" : "已应用预设，填写 API Key 后保存");
 });
@@ -1573,7 +1592,7 @@ visionSyncIndepBtn.addEventListener("click", () => {
 // baseUrl 用 visionBaseUrl（若有），其他直接复制。
 baseUrlInput.addEventListener("input", () => {
   if (!isVisionSynced()) return;
-  const preset = findPreset(providerInput.value);
+  const preset = findPreset(presetSelect.value);
   visionBaseUrlInput.value = preset?.visionBaseUrl || baseUrlInput.value;
 });
 apiKeyInput.addEventListener("input", () => { if (isVisionSynced()) visionApiKeyInput.value = apiKeyInput.value; });
@@ -1581,7 +1600,7 @@ modelInput.addEventListener("input", () => { if (isVisionSynced()) visionModelIn
 
 // Base URL 重置按钮：一键复原厂商默认 baseUrl
 baseUrlResetBtn.addEventListener("click", () => {
-  const preset = findPreset(providerInput.value);
+  const preset = findPreset(presetSelect.value);
   if (preset) {
     baseUrlInput.value = preset.baseUrl;
     setSaveStatus("已重置为厂商默认 URL");
@@ -1768,6 +1787,7 @@ apiForm.addEventListener("submit", async (e) => {
       baseUrl: baseUrlInput.value.trim(),
       model: getCurrentModelValue().trim(),
       apiKey: apiKeyInput.value.trim(),
+      explicitTransport: transportSelect.value as "openai" | "anthropic" | "auto",
       vision: {
         syncWithMain: isVisionSynced(),
         // syncWithMain=true 时三字段传空（main 进程不落盘，运行时从主配置读）

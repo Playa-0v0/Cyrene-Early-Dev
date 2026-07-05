@@ -14,6 +14,11 @@ export interface VendorConfig {
   baseUrl: string;
   model: string;
   apiKey: string;
+  /**
+   * 用户在 settings UI 显式指定的 transport；"auto" 走 baseUrl 启发式 + capabilities fallback。
+   * resolveTransport(cfg) 负责把 auto 解析为具体 transport。
+   */
+  explicitTransport?: Transport | "auto";
 }
 
 /** 统一工具调用描述（项目内部），与 OpenAI/Anthropic wire 格式解耦。 */
@@ -54,8 +59,43 @@ export interface ChatRequest {
   tools?: ToolSpec[];
   temperature?: number;
   stream?: boolean;
+  /**
+   * 非流式调用时的 max_tokens 上限（OpenAI wire: `max_tokens`；Anthropic wire 覆盖默认 4096）。
+   * 流式时由 adapter 决定是否使用（通常不用——流式靠 finish_reason 判断）。
+   */
+  maxTokens?: number;
   /** 透传到请求体顶层的厂商扩展字段（如 Kimi 的 prompt_cache_key）。 */
   extraBody?: Record<string, unknown>;
+}
+
+/**
+ * Transport-无关的统一流式事件。
+ * Reader 层（createSseReader）把 HTTP body 字节流切分成 StreamEvent 列表；
+ * Adapter 层 parseStreamEvent(event) 是纯函数，无状态。
+ *
+ * - OpenAI 流式：Reader 切出的 eventType 固定为 "data"，data 是 data: {...} 行的 JSON 字符串。
+ * - Anthropic 流式：eventType 是事件名（message_start / content_block_delta / message_delta /
+ *   message_stop 等），data 是 data: {...} 行的 JSON 字符串。
+ */
+export interface StreamEvent {
+  eventType: string;
+  data: string;
+}
+
+/**
+ * 流式增量块。接口设计比当前需求宽（保留 deltaToolCalls），
+ * 但本次两个 adapter 的 parseStreamEvent 实现只解析 deltaText + deltaThinking；
+ * 遇到 tool delta 时静默忽略（不报错、不累积）。
+ *
+ * 未来若 MemoryJudge / 心情观察器想走工具调用，只改 adapter 实现，
+ * 不改接口、不改调用方。
+ */
+export interface StreamChunk {
+  deltaText?: string;
+  deltaThinking?: string;
+  deltaToolCalls?: ToolCall[];
+  done?: boolean;
+  usage?: { input: number; output: number };
 }
 
 /** 适配器解析后的统一响应，调度层只看这个。 */
@@ -127,5 +167,18 @@ export interface ChatVendorAdapter {
   parseResponse(raw: unknown): ChatResponse;
   appendToolResults(messages: ChatMessage[], results: ToolExecutionResult[]): ChatMessage[];
   applyCacheHints?(req: ChatRequest, cfg: VendorConfig): ChatRequest;
+  /**
+   * 流式 buildRequest：与 buildRequest 同形，但 stream=true 已写进 body。
+   * 默认实现：复用 buildRequest（adapter 内部已经按 req.stream 写 body）。
+   */
+  buildStreamRequest(req: ChatRequest, cfg: VendorConfig): HttpRequest;
+  /**
+   * 解析一个完整流式事件。纯函数，无状态——状态由调用方持有的 buffer 维护。
+   * 返回 null 表示这一事件不产生增量（心跳、注释行、未识别的 event type 等）。
+   *
+   * 命名严格对齐 StreamEvent：传进来的是 Reader 切完的"一个完整的协议事件"，
+   * 不是字节片段（Chunk）。
+   */
+  parseStreamEvent(event: StreamEvent): StreamChunk | null;
   testConnection(cfg: VendorConfig): Promise<TestConnectionResult>;
 }

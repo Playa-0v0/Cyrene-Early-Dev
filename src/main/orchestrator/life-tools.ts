@@ -232,13 +232,13 @@ function registerTranslateTool(): void {
       }
 
       // 动态 import 避免循环依赖
-      const { buildVendorUrl } = await import("./vendors");
+      const { buildVendorUrlByProvider } = await import("./vendors");
       const fromHint = args.from ? `（源语言：${args.from}）` : "（自动检测源语言）";
       const sysPrompt = `你是翻译器${fromHint}。把以下文本翻译成${to}，只输出译文，不要任何解释或额外文字。`;
       const ctrl = new AbortController();
       const timer = setTimeout(() => ctrl.abort(), 30000);
       try {
-        const resp = await fetch(buildVendorUrl(settings.provider, settings.baseUrl), {
+        const resp = await fetch(buildVendorUrlByProvider(settings.provider, settings.baseUrl), {
           method: "POST",
           signal: ctrl.signal,
           headers: {

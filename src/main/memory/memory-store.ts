@@ -154,6 +154,22 @@ class MemoryStoreManager {
     await this.save(store)
   }
 
+  async markL2Conflict(id: string, conflictRagId: string): Promise<L2Memory | null> {
+    const store = await this.load()
+    const mem = store.l2.find((m) => m.id === id)
+    if (!mem) return null
+    const conflicts = mem.conflictWith ?? []
+    if (conflicts.includes(conflictRagId)) return null
+
+    mem.conflictWith = [...conflicts, conflictRagId]
+    if (!mem.isPinned && mem.status === "active") {
+      mem.status = "aging"
+    }
+
+    await this.save(store)
+    return mem
+  }
+
   async getAllL2(): Promise<L2Memory[]> {
     const store = await this.load()
     return store.l2
@@ -189,6 +205,30 @@ class MemoryStoreManager {
       }
     }
     await this.save(store)
+  }
+
+  async decayL2Weights(delta = 1): Promise<number> {
+    const store = await this.load()
+    let changed = 0
+
+    for (const mem of store.l2) {
+      if (mem.isPinned || mem.status === "archived" || mem.weight <= 0) continue
+
+      mem.weight = Math.max(0, mem.weight - delta)
+      if (mem.weight >= 30) {
+        mem.status = "active"
+      } else if (mem.weight >= 10) {
+        mem.status = "aging"
+      } else {
+        mem.status = "archived"
+      }
+      changed += 1
+    }
+
+    if (changed > 0) {
+      await this.save(store)
+    }
+    return changed
   }
 
   /** 批量插入新的 L2 条目（压缩总结用） */

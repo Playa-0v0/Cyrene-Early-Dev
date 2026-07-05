@@ -1,6 +1,7 @@
 import * as fs from "fs"
 import * as path from "path"
-import { buildVendorUrl } from "../orchestrator/vendors"
+import { getAdapterForConfig } from "../orchestrator/vendors"
+import type { VendorConfig, ChatMessage } from "../orchestrator/vendors"
 import { app } from "electron"
 import { MemoryCandidate, L0_FIELD_DESCRIPTIONS } from "./memory-types"
 import { recordUsage } from "../token-usage-store"
@@ -10,6 +11,7 @@ interface ModelSettings {
   baseUrl: string
   model: string
   apiKey: string
+  explicitTransport?: "openai" | "anthropic" | "auto"
 }
 
 const DEFAULT_MODEL_SETTINGS: ModelSettings = {
@@ -29,11 +31,17 @@ function loadModelSettings(): ModelSettings {
     if (!fs.existsSync(filePath)) return DEFAULT_MODEL_SETTINGS
     const raw = fs.readFileSync(filePath, "utf8")
     const parsed = JSON.parse(raw) as Partial<ModelSettings>
+    // explicitTransport 取自顶层（顶层是 perProvider[currentProvider] 的镜像）
+    const explicitTransport: ModelSettings["explicitTransport"] =
+      parsed.explicitTransport === "openai" || parsed.explicitTransport === "anthropic" || parsed.explicitTransport === "auto"
+        ? parsed.explicitTransport
+        : undefined;
     return {
       provider: typeof parsed.provider === "string" && parsed.provider.trim() ? parsed.provider.trim() : DEFAULT_MODEL_SETTINGS.provider,
       baseUrl: typeof parsed.baseUrl === "string" && parsed.baseUrl.trim() ? parsed.baseUrl.trim() : DEFAULT_MODEL_SETTINGS.baseUrl,
       model: typeof parsed.model === "string" && parsed.model.trim() ? parsed.model.trim() : DEFAULT_MODEL_SETTINGS.model,
       apiKey: typeof parsed.apiKey === "string" ? parsed.apiKey.trim() : "",
+      explicitTransport,
     };
   } catch {
     return DEFAULT_MODEL_SETTINGS
@@ -157,21 +165,33 @@ async function callChatCompletions(
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), timeoutMs)
 
+  // 拼 VendorConfig（settings 顶层三件套 + 镜像字段都参与）
+  const cfg: VendorConfig = {
+    provider: settings.provider,
+    baseUrl: settings.baseUrl,
+    model: settings.model,
+    apiKey: settings.apiKey,
+    explicitTransport: settings.explicitTransport,
+  }
+
   try {
-    const response = await fetch(buildVendorUrl(settings.provider, settings.baseUrl), {
+    // adapter 三层 transport 解析（explicitTransport → baseUrl 启发式 → capabilities fallback）
+    // —— 之前直接写 OpenAI body / Bearer header / choices[0].message.content 解析，
+    // 切到 anthropic transport 厂商（如 MiniMax / Claude）时会拿到空字符串，误判 "JSON 解析失败"。
+    // 现在交给 adapter，OpenAI / Anthropic 端点都正确。
+    const adapter = getAdapterForConfig(cfg)
+    const http = adapter.buildRequest({
+      model: cfg.model,
+      messages: messages as ChatMessage[],
+      maxTokens: 800,
+      stream: false,
+    }, cfg)
+
+    const response = await fetch(http.url, {
       method: "POST",
       signal: controller.signal,
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${settings.apiKey}`,
-      },
-      body: JSON.stringify({
-        model: settings.model,
-        messages,
-        // 不传 temperature：不同型号约束不同（如 Kimi k2.6 只允许 1），传固定值会报错
-        max_tokens: 800,
-        stream: false,
-      }),
+      headers: http.headers,
+      body: http.body,
     })
 
     if (!response.ok) {
@@ -180,16 +200,14 @@ async function callChatCompletions(
       throw new Error(errMsg || `模型请求失败：HTTP ${response.status}`)
     }
 
-    const data = await response.json() as {
-      choices?: Array<{ message?: { content?: string } }>;
-      usage?: { prompt_tokens?: number; completion_tokens?: number };
+    const data = await response.json()
+    const parsed = adapter.parseResponse(data)
+
+    // 记录 token 用量（统一字段，OpenAI / Anthropic adapter 都映射成 {input, output}）
+    if (parsed.usage) {
+      recordUsage(parsed.usage.input, parsed.usage.output, 1)
     }
-    // 记录 MemoryJudge 的 token 用量
-    if (data.usage) {
-      recordUsage(data.usage.prompt_tokens ?? 0, data.usage.completion_tokens ?? 0, 1)
-    }
-    const content = data.choices?.[0]?.message?.content ?? ""
-    return stripThinkBlocks(content)
+    return stripThinkBlocks(parsed.text ?? "")
   } finally {
     clearTimeout(timer)
   }

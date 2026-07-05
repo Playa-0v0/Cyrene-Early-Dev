@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>昔涟 · 设置</title>
-  <script type="module" crossorigin src="../assets/settings-yxHA8qC2.js"></script>
+  <script type="module" crossorigin src="../assets/settings-CHzjU5sF.js"></script>
   <link rel="modulepreload" crossorigin href="../assets/base-Cc1qE-wh.js">
   <link rel="modulepreload" crossorigin href="../assets/chat-ui-kPmAHPjl.js">
   <link rel="stylesheet" crossorigin href="../assets/base-4LTpmnF5.css">
@@ -98,6 +98,16 @@
                 <input id="base-url" type="url" placeholder="https://api.deepseek.com" autocomplete="off" />
                 <button type="button" class="base-url-reset" id="base-url-reset-btn" title="重置为厂商默认 URL">↻</button>
               </div>
+            </label>
+
+            <label class="field field--full">
+              <span>API 协议</span>
+              <select id="transport-select">
+                <option value="auto">自动（按 Base URL 推断）</option>
+                <option value="openai">OpenAI 兼容</option>
+                <option value="anthropic">Anthropic 兼容</option>
+              </select>
+              <span class="form-hint">默认按 Base URL 推断；如有歧义可手动指定</span>
             </label>
 
             <label class="field field--full">
