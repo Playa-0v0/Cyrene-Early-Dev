@@ -74,9 +74,13 @@ export interface ConflictLog {
   conflictScore?: number
   resolverPriority?: ConflictResolverPriority
   scoringSignals?: ConflictScoringSignals
+  resolverStatus?: ConflictResolverStatus
+  resolverQueuedAt?: number
+  resolverAttemptCount?: number
 }
 
 export type ConflictResolverPriority = "none" | "idle" | "normal" | "high"
+export type ConflictResolverStatus = "not_queued" | "queued" | "processing" | "resolved" | "failed"
 
 export interface ConflictScoringSignals {
   correctionIntent?: boolean

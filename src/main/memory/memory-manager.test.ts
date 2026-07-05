@@ -143,6 +143,7 @@ describe("MemoryManager L2 sync", () => {
     })
     expect(conflictLogs[0].conflictScore).toBeGreaterThanOrEqual(35)
     expect(conflictLogs[0].resolverPriority).not.toBe("none")
+    expect(conflictLogs[0].resolverStatus).toBe("queued")
     expect(conflictLogs[0].scoringSignals).toMatchObject({
       ragCandidate: true,
       evidenceAvailable: true,
@@ -190,6 +191,7 @@ describe("MemoryManager L2 sync", () => {
 
     expect(conflictLogs).toHaveLength(1)
     expect(conflictLogs[0].resolverPriority).toBe("none")
+    expect(conflictLogs[0].resolverStatus).toBe("not_queued")
     expect(conflictLogs[0].scoringSignals).toMatchObject({
       ragCandidate: false,
       localContradiction: true,
@@ -229,6 +231,7 @@ describe("MemoryManager L2 sync", () => {
 
     expect(conflictLogs).toHaveLength(1)
     expect(conflictLogs[0].resolverPriority).toBe("normal")
+    expect(conflictLogs[0].resolverStatus).toBe("queued")
     expect(conflictLogs[0].scoringSignals).toMatchObject({
       ragCandidate: true,
       recentInjection: true,

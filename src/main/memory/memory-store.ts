@@ -6,6 +6,12 @@ import { appendMemoryTrace } from "./memory-trace"
 
 const CURRENT_SCHEMA_VERSION = 2
 const QUOTE_SNIPPET_MAX = 300
+const RESOLVER_PRIORITY_RANK: Record<string, number> = {
+  high: 3,
+  normal: 2,
+  idle: 1,
+  none: 0,
+}
 
 const DEFAULT_L0: L0Profile = {
   nickname: "",
@@ -82,7 +88,11 @@ export function repairMigrations(store: Partial<MemoryStore>): MemoryStore {
     })) : [],
     evidence: Array.isArray(store.evidence) ? store.evidence : [],
     reflectionLogs: Array.isArray(store.reflectionLogs) ? store.reflectionLogs : [],
-    conflictLogs: Array.isArray(store.conflictLogs) ? store.conflictLogs : [],
+    conflictLogs: Array.isArray(store.conflictLogs) ? store.conflictLogs.map((log) => ({
+      ...log,
+      resolverStatus: log.resolverStatus ?? (log.resolverPriority && log.resolverPriority !== "none" ? "queued" : "not_queued"),
+      resolverAttemptCount: typeof log.resolverAttemptCount === "number" ? log.resolverAttemptCount : 0,
+    })) : [],
     version: typeof store.version === "number" ? store.version : 1,
   }
 }
@@ -446,6 +456,17 @@ class MemoryStoreManager {
     log.conflictScore = score.conflictScore
     log.resolverPriority = score.resolverPriority
     log.scoringSignals = score.scoringSignals
+    const shouldQueue = log.status === "candidate" && score.resolverPriority !== "none"
+    const didQueue = shouldQueue && log.resolverStatus !== "queued"
+    if (shouldQueue) {
+      log.resolverStatus = "queued"
+      log.resolverQueuedAt = log.resolverQueuedAt ?? Date.now()
+      log.resolverAttemptCount = log.resolverAttemptCount ?? 0
+    } else {
+      log.resolverStatus = "not_queued"
+      log.resolverQueuedAt = undefined
+      log.resolverAttemptCount = log.resolverAttemptCount ?? 0
+    }
 
     await this.save(store)
     appendMemoryTrace({
@@ -462,7 +483,39 @@ class MemoryStoreManager {
         scoringSignals: log.scoringSignals,
       },
     })
+    if (didQueue) {
+      appendMemoryTrace({
+        op: "resolver.queue.add",
+        layer: "L2",
+        status: "ok",
+        l2Id: log.sourceL2Id,
+        ragId: log.sourceRagId,
+        details: {
+          conflictLogId: log.id,
+          targetL2Id: log.targetL2Id,
+          resolverPriority: log.resolverPriority,
+          conflictScore: log.conflictScore,
+        },
+      })
+    }
     return log
+  }
+
+  async getResolverQueue(limit = 20): Promise<ConflictLog[]> {
+    const store = await this.load()
+    return (store.conflictLogs ?? [])
+      .filter((log) => (
+        log.status === "candidate" &&
+        log.resolverStatus === "queued" &&
+        log.resolverPriority !== undefined &&
+        log.resolverPriority !== "none"
+      ))
+      .sort((a, b) => {
+        const priorityDiff = RESOLVER_PRIORITY_RANK[b.resolverPriority ?? "none"] - RESOLVER_PRIORITY_RANK[a.resolverPriority ?? "none"]
+        if (priorityDiff !== 0) return priorityDiff
+        return (a.resolverQueuedAt ?? a.createdAt) - (b.resolverQueuedAt ?? b.createdAt)
+      })
+      .slice(0, limit)
   }
 
   /** 批量更新 L2 条目的 status */

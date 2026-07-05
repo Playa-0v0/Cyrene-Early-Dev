@@ -247,6 +247,105 @@ describe("memoryStore", () => {
     expect(traceEvents.some((event) => event.op === "conflict.score" && event.l2Id === "source")).toBe(true)
   })
 
+  it("queues resolver-eligible conflict logs when scoring priority is not none", async () => {
+    const { memoryStore } = await import("./memory-store")
+    const log = await memoryStore.appendConflictLog({
+      status: "candidate",
+      sourceL2Id: "source",
+      targetL2Id: "target",
+      reason: "resolver eligible",
+      confidence: 0.8,
+      detector: "local",
+    })
+
+    await memoryStore.scoreConflictLog(log.id, {
+      conflictScore: 75,
+      resolverPriority: "high",
+      scoringSignals: {
+        ragCandidate: true,
+        evidenceAvailable: true,
+        localContradiction: true,
+        penalties: [],
+      },
+    })
+
+    const queue = await memoryStore.getResolverQueue()
+    const traceEvents = readTraceEvents()
+
+    expect(queue).toHaveLength(1)
+    expect(queue[0]).toMatchObject({
+      id: log.id,
+      resolverStatus: "queued",
+      resolverPriority: "high",
+      resolverAttemptCount: 0,
+    })
+    expect(queue[0].resolverQueuedAt).toBeGreaterThan(0)
+    expect(traceEvents.some((event) => event.op === "resolver.queue.add" && event.l2Id === "source")).toBe(true)
+  })
+
+  it("does not queue conflict logs with none resolver priority", async () => {
+    const { memoryStore } = await import("./memory-store")
+    const log = await memoryStore.appendConflictLog({
+      status: "candidate",
+      sourceL2Id: "source",
+      targetL2Id: "target",
+      reason: "low score",
+      confidence: 0.35,
+      detector: "local",
+    })
+
+    await memoryStore.scoreConflictLog(log.id, {
+      conflictScore: 20,
+      resolverPriority: "none",
+      scoringSignals: {
+        ragCandidate: false,
+        localContradiction: true,
+        penalties: [],
+      },
+    })
+
+    const conflictLogs = await memoryStore.getConflictLogs()
+    const queue = await memoryStore.getResolverQueue()
+
+    expect(conflictLogs[0].resolverStatus).toBe("not_queued")
+    expect(queue).toHaveLength(0)
+  })
+
+  it("returns queued resolver logs by priority and age", async () => {
+    const { memoryStore } = await import("./memory-store")
+    const idle = await memoryStore.appendConflictLog({
+      status: "candidate",
+      sourceL2Id: "idle_source",
+      targetL2Id: "idle_target",
+      reason: "idle",
+      confidence: 0.4,
+      detector: "local",
+    })
+    const high = await memoryStore.appendConflictLog({
+      status: "candidate",
+      sourceL2Id: "high_source",
+      targetL2Id: "high_target",
+      reason: "high",
+      confidence: 0.9,
+      detector: "local",
+    })
+
+    await memoryStore.scoreConflictLog(idle.id, {
+      conflictScore: 40,
+      resolverPriority: "idle",
+      scoringSignals: { ragCandidate: true, penalties: [] },
+    })
+    await memoryStore.scoreConflictLog(high.id, {
+      conflictScore: 80,
+      resolverPriority: "high",
+      scoringSignals: { ragCandidate: true, penalties: [] },
+    })
+
+    const queue = await memoryStore.getResolverQueue()
+
+    expect(queue.map((entry) => entry.id)).toEqual([high.id, idle.id])
+  })
+
   it("caps reflection logs separately from conflict logs", async () => {
     const { memoryStore } = await import("./memory-store")
     await memoryStore.appendConflictLog({
