@@ -48,6 +48,8 @@ export interface L2Memory {
   subEntryIds?: string[]
   /** 冲突标记：与该记忆语义相矛盾的其他条目 ragId 列表 */
   conflictWith?: string[]
+  evidenceIds?: string[]
+  sourceMessageIds?: string[]
 }
 
 export interface ReflectionLog {
@@ -71,6 +73,18 @@ export interface ConflictLog {
   detector: "local" | "llm" | "manual"
 }
 
+export interface MemoryEvidence {
+  id: string
+  memoryId: string
+  quoteSnippet: string
+  contextBeforeSnippet?: string
+  contextAfterSnippet?: string
+  conversationId?: string
+  messageIds?: string[]
+  createdAt: number
+  sourceStatus: "active" | "archived" | "deleted"
+}
+
 export interface MemoryCandidate {
   layer: "L0" | "L1" | "L2"
   field?: string
@@ -84,6 +98,7 @@ export interface MemoryStore {
   l0: L0Profile
   l1: L1Profile
   l2: L2Memory[]
+  evidence?: MemoryEvidence[]
   reflectionLogs?: ReflectionLog[]
   conflictLogs?: ConflictLog[]
   /** @deprecated Use schemaVersion for memory.json migrations. */

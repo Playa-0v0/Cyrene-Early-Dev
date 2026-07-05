@@ -1,10 +1,11 @@
 import * as fs from "fs"
 import * as path from "path"
 import { app } from "electron"
-import { ConflictLog, L0Profile, L1Profile, L2Memory, L2SyncStatus, MemoryStore, ReflectionLog } from "./memory-types"
+import { ConflictLog, L0Profile, L1Profile, L2Memory, L2SyncStatus, MemoryEvidence, MemoryStore, ReflectionLog } from "./memory-types"
 import { appendMemoryTrace } from "./memory-trace"
 
 const CURRENT_SCHEMA_VERSION = 2
+const QUOTE_SNIPPET_MAX = 300
 
 const DEFAULT_L0: L0Profile = {
   nickname: "",
@@ -30,6 +31,7 @@ const DEFAULT_STORE: MemoryStore = {
   l0: { ...DEFAULT_L0 },
   l1: { ...DEFAULT_L1 },
   l2: [],
+  evidence: [],
   reflectionLogs: [],
   conflictLogs: [],
   version: 1,
@@ -49,9 +51,15 @@ function cloneDefaultStore(): MemoryStore {
     l0: { ...DEFAULT_L0 },
     l1: { ...DEFAULT_L1 },
     l2: [],
+    evidence: [],
     reflectionLogs: [],
     conflictLogs: [],
   }
+}
+
+function snippet(text: string | undefined, maxLength: number): string | undefined {
+  if (!text) return undefined
+  return text.length > maxLength ? text.slice(0, maxLength) : text
 }
 
 function backupMemoryFile(filePath: string): void {
@@ -70,7 +78,9 @@ export function repairMigrations(store: Partial<MemoryStore>): MemoryStore {
     l2: Array.isArray(store.l2) ? store.l2.map((memory) => ({
       ...memory,
       syncStatus: memory.syncStatus ?? (memory.ragId ? "synced" : "pending_sync"),
+      evidenceIds: Array.isArray(memory.evidenceIds) ? memory.evidenceIds : [],
     })) : [],
+    evidence: Array.isArray(store.evidence) ? store.evidence : [],
     reflectionLogs: Array.isArray(store.reflectionLogs) ? store.reflectionLogs : [],
     conflictLogs: Array.isArray(store.conflictLogs) ? store.conflictLogs : [],
     version: typeof store.version === "number" ? store.version : 1,
@@ -193,8 +203,13 @@ class MemoryStoreManager {
       weight: 0,
       status: "active",
       syncStatus: input.syncStatus ?? (input.ragId ? "synced" : "pending_sync"),
+      evidenceIds: Array.isArray(input.evidenceIds) ? input.evidenceIds : [],
     }
+    const evidence = this.createEvidence(memory, input)
+    memory.evidenceIds = [...(memory.evidenceIds ?? []), evidence.id]
     store.l2.push(memory)
+    if (!store.evidence) store.evidence = []
+    store.evidence.push(evidence)
     await this.save(store)
     appendMemoryTrace({
       op: "l2.add",
@@ -204,7 +219,26 @@ class MemoryStoreManager {
       ragId: memory.ragId,
       details: { isSummary: memory.isSummary === true, syncStatus: memory.syncStatus },
     })
+    appendMemoryTrace({
+      op: "evidence.add",
+      layer: "L2",
+      status: "ok",
+      l2Id: memory.id,
+      details: { evidenceId: evidence.id, sourceStatus: evidence.sourceStatus },
+    })
     return memory
+  }
+
+  private createEvidence(memory: L2Memory, input: L2Input): MemoryEvidence {
+    return {
+      id: `ev_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      memoryId: memory.id,
+      quoteSnippet: snippet(input.triggerText || input.content, QUOTE_SNIPPET_MAX) ?? "",
+      conversationId: input.sourceConversationId || undefined,
+      messageIds: input.sourceMessageIds,
+      createdAt: Date.now(),
+      sourceStatus: "active",
+    }
   }
 
   async addL2(input: L2Input): Promise<L2Memory> {
@@ -329,6 +363,11 @@ class MemoryStoreManager {
   async getAllL2(): Promise<L2Memory[]> {
     const store = await this.load()
     return store.l2
+  }
+
+  async getEvidenceByMemoryId(memoryId: string): Promise<MemoryEvidence[]> {
+    const store = await this.load()
+    return (store.evidence ?? []).filter((evidence) => evidence.memoryId === memoryId)
   }
 
   async appendReflectionLog(log: Omit<ReflectionLog, "id" | "createdAt">): Promise<void> {
@@ -460,8 +499,14 @@ class MemoryStoreManager {
         accessCount: 0,
         weight: 0,
         status: "active",
+        syncStatus: input.syncStatus ?? (input.ragId ? "synced" : "pending_sync"),
+        evidenceIds: Array.isArray(input.evidenceIds) ? input.evidenceIds : [],
       }
+      const evidence = this.createEvidence(memory, input)
+      memory.evidenceIds = [...(memory.evidenceIds ?? []), evidence.id]
       store.l2.push(memory)
+      if (!store.evidence) store.evidence = []
+      store.evidence.push(evidence)
       results.push(memory)
     }
     await this.save(store)
@@ -471,6 +516,16 @@ class MemoryStoreManager {
       status: "ok",
       details: { ids: results.map((item) => item.id), count: results.length },
     })
+    for (const memory of results) {
+      const evidenceId = memory.evidenceIds?.[memory.evidenceIds.length - 1]
+      appendMemoryTrace({
+        op: "evidence.add",
+        layer: "L2",
+        status: "ok",
+        l2Id: memory.id,
+        details: { evidenceId, sourceStatus: "active" },
+      })
+    }
     return results
   }
 }

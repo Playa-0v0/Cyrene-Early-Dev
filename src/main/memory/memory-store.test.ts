@@ -133,6 +133,31 @@ describe("memoryStore", () => {
     expect(traceEvents.some((event) => event.op === "l2.weight.update" && event.l2Id === memory.id)).toBe(true)
   })
 
+  it("creates evidence for new L2 memories with bounded snippets", async () => {
+    const { memoryStore } = await import("./memory-store")
+    const longTrigger = "证据".repeat(180)
+    const memory = await memoryStore.addL2Memory({
+      content: "用户希望记忆系统保留证据链",
+      triggerText: longTrigger,
+      sourceConversationId: "conv_evidence",
+      sourceMessageIds: ["msg_1", "msg_2"],
+      ragId: "rag_evidence",
+      isPinned: false,
+    })
+
+    const evidence = await memoryStore.getEvidenceByMemoryId(memory.id)
+    const traceEvents = readTraceEvents()
+
+    expect(memory.evidenceIds).toHaveLength(1)
+    expect(evidence).toHaveLength(1)
+    expect(evidence[0].id).toBe(memory.evidenceIds?.[0])
+    expect(evidence[0].quoteSnippet.length).toBe(300)
+    expect(evidence[0].conversationId).toBe("conv_evidence")
+    expect(evidence[0].messageIds).toEqual(["msg_1", "msg_2"])
+    expect(evidence[0].sourceStatus).toBe("active")
+    expect(traceEvents.some((event) => event.op === "evidence.add" && event.l2Id === memory.id)).toBe(true)
+  })
+
   it("marks L2 sync status and persists rag ids", async () => {
     const { memoryStore } = await import("./memory-store")
     const memory = await memoryStore.addL2Memory({
@@ -232,6 +257,7 @@ describe("memoryStore", () => {
           status: "active",
           ragId: "rag_legacy",
         }],
+        evidence: [],
         reflectionLogs: [],
         version: 1,
       }),
@@ -248,6 +274,8 @@ describe("memoryStore", () => {
     expect(store.l0.preferredName).toBe("伙伴")
     expect(store.l1.roundCount).toBe(7)
     expect(store.l2[0].syncStatus).toBe("synced")
+    expect(store.l2[0].evidenceIds).toEqual([])
+    expect(store.evidence).toEqual([])
     expect(store.conflictLogs).toEqual([])
     expect(backups).toHaveLength(1)
     expect(readTraceEvents().some((event) => event.op === "migration.upgrade")).toBe(true)
