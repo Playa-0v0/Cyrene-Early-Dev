@@ -53,9 +53,22 @@ export interface L2Memory {
 export interface ReflectionLog {
   id: string
   createdAt: number
-  type: "compression" | "l0_update" | "l1_update" | "conflict_detected"
+  type: "compression" | "l0_update" | "l1_update"
   summary: string
   details?: string
+}
+
+export interface ConflictLog {
+  id: string
+  createdAt: number
+  status: "pending" | "confirmed" | "dismissed"
+  sourceL2Id: string
+  targetL2Id: string
+  sourceRagId?: string
+  targetRagId?: string
+  reason: string
+  confidence: number
+  detector: "local" | "llm" | "manual"
 }
 
 export interface MemoryCandidate {
@@ -72,6 +85,7 @@ export interface MemoryStore {
   l1: L1Profile
   l2: L2Memory[]
   reflectionLogs?: ReflectionLog[]
+  conflictLogs?: ConflictLog[]
   /** @deprecated Use schemaVersion for memory.json migrations. */
   version: number
 }

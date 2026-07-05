@@ -156,6 +156,33 @@ describe("memoryStore", () => {
     expect(traceEvents.some((event) => event.op === "l2.sync.success" && event.l2Id === memory.id)).toBe(true)
   })
 
+  it("stores conflict logs separately from reflection logs with a capped history", async () => {
+    const { memoryStore } = await import("./memory-store")
+    for (let i = 0; i < 101; i++) {
+      await memoryStore.appendConflictLog({
+        status: "pending",
+        sourceL2Id: `source_${i}`,
+        targetL2Id: `target_${i}`,
+        sourceRagId: `rag_source_${i}`,
+        targetRagId: `rag_target_${i}`,
+        reason: "test conflict",
+        confidence: 0.7,
+        detector: "local",
+      })
+    }
+
+    const conflictLogs = await memoryStore.getConflictLogs()
+    const reflectionLogs = await memoryStore.getReflectionLogs()
+    const persisted = JSON.parse(
+      fs.readFileSync(path.join(electronMock.userDataDir, "memory.json"), "utf8"),
+    )
+
+    expect(conflictLogs).toHaveLength(100)
+    expect(conflictLogs[0].sourceL2Id).toBe("source_1")
+    expect(reflectionLogs).toHaveLength(0)
+    expect(persisted.conflictLogs).toHaveLength(100)
+  })
+
   it("migrates legacy memory files with a backup", async () => {
     const memoryPath = path.join(electronMock.userDataDir, "memory.json")
     fs.writeFileSync(
@@ -192,6 +219,7 @@ describe("memoryStore", () => {
     expect(store.l0.preferredName).toBe("伙伴")
     expect(store.l1.roundCount).toBe(7)
     expect(store.l2[0].syncStatus).toBe("synced")
+    expect(store.conflictLogs).toEqual([])
     expect(backups).toHaveLength(1)
     expect(readTraceEvents().some((event) => event.op === "migration.upgrade")).toBe(true)
   })

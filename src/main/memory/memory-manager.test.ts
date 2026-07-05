@@ -65,7 +65,7 @@ describe("MemoryManager L2 sync", () => {
     expect(addIndex).toBeGreaterThanOrEqual(0)
     expect(syncIndex).toBeGreaterThan(addIndex)
     expect(traceEvents[syncIndex].ragId).toBe("rag_synced")
-    expect(reflectionLogs.some((log) => log.type === "conflict_detected")).toBe(false)
+    expect(reflectionLogs).toHaveLength(0)
     expect(ragMock.addMemory).toHaveBeenCalledWith(
       candidate.content,
       "user_memory",
@@ -98,5 +98,40 @@ describe("MemoryManager L2 sync", () => {
     expect(failureIndex).toBeGreaterThan(addIndex)
     expect(traceEvents[failureIndex].status).toBe("error")
     expect(traceEvents[failureIndex].error).toBe("RAG down")
+  })
+
+  it("writes pending conflict logs separately when local conflict detection matches", async () => {
+    ragMock.addMemory.mockResolvedValue("rag_new")
+    ragMock.searchMemory.mockResolvedValue(["用户喜欢香菇"])
+    const { memoryManager } = await import("./memory-manager")
+    const { memoryStore } = await import("./memory-store")
+    const existing = await memoryStore.addL2Memory({
+      content: "用户喜欢香菇",
+      triggerText: "我喜欢香菇",
+      sourceConversationId: "test",
+      ragId: "rag_existing",
+      isPinned: false,
+    })
+    const candidate: MemoryCandidate = {
+      layer: "L2",
+      content: "用户不喜欢香菇",
+      confidence: 0.93,
+      triggerText: "我不喜欢香菇",
+    }
+
+    await memoryManager.writeMemory([candidate])
+
+    const conflictLogs = await memoryStore.getConflictLogs()
+    const reflectionLogs = await memoryStore.getReflectionLogs()
+
+    expect(conflictLogs).toHaveLength(1)
+    expect(conflictLogs[0]).toMatchObject({
+      status: "pending",
+      sourceRagId: "rag_new",
+      targetRagId: "rag_existing",
+      targetL2Id: existing.id,
+      detector: "local",
+    })
+    expect(reflectionLogs).toHaveLength(0)
   })
 })

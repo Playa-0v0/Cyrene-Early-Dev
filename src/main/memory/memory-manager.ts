@@ -122,14 +122,14 @@ export class MemoryManager {
 
     // ── 冲突检测：检查新记忆是否与现有记忆矛盾 ──
     try {
-      await this.detectAndMarkConflicts(candidate.content, ragId)
+      await this.detectAndMarkConflicts(candidate.content, l2.id, ragId)
     } catch (err) {
       console.warn("[MemoryManager] 冲突检测失败:", err)
     }
   }
 
   /** 检测新记忆是否与现有 active 记忆矛盾，如有则标记 */
-  private async detectAndMarkConflicts(content: string, newRagId: string): Promise<void> {
+  private async detectAndMarkConflicts(content: string, newL2Id: string, newRagId: string): Promise<void> {
     // 搜索语义相似的现有 L2 条目
     const allL2 = await memoryStore.getAllL2()
     const activeL2 = allL2.filter((m) => m.status !== "archived" && m.ragId && m.ragId !== newRagId)
@@ -147,6 +147,16 @@ export class MemoryManager {
         // 检测到矛盾：在现有条目上标记
         const marked = await memoryStore.markL2Conflict(existing.id, newRagId)
         if (marked) {
+          await memoryStore.appendConflictLog({
+            status: "pending",
+            sourceL2Id: newL2Id,
+            targetL2Id: existing.id,
+            sourceRagId: newRagId,
+            targetRagId: existing.ragId,
+            reason: "local keyword contradiction",
+            confidence: 0.7,
+            detector: "local",
+          })
           console.log(`[MemoryManager] ⚠️ 检测到记忆冲突: "${preview(existing.content, 30)}" ↔ "${preview(content, 30)}"`)
         }
       }

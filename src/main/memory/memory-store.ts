@@ -1,7 +1,7 @@
 import * as fs from "fs"
 import * as path from "path"
 import { app } from "electron"
-import { L0Profile, L1Profile, L2Memory, L2SyncStatus, MemoryStore, ReflectionLog } from "./memory-types"
+import { ConflictLog, L0Profile, L1Profile, L2Memory, L2SyncStatus, MemoryStore, ReflectionLog } from "./memory-types"
 import { appendMemoryTrace } from "./memory-trace"
 
 const CURRENT_SCHEMA_VERSION = 2
@@ -31,6 +31,7 @@ const DEFAULT_STORE: MemoryStore = {
   l1: { ...DEFAULT_L1 },
   l2: [],
   reflectionLogs: [],
+  conflictLogs: [],
   version: 1,
 }
 
@@ -49,6 +50,7 @@ function cloneDefaultStore(): MemoryStore {
     l1: { ...DEFAULT_L1 },
     l2: [],
     reflectionLogs: [],
+    conflictLogs: [],
   }
 }
 
@@ -70,6 +72,7 @@ export function repairMigrations(store: Partial<MemoryStore>): MemoryStore {
       syncStatus: memory.syncStatus ?? (memory.ragId ? "synced" : "pending_sync"),
     })) : [],
     reflectionLogs: Array.isArray(store.reflectionLogs) ? store.reflectionLogs : [],
+    conflictLogs: Array.isArray(store.conflictLogs) ? store.conflictLogs : [],
     version: typeof store.version === "number" ? store.version : 1,
   }
 }
@@ -357,6 +360,40 @@ class MemoryStoreManager {
   async getReflectionLogs(): Promise<ReflectionLog[]> {
     const store = await this.load()
     return store.reflectionLogs ?? []
+  }
+
+  async appendConflictLog(log: Omit<ConflictLog, "id" | "createdAt">): Promise<ConflictLog> {
+    const store = await this.load()
+    const entry: ConflictLog = {
+      ...log,
+      id: `conf_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      createdAt: Date.now(),
+    }
+    if (!store.conflictLogs) store.conflictLogs = []
+    store.conflictLogs.push(entry)
+    if (store.conflictLogs.length > 100) {
+      store.conflictLogs = store.conflictLogs.slice(-100)
+    }
+    await this.save(store)
+    appendMemoryTrace({
+      op: "conflict.log.add",
+      layer: "L2",
+      status: "ok",
+      l2Id: entry.sourceL2Id,
+      ragId: entry.sourceRagId,
+      details: {
+        conflictLogId: entry.id,
+        targetL2Id: entry.targetL2Id,
+        detector: entry.detector,
+        conflictStatus: entry.status,
+      },
+    })
+    return entry
+  }
+
+  async getConflictLogs(): Promise<ConflictLog[]> {
+    const store = await this.load()
+    return store.conflictLogs ?? []
   }
 
   /** 批量更新 L2 条目的 status */
