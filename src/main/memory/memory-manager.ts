@@ -2,7 +2,8 @@ import { memoryStore } from "./memory-store"
 import type { L0WritableField } from "./memory-store"
 import { MemoryCandidate, L0_FIELD_DESCRIPTIONS, L2Memory } from "./memory-types"
 import { findPossibleConflictCandidate } from "./memory-conflict"
-import { addMemory, searchMemory } from "../rag/index"
+import { scoreMemoryConflict, type ConflictEvidenceLevel } from "./memory-conflict-score"
+import { addMemory, searchMemoryEntries } from "../rag/index"
 
 type L1Field = "recentGoals" | "recentPreferences"
 
@@ -13,6 +14,16 @@ function preview(content: string, maxLength: number): string {
 function getL1Field(content: string): L1Field {
   if (/目标|想要|计划|打算/.test(content)) return "recentGoals"
   return "recentPreferences"
+}
+
+function hasCorrectionIntent(text: string): boolean {
+  return ["不是这样", "你记错了", "记错了", "我现在不这样", "现在不这样"].some((phrase) => text.includes(phrase))
+}
+
+function getImpactScope(memory: L2Memory): "low" | "medium" | "high" {
+  if (memory.isPinned) return "high"
+  if (memory.status === "active") return "medium"
+  return "low"
 }
 
 export class MemoryManager {
@@ -93,33 +104,47 @@ export class MemoryManager {
 
     // ── 冲突检测：检查新记忆是否与现有记忆矛盾 ──
     try {
-      await this.detectAndMarkConflicts(candidate.content, l2.id, ragId)
+      await this.detectAndMarkConflicts(candidate.content, l2.id, ragId, candidate.triggerText)
     } catch (err) {
       console.warn("[MemoryManager] 冲突检测失败:", err)
     }
   }
 
   /** 检测新记忆是否与现有 active 记忆矛盾，如有则标记 */
-  private async detectAndMarkConflicts(content: string, newL2Id: string, newRagId: string): Promise<void> {
+  private async detectAndMarkConflicts(content: string, newL2Id: string, newRagId: string, triggerText: string): Promise<void> {
     // 搜索语义相似的现有 L2 条目
     const allL2 = await memoryStore.getAllL2()
     const activeL2 = allL2.filter((m) => m.status !== "archived" && m.ragId && m.ragId !== newRagId)
 
-    // 用 searchMemory 做向量相似度匹配
-    const similarTexts = await searchMemory(content, "user_memory", 5, { recordRecall: false })
-    if (similarTexts.length === 0) return
+    // 用 RAG entry 做向量相似度匹配，优先读取 metadata.l2Id 精确定位 L2。
+    const similarEntries = await searchMemoryEntries(content, "user_memory", 5, { recordRecall: false })
+    if (similarEntries.length === 0) return
 
-    // 在 activeL2 中找内容匹配的，再检查是否语义矛盾
+    const entriesByL2Id = new Map<string, (typeof similarEntries)[number]>()
+    for (const entry of similarEntries) {
+      const l2Id = entry.metadata?.l2Id
+      if (typeof l2Id === "string" && l2Id.length > 0) {
+        entriesByL2Id.set(l2Id, entry)
+      }
+    }
+
+    // 在 activeL2 中找 RAG 定位到的候选，再检查是否存在本地弱矛盾信号。
     for (const existing of activeL2) {
-      const isSimilar = similarTexts.some((st) => st === existing.content || existing.content.includes(st.slice(0, 20)))
-      if (!isSimilar) continue
+      const metadataMatch = entriesByL2Id.get(existing.id)
+      const textMatch = similarEntries.find((entry) => (
+        entry.text === existing.content ||
+        existing.content.includes(entry.text.slice(0, 20)) ||
+        entry.text.includes(existing.content.slice(0, 20))
+      ))
+      const matchedEntry = metadataMatch ?? textMatch
+      if (!matchedEntry) continue
 
       const candidate = findPossibleConflictCandidate(content, existing.content)
       if (candidate.isCandidate) {
         // 本地规则只产出疑似候选，不确认冲突真伪。
         const marked = await memoryStore.markL2Conflict(existing.id, newRagId)
         if (marked) {
-          await memoryStore.appendConflictLog({
+          const log = await memoryStore.appendConflictLog({
             status: "candidate",
             sourceL2Id: newL2Id,
             targetL2Id: existing.id,
@@ -129,10 +154,30 @@ export class MemoryManager {
             confidence: candidate.confidence,
             detector: "local",
           })
+          const score = scoreMemoryConflict({
+            candidateSource: metadataMatch ? "rag" : "local",
+            ragScore: metadataMatch ? matchedEntry.score : undefined,
+            correctionIntent: hasCorrectionIntent(triggerText),
+            localContradiction: true,
+            evidence: await this.getEvidenceLevel(newL2Id, existing.id),
+            activeTarget: existing.status !== "archived",
+            impactScope: getImpactScope(existing),
+          })
+          await memoryStore.scoreConflictLog(log.id, score)
           console.log(`[MemoryManager] ⚠️ 发现疑似记忆冲突候选: "${preview(existing.content, 30)}" ↔ "${preview(content, 30)}"`)
         }
       }
     }
+  }
+
+  private async getEvidenceLevel(sourceL2Id: string, targetL2Id: string): Promise<ConflictEvidenceLevel> {
+    const [sourceEvidence, targetEvidence] = await Promise.all([
+      memoryStore.getEvidenceByMemoryId(sourceL2Id),
+      memoryStore.getEvidenceByMemoryId(targetL2Id),
+    ])
+    if (sourceEvidence.length > 0 && targetEvidence.length > 0) return "both"
+    if (sourceEvidence.length > 0 || targetEvidence.length > 0) return "one_side"
+    return "none"
   }
 
   /**

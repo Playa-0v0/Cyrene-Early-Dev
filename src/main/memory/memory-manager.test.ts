@@ -10,7 +10,7 @@ const electronMock = vi.hoisted(() => ({
 
 const ragMock = vi.hoisted(() => ({
   addMemory: vi.fn(),
-  searchMemory: vi.fn(),
+  searchMemoryEntries: vi.fn(),
 }))
 
 vi.mock("electron", () => ({
@@ -35,8 +35,8 @@ describe("MemoryManager L2 sync", () => {
   beforeEach(() => {
     electronMock.userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "memory-manager-"))
     ragMock.addMemory.mockReset()
-    ragMock.searchMemory.mockReset()
-    ragMock.searchMemory.mockResolvedValue([])
+    ragMock.searchMemoryEntries.mockReset()
+    ragMock.searchMemoryEntries.mockResolvedValue([])
     vi.resetModules()
   })
 
@@ -102,7 +102,6 @@ describe("MemoryManager L2 sync", () => {
 
   it("writes candidate conflict logs separately when local candidate detection matches", async () => {
     ragMock.addMemory.mockResolvedValue("rag_new")
-    ragMock.searchMemory.mockResolvedValue(["用户喜欢香菇"])
     const { memoryManager } = await import("./memory-manager")
     const { memoryStore } = await import("./memory-store")
     const existing = await memoryStore.addL2Memory({
@@ -112,6 +111,13 @@ describe("MemoryManager L2 sync", () => {
       ragId: "rag_existing",
       isPinned: false,
     })
+    ragMock.searchMemoryEntries.mockResolvedValue([{
+      id: "rag_existing",
+      text: "用户喜欢香菇",
+      createdAt: Date.now(),
+      score: 0.82,
+      metadata: { l2Id: existing.id },
+    }])
     const candidate: MemoryCandidate = {
       layer: "L2",
       content: "用户不喜欢香菇",
@@ -135,6 +141,14 @@ describe("MemoryManager L2 sync", () => {
       targetL2Id: existing.id,
       detector: "local",
     })
+    expect(conflictLogs[0].conflictScore).toBeGreaterThanOrEqual(35)
+    expect(conflictLogs[0].resolverPriority).not.toBe("none")
+    expect(conflictLogs[0].scoringSignals).toMatchObject({
+      ragCandidate: true,
+      evidenceAvailable: true,
+      localContradiction: true,
+    })
+    expect(ragMock.searchMemoryEntries).toHaveBeenCalledWith(candidate.content, "user_memory", 5, { recordRecall: false })
     expect(conflictMarkIndex).toBeGreaterThanOrEqual(0)
     expect(conflictLogIndex).toBeGreaterThan(conflictMarkIndex)
     expect(traceEvents[conflictLogIndex].details).toMatchObject({
@@ -145,9 +159,52 @@ describe("MemoryManager L2 sync", () => {
     expect(reflectionLogs).toHaveLength(0)
   })
 
+  it("keeps text-matched candidates below resolver eligibility when RAG metadata has no l2Id", async () => {
+    ragMock.addMemory.mockResolvedValue("rag_new")
+    ragMock.searchMemoryEntries.mockResolvedValue([{
+      id: "rag_existing",
+      text: "用户喜欢香菇",
+      createdAt: Date.now(),
+      score: 0.9,
+      metadata: {},
+    }])
+    const { memoryManager } = await import("./memory-manager")
+    const { memoryStore } = await import("./memory-store")
+    await memoryStore.addL2Memory({
+      content: "用户喜欢香菇",
+      triggerText: "我喜欢香菇",
+      sourceConversationId: "test",
+      ragId: "rag_existing",
+      isPinned: false,
+    })
+    const candidate: MemoryCandidate = {
+      layer: "L2",
+      content: "用户不喜欢香菇",
+      confidence: 0.93,
+      triggerText: "我不喜欢香菇",
+    }
+
+    await memoryManager.writeMemory([candidate])
+
+    const conflictLogs = await memoryStore.getConflictLogs()
+
+    expect(conflictLogs).toHaveLength(1)
+    expect(conflictLogs[0].resolverPriority).toBe("none")
+    expect(conflictLogs[0].scoringSignals).toMatchObject({
+      ragCandidate: false,
+      localContradiction: true,
+    })
+  })
+
   it("does not write conflict logs for unrelated negative memories", async () => {
     ragMock.addMemory.mockResolvedValue("rag_new")
-    ragMock.searchMemory.mockResolvedValue(["用户曾因食用见手青而有过不好经历"])
+    ragMock.searchMemoryEntries.mockResolvedValue([{
+      id: "rag_existing",
+      text: "用户曾因食用见手青而有过不好经历",
+      createdAt: Date.now(),
+      score: 0.81,
+      metadata: {},
+    }])
     const { memoryManager } = await import("./memory-manager")
     const { memoryStore } = await import("./memory-store")
     await memoryStore.addL2Memory({
