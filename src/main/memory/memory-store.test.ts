@@ -183,6 +183,35 @@ describe("memoryStore", () => {
     expect(persisted.conflictLogs).toHaveLength(100)
   })
 
+  it("caps reflection logs separately from conflict logs", async () => {
+    const { memoryStore } = await import("./memory-store")
+    await memoryStore.appendConflictLog({
+      status: "candidate",
+      sourceL2Id: "source",
+      targetL2Id: "target",
+      reason: "test conflict",
+      confidence: 0.35,
+      detector: "local",
+    })
+
+    for (let i = 0; i < 51; i++) {
+      await memoryStore.appendReflectionLog({
+        type: "l1_update",
+        summary: `reflection ${i}`,
+      })
+    }
+
+    const reflectionLogs = await memoryStore.getReflectionLogs()
+    const conflictLogs = await memoryStore.getConflictLogs()
+    const traceEvents = readTraceEvents()
+
+    expect(reflectionLogs).toHaveLength(50)
+    expect(reflectionLogs[0].summary).toBe("reflection 1")
+    expect(conflictLogs).toHaveLength(1)
+    expect(traceEvents.some((event) => event.op === "reflection.log.add")).toBe(true)
+    expect(traceEvents.some((event) => event.op === "conflict.log.add")).toBe(true)
+  })
+
   it("migrates legacy memory files with a backup", async () => {
     const memoryPath = path.join(electronMock.userDataDir, "memory.json")
     fs.writeFileSync(

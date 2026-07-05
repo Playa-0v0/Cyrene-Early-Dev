@@ -123,12 +123,22 @@ describe("MemoryManager L2 sync", () => {
 
     const conflictLogs = await memoryStore.getConflictLogs()
     const reflectionLogs = await memoryStore.getReflectionLogs()
+    const traceEvents = readTraceEvents()
+    const conflictMarkIndex = traceEvents.findIndex((event) => event.op === "l2.conflict.mark" && event.l2Id === existing.id)
+    const conflictLogIndex = traceEvents.findIndex((event) => event.op === "conflict.log.add" && event.l2Id === conflictLogs[0]?.sourceL2Id)
 
     expect(conflictLogs).toHaveLength(1)
     expect(conflictLogs[0]).toMatchObject({
       status: "candidate",
       sourceRagId: "rag_new",
       targetRagId: "rag_existing",
+      targetL2Id: existing.id,
+      detector: "local",
+    })
+    expect(conflictMarkIndex).toBeGreaterThanOrEqual(0)
+    expect(conflictLogIndex).toBeGreaterThan(conflictMarkIndex)
+    expect(traceEvents[conflictLogIndex].details).toMatchObject({
+      conflictStatus: "candidate",
       targetL2Id: existing.id,
       detector: "local",
     })
