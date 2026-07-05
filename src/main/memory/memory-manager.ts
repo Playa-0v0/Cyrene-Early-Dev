@@ -27,6 +27,14 @@ function getImpactScope(memory: L2Memory): "low" | "medium" | "high" {
   return "low"
 }
 
+function shouldSkipCandidate(candidate: MemoryCandidate): boolean {
+  return candidate.shouldWrite === false || Boolean(candidate.forbiddenOverclaims && candidate.forbiddenOverclaims.length > 0)
+}
+
+function canWriteCoreProfile(candidate: MemoryCandidate): boolean {
+  return candidate.certainty === "explicit" && candidate.attribution === "user_explicit"
+}
+
 export class MemoryManager {
   private async appendToPermanentNote(content: string): Promise<void> {
     const l0 = await memoryStore.getL0()
@@ -37,7 +45,17 @@ export class MemoryManager {
 
   async writeMemory(candidates: MemoryCandidate[]): Promise<void> {
     for (const candidate of candidates) {
+      if (shouldSkipCandidate(candidate)) {
+        console.log("[MemoryManager] 候选标记为不写入或存在过度概括，跳过")
+        continue
+      }
+
       if (candidate.layer === "L0") {
+        if (!canWriteCoreProfile(candidate)) {
+          console.log("[MemoryManager] L0 候选不是用户明确事实，跳过自动写核心画像")
+          continue
+        }
+
         // 如果 L0 被用户锁定，跳过
         const l0 = await memoryStore.getL0()
         if (l0.isPinned) {
@@ -50,15 +68,13 @@ export class MemoryManager {
 
         // 情况一：AI 没有输出 field 字段（理论上不该发生）
         if (!candidate.field) {
-          console.warn("[MemoryManager] L0 候选缺少 field 字段，降级追加到 permanentNote")
-          await this.appendToPermanentNote(candidate.content)
+          console.warn("[MemoryManager] L0 候选缺少 field 字段，跳过自动写核心画像")
           continue
         }
 
         // 情况二：AI 输出了非法字段名（幻觉）
         if (!validFields.includes(candidate.field)) {
-          console.warn(`[MemoryManager] AI 返回非法字段 "${candidate.field}"，降级追加到 permanentNote`)
-          await this.appendToPermanentNote(candidate.content)
+          console.warn(`[MemoryManager] AI 返回非法字段 "${candidate.field}"，跳过自动写核心画像`)
           continue
         }
 

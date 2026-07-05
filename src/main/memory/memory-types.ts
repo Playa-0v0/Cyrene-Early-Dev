@@ -137,9 +137,24 @@ export interface MemoryEvidence {
 export interface MemoryCandidate {
   layer: "L0" | "L1" | "L2"
   field?: string
+  summary?: string
   content: string
   confidence: number
   triggerText: string
+  importance?: "low" | "medium" | "high"
+  stability?: "one_off" | "situational" | "stable"
+  certainty?: "explicit" | "inferred" | "uncertain"
+  attribution?: "user_explicit" | "assistant_inferred" | "mixed"
+  evidenceQuotes?: string[]
+  contextSummary?: string
+  shouldWrite?: boolean
+  reason?: string
+  forbiddenOverclaims?: string[]
+}
+
+export interface MemoryJudgeTurn {
+  userInput: string
+  assistantReply: string
 }
 
 export interface MemoryStore {

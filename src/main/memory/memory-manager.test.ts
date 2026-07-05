@@ -100,6 +100,61 @@ describe("MemoryManager L2 sync", () => {
     expect(traceEvents[failureIndex].error).toBe("RAG down")
   })
 
+  it("does not write inferred L0 candidates into core profile", async () => {
+    const { memoryManager } = await import("./memory-manager")
+    const { memoryStore } = await import("./memory-store")
+    const candidate: MemoryCandidate = {
+      layer: "L0",
+      field: "longTermInterests",
+      summary: "用户只吃香菇和平菇",
+      content: "用户只吃香菇和平菇",
+      confidence: 0.65,
+      triggerText: "AI 推断用户偏好安全菌菇",
+      importance: "medium",
+      stability: "stable",
+      certainty: "inferred",
+      attribution: "assistant_inferred",
+      evidenceQuotes: ["我这次还是吃安全点的吧"],
+      contextSummary: "用户讨论菌菇安全",
+      shouldWrite: true,
+      reason: "这是推断，不应进入核心画像",
+      forbiddenOverclaims: ["只"],
+    }
+
+    await memoryManager.writeMemory([candidate])
+
+    const l0 = await memoryStore.getL0()
+    expect(l0.longTermInterests).toBe("")
+    expect(l0.permanentNote).toBe("")
+  })
+
+  it("writes explicit user-attributed L0 candidates", async () => {
+    const { memoryManager } = await import("./memory-manager")
+    const { memoryStore } = await import("./memory-store")
+    const candidate: MemoryCandidate = {
+      layer: "L0",
+      field: "preferredName",
+      summary: "用户希望被称为 P宝",
+      content: "用户希望被称为 P宝",
+      confidence: 0.9,
+      triggerText: "以后叫我 P宝",
+      importance: "high",
+      stability: "stable",
+      certainty: "explicit",
+      attribution: "user_explicit",
+      evidenceQuotes: ["以后叫我 P宝"],
+      contextSummary: "用户明确提出称呼偏好",
+      shouldWrite: true,
+      reason: "用户明确表达称呼偏好",
+      forbiddenOverclaims: [],
+    }
+
+    await memoryManager.writeMemory([candidate])
+
+    const l0 = await memoryStore.getL0()
+    expect(l0.preferredName).toBe("用户希望被称为 P宝")
+  })
+
   it("writes candidate conflict logs separately when local candidate detection matches", async () => {
     ragMock.addMemory.mockResolvedValue("rag_new")
     const { memoryManager } = await import("./memory-manager")
