@@ -208,6 +208,45 @@ describe("memoryStore", () => {
     expect(persisted.conflictLogs).toHaveLength(100)
   })
 
+  it("persists conflict scores and emits conflict.score trace", async () => {
+    const { memoryStore } = await import("./memory-store")
+    const log = await memoryStore.appendConflictLog({
+      status: "candidate",
+      sourceL2Id: "source",
+      targetL2Id: "target",
+      sourceRagId: "rag_source",
+      targetRagId: "rag_target",
+      reason: "rag candidate",
+      confidence: 0.7,
+      detector: "local",
+    })
+
+    const scored = await memoryStore.scoreConflictLog(log.id, {
+      conflictScore: 55,
+      resolverPriority: "normal",
+      scoringSignals: {
+        ragCandidate: true,
+        evidenceAvailable: true,
+        localContradiction: true,
+        impactScope: "medium",
+        penalties: [],
+      },
+    })
+
+    const conflictLogs = await memoryStore.getConflictLogs()
+    const traceEvents = readTraceEvents()
+
+    expect(scored?.conflictScore).toBe(55)
+    expect(conflictLogs[0].resolverPriority).toBe("normal")
+    expect(conflictLogs[0].scoringSignals).toMatchObject({
+      ragCandidate: true,
+      evidenceAvailable: true,
+      localContradiction: true,
+      impactScope: "medium",
+    })
+    expect(traceEvents.some((event) => event.op === "conflict.score" && event.l2Id === "source")).toBe(true)
+  })
+
   it("caps reflection logs separately from conflict logs", async () => {
     const { memoryStore } = await import("./memory-store")
     await memoryStore.appendConflictLog({

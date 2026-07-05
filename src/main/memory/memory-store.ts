@@ -435,6 +435,36 @@ class MemoryStoreManager {
     return store.conflictLogs ?? []
   }
 
+  async scoreConflictLog(
+    id: string,
+    score: Pick<ConflictLog, "conflictScore" | "resolverPriority" | "scoringSignals">,
+  ): Promise<ConflictLog | null> {
+    const store = await this.load()
+    const log = (store.conflictLogs ?? []).find((entry) => entry.id === id)
+    if (!log) return null
+
+    log.conflictScore = score.conflictScore
+    log.resolverPriority = score.resolverPriority
+    log.scoringSignals = score.scoringSignals
+
+    await this.save(store)
+    appendMemoryTrace({
+      op: "conflict.score",
+      layer: "L2",
+      status: "ok",
+      l2Id: log.sourceL2Id,
+      ragId: log.sourceRagId,
+      details: {
+        conflictLogId: log.id,
+        targetL2Id: log.targetL2Id,
+        conflictScore: log.conflictScore,
+        resolverPriority: log.resolverPriority,
+        scoringSignals: log.scoringSignals,
+      },
+    })
+    return log
+  }
+
   /** 批量更新 L2 条目的 status */
   async updateL2Status(ids: string[], status: L2Memory["status"]): Promise<void> {
     const store = await this.load()

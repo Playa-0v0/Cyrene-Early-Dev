@@ -71,6 +71,21 @@ export interface ConflictLog {
   reason: string
   confidence: number
   detector: "local" | "llm" | "manual"
+  conflictScore?: number
+  resolverPriority?: ConflictResolverPriority
+  scoringSignals?: ConflictScoringSignals
+}
+
+export type ConflictResolverPriority = "none" | "idle" | "normal" | "high"
+
+export interface ConflictScoringSignals {
+  correctionIntent?: boolean
+  ragCandidate?: boolean
+  recentInjection?: boolean
+  evidenceAvailable?: boolean
+  localContradiction?: boolean
+  impactScope?: "low" | "medium" | "high"
+  penalties?: string[]
 }
 
 export interface MemoryEvidence {
