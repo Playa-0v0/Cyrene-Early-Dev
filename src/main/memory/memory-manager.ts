@@ -1,4 +1,5 @@
 import { memoryStore } from "./memory-store"
+import type { L0WritableField } from "./memory-store"
 import { MemoryCandidate, L0_FIELD_DESCRIPTIONS, L2Memory } from "./memory-types"
 import { addMemory, searchMemory } from "../rag/index"
 
@@ -48,7 +49,7 @@ export class MemoryManager {
     const l0 = await memoryStore.getL0()
     const existing = l0.permanentNote || ""
     const updated = existing ? `${existing}；${content}` : content
-    await memoryStore.updateL0({ permanentNote: updated })
+    await memoryStore.upsertL0Field("permanentNote", updated)
   }
 
   async writeMemory(candidates: MemoryCandidate[]): Promise<void> {
@@ -79,11 +80,11 @@ export class MemoryManager {
         }
 
         // 情况三：合法字段，直接写入
-        await memoryStore.updateL0({ [candidate.field]: candidate.content })
+        await memoryStore.upsertL0Field(candidate.field as L0WritableField, candidate.content)
         console.log(`[MemoryManager] L0 更新字段: ${candidate.field} = "${candidate.content.slice(0, 20)}"`)
       } else if (candidate.layer === "L1") {
         const field = getL1Field(candidate.content)
-        await memoryStore.updateL1({ [field]: candidate.content })
+        await memoryStore.replaceL1Field(field, candidate.content)
         console.log(`[MemoryManager] L1 更新字段: ${field}`)
       } else if (candidate.layer === "L2") {
         await this.writeL2(candidate)
@@ -106,7 +107,7 @@ export class MemoryManager {
       isPinned: false,
     }
 
-    await memoryStore.addL2(l2Input)
+    await memoryStore.addL2Memory(l2Input)
 
     console.log(`[MemoryManager] L2 写入: "${preview(candidate.content, 30)}"（ragId: ${ragId}）`)
 

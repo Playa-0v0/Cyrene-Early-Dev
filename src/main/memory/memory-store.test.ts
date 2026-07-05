@@ -31,7 +31,7 @@ describe("memoryStore", () => {
 
   it("persists L2 conflict markers and status changes", async () => {
     const { memoryStore } = await import("./memory-store")
-    const existing = await memoryStore.addL2({
+    const existing = await memoryStore.addL2Memory({
       content: "用户喜欢香菇",
       triggerText: "我喜欢香菇",
       sourceConversationId: "test",
@@ -57,7 +57,7 @@ describe("memoryStore", () => {
 
   it("keeps pinned L2 memories active when marking conflicts", async () => {
     const { memoryStore } = await import("./memory-store")
-    const existing = await memoryStore.addL2({
+    const existing = await memoryStore.addL2Memory({
       content: "用户喜欢平菇",
       triggerText: "我喜欢平菇",
       sourceConversationId: "test",
@@ -73,14 +73,14 @@ describe("memoryStore", () => {
 
   it("decays only unpinned active L2 memories with positive weight", async () => {
     const { memoryStore } = await import("./memory-store")
-    const active = await memoryStore.addL2({
+    const active = await memoryStore.addL2Memory({
       content: "用户正在练琴",
       triggerText: "我最近在练琴",
       sourceConversationId: "test",
       ragId: "rag_active",
       isPinned: false,
     })
-    const pinned = await memoryStore.addL2({
+    const pinned = await memoryStore.addL2Memory({
       content: "用户固定喜欢中文",
       triggerText: "我一直用中文",
       sourceConversationId: "test",
@@ -105,6 +105,32 @@ describe("memoryStore", () => {
     expect(persisted.l2.find((m: { id: string }) => m.id === active.id).status).toBe("archived")
     expect(persisted.l2.find((m: { id: string }) => m.id === pinned.id).weight).toBe(10)
     expect(persisted.l2.find((m: { id: string }) => m.id === pinned.id).status).toBe("active")
+  })
+
+  it("updates L0 and L2 through atomic write APIs", async () => {
+    const { memoryStore } = await import("./memory-store")
+    await memoryStore.upsertL0Field("preferredName", "伙伴")
+    const memory = await memoryStore.addL2Memory({
+      content: "用户最近在做记忆系统重构",
+      triggerText: "我们重构记忆系统",
+      sourceConversationId: "test",
+      ragId: "rag_memory_refactor",
+      isPinned: false,
+    })
+    await memoryStore.updateL2RecallStats(memory.id, 12)
+
+    const l0 = await memoryStore.getL0()
+    const allL2 = await memoryStore.getAllL2()
+    const updated = allL2.find((item) => item.id === memory.id)!
+    const traceEvents = readTraceEvents()
+
+    expect(l0.preferredName).toBe("伙伴")
+    expect(l0.updatedAt).toBeGreaterThan(0)
+    expect(updated.weight).toBe(12)
+    expect(updated.accessCount).toBe(1)
+    expect(updated.status).toBe("aging")
+    expect(traceEvents.some((event) => event.op === "l0.update")).toBe(true)
+    expect(traceEvents.some((event) => event.op === "l2.weight.update" && event.l2Id === memory.id)).toBe(true)
   })
 
   it("migrates legacy memory files with a backup", async () => {

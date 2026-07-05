@@ -35,7 +35,7 @@ export function scheduleMemoryWrite(userInput: string, assistantReply: string): 
 
     const l1 = await memoryStore.getL1();
     const newCount = (l1.roundCount || 0) + 1;
-    await memoryStore.updateL1({ roundCount: newCount });
+    await memoryStore.replaceL1Field("roundCount", newCount);
 
     if (newCount % 20 === 0) {
       console.log("[Memory] 达到 20 轮，触发 Reflection + 记忆压缩");

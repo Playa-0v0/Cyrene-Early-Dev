@@ -34,6 +34,10 @@ const DEFAULT_STORE: MemoryStore = {
   version: 1,
 }
 
+export type L0WritableField = Exclude<keyof L0Profile, "updatedAt">
+export type L1WritableField = keyof L1Profile
+export type L2Input = Omit<L2Memory, "id" | "createdAt" | "lastAccessedAt" | "accessCount" | "weight" | "status">
+
 function getMemoryPath(): string {
   return path.join(app.getPath("userData"), "memory.json")
 }
@@ -130,16 +134,23 @@ class MemoryStoreManager {
     return store.l0
   }
 
-  async updateL0(patch: Partial<L0Profile>): Promise<void> {
+  async upsertL0Field(field: L0WritableField, value: L0Profile[L0WritableField]): Promise<void> {
     const store = await this.load()
-    store.l0 = { ...store.l0, ...patch, updatedAt: Date.now() }
+    store.l0 = { ...store.l0, [field]: value, updatedAt: Date.now() }
     await this.save(store)
     appendMemoryTrace({
       op: "l0.update",
       layer: "L0",
       status: "ok",
-      details: { fields: Object.keys(patch) },
+      details: { fields: [field] },
     })
+  }
+
+  async updateL0(patch: Partial<L0Profile>): Promise<void> {
+    for (const [field, value] of Object.entries(patch) as Array<[keyof L0Profile, L0Profile[keyof L0Profile]]>) {
+      if (field === "updatedAt") continue
+      await this.upsertL0Field(field, value as L0Profile[L0WritableField])
+    }
   }
 
   async getL1(): Promise<L1Profile> {
@@ -147,19 +158,25 @@ class MemoryStoreManager {
     return store.l1
   }
 
-  async updateL1(patch: Partial<L1Profile>): Promise<void> {
+  async replaceL1Field(field: L1WritableField, value: L1Profile[L1WritableField]): Promise<void> {
     const store = await this.load()
-    store.l1 = { ...store.l1, ...patch }
+    store.l1 = { ...store.l1, [field]: value }
     await this.save(store)
     appendMemoryTrace({
       op: "l1.update",
       layer: "L1",
       status: "ok",
-      details: { fields: Object.keys(patch) },
+      details: { fields: [field] },
     })
   }
 
-  async addL2(input: Omit<L2Memory, "id" | "createdAt" | "lastAccessedAt" | "accessCount" | "weight" | "status">): Promise<L2Memory> {
+  async updateL1(patch: Partial<L1Profile>): Promise<void> {
+    for (const [field, value] of Object.entries(patch) as Array<[L1WritableField, L1Profile[L1WritableField]]>) {
+      await this.replaceL1Field(field, value)
+    }
+  }
+
+  async addL2Memory(input: L2Input): Promise<L2Memory> {
     const store = await this.load()
     const memory: L2Memory = {
       ...input,
@@ -183,7 +200,11 @@ class MemoryStoreManager {
     return memory
   }
 
-  async updateL2Weight(id: string, delta: number): Promise<void> {
+  async addL2(input: L2Input): Promise<L2Memory> {
+    return this.addL2Memory(input)
+  }
+
+  async updateL2RecallStats(id: string, delta = 1): Promise<void> {
     const store = await this.load()
     const mem = store.l2.find((m) => m.id === id)
     if (!mem) return
@@ -251,6 +272,10 @@ class MemoryStoreManager {
     })
   }
 
+  async updateL2Weight(id: string, delta: number): Promise<void> {
+    await this.updateL2RecallStats(id, delta)
+  }
+
   async markL2Conflict(id: string, conflictRagId: string): Promise<L2Memory | null> {
     const store = await this.load()
     const mem = store.l2.find((m) => m.id === id)
@@ -280,7 +305,7 @@ class MemoryStoreManager {
     return store.l2
   }
 
-  async addReflectionLog(log: Omit<ReflectionLog, "id" | "createdAt">): Promise<void> {
+  async appendReflectionLog(log: Omit<ReflectionLog, "id" | "createdAt">): Promise<void> {
     const store = await this.load()
     const entry: ReflectionLog = {
       ...log,
@@ -300,6 +325,10 @@ class MemoryStoreManager {
       status: "ok",
       details: { type: entry.type, id: entry.id },
     })
+  }
+
+  async addReflectionLog(log: Omit<ReflectionLog, "id" | "createdAt">): Promise<void> {
+    await this.appendReflectionLog(log)
   }
 
   async getReflectionLogs(): Promise<ReflectionLog[]> {
@@ -322,6 +351,10 @@ class MemoryStoreManager {
       status: "ok",
       details: { ids, memoryStatus: status },
     })
+  }
+
+  async archiveL2Batch(ids: string[]): Promise<void> {
+    await this.updateL2Status(ids, "archived")
   }
 
   async decayL2Weights(delta = 1): Promise<number> {
@@ -355,7 +388,7 @@ class MemoryStoreManager {
   }
 
   /** 批量插入新的 L2 条目（压缩总结用） */
-  async addL2Batch(inputs: Array<Omit<L2Memory, "id" | "createdAt" | "lastAccessedAt" | "accessCount" | "weight" | "status">>): Promise<L2Memory[]> {
+  async addL2Batch(inputs: L2Input[]): Promise<L2Memory[]> {
     const store = await this.load()
     const results: L2Memory[] = []
     for (const input of inputs) {

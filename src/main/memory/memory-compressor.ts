@@ -7,6 +7,7 @@
 // 通过 enqueueLLMTask 在后台执行，不影响主对话流程。
 
 import { memoryStore } from "./memory-store";
+import type { L0WritableField } from "./memory-store";
 import { getEntriesBySource } from "../rag/index";
 import { cosineSimilarity } from "../rag/vectorstore";
 import { L0_FIELD_DESCRIPTIONS } from "./memory-types";
@@ -232,7 +233,7 @@ async function compressMemories(): Promise<number> {
       const subEntryIds = group.map((g) => g.l2.id);
 
       // 创建压缩总结条目
-      await memoryStore.addL2({
+      await memoryStore.addL2Memory({
         content: cleanSummary,
         triggerText: group[0].l2.triggerText,
         sourceConversationId: group[0].l2.sourceConversationId,
@@ -244,10 +245,10 @@ async function compressMemories(): Promise<number> {
       });
 
       // 原始条目归档
-      await memoryStore.updateL2Status(subEntryIds, "archived");
+      await memoryStore.archiveL2Batch(subEntryIds);
 
       // 记录日志
-      await memoryStore.addReflectionLog({
+      await memoryStore.appendReflectionLog({
         type: "compression",
         summary: `压缩 ${subEntryIds.length} 条记忆为一条总结`,
         details: `原条目：${texts.join(" | ")}\n总结：${cleanSummary}`,
@@ -336,8 +337,8 @@ async function runReflection(): Promise<void> {
       if (!content || !confidence || confidence < 0.6) continue;
 
       if (layer === "L0" && field && validFields.includes(field) && !l0.isPinned) {
-        await memoryStore.updateL0({ [field]: content.trim() });
-        await memoryStore.addReflectionLog({
+        await memoryStore.upsertL0Field(field as L0WritableField, content.trim());
+        await memoryStore.appendReflectionLog({
           type: "l0_update",
           summary: `L0.${field} 更新为 "${content.slice(0, 30)}"（置信度 ${confidence.toFixed(2)}）`,
         });
@@ -345,8 +346,8 @@ async function runReflection(): Promise<void> {
         console.log(`[Reflection] L0.${field} 更新: "${content.slice(0, 30)}"`);
       } else if (layer === "L1") {
         const l1Field = /目标|想要|计划|打算/.test(content) ? "recentGoals" : "recentPreferences";
-        await memoryStore.updateL1({ [l1Field]: content.trim() });
-        await memoryStore.addReflectionLog({
+        await memoryStore.replaceL1Field(l1Field, content.trim());
+        await memoryStore.appendReflectionLog({
           type: "l1_update",
           summary: `L1.${l1Field} 更新为 "${content.slice(0, 30)}"（置信度 ${confidence.toFixed(2)}）`,
         });
