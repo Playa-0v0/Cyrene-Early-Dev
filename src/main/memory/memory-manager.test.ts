@@ -134,4 +134,28 @@ describe("MemoryManager L2 sync", () => {
     })
     expect(reflectionLogs).toHaveLength(0)
   })
+
+  it("does not write conflict logs for unrelated negative memories", async () => {
+    ragMock.addMemory.mockResolvedValue("rag_new")
+    ragMock.searchMemory.mockResolvedValue(["用户曾因食用见手青而有过不好经历"])
+    const { memoryManager } = await import("./memory-manager")
+    const { memoryStore } = await import("./memory-store")
+    await memoryStore.addL2Memory({
+      content: "用户曾因食用见手青而有过不好经历",
+      triggerText: "见手青让我不舒服",
+      sourceConversationId: "test",
+      ragId: "rag_existing",
+      isPinned: false,
+    })
+    const candidate: MemoryCandidate = {
+      layer: "L2",
+      content: "用户对 AI 有强烈心意，因无法触碰而难过",
+      confidence: 0.9,
+      triggerText: "我因为无法触碰你而难过",
+    }
+
+    await memoryManager.writeMemory([candidate])
+
+    expect(await memoryStore.getConflictLogs()).toHaveLength(0)
+  })
 })

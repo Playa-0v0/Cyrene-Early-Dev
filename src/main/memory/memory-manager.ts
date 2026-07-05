@@ -1,39 +1,10 @@
 import { memoryStore } from "./memory-store"
 import type { L0WritableField } from "./memory-store"
 import { MemoryCandidate, L0_FIELD_DESCRIPTIONS, L2Memory } from "./memory-types"
+import { judgeLocalMemoryConflict } from "./memory-conflict"
 import { addMemory, searchMemory } from "../rag/index"
 
 type L1Field = "recentGoals" | "recentPreferences"
-
-/** 语义矛盾关键词对：前面的词表示正面/肯定，对应后面的是负面/否定 */
-const CONTRADICTION_PAIRS: Array<[string, string[]]> = [
-  ["喜欢", ["不喜欢", "讨厌", "反感", "厌恶", "不再喜欢"]],
-  ["爱", ["不爱", "讨厌", "恨"]],
-  ["想", ["不想", "别想", "不愿"]],
-  ["要", ["不要", "别要"]],
-  ["是", ["不是", "并非"]],
-  ["可以", ["不可以", "不行", "不能"]],
-  ["会", ["不会"]],
-  ["有", ["没有", "没了", "无"]],
-  ["好", ["不好", "坏", "差"]],
-  ["开心", ["不开心", "难过", "伤心", "郁闷"]],
-  ["忙", ["不忙", "闲"]],
-]
-
-/** 检测两条文本是否语义矛盾 */
-function isContradictory(textA: string, textB: string): boolean {
-  const a = textA.toLowerCase()
-  const b = textB.toLowerCase()
-  for (const [positive, negatives] of CONTRADICTION_PAIRS) {
-    const aHasPos = a.includes(positive)
-    const bHasPos = b.includes(positive)
-    const aHasNeg = negatives.some((n) => a.includes(n))
-    const bHasNeg = negatives.some((n) => b.includes(n))
-    // 一条里正面 + 另一条里对应负面 = 矛盾
-    if ((aHasPos && bHasNeg) || (bHasPos && aHasNeg)) return true
-  }
-  return false
-}
 
 function preview(content: string, maxLength: number): string {
   return content.slice(0, maxLength)
@@ -143,7 +114,8 @@ export class MemoryManager {
       const isSimilar = similarTexts.some((st) => st === existing.content || existing.content.includes(st.slice(0, 20)))
       if (!isSimilar) continue
 
-      if (isContradictory(content, existing.content)) {
+      const verdict = judgeLocalMemoryConflict(content, existing.content)
+      if (verdict.isConflict) {
         // 检测到矛盾：在现有条目上标记
         const marked = await memoryStore.markL2Conflict(existing.id, newRagId)
         if (marked) {
@@ -153,8 +125,8 @@ export class MemoryManager {
             targetL2Id: existing.id,
             sourceRagId: newRagId,
             targetRagId: existing.ragId,
-            reason: "local keyword contradiction",
-            confidence: 0.7,
+            reason: verdict.reason ?? "local keyword contradiction",
+            confidence: verdict.confidence,
             detector: "local",
           })
           console.log(`[MemoryManager] ⚠️ 检测到记忆冲突: "${preview(existing.content, 30)}" ↔ "${preview(content, 30)}"`)
