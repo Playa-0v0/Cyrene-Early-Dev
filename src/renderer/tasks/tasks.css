@@ -26,14 +26,15 @@ body {
   margin: 0;
   border-radius: 24px;
   overflow: hidden;
+  /* 与 sidebar 一致：经典主题下三层暗紫微光，避免"两坨紫"挤左上/右上 */
   background:
-    radial-gradient(circle at 18% 8%, var(--rb-violet-600) 0%, transparent 38%),
-    radial-gradient(circle at 88% 22%, var(--rb-violet-600) 0%, transparent 38%),
-    radial-gradient(circle at 50% 110%, #1c3158 0%, transparent 38%),
-    linear-gradient(155deg, var(--rb-bg-2) 0%, var(--rb-bg-1) 60%, var(--rb-bg-1) 100%);
-  border: 1px solid var(--rb-border-soft);
+    radial-gradient(circle at 18% 8%, var(--rb-bg-elevated) 0%, transparent 38%),
+    radial-gradient(circle at 88% 22%, var(--rb-bg-3) 0%, transparent 38%),
+    radial-gradient(circle at 50% 110%, var(--rb-bg-3) 0%, transparent 38%),
+    linear-gradient(155deg, var(--rb-bg-3) 0%, var(--rb-bg-1) 60%, var(--rb-bg-2) 100%);
+  border: 1px solid rgba(255, 190, 226, 0.36);
   box-shadow:
-    var(--rb-glow-soft),
+    0 0 24px var(--rb-glow-soft),
     inset 0 1px 0 rgba(255, 255, 255, 0.12),
     inset 0 0 0 1px var(--rb-border-faint);
 }
@@ -222,13 +223,14 @@ body {
   line-height: 1;
   letter-spacing: -1px;
   color: var(--rb-text-strong);
-  text-shadow: var(--rb-glow-pink);
+  /* 粉色光晕收紧到 8px 模糊，避免在 40px 字符上糊成白光 */
+  text-shadow: 0 0 8px rgba(236, 72, 153, 0.5);
 }
 
 .schedule-count__unit {
   font-size: 15px;
   font-weight: 700;
-  color: var(--rb-pink-600);
+  color: var(--rb-text-default);
 }
 
 .schedule-date {

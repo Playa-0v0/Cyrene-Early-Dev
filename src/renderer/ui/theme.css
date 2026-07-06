@@ -697,6 +697,21 @@
   border-color: var(--rb-border-strong);
 }
 
+/* 今日日程：pearl-white 下保留品牌粉作为强调色。
+   dark 主题默认是 strong/default（参见 tasks.css）；这里只覆盖白调。 */
+[data-ui-theme="pearl-white"] .schedule-count__unit {
+  color: var(--rb-pink-600);
+}
+[data-ui-theme="pearl-white"] .usage-number {
+  color: var(--rb-pink-600);
+  text-shadow: var(--rb-shadow-pink);
+}
+[data-ui-theme="pearl-white"] .usage-label {
+  color: var(--rb-text-default);
+  background: var(--rb-bg-2);
+  border-color: var(--rb-border-soft);
+}
+
 [data-ui-theme="pearl-white"] .option-block.is-active,
 [data-ui-theme="pearl-white"] .language-option.is-active,
 [data-ui-theme="pearl-white"] .chat__sticker-btn.is-active,
@@ -938,6 +953,11 @@
   box-shadow: var(--rb-shadow-card);
 }
 
+[data-ui-theme="pearl-white"] .todo-panel,
+[data-ui-theme="pearl-white"] .choice-card {
+  backdrop-filter: none;
+}
+
 [data-ui-theme="pearl-white"] .sticker-add-modal__title,
 [data-ui-theme="pearl-white"] .channels-card__header h2,
 [data-ui-theme="pearl-white"] .todo-panel__title,
@@ -959,14 +979,35 @@
   color: var(--rb-input-placeholder);
 }
 
+[data-ui-theme="pearl-white"] .choice-card__custom-input:focus {
+  border-color: var(--rb-pink-500);
+  box-shadow: 0 0 0 3px var(--rb-pink-100);
+}
+
+[data-ui-theme="pearl-white"] .choice-card__custom-input:disabled {
+  color: var(--rb-text-muted);
+  background: var(--rb-bg-1);
+  border-color: var(--rb-border-soft);
+  opacity: 1;
+}
+
 [data-ui-theme="pearl-white"] .choice-card__option:hover:not(:disabled) {
   background: var(--rb-pink-50);
   border-color: var(--rb-pink-200);
 }
 
+[data-ui-theme="pearl-white"] .choice-card__option:disabled {
+  color: var(--rb-text-muted);
+  background: var(--rb-bg-1);
+  border-color: var(--rb-border-soft);
+  opacity: 1;
+}
+
 [data-ui-theme="pearl-white"] .choice-card__option--selected {
+  color: var(--rb-pink-700);
   background: var(--rb-pink-50);
   border-color: var(--rb-pink-500);
+  box-shadow: 0 0 0 3px var(--rb-pink-100);
 }
 
 [data-ui-theme="pearl-white"] .todo-panel__toggle,
@@ -976,15 +1017,76 @@
   border-color: var(--rb-pink-500);
 }
 
+[data-ui-theme="pearl-white"] .todo-panel__toggle {
+  box-shadow: none;
+}
+
+[data-ui-theme="pearl-white"] .todo-panel__toggle:hover,
+[data-ui-theme="pearl-white"] .choice-card__custom-btn:hover:not(:disabled) {
+  background: var(--rb-pink-600);
+}
+
+[data-ui-theme="pearl-white"] .choice-card__custom-btn:disabled {
+  color: var(--rb-text-muted);
+  background: var(--rb-bg-1);
+  border-color: var(--rb-border-soft);
+  opacity: 1;
+}
+
 [data-ui-theme="pearl-white"] .todo-progress__track,
 [data-ui-theme="pearl-white"] .todo-panel__divider {
   background: var(--rb-border-soft);
+}
+
+[data-ui-theme="pearl-white"] .todo-progress__fill {
+  background: linear-gradient(90deg, var(--rb-pink-400), var(--rb-pink-500));
+}
+
+[data-ui-theme="pearl-white"] .todo-item__icon {
+  color: var(--rb-text-on-pink);
+  background: var(--rb-pink-500);
+}
+
+[data-ui-theme="pearl-white"] .todo-item.in_progress .todo-item__icon {
+  background: var(--rb-pink-600);
+  box-shadow: 0 0 0 3px var(--rb-pink-100);
+}
+
+[data-ui-theme="pearl-white"] .todo-item.completed .todo-item__icon {
+  background: #22c55e;
+}
+
+[data-ui-theme="pearl-white"] .todo-badge {
+  letter-spacing: 0;
+}
+
+[data-ui-theme="pearl-white"] .todo-badge--high {
+  color: #b91c1c;
+  background: rgba(254, 226, 226, 0.88);
+  border-color: rgba(248, 113, 113, 0.34);
+}
+
+[data-ui-theme="pearl-white"] .todo-badge--medium {
+  color: #92400e;
+  background: rgba(254, 243, 199, 0.88);
+  border-color: rgba(245, 158, 11, 0.34);
+}
+
+[data-ui-theme="pearl-white"] .todo-badge--low {
+  color: #15803d;
+  background: rgba(220, 252, 231, 0.88);
+  border-color: rgba(34, 197, 94, 0.28);
 }
 
 [data-ui-theme="pearl-white"] .todo-item.completed .todo-item__text,
 [data-ui-theme="pearl-white"] .choice-card--resolved {
   color: var(--rb-text-faint);
   opacity: 1;
+}
+
+[data-ui-theme="pearl-white"] .choice-card--resolved .choice-card__option:not(.choice-card__option--selected),
+[data-ui-theme="pearl-white"] .choice-card--resolved .choice-card__custom {
+  opacity: 0.74;
 }
 
 [data-ui-theme="pearl-white"] #channels-panel > h1,

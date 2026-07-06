@@ -28,8 +28,9 @@
   font-size: 20px;
   font-weight: 800;
   letter-spacing: -0.2px;
-  color: var(--rb-pink-600);
-  text-shadow: var(--rb-shadow-pink);
+  color: var(--rb-text-strong);
+  /* pink 光晕收紧，避免 20px 字符叠 32px 大光晕糊成白光 */
+  text-shadow: 0 0 6px rgba(236, 72, 153, 0.4);
 }
 
 .usage-total {
