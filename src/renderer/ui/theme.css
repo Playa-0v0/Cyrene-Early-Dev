@@ -498,6 +498,19 @@
   border-color: var(--rb-pink-300);
 }
 
+/* .msg__copy 同样：默认透明背景，border 用更强的色让浅色背景上仍可见 */
+[data-ui-theme="pearl-white"] .msg__copy {
+  color: var(--rb-text-muted);
+  background: transparent;
+  border-color: var(--rb-border-strong);
+  box-shadow: none;
+}
+[data-ui-theme="pearl-white"] .msg__copy:hover {
+  color: var(--rb-pink-600);
+  background: var(--rb-pink-50);
+  border-color: var(--rb-pink-300);
+}
+
 [data-ui-theme="pearl-white"] .option-block:hover,
 [data-ui-theme="pearl-white"] .language-option:hover,
 [data-ui-theme="pearl-white"] .ghost-btn:hover,

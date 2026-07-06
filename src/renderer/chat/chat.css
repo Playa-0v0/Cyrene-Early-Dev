@@ -693,6 +693,55 @@ body {
   .msg__speak-wave { animation: none; }
 }
 
+/* ── 消息复制按钮 ──
+   跟喇叭按钮同样的圆角正方形小方块，但默认可见度更低（0.55），避免视觉太抢。
+   user / model 消息都挂，复制后图标变 ✓ + 文案"已复制"，1.5s 复原。 */
+.msg__copy {
+  flex: 0 0 auto;
+  height: 26px;
+  min-width: 26px;
+  padding: 0 6px;
+  border-radius: var(--rb-radius-md);
+  background: transparent;
+  border: 1px solid var(--rb-border-soft);
+  color: var(--rb-text-muted);
+  cursor: pointer;
+  opacity: 0.55;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1;
+  transition: opacity 0.18s, background 0.18s, border-color 0.18s, color 0.18s, padding 0.18s;
+}
+.msg__copy:hover {
+  opacity: 1;
+  background: var(--rb-border-faint);
+  border-color: var(--rb-border-strong);
+  color: var(--rb-text-default);
+}
+.msg__copy:active {
+  transform: scale(0.96);
+}
+.msg__copy-icon {
+  display: block;
+  pointer-events: none;
+}
+.msg__copy-label {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+/* 复制成功态：图标变绿勾，背景变浅绿，按钮自动扩宽容纳文案 */
+.msg__copy.is-copied {
+  opacity: 1;
+  color: #15803d;
+  background: rgba(220, 252, 231, 0.85);
+  border-color: rgba(34, 197, 94, 0.5);
+  padding: 0 9px;
+}
+
 
 /* ── 文件上传按钮 ── */
 .chat__attach {

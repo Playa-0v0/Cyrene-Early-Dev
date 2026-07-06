@@ -81,6 +81,16 @@ const SPEAK_ICON_ACTIVE = `<svg class="msg__speak-icon msg__speak-icon--active" 
   <path class="msg__speak-wave msg__speak-wave--3" d="M20 5.5v13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
 </svg>`;
 
+/* ===== 复制按钮 SVG =====
+   静态版两个重叠方框（标准复制图标），复制成功版换成对勾 + 文案"已复制"。 */
+const COPY_ICON_IDLE = `<svg class="msg__copy-icon msg__copy-icon--idle" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+  <rect x="9" y="9" width="11" height="11" rx="2" stroke="currentColor" stroke-width="1.6" fill="none"/>
+  <path d="M5 15V5a2 2 0 0 1 2-2h10" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`;
+const COPY_ICON_DONE = `<svg class="msg__copy-icon msg__copy-icon--done" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+  <path d="M5 12.5l4 4 10-10" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`;
+
 interface AguiApi {
   run: (input: { messages: unknown[]; style: string; sessionId?: string; attachments?: { name: string; text: string }[] }) => Promise<{ success: boolean; error?: string }>;
   onEvent: (callback: (event: unknown) => void) => () => void;
@@ -902,6 +912,38 @@ function render(): void {
       body.appendChild(speakBtn);
     }
 
+    // 复制按钮：user / model 都有，thinking / 空内容 / 纯表情包跳过
+    //   user 复制时去掉 [sticker:xxx] 标记，model 直接复制 content
+    if (!m.thinking && m.content.trim()) {
+      const copyBtn = document.createElement("button");
+      copyBtn.type = "button";
+      copyBtn.className = "msg__copy";
+      copyBtn.title = "复制";
+      copyBtn.setAttribute("aria-label", "复制这条消息");
+      copyBtn.innerHTML = COPY_ICON_IDLE;
+      copyBtn.addEventListener("click", () => {
+        const text = m.role === "user"
+          ? m.content.replace(/\[sticker:[^\]]+\]/g, "").trim()
+          : m.content;
+        if (!text) return;
+        void copyTextToClipboard(text).then((ok) => {
+          if (!ok) return;
+          // 视觉反馈：切到对勾 + 文案"已复制"，1.5s 后复原
+          copyBtn.classList.add("is-copied");
+          copyBtn.innerHTML = COPY_ICON_DONE;
+          const label = document.createElement("span");
+          label.className = "msg__copy-label";
+          label.textContent = "已复制";
+          copyBtn.appendChild(label);
+          window.setTimeout(() => {
+            copyBtn.classList.remove("is-copied");
+            copyBtn.innerHTML = COPY_ICON_IDLE;
+          }, 1500);
+        });
+      });
+      body.appendChild(copyBtn);
+    }
+
     body.appendChild(time);
 
     row.appendChild(avatar);
@@ -1087,6 +1129,35 @@ let currentSpeakingMsgId: string | null = null;
 let speechToken = 0;
 let textMouthStarted = false;
 let ttsPlaybackSequence = 0;
+
+/** 复制文本到剪贴板，优先用现代 Clipboard API，失败时回落到 textarea+execCommand。 */
+async function copyTextToClipboard(text: string): Promise<boolean> {
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch {
+    // 权限被拒或无 clipboard 上下文，回落到下面
+  }
+  // Fallback：临时 textarea + execCommand('copy')。旧浏览器/无焦点时也能用。
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.setAttribute("readonly", "");
+  ta.style.position = "fixed";
+  ta.style.opacity = "0";
+  ta.style.pointerEvents = "none";
+  document.body.appendChild(ta);
+  ta.select();
+  let ok = false;
+  try {
+    ok = document.execCommand("copy");
+  } catch {
+    ok = false;
+  }
+  document.body.removeChild(ta);
+  return ok;
+}
 
 function nextSpeechToken(): number {
   speechToken += 1;
