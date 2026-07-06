@@ -1,5 +1,6 @@
 import "../ui/base.css";
 import "./chat.css";
+import "../ui/theme";
 import {
   CHAT_DEFAULT_IDENTITY_LABEL,
   formatChatRelativeTime,
@@ -65,6 +66,20 @@ interface ChatApi {
 
 /** AG-UI 事件流 API（window.agui）。 */
 const BUDGET_CHARS = 60000;
+
+/* ===== TTS 朗读按钮 SVG =====
+   静态版用单条弧线表示喇叭外溢，播放版换成三条音波竖线 + CSS 动画做波浪。
+   颜色全部 currentColor，主题色变了会跟着变；不依赖 emoji 字体。 */
+const SPEAK_ICON_IDLE = `<svg class="msg__speak-icon msg__speak-icon--idle" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+  <path d="M3 10v4h4l5 4V6L7 10H3z" fill="currentColor"/>
+  <path d="M16 8.5a4 4 0 0 1 0 7" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+</svg>`;
+const SPEAK_ICON_ACTIVE = `<svg class="msg__speak-icon msg__speak-icon--active" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+  <path d="M3 10v4h4l5 4V6L7 10H3z" fill="currentColor"/>
+  <path class="msg__speak-wave msg__speak-wave--1" d="M14 9.5v5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+  <path class="msg__speak-wave msg__speak-wave--2" d="M17 7.5v9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+  <path class="msg__speak-wave msg__speak-wave--3" d="M20 5.5v13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+</svg>`;
 
 interface AguiApi {
   run: (input: { messages: unknown[]; style: string; sessionId?: string; attachments?: { name: string; text: string }[] }) => Promise<{ success: boolean; error?: string }>;
@@ -864,18 +879,19 @@ function render(): void {
       }
     }
 
-    // model 消息加 🔊 朗读按钮（thinking 中的不显示）
+    // model 消息加 SVG 朗读按钮（thinking 中的不显示）
     if (m.role === "model" && !m.thinking && m.content.trim()) {
       const speakBtn = document.createElement("button");
       speakBtn.type = "button";
       speakBtn.className = "msg__speak";
       speakBtn.title = "朗读";
       speakBtn.setAttribute("aria-label", "朗读这条消息");
-      speakBtn.textContent = "🔊";
+      // 用 SVG 而不是 emoji，颜色随主题走，播放时切到波形版
+      speakBtn.innerHTML = SPEAK_ICON_IDLE;
       // 点击逻辑：正在播放则停止，否则开始朗读（避免重叠）
       speakBtn.addEventListener("click", () => {
         console.log("[TTS] 喇叭点击, currentTtsAudio=", currentTtsAudio ? "有" : "无");
-        if (currentTtsAudio) {
+        if (currentSpeakingMsgId === m.id) {
           stopCurrentTts();
         } else {
           void speakMessage(m);
@@ -1063,6 +1079,9 @@ declare global {
 
 // 当前正在播放的 TTS 音频实例（全局唯一）。点新朗读前先停这个，避免重叠。
 let currentTtsAudio: HTMLAudioElement | null = null;
+// 当前正在朗读的消息 ID，用于给对应消息 row 加 .is-speaking class 并切换喇叭图标。
+// null 表示没有正在播放。
+let currentSpeakingMsgId: string | null = null;
 let speechToken = 0;
 let textMouthStarted = false;
 let ttsPlaybackSequence = 0;
@@ -1070,6 +1089,30 @@ let ttsPlaybackSequence = 0;
 function nextSpeechToken(): number {
   speechToken += 1;
   return speechToken;
+}
+
+/** 把正在播放的喇叭按钮切回静态 SVG，所有其他按钮恢复正常。 */
+function syncSpeakingUi(): void {
+  const prevId = currentSpeakingMsgId;
+  document.querySelectorAll(".msg.is-speaking").forEach((el) => {
+    if (prevId === null || (el as HTMLElement).dataset.msgId !== prevId) {
+      el.classList.remove("is-speaking");
+      const btn = el.querySelector(".msg__speak");
+      if (btn) btn.innerHTML = SPEAK_ICON_IDLE;
+    }
+  });
+  if (prevId === null) return;
+  const row = document.querySelector(`.msg[data-msg-id="${CSS.escape(prevId)}"]`);
+  if (!row) return;
+  row.classList.add("is-speaking");
+  const btn = row.querySelector(".msg__speak");
+  if (btn) btn.innerHTML = SPEAK_ICON_ACTIVE;
+}
+
+/** 在开始朗读某条消息前调用：清掉旧的、设上新的，并刷新 UI。 */
+function setSpeakingMsgId(id: string | null): void {
+  currentSpeakingMsgId = id;
+  syncSpeakingUi();
 }
 
 function stopLive2dMouth(): void {
@@ -1091,6 +1134,8 @@ function stopCurrentTts(): void {
     currentTtsAudio.currentTime = 0;
     currentTtsAudio = null;
   }
+  // 复位喇叭 UI（无论是否有 audio，都清掉 is-speaking）
+  setSpeakingMsgId(null);
   stopLive2dMouth();
 }
 
@@ -1154,7 +1199,11 @@ function waitForAudioMetadata(audio: HTMLAudioElement): Promise<number | null> {
   });
 }
 
-function playTtsBase64(base64: string, format: "wav" | "mp3" = "mp3"): void {
+function playTtsBase64(
+  base64: string,
+  format: "wav" | "mp3" = "mp3",
+  msgId?: string,
+): void {
   stopCurrentTts();
   const token = nextSpeechToken();
   const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
@@ -1165,11 +1214,17 @@ function playTtsBase64(base64: string, format: "wav" | "mp3" = "mp3"): void {
   audio.preload = "auto";
   audio.load();
   currentTtsAudio = audio;
+  // 标记喇叭 UI 进入播放态（即使没传 msgId 也清掉旧的）
+  setSpeakingMsgId(msgId ?? null);
 
   audio.onended = () => {
     URL.revokeObjectURL(url);
     if (currentTtsAudio === audio) currentTtsAudio = null;
     if (speechToken === token) stopLive2dMouth();
+    // 复位喇叭 UI：仅当当前记录的就是这条消息才清，避免覆盖后启动的
+    if (msgId === undefined || currentSpeakingMsgId === msgId) {
+      setSpeakingMsgId(null);
+    }
   };
 
   void (async () => {
@@ -1181,6 +1236,9 @@ function playTtsBase64(base64: string, format: "wav" | "mp3" = "mp3"): void {
       URL.revokeObjectURL(url);
       if (currentTtsAudio === audio) currentTtsAudio = null;
       if (speechToken === token) stopLive2dMouth();
+      if (msgId === undefined || currentSpeakingMsgId === msgId) {
+        setSpeakingMsgId(null);
+      }
       return;
     }
 
@@ -1378,6 +1436,7 @@ async function streamAndPlayCached(
 async function synthesizeAndPlayCached(
   text: string,
   existing?: { ttsCacheKey?: string },
+  msgId?: string,
 ): Promise<{ cacheKey: string } | null> {
   if (!window.tts) return null;
 
@@ -1405,7 +1464,7 @@ async function synthesizeAndPlayCached(
         });
         if (result.cached) {
           console.log("[TTS] gptsovits 缓存命中，直接播放");
-          playTtsBase64(result.base64, result.format);
+          playTtsBase64(result.base64, result.format, msgId);
           return { cacheKey: result.cacheKey };
         }
       } else if (isCustomCloudCache) {
@@ -1422,7 +1481,7 @@ async function synthesizeAndPlayCached(
         });
         if (result.cached) {
           console.log("[TTS] custom-cloud 缓存命中，直接播放");
-          playTtsBase64(result.base64, result.format);
+          playTtsBase64(result.base64, result.format, msgId);
           return { cacheKey: result.cacheKey };
         }
       } else if (isMimoCache) {
@@ -1435,7 +1494,7 @@ async function synthesizeAndPlayCached(
         });
         if (result.cached) {
           console.log("[TTS] mimo 缓存命中，直接播放");
-          playTtsBase64(result.base64, result.format);
+          playTtsBase64(result.base64, result.format, msgId);
           return { cacheKey: result.cacheKey };
         }
       } else {
@@ -1451,7 +1510,7 @@ async function synthesizeAndPlayCached(
         });
         if (result.cached) {
           console.log("[TTS] minimax 缓存命中，直接播放");
-          playTtsBase64(result.base64);
+          playTtsBase64(result.base64, result.format, msgId);
           return { cacheKey: result.cacheKey };
         }
       }
@@ -1482,7 +1541,7 @@ async function synthesizeAndPlayCached(
         model: settings.ttsMinimaxModel,
         expectedCacheKey: existing?.ttsCacheKey,
       });
-      playTtsBase64(result.base64);
+      playTtsBase64(result.base64, result.format, msgId);
       return { cacheKey: result.cacheKey };
     } catch (err) {
       console.warn("[TTS] 合成失败:", err);
@@ -1505,7 +1564,7 @@ async function synthesizeAndPlayCached(
         format: settings.ttsGptsovitsFormat,
         expectedCacheKey: existing?.ttsCacheKey,
       });
-      playTtsBase64(result.base64, result.format);
+      playTtsBase64(result.base64, result.format, msgId);
       return { cacheKey: result.cacheKey };
     } catch (err) {
       console.warn("[TTS] GPT-SoVITS 合成失败:", err);
@@ -1530,7 +1589,7 @@ async function synthesizeAndPlayCached(
         timeoutMs: settings.ttsCustomCloudTimeoutMs,
         expectedCacheKey: existing?.ttsCacheKey,
       });
-      playTtsBase64(result.base64, result.format);
+      playTtsBase64(result.base64, result.format, msgId);
       return { cacheKey: result.cacheKey };
     } catch (err) {
       console.warn("[TTS] 自定义云端合成失败:", err);
@@ -1551,7 +1610,7 @@ async function synthesizeAndPlayCached(
         stylePrompt: settings.ttsMimoStylePrompt,
         expectedCacheKey: existing?.ttsCacheKey,
       });
-      playTtsBase64(result.base64, result.format);
+      playTtsBase64(result.base64, result.format, msgId);
       return { cacheKey: result.cacheKey };
     } catch (err) {
       console.warn("[TTS] 小米 MiMo 合成失败:", err);
@@ -1566,7 +1625,7 @@ async function speakMessage(message: Message): Promise<void> {
   ttsPlaybackSequence += 1;
   stopLive2dMouth();
   window.live2dSpeech?.prepare();
-  const cache = await synthesizeAndPlayCached(message.content, message);
+  const cache = await synthesizeAndPlayCached(message.content, message, message.id);
   if (cache) {
     message.ttsCacheKey = cache.cacheKey;
     void saveSession();

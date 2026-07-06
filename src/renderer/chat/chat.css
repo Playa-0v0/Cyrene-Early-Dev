@@ -629,7 +629,8 @@ body {
   padding: 0 4px;
 }
 
-/* model 消息朗读按钮 */
+/* model 消息朗读按钮 — 用 SVG 图标，主题色用 currentColor
+   默认保持可见（0.7 透明度），hover/active 加深。播放态由 .msg.is-speaking .msg__speak 控制。 */
 .msg__speak {
   flex: 0 0 auto;
   width: 26px;
@@ -637,10 +638,10 @@ body {
   border-radius: var(--rb-radius-full);
   background: transparent;
   border: 1px solid var(--rb-border-soft);
-  font-size: 13px;
+  color: var(--rb-text-muted);
   cursor: pointer;
-  opacity: 0.4;
-  transition: opacity 0.18s, background 0.18s, border-color 0.18s;
+  opacity: 0.7;
+  transition: opacity 0.18s, background 0.18s, border-color 0.18s, color 0.18s;
   display: grid;
   place-items: center;
   padding: 0;
@@ -651,6 +652,44 @@ body {
   opacity: 1;
   background: var(--rb-border-faint);
   border-color: var(--rb-border-strong);
+  color: var(--rb-text-default);
+}
+
+/* 播放中状态：父级 .msg 被加 .is-speaking class */
+.msg.is-speaking .msg__speak {
+  opacity: 1;
+  background: var(--rb-pink-50);
+  border-color: var(--rb-pink-500);
+  color: var(--rb-pink-600);
+  box-shadow: 0 0 0 3px var(--rb-pink-100);
+}
+
+/* 静态喇叭图标：换肤时跟着 currentColor 走，不写死颜色 */
+.msg__speak-icon {
+  display: block;
+  pointer-events: none;
+}
+
+/* 三条音波的波浪动画：
+   每条 path 用 transform-origin: center 做 scaleY 脉冲，
+   错相位延迟形成连续的"声波"效果。波浪颜色全部 currentColor。 */
+.msg__speak-wave {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: msg-speak-wave 1s ease-in-out infinite;
+}
+.msg__speak-wave--1 { animation-delay: 0s; }
+.msg__speak-wave--2 { animation-delay: 0.15s; }
+.msg__speak-wave--3 { animation-delay: 0.30s; }
+
+@keyframes msg-speak-wave {
+  0%, 100% { transform: scaleY(0.35); opacity: 0.5; }
+  50%      { transform: scaleY(1.0);  opacity: 1.0; }
+}
+
+/* 尊重 prefers-reduced-motion：波浪停掉 */
+@media (prefers-reduced-motion: reduce) {
+  .msg__speak-wave { animation: none; }
 }
 
 

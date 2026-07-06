@@ -477,12 +477,25 @@
 [data-ui-theme="pearl-white"] .chat__icon-btn,
 [data-ui-theme="pearl-white"] .chat__winbtn,
 [data-ui-theme="pearl-white"] .chat__attach,
-[data-ui-theme="pearl-white"] .chat__sticker-btn,
-[data-ui-theme="pearl-white"] .msg__speak {
+[data-ui-theme="pearl-white"] .chat__sticker-btn {
   color: var(--rb-text-default);
   background: var(--rb-card-bg);
   border-color: var(--rb-border-soft);
   box-shadow: none;
+}
+
+/* .msg__speak 单独处理：默认透明背景，仅在 hover / .is-speaking 时填色。
+   这样在浅色消息气泡上不会多出一块白方块，但播放态仍能明显高亮。 */
+[data-ui-theme="pearl-white"] .msg__speak {
+  color: var(--rb-text-muted);
+  background: transparent;
+  border-color: var(--rb-border-strong);
+  box-shadow: none;
+}
+[data-ui-theme="pearl-white"] .msg__speak:hover {
+  color: var(--rb-pink-600);
+  background: var(--rb-pink-50);
+  border-color: var(--rb-pink-300);
 }
 
 [data-ui-theme="pearl-white"] .option-block:hover,
@@ -595,12 +608,12 @@
 [data-ui-theme="pearl-white"] .sticker-picker__item:hover,
 [data-ui-theme="pearl-white"] .chat__preset:hover,
 [data-ui-theme="pearl-white"] .chat__attach:hover,
-[data-ui-theme="pearl-white"] .chat__sticker-btn:hover,
-[data-ui-theme="pearl-white"] .msg__speak:hover {
+[data-ui-theme="pearl-white"] .chat__sticker-btn:hover {
   color: var(--rb-pink-600);
   background: var(--rb-pink-50);
   border-color: var(--rb-pink-200);
 }
+/* .msg__speak:hover 在更上面单独定义（border-color 用更深的 pink-300 强化可见） */
 
 [data-ui-theme="pearl-white"] .chat__preset {
   color: var(--rb-text-default);
