@@ -72,14 +72,16 @@ body { overflow: hidden; }
   box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.18);
 }
 
-/* 通话时长：MM:SS 大字，接通后显示，hangup 后隐藏 */
+/* 通话时长：MM:SS 大字，接通后显示，hangup 后隐藏。
+   注意：margin-bottom 要 ≥28px，给头像的 25px 粉色 box-shadow
+   和 200×200 波形扩散留出净空，否则胶囊底缘会被光晕咬住。 */
 .call__duration {
   font-variant-numeric: tabular-nums;
   font-size: 15px;
   font-weight: 600;
   letter-spacing: 1.5px;
   color: var(--rb-text-muted);
-  margin-bottom: 14px;
+  margin-bottom: 32px;
   padding: 3px 10px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.05);
