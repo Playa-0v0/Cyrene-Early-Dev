@@ -889,6 +889,13 @@ function render(): void {
       }
     }
 
+    // actions 行：喇叭 / 复制 / 时间三个控件水平排在气泡下方。
+    // 没有可显示控件的消息（纯表情包 / thinking 空内容）跳过整行。
+    const actions = document.createElement("div");
+    actions.className = "msg__actions";
+
+    let hasActionItem = false;
+
     // model 消息加 SVG 朗读按钮（thinking 中的不显示）
     if (m.role === "model" && !m.thinking && m.content.trim()) {
       const speakBtn = document.createElement("button");
@@ -909,7 +916,8 @@ function render(): void {
           void speakMessage(m);
         }
       });
-      body.appendChild(speakBtn);
+      actions.appendChild(speakBtn);
+      hasActionItem = true;
     }
 
     // 复制按钮：user / model 都有，thinking / 空内容 / 纯表情包跳过
@@ -941,10 +949,15 @@ function render(): void {
           }, 1500);
         });
       });
-      body.appendChild(copyBtn);
+      actions.appendChild(copyBtn);
+      hasActionItem = true;
     }
 
-    body.appendChild(time);
+    // 时间戳总是显示；哪怕只有一个时间，也用 actions 行保持视觉一致
+    actions.appendChild(time);
+    hasActionItem = true;
+
+    if (hasActionItem) body.appendChild(actions);
 
     row.appendChild(avatar);
     row.appendChild(body);
