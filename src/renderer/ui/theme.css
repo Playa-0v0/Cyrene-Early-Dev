@@ -284,9 +284,13 @@
   --rb-scroll-thumb-hover: rgba(0, 0, 0, 0.32);
 }
 
+/* NOTE: do NOT paint `body` here. The Live2D pet window keeps its
+   `body { background: transparent }` from src/renderer/index.html so the
+   canvas can show through the transparent BrowserWindow. The 6 UI windows
+   get their white surface from their .chat / .settings-shell / .sidebar /
+   .tasks / .sticker-shell / .call containers, not from `body`. */
 [data-ui-theme="pearl-white"] body {
   color: var(--rb-text-default);
-  background: var(--rb-bg-1);
 }
 
 [data-ui-theme="pearl-white"] .chat,
