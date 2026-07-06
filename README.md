@@ -147,7 +147,7 @@ For personal, non-commercial fan use only.
 ## 🙏 Credits / 致谢
 
 - **Cyrene / 昔涟 character**: © HoYoverse / miHoYo
-- **Live2D model**: Created by `[UP 主 B 站 ID]` — see
+- **Live2D model**: Created by [@是依七哒](https://space.bilibili.com/457683484) — see
   [MODEL_LICENSE.md](./MODEL_LICENSE.md)
 - **Live2D Cubism SDK**: © Live2D Cubism
 

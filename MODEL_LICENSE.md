@@ -4,9 +4,9 @@
 
 The Live2D model `cyrene/` used by this project was created by:
 
-**B 站 UP 主 / Bilibili Creator**: `[UP 主 B 站 ID]`
+**B 站 UP 主 / Bilibili Creator**: `是依七哒`
 
-**Original source / 原始链接**: `[视频 / 主页 URL]`
+**Original source / 原始链接**: `https://space.bilibili.com/457683484`
 
 We are grateful for their work. All model assets under
 `dist/renderer/models/cyrene/` (including `.moc3`, `.motion3.json`,
@@ -14,8 +14,8 @@ We are grateful for their work. All model assets under
 
 本项目使用的 `cyrene/` Live2D 模型由以下创作者制作：
 
-**B 站 UP 主**：`[UP 主 B 站 ID]`
-**原始链接**：`[视频 / 主页 URL]`
+**B 站 UP 主**：`是依七哒`
+**原始链接**：`https://space.bilibili.com/457683484`
 
 感谢 UP 主的创作。`dist/renderer/models/cyrene/` 下的所有模型资源
 （包括 `.moc3`、`.motion3.json`、`.exp3.json`、`.physics3.json`、
@@ -34,7 +34,7 @@ within this project, including but not limited to:
 - ✅ Redistribution as part of this repository
 - ✅ Use in derivative fan projects that credit the original creator
 
-**Date of grant**: `[YYYY-MM]` (private communication with the creator)
+**Date of grant**: `2026-06` (private communication with the creator)
 
 **No commercial use clause**: While the model itself may be freely used
 under the creator's terms, please respect miHoYo / HoYoverse's fan policy
@@ -51,7 +51,7 @@ details.
 - ✅ 作为本仓库的一部分进行再分发
 - ✅ 在署名原作者的前提下用于其他粉丝向衍生项目
 
-**授权时间**：`[YYYY-MM]`（与原作者私下沟通确认）
+**授权时间**：`2026-06`（与原作者私下沟通确认）
 
 **非商用条款**：尽管模型本身可在作者条款下自由使用，请同时遵守
 米哈游 / HoYoverse 的同人创作规范 —— 底层角色 IP（《崩坏：星穹铁道》
