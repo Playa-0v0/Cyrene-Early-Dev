@@ -24,9 +24,20 @@ let currentState: CallState = "IDLE";
 let finalText = "";
 let active = false;
 
-/** 通话上下文：保留最近 N 轮对话历史（每轮 = user + assistant 一对）。 */
-const MAX_CALL_CONTEXT_TURNS = 5;
+/** 通话上下文：保留最近 N 轮对话历史（每轮 = user + assistant 一对）。
+ * 主聊天窗口（src/main/index.ts:1276 normalizeChatMessages）默认保留 24 条（12 轮）。
+ * 通话场景对短上下文敏感度低，但用户希望"加点内存"——给到 24 轮（48 条），
+ * 短上下文模型如果爆了由 settings 里的 model context_length 兜底。 */
+const MAX_CALL_CONTEXT_TURNS = 24;
 const callHistory: ChatMessage[] = [];
+
+/** 滑动窗口截断：每次 push 两轮后调用，保留最近 MAX_CALL_CONTEXT_TURNS 轮。
+ * 这样 callHistory 数组本身有界（48 条），不会被长通话撑爆内存。 */
+function trimCallHistory(): void {
+  if (callHistory.length > MAX_CALL_CONTEXT_TURNS * 2) {
+    callHistory.splice(0, callHistory.length - MAX_CALL_CONTEXT_TURNS * 2);
+  }
+}
 
 // 注入的配置 getter（由 index.ts 启动时设置，避免循环依赖）
 let modelSettingsGetter: (() => {
@@ -294,6 +305,7 @@ async function runAgentTurn(userText: string): Promise<string | null> {
         // 天气走快捷路径，也记入上下文
         callHistory.push({ role: "user", content: userText });
         callHistory.push({ role: "assistant", content: weatherReply });
+        trimCallHistory();
         return weatherReply;
       }
     }
@@ -339,6 +351,7 @@ async function runAgentTurn(userText: string): Promise<string | null> {
     if (reply) {
       callHistory.push({ role: "user", content: userText });
       callHistory.push({ role: "assistant", content: reply });
+      trimCallHistory();
     }
 
     return reply || null;
