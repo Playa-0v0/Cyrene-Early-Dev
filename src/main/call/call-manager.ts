@@ -40,6 +40,9 @@ let ttsSettingsGetter: (() => {
   // GPT-SoVITS
   ttsGptsovitsBaseUrl: string; ttsGptsovitsRefAudioPath: string;
   ttsGptsovitsPromptText: string; ttsGptsovitsFormat: "wav" | "mp3";
+  ttsCustomCloudEndpointUrl: string; ttsCustomCloudApiKey: string; ttsCustomCloudVoiceId: string;
+  ttsCustomCloudFormat: "wav" | "mp3"; ttsCustomCloudTimeoutMs: number;
+  ttsMimoKey: string; ttsMimoVoiceAudioPath: string; ttsMimoStylePrompt: string;
 }) | null = null;
 
 /** index.ts 启动时注入模型配置、TTS 配置和 system prompt 构建器。 */
@@ -55,6 +58,9 @@ export function setCallSettings(
     ttsSpeed: number; ttsVolume: number;
     ttsGptsovitsBaseUrl: string; ttsGptsovitsRefAudioPath: string;
     ttsGptsovitsPromptText: string; ttsGptsovitsFormat: "wav" | "mp3";
+    ttsCustomCloudEndpointUrl: string; ttsCustomCloudApiKey: string; ttsCustomCloudVoiceId: string;
+    ttsCustomCloudFormat: "wav" | "mp3"; ttsCustomCloudTimeoutMs: number;
+    ttsMimoKey: string; ttsMimoVoiceAudioPath: string; ttsMimoStylePrompt: string;
   },
   systemPromptFn: (userText: string) => Promise<string>,
   weatherFn: (userText: string) => Promise<string | null>,
@@ -177,6 +183,18 @@ export async function endTurn(): Promise<void> {
       restartAsr();
       return;
     }
+    if (tts.ttsEngine === "custom-cloud" && !tts.ttsCustomCloudEndpointUrl) {
+      sendError("TTS 未配置：请在设置中配置自定义云端 Endpoint URL");
+      sendState("LISTENING");
+      restartAsr();
+      return;
+    }
+    if (tts.ttsEngine === "mimo" && (!tts.ttsMimoKey || !tts.ttsMimoVoiceAudioPath)) {
+      sendError("TTS 未配置：请在设置中配置小米 MiMo API Key 和昔涟克隆音频");
+      sendState("LISTENING");
+      restartAsr();
+      return;
+    }
 
     sendState("SPEAKING");
     try {
@@ -185,14 +203,28 @@ export async function endTurn(): Promise<void> {
         speed: tts.ttsSpeed,
         volume: tts.ttsVolume,
         // minimax
-        apiKey: tts.ttsMinimaxKey,
-        voiceId: tts.ttsMinimaxVoiceId,
+        apiKey: tts.ttsEngine === "mimo"
+          ? tts.ttsMimoKey
+          : tts.ttsEngine === "custom-cloud"
+            ? tts.ttsCustomCloudApiKey
+            : tts.ttsMinimaxKey,
+        voiceId: tts.ttsEngine === "mimo"
+          ? ""
+          : tts.ttsEngine === "custom-cloud"
+            ? tts.ttsCustomCloudVoiceId
+            : tts.ttsMinimaxVoiceId,
         model: tts.ttsMinimaxModel,
         // gptsovits
         baseUrl: tts.ttsGptsovitsBaseUrl,
         refAudioPath: tts.ttsGptsovitsRefAudioPath,
         promptText: tts.ttsGptsovitsPromptText,
         format: tts.ttsGptsovitsFormat,
+        // custom-cloud
+        endpointUrl: tts.ttsCustomCloudEndpointUrl,
+        timeoutMs: tts.ttsCustomCloudTimeoutMs,
+        voiceAudioPath: tts.ttsMimoVoiceAudioPath,
+        stylePrompt: tts.ttsMimoStylePrompt,
+        ...(tts.ttsEngine === "custom-cloud" ? { format: tts.ttsCustomCloudFormat } : {}),
       });
       sendTtsAudio(result.audio.toString("base64"));
       // 等渲染端 CALL_TTS_DONE 后恢复 LISTENING

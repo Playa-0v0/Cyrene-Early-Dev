@@ -25,6 +25,7 @@ import type { ToolDefinition } from "./tool-registry";
 import type { ChatMessage } from "./vendors/types";
 import type { AguiRunInput } from "../agui-bridge";
 import { IPC } from "../../shared/ipc-channels";
+import type { RelationshipChannel, RelationshipTurnInput } from "../relationship/relationship-log";
 
 /** index.ts 模块级符号的最小可注入子集。
  *  类型故意用宽签名（unknown / 任意 shape）—— 因为 build-options 是纯消费者，
@@ -48,6 +49,7 @@ export interface BuildOptionsDeps {
     userText: string,
     messages: ReadonlyArray<{ role: string; content?: string }>,
   ) => Promise<string>;
+  buildRelationshipContext: () => Promise<string>;
   buildSystemPrompt: (styleFile: string) => string;
   logWorldbookInjection: (alwaysOnContext: string, systemContent: string) => void;
   normalizeChatMessages: (raw: ReadonlyArray<unknown>) => ChatMessage[];
@@ -68,6 +70,7 @@ export interface OnRunFinishedDeps {
   feelingToExpression: Record<string, number>;
   setRuntimeState: (next: { status?: string; expression?: number; updatedAt?: number; feeling?: string }) => void;
   stickerEmbeddingIndex: unknown;
+  getStickerEmbeddingIndex?: () => unknown;
   getEmbeddingProvider: () => unknown;
   matchSticker: (
     text: string,
@@ -83,6 +86,7 @@ export interface OnRunFinishedDeps {
     userText: string,
     reply: string,
   ) => Promise<void>;
+  recordRelationshipTurn: (input: RelationshipTurnInput) => Promise<unknown> | unknown;
   getChatWindow: () => { webContents: { isDestroyed(): boolean; send: (channel: string, ...args: unknown[]) => void }; isDestroyed(): boolean } | null;
 }
 
@@ -102,6 +106,27 @@ export interface UserProfileLite {
   birthday?: string;
   defaultCity?: string;
   timezone?: string;
+}
+
+export function buildChannelSystem(channel?: RelationshipChannel): string {
+  if (channel === "wechat") {
+    return [
+      "【渠道回复方式】",
+      "你正在通过微信回复用户。",
+      "回复要像微信聊天消息：短、自然、有来有回。",
+      "不要写长段说明，不要提桌面端、工具调用或系统。",
+      "任务复杂时先简短确认，再安静执行。",
+    ].join("\n");
+  }
+  if (channel === "feishu") {
+    return [
+      "【渠道回复方式】",
+      "你正在通过飞书回复用户。",
+      "语气仍是昔涟，但要适合工作上下文：清楚、省时间、结论靠前。",
+      "必要时可以简短列步骤，不要过度撒娇，不要发太长情绪化回复。",
+    ].join("\n");
+  }
+  return "";
 }
 
 /**
@@ -131,6 +156,13 @@ export async function buildAgentRunOptions(
     console.warn("[Cyrene] always-on context build failed:", err);
   }
 
+  let relationshipContext = "";
+  try {
+    relationshipContext = await deps.buildRelationshipContext();
+  } catch (err) {
+    console.warn("[Cyrene] relationship context build failed:", err);
+  }
+
   let environmentContext = "";
   try {
     const profile = deps.loadUserProfile();
@@ -150,6 +182,7 @@ export async function buildAgentRunOptions(
 
   const skillCatalog = deps.buildSkillCatalog(deps.skillRegistry.getEnabled());
   const skillActivation = deps.resolveSlashActivation(slimMessages);
+  const channelSystem = buildChannelSystem(input.channel);
 
   let toneInjection = "";
   if (deps.sceneEmbeddingIndex) {
@@ -175,11 +208,13 @@ export async function buildAgentRunOptions(
   const isTalkMode = (input.style || "").startsWith("talk");
   const systemContent =
     (environmentContext ? environmentContext + "\n\n" : "") +
+    (channelSystem ? channelSystem + "\n\n" : "") +
     deps.buildSystemPrompt(input.style || "01_default.md") +
     (skillCatalog ? "\n\n---\n\n" + skillCatalog : "") +
     skillActivation +
     toneInjection +
-    (alwaysOnContext ? alwaysOnContext + "\n\n" : "") +
+    (alwaysOnContext ? "\n\n" + alwaysOnContext + "\n\n" : "") +
+    (relationshipContext ? "\n\n" + relationshipContext + "\n\n" : "") +
     attachmentContext;
 
   deps.logWorldbookInjection(alwaysOnContext, systemContent);
@@ -228,13 +263,21 @@ export async function onAgentRunFinished(
     updatedAt: Date.now(),
   });
 
+  await deps.recordRelationshipTurn({
+    userText: latestUserText,
+    assistantText: chatContent,
+    cyreneFeeling: deps.runtimeState.feeling ?? "平静",
+    channel: channel ?? "desktop",
+  });
+
+  const stickerIndex = deps.getStickerEmbeddingIndex?.() ?? deps.stickerEmbeddingIndex;
   const stickerCandidate =
-    settings.stickerEnabled && deps.stickerEmbeddingIndex
+    settings.stickerEnabled && stickerIndex
       ? (
           await deps.matchSticker(
             chatContent + "\n" + latestUserText,
             deps.getEmbeddingProvider(),
-            deps.stickerEmbeddingIndex,
+            stickerIndex,
             settings.stickerSimilarityThreshold ?? 0.55,
           )
         )?.id ?? null

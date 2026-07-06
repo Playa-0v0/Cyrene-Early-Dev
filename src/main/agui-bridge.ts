@@ -19,12 +19,15 @@ import {
   type CyreneRunResult,
 } from "./orchestrator/cyrene-agent";
 import { indexConversationTurn } from "./orchestrator/history-tools";
+import type { RelationshipChannel } from "./relationship/relationship-log";
 
 /** 渲染进程发起 run 时传的输入。 */
 export interface AguiRunInput {
   messages: unknown[];   // 原始 {role, content}[]，主进程会 normalize
   style: string;         // 人格 style 文件名
   sessionId?: string;    // 会话 ID，用于历史召回按会话隔离（可选，默认 "default"）
+  /** 外部渠道入口。桌面聊天不传；微信/飞书用于注入渠道语气规则。 */
+  channel?: RelationshipChannel;
   /** 本轮附件（文本内容，临时注入系统上下文，不存历史）。 */
   attachments?: { name: string; text: string }[];
 }
@@ -94,10 +97,18 @@ export function registerAgUiIpc(
       }
     };
 
+    let pendingRunFinishedEvent: unknown | null = null;
+
     // 订阅 agent 事件流：每个事件透传渲染端；
     // complete/error 时做副作用，并补发一个终态事件让渲染端知道这轮结束。
     const sub = agent.runWithEvents(options).subscribe({
       next: (baseEvent) => {
+        // sticker / memory 等副作用在 complete 回调里执行。前端收到 RUN_FINISHED 后会收尾并取消监听，
+        // 所以必须把 RUN_FINISHED 延后到副作用事件之后发送，否则 cyrene.sticker 会晚到而被丢掉。
+        if ((baseEvent as { type?: string })?.type === "RUN_FINISHED") {
+          pendingRunFinishedEvent = baseEvent;
+          return;
+        }
         send(baseEvent);
       },
       error: (err) => {
@@ -123,7 +134,9 @@ export function registerAgUiIpc(
         } catch (err) {
           console.warn("[AgUiBridge] 副作用失败（不影响结果）:", err);
         }
-        // RUN_FINISHED 已由 agent 在 complete 前发出，渲染端据此收尾
+        if (pendingRunFinishedEvent) {
+          send(pendingRunFinishedEvent);
+        }
       },
     });
     activeRuns.set(runId, sub);

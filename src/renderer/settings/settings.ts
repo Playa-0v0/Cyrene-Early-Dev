@@ -3982,6 +3982,24 @@ interface TtsApi {
     speed?: number; format?: "wav" | "mp3";
     expectedCacheKey?: string;
   }) => Promise<{ base64: string; cacheKey: string; cached: boolean; format: "wav" | "mp3" }>;
+  // 自定义云端（返回 base64 + cacheKey + cached + format）
+  synthesizeCustomCloud: (payload: {
+    endpointUrl: string; apiKey?: string; voiceId?: string; text: string;
+    speed?: number; volume?: number; format?: "wav" | "mp3"; timeoutMs?: number;
+  }) => Promise<{ base64: string; cacheKey: string; cached: boolean; format: "wav" | "mp3" }>;
+  synthesizeCachedCustomCloud: (payload: {
+    endpointUrl: string; apiKey?: string; voiceId?: string; text: string;
+    speed?: number; volume?: number; format?: "wav" | "mp3"; timeoutMs?: number;
+    expectedCacheKey?: string;
+  }) => Promise<{ base64: string; cacheKey: string; cached: boolean; format: "wav" | "mp3" }>;
+  // 小米 MiMo（返回 base64 + cacheKey + cached + format）
+  synthesizeMimo: (payload: {
+    apiKey: string; voiceAudioPath?: string; text: string; stylePrompt?: string;
+  }) => Promise<{ base64: string; cacheKey: string; cached: boolean; format: "wav" }>;
+  synthesizeCachedMimo: (payload: {
+    apiKey: string; voiceAudioPath?: string; text: string; stylePrompt?: string;
+    expectedCacheKey?: string;
+  }) => Promise<{ base64: string; cacheKey: string; cached: boolean; format: "wav" }>;
   pickAudioFile: () => Promise<string | null>;
   saveSettings: (tts: Record<string, unknown>) => Promise<unknown>;
   loadSettings: () => Promise<Record<string, unknown>>;
@@ -4045,6 +4063,19 @@ async function loadTtsConfig(): Promise<void> {
   ttsEl("tts-gptsovits-prompt-text").value = String(ttsConfig.ttsGptsovitsPromptText ?? "");
   (ttsEl("tts-gptsovits-format") as HTMLSelectElement).value =
     ttsConfig.ttsGptsovitsFormat === "mp3" ? "mp3" : "wav";
+
+  // 自定义云端
+  ttsEl("tts-custom-cloud-url").value = String(ttsConfig.ttsCustomCloudEndpointUrl ?? "");
+  ttsEl("tts-custom-cloud-key").value = String(ttsConfig.ttsCustomCloudApiKey ?? "");
+  ttsEl("tts-custom-cloud-voice").value = String(ttsConfig.ttsCustomCloudVoiceId ?? "");
+  (ttsEl("tts-custom-cloud-format") as HTMLSelectElement).value =
+    ttsConfig.ttsCustomCloudFormat === "wav" ? "wav" : "mp3";
+  ttsEl("tts-custom-cloud-timeout").value = String(ttsConfig.ttsCustomCloudTimeoutMs ?? 30000);
+
+  // 小米 MiMo
+  ttsEl("tts-mimo-key").value = String(ttsConfig.ttsMimoKey ?? "");
+  ttsEl("tts-mimo-voice-audio").value = String(ttsConfig.ttsMimoVoiceAudioPath ?? "");
+  ttsEl("tts-mimo-style").value = String(ttsConfig.ttsMimoStylePrompt ?? "温柔、自然、略带亲近感，像在轻声陪用户聊天。");
 
   // Opener 主动开口档位
   const openerMode = String(ttsConfig.openerMode ?? "off");
@@ -4146,6 +4177,13 @@ const ttsSaveFields: Array<[string, string]> = [
   ["tts-gptsovits-url", "ttsGptsovitsBaseUrl"],
   ["tts-gptsovits-ref-audio", "ttsGptsovitsRefAudioPath"],
   ["tts-gptsovits-prompt-text", "ttsGptsovitsPromptText"],
+  ["tts-custom-cloud-url", "ttsCustomCloudEndpointUrl"],
+  ["tts-custom-cloud-key", "ttsCustomCloudApiKey"],
+  ["tts-custom-cloud-voice", "ttsCustomCloudVoiceId"],
+  ["tts-custom-cloud-timeout", "ttsCustomCloudTimeoutMs"],
+  ["tts-mimo-key", "ttsMimoKey"],
+  ["tts-mimo-voice-audio", "ttsMimoVoiceAudioPath"],
+  ["tts-mimo-style", "ttsMimoStylePrompt"],
 ];
 const ttsDebounceTimers: Record<string, ReturnType<typeof setTimeout> | undefined> = {};
 for (const [elId, field] of ttsSaveFields) {
@@ -4162,6 +4200,11 @@ for (const [elId, field] of ttsSaveFields) {
 // GPT-SoVITS 格式选择（select，change 时直接保存）
 (ttsEl("tts-gptsovits-format") as HTMLSelectElement).addEventListener("change", () => {
   void saveTtsField("ttsGptsovitsFormat", (ttsEl("tts-gptsovits-format") as HTMLSelectElement).value as "wav" | "mp3");
+});
+
+// 自定义云端格式选择
+(ttsEl("tts-custom-cloud-format") as HTMLSelectElement).addEventListener("change", () => {
+  void saveTtsField("ttsCustomCloudFormat", (ttsEl("tts-custom-cloud-format") as HTMLSelectElement).value as "wav" | "mp3");
 });
 
 // MiniMax 流式播放开关
@@ -4196,6 +4239,71 @@ document.getElementById("tts-gptsovits-test")?.addEventListener("click", async (
   try {
     const result = await window.tts.synthesizeGptsovits({
       baseUrl, refAudioPath, promptText, text: TTS_TEST_TEXT, format,
+    });
+    playTtsAudio(result.base64, result.format);
+  } catch (err) {
+    window.alert("测试失败: " + (err instanceof Error ? err.message : String(err)));
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "🔊 测试发音";
+  }
+});
+
+// 小米 MiMo 选择昔涟克隆参考音频
+document.getElementById("tts-mimo-voice-pick")?.addEventListener("click", async () => {
+  if (!window.tts) return;
+  const filePath = await window.tts.pickAudioFile();
+  if (filePath) {
+    ttsEl("tts-mimo-voice-audio").value = filePath;
+    void saveTtsField("ttsMimoVoiceAudioPath", filePath);
+  }
+});
+
+// 自定义云端测试发音
+document.getElementById("tts-custom-cloud-test")?.addEventListener("click", async () => {
+  if (!window.tts) return;
+  const endpointUrl = ttsEl("tts-custom-cloud-url").value.trim();
+  const apiKey = ttsEl("tts-custom-cloud-key").value.trim();
+  const voiceId = ttsEl("tts-custom-cloud-voice").value.trim();
+  const format = (ttsEl("tts-custom-cloud-format") as HTMLSelectElement).value as "wav" | "mp3";
+  const timeoutMs = Number(ttsEl("tts-custom-cloud-timeout").value) || 30000;
+  if (!endpointUrl) { window.alert("请先填写自定义云端 Endpoint URL"); return; }
+
+  const btn = document.getElementById("tts-custom-cloud-test") as HTMLButtonElement;
+  btn.disabled = true;
+  btn.textContent = "合成中…";
+  try {
+    const result = await window.tts.synthesizeCustomCloud({
+      endpointUrl, apiKey, voiceId, text: TTS_TEST_TEXT,
+      speed: Number(ttsEl("tts-speed").value),
+      volume: Number(ttsEl("tts-volume").value),
+      format,
+      timeoutMs,
+    });
+    playTtsAudio(result.base64, result.format);
+  } catch (err) {
+    window.alert("测试失败: " + (err instanceof Error ? err.message : String(err)));
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "🔊 测试发音";
+  }
+});
+
+// 小米 MiMo 测试发音
+document.getElementById("tts-mimo-test")?.addEventListener("click", async () => {
+  if (!window.tts) return;
+  const apiKey = ttsEl("tts-mimo-key").value.trim();
+  const voiceAudioPath = ttsEl("tts-mimo-voice-audio").value.trim();
+  const stylePrompt = ttsEl("tts-mimo-style").value.trim();
+  if (!apiKey) { window.alert("请先填写小米 MiMo API Key"); return; }
+  if (!voiceAudioPath) { window.alert("请先选择昔涟克隆参考音频"); return; }
+
+  const btn = document.getElementById("tts-mimo-test") as HTMLButtonElement;
+  btn.disabled = true;
+  btn.textContent = "合成中…";
+  try {
+    const result = await window.tts.synthesizeMimo({
+      apiKey, voiceAudioPath, stylePrompt, text: TTS_TEST_TEXT,
     });
     playTtsAudio(result.base64, result.format);
   } catch (err) {

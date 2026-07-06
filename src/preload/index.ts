@@ -412,6 +412,24 @@ const ttsApi = {
     speed?: number; format?: "wav" | "mp3";
     expectedCacheKey?: string;
   }) => ipcRenderer.invoke(IPC.TTS_SYNTHESIZE_CACHED_GPTSOVITS, payload),
+  // 自定义云端 TTS（固定 HTTP 合约）
+  synthesizeCustomCloud: (payload: {
+    endpointUrl: string; apiKey?: string; voiceId?: string; text: string;
+    speed?: number; volume?: number; format?: "wav" | "mp3"; timeoutMs?: number;
+  }) => ipcRenderer.invoke(IPC.TTS_SYNTHESIZE_CUSTOM_CLOUD, payload),
+  synthesizeCachedCustomCloud: (payload: {
+    endpointUrl: string; apiKey?: string; voiceId?: string; text: string;
+    speed?: number; volume?: number; format?: "wav" | "mp3"; timeoutMs?: number;
+    expectedCacheKey?: string;
+  }) => ipcRenderer.invoke(IPC.TTS_SYNTHESIZE_CACHED_CUSTOM_CLOUD, payload),
+  // 小米 MiMo TTS（官方 chat-completions 接口）
+  synthesizeMimo: (payload: {
+    apiKey: string; voiceAudioPath?: string; text: string; stylePrompt?: string;
+  }) => ipcRenderer.invoke(IPC.TTS_SYNTHESIZE_MIMO, payload),
+  synthesizeCachedMimo: (payload: {
+    apiKey: string; voiceAudioPath?: string; text: string; stylePrompt?: string;
+    expectedCacheKey?: string;
+  }) => ipcRenderer.invoke(IPC.TTS_SYNTHESIZE_CACHED_MIMO, payload),
   // 选择音频文件（复用 TTS_PICK_AUDIO，gptsovits 选 ref audio 也用这个）
   pickAudioFile: () => ipcRenderer.invoke(IPC.TTS_PICK_AUDIO),
   // 流式语音合成（边合成边播）

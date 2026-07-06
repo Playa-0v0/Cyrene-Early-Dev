@@ -5,6 +5,7 @@ import {
   formatChatRelativeTime,
   type ChatSessionMetaUI,
 } from "../../shared/chat-ui";
+import { canUseMinimaxStreamingEarly, extractEarlyTtsSegment } from "../../shared/tts-early-playback";
 
 type Role = "user" | "model";
 
@@ -995,6 +996,16 @@ interface TtsSettings {
   ttsGptsovitsRefAudioPath: string;
   ttsGptsovitsPromptText: string;
   ttsGptsovitsFormat: "wav" | "mp3";
+  // 自定义云端
+  ttsCustomCloudEndpointUrl: string;
+  ttsCustomCloudApiKey: string;
+  ttsCustomCloudVoiceId: string;
+  ttsCustomCloudFormat: "wav" | "mp3";
+  ttsCustomCloudTimeoutMs: number;
+  // 小米 MiMo
+  ttsMimoKey: string;
+  ttsMimoVoiceAudioPath: string;
+  ttsMimoStylePrompt: string;
   // MiniMax 流式播放
   ttsStreaming: boolean;
 }
@@ -1015,6 +1026,17 @@ interface TtsApi {
     speed?: number; format?: "wav" | "mp3";
     expectedCacheKey?: string;
   }) => Promise<{ base64: string; cacheKey: string; cached: boolean; format: "wav" | "mp3" }>;
+  // 自定义云端（返回 base64 + cacheKey + cached + format）
+  synthesizeCachedCustomCloud: (payload: {
+    endpointUrl: string; apiKey?: string; voiceId?: string; text: string;
+    speed?: number; volume?: number; format?: "wav" | "mp3"; timeoutMs?: number;
+    expectedCacheKey?: string;
+  }) => Promise<{ base64: string; cacheKey: string; cached: boolean; format: "wav" | "mp3" }>;
+  // 小米 MiMo（返回 base64 + cacheKey + cached + format）
+  synthesizeCachedMimo: (payload: {
+    apiKey: string; voiceAudioPath?: string; text: string; stylePrompt?: string;
+    expectedCacheKey?: string;
+  }) => Promise<{ base64: string; cacheKey: string; cached: boolean; format: "wav" }>;
   // 流式合成（minimax，边推 chunk 边播）
   streamStart: (payload: {
     apiKey: string; voiceId: string; text: string;
@@ -1043,6 +1065,7 @@ declare global {
 let currentTtsAudio: HTMLAudioElement | null = null;
 let speechToken = 0;
 let textMouthStarted = false;
+let ttsPlaybackSequence = 0;
 
 function nextSpeechToken(): number {
   speechToken += 1;
@@ -1087,6 +1110,14 @@ async function loadTtsSettings(): Promise<TtsSettings | null> {
       ttsGptsovitsRefAudioPath: String(raw.ttsGptsovitsRefAudioPath ?? ""),
       ttsGptsovitsPromptText: String(raw.ttsGptsovitsPromptText ?? ""),
       ttsGptsovitsFormat: raw.ttsGptsovitsFormat === "mp3" ? "mp3" : "wav",
+      ttsCustomCloudEndpointUrl: String(raw.ttsCustomCloudEndpointUrl ?? ""),
+      ttsCustomCloudApiKey: String(raw.ttsCustomCloudApiKey ?? ""),
+      ttsCustomCloudVoiceId: String(raw.ttsCustomCloudVoiceId ?? ""),
+      ttsCustomCloudFormat: raw.ttsCustomCloudFormat === "wav" ? "wav" : "mp3",
+      ttsCustomCloudTimeoutMs: Number(raw.ttsCustomCloudTimeoutMs ?? 30000),
+      ttsMimoKey: String(raw.ttsMimoKey ?? ""),
+      ttsMimoVoiceAudioPath: String(raw.ttsMimoVoiceAudioPath ?? ""),
+      ttsMimoStylePrompt: String(raw.ttsMimoStylePrompt ?? ""),
       ttsStreaming: raw.ttsStreaming !== false,
     };
   } catch {
@@ -1171,6 +1202,7 @@ async function streamAndPlayCached(
   settings: TtsSettings,
   text: string,
   existing?: { ttsCacheKey?: string },
+  options?: { waitForPlaybackEnd?: boolean },
 ): Promise<{ cacheKey: string } | null> {
   if (!window.tts) return null;
 
@@ -1188,11 +1220,30 @@ async function streamAndPlayCached(
   let offEnd: (() => void) | null = null;
   let offErr: (() => void) | null = null;
   let done = false;
+  let playbackEnded = false;
+  let streamReady = false;
+  let streamResult: { cacheKey: string } | null = null;
+  let resolveStream: ((v: { cacheKey: string } | null) => void) | null = null;
 
   const cleanup = () => {
     if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
     offChunk?.(); offEnd?.(); offErr?.();
     offChunk = offEnd = offErr = null;
+  };
+
+  const finishStream = (result: { cacheKey: string } | null) => {
+    streamReady = true;
+    streamResult = result;
+    if (!options?.waitForPlaybackEnd || playbackEnded) {
+      resolveStream?.(streamResult);
+    }
+  };
+
+  const markPlaybackEnded = () => {
+    playbackEnded = true;
+    if (streamReady) {
+      resolveStream?.(streamResult);
+    }
   };
 
   // 轮询 flush：每 30ms 检查一次，能 append 就 append，结束且队列空就 endOfStream + resolve
@@ -1202,7 +1253,7 @@ async function streamAndPlayCached(
       if (speechToken !== token) {
         cleanup();
         try { mediaSource?.endOfStream(); } catch { /* */ }
-        resolve(null);
+        finishStream(null);
         return;
       }
       // append 队列里的 chunk（如果 sourceBuffer 空闲）
@@ -1222,15 +1273,21 @@ async function streamAndPlayCached(
           if (speechToken !== token) return;
           const estDurationMs = Math.max(2000, Array.from(text).length * 180);
           window.live2dSpeech?.startMouth(estDurationMs);
-        }).catch((err) => console.warn("[TTS-Stream] play 失败:", err));
+        }).catch((err) => {
+          console.warn("[TTS-Stream] play 失败:", err);
+          markPlaybackEnded();
+        });
       }
       // 结束且队列空 → endOfStream
       if (ended && chunkQueue.length === 0 && sourceBuffer && !sourceBuffer.updating && !done) {
         done = true;
         try { mediaSource?.endOfStream(); } catch { /* */ }
         cleanup();
+        if (options?.waitForPlaybackEnd && !startedPlayback) {
+          markPlaybackEnded();
+        }
         console.log(`[TTS-Stream] resolve +${Math.round(performance.now() - t0)}ms cacheKey=${resolvedCacheKey?.slice(0,20)}`);
-        resolve(resolvedCacheKey ? { cacheKey: resolvedCacheKey } : null);
+        finishStream(resolvedCacheKey ? { cacheKey: resolvedCacheKey } : null);
       }
     }, 30);
   };
@@ -1284,6 +1341,7 @@ async function streamAndPlayCached(
       URL.revokeObjectURL(url);
       if (currentTtsAudio === audioEl) currentTtsAudio = null;
       if (speechToken === token) stopLive2dMouth();
+      markPlaybackEnded();
     };
 
     mediaSource.addEventListener("sourceopen", () => {
@@ -1307,6 +1365,7 @@ async function streamAndPlayCached(
 
     // 等 STREAM_END + 队列 flush 完
     return await new Promise<{ cacheKey: string } | null>((resolve) => {
+      resolveStream = resolve;
       startPolling(resolve);
     });
   } catch (err) {
@@ -1331,6 +1390,8 @@ async function synthesizeAndPlayCached(
   // （minimax 缓存走 TTS_SYNTHESIZE_CACHED，gptsovits 缓存走 TTS_SYNTHESIZE_CACHED_GPTSOVITS）
   if (existing?.ttsCacheKey) {
     const isGptsovitsCache = existing.ttsCacheKey.startsWith("gptsovits-");
+    const isCustomCloudCache = existing.ttsCacheKey.startsWith("custom-cloud-");
+    const isMimoCache = existing.ttsCacheKey.startsWith("mimo-");
     try {
       if (isGptsovitsCache) {
         const result = await window.tts.synthesizeCachedGptsovits({
@@ -1344,6 +1405,36 @@ async function synthesizeAndPlayCached(
         });
         if (result.cached) {
           console.log("[TTS] gptsovits 缓存命中，直接播放");
+          playTtsBase64(result.base64, result.format);
+          return { cacheKey: result.cacheKey };
+        }
+      } else if (isCustomCloudCache) {
+        const result = await window.tts.synthesizeCachedCustomCloud({
+          endpointUrl: "cache-only",    // 占位，缓存命中不会用到
+          apiKey: "cache-only",
+          voiceId: "cache-only",
+          text,
+          speed: settings.ttsSpeed,
+          volume: settings.ttsVolume,
+          format: settings.ttsCustomCloudFormat,
+          timeoutMs: settings.ttsCustomCloudTimeoutMs,
+          expectedCacheKey: existing.ttsCacheKey,
+        });
+        if (result.cached) {
+          console.log("[TTS] custom-cloud 缓存命中，直接播放");
+          playTtsBase64(result.base64, result.format);
+          return { cacheKey: result.cacheKey };
+        }
+      } else if (isMimoCache) {
+        const result = await window.tts.synthesizeCachedMimo({
+          apiKey: "cache-only",
+          voiceAudioPath: "cache-only",
+          text,
+          stylePrompt: "",
+          expectedCacheKey: existing.ttsCacheKey,
+        });
+        if (result.cached) {
+          console.log("[TTS] mimo 缓存命中，直接播放");
           playTtsBase64(result.base64, result.format);
           return { cacheKey: result.cacheKey };
         }
@@ -1422,10 +1513,57 @@ async function synthesizeAndPlayCached(
     }
   }
 
+  if (settings.ttsEngine === "custom-cloud") {
+    if (!settings.ttsCustomCloudEndpointUrl) {
+      console.warn("[TTS] 缺少自定义云端 Endpoint URL");
+      return null;
+    }
+    try {
+      const result = await window.tts.synthesizeCachedCustomCloud({
+        endpointUrl: settings.ttsCustomCloudEndpointUrl,
+        apiKey: settings.ttsCustomCloudApiKey,
+        voiceId: settings.ttsCustomCloudVoiceId,
+        text,
+        speed: settings.ttsSpeed,
+        volume: settings.ttsVolume,
+        format: settings.ttsCustomCloudFormat,
+        timeoutMs: settings.ttsCustomCloudTimeoutMs,
+        expectedCacheKey: existing?.ttsCacheKey,
+      });
+      playTtsBase64(result.base64, result.format);
+      return { cacheKey: result.cacheKey };
+    } catch (err) {
+      console.warn("[TTS] 自定义云端合成失败:", err);
+      return null;
+    }
+  }
+
+  if (settings.ttsEngine === "mimo") {
+    if (!settings.ttsMimoKey || !settings.ttsMimoVoiceAudioPath) {
+      console.warn("[TTS] 缺少小米 MiMo API Key 或昔涟克隆音频");
+      return null;
+    }
+    try {
+      const result = await window.tts.synthesizeCachedMimo({
+        apiKey: settings.ttsMimoKey,
+        voiceAudioPath: settings.ttsMimoVoiceAudioPath,
+        text,
+        stylePrompt: settings.ttsMimoStylePrompt,
+        expectedCacheKey: existing?.ttsCacheKey,
+      });
+      playTtsBase64(result.base64, result.format);
+      return { cacheKey: result.cacheKey };
+    } catch (err) {
+      console.warn("[TTS] 小米 MiMo 合成失败:", err);
+      return null;
+    }
+  }
+
   return null;
 }
 
 async function speakMessage(message: Message): Promise<void> {
+  ttsPlaybackSequence += 1;
   stopLive2dMouth();
   window.live2dSpeech?.prepare();
   const cache = await synthesizeAndPlayCached(message.content, message);
@@ -1439,7 +1577,80 @@ async function speakMessage(message: Message): Promise<void> {
 async function autoSpeakIfEnabled(text: string): Promise<{ cacheKey: string } | null> {
   const settings = await loadTtsSettings();
   if (!settings || settings.ttsEngine === "off" || !settings.ttsAutoRead) return null;
+  ttsPlaybackSequence += 1;
   return await synthesizeAndPlayCached(text);
+}
+
+interface EarlyMinimaxPlayback {
+  append(delta: string): void;
+  finish(fullText: string): Promise<{ cacheKey: string } | null>;
+}
+
+function createEarlyMinimaxPlayback(): EarlyMinimaxPlayback {
+  let settingsPromise: Promise<TtsSettings | null> | null = null;
+  let settings: TtsSettings | null = null;
+  let checked = false;
+  let eligible = false;
+  let triggered = false;
+  let segment = "";
+  let playbackPromise: Promise<{ ok: boolean; sequence: number }> | null = null;
+  let sequence = 0;
+
+  const ensureSettings = async (): Promise<TtsSettings | null> => {
+    if (!settingsPromise) {
+      settingsPromise = loadTtsSettings();
+    }
+    settings = await settingsPromise;
+    if (!checked) {
+      checked = true;
+      eligible = canUseMinimaxStreamingEarly(settings);
+    }
+    return settings;
+  };
+
+  const tryStart = async (text: string): Promise<void> => {
+    if (triggered) return;
+    const cfg = await ensureSettings();
+    if (!cfg || !eligible || triggered) return;
+    const early = extractEarlyTtsSegment(text);
+    if (!early) return;
+
+    triggered = true;
+    segment = early.segment;
+    ttsPlaybackSequence += 1;
+    sequence = ttsPlaybackSequence;
+    playbackPromise = streamAndPlayCached(cfg, segment, undefined, { waitForPlaybackEnd: true })
+      .then((result) => ({ ok: Boolean(result), sequence }))
+      .catch(() => ({ ok: false, sequence }));
+  };
+
+  return {
+    append(delta: string): void {
+      if (triggered) return;
+      void tryStart(delta);
+    },
+    async finish(fullText: string): Promise<{ cacheKey: string } | null> {
+      const cfg = await ensureSettings();
+      if (!cfg || !eligible) return autoSpeakIfEnabled(fullText);
+
+      if (!triggered) {
+        return autoSpeakIfEnabled(fullText);
+      }
+
+      const result = await playbackPromise;
+      if (!result?.ok) {
+        return autoSpeakIfEnabled(fullText);
+      }
+      if (result.sequence !== ttsPlaybackSequence) {
+        return null;
+      }
+
+      const remainder = fullText.slice(segment.length).trim();
+      if (!remainder) return null;
+      const rest = await streamAndPlayCached(cfg, remainder, undefined, { waitForPlaybackEnd: true });
+      return rest ? null : autoSpeakIfEnabled(fullText);
+    },
+  };
 }
 
 function autosize(): void {
@@ -1660,6 +1871,7 @@ async function triggerCyreneGreeting(): Promise<void> {
     let streamContent = "";
     let ttsContent = "";
     let autoSpeakTriggered = false;
+    const earlyMinimaxPlayback = createEarlyMinimaxPlayback();
     textMouthStarted = false;
     let pendingTtsCachePromise: Promise<{ cacheKey: string } | null> | null = null;
     let sticker: string | null = null;
@@ -1747,6 +1959,7 @@ async function triggerCyreneGreeting(): Promise<void> {
           case "TEXT_MESSAGE_CONTENT":
             if (event.delta) {
               ttsContent += event.delta;
+              earlyMinimaxPlayback.append(ttsContent);
               deltaQueue.push(event.delta);
               if (!textMouthStarted) {
                 void loadTtsSettings().then((settings) => {
@@ -1762,7 +1975,7 @@ async function triggerCyreneGreeting(): Promise<void> {
           case "TEXT_MESSAGE_END":
             if (!autoSpeakTriggered && ttsContent.trim()) {
               autoSpeakTriggered = true;
-              pendingTtsCachePromise = autoSpeakIfEnabled(ttsContent);
+              pendingTtsCachePromise = earlyMinimaxPlayback.finish(ttsContent);
             }
             break;
           case "CUSTOM":
@@ -1937,6 +2150,7 @@ async function send(): Promise<void> {
     let streamContent = "";
     let ttsContent = "";
     let autoSpeakTriggered = false;
+    const earlyMinimaxPlayback = createEarlyMinimaxPlayback();
     textMouthStarted = false;
     let pendingTtsCachePromise: Promise<{ cacheKey: string } | null> | null = null;
     let sticker: string | null = null;
@@ -2037,6 +2251,7 @@ async function send(): Promise<void> {
           case "TEXT_MESSAGE_CONTENT":
             if (event.delta) {
               ttsContent += event.delta;
+              earlyMinimaxPlayback.append(ttsContent);
               deltaQueue.push(event.delta);
               if (!textMouthStarted) {
                 void loadTtsSettings().then((settings) => {
@@ -2054,7 +2269,7 @@ async function send(): Promise<void> {
             // 这样声音可尽早开始，且不受前端打字动画队列影响。
             if (!autoSpeakTriggered && ttsContent.trim()) {
               autoSpeakTriggered = true;
-              pendingTtsCachePromise = autoSpeakIfEnabled(ttsContent);
+              pendingTtsCachePromise = earlyMinimaxPlayback.finish(ttsContent);
             }
             break;
           case "CUSTOM":

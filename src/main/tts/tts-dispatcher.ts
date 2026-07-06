@@ -3,6 +3,8 @@
 
 import { synthesize as minimaxSynthesize } from "./minimax-engine";
 import { synthesize as gptsovitsSynthesize } from "./gptsovits-engine";
+import { synthesize as customCloudSynthesize } from "./custom-cloud-engine";
+import { synthesize as mimoSynthesize } from "./mimo-engine";
 import type { TtsEngine } from "../../shared/tts-types";
 
 export interface SynthesizeByEnginePayload {
@@ -18,6 +20,12 @@ export interface SynthesizeByEnginePayload {
   refAudioPath?: string;
   promptText?: string;
   format?: "wav" | "mp3";
+  // custom-cloud 专用
+  endpointUrl?: string;
+  timeoutMs?: number;
+  // mimo 专用
+  voiceAudioPath?: string;
+  stylePrompt?: string;
 }
 
 export interface SynthesizeByEngineResult {
@@ -61,6 +69,37 @@ export async function synthesizeByEngine(
       text: payload.text,
       speed: payload.speed,
       format: payload.format ?? "wav",
+    });
+    return { audio: result.audio, format: result.format };
+  }
+
+  if (engine === "custom-cloud") {
+    if (!payload.endpointUrl) {
+      throw new Error("自定义云端 TTS 未配置 endpointUrl");
+    }
+    const result = await customCloudSynthesize({
+      endpointUrl: payload.endpointUrl,
+      apiKey: payload.apiKey,
+      voiceId: payload.voiceId,
+      text: payload.text,
+      speed: payload.speed,
+      volume: payload.volume,
+      format: payload.format ?? "mp3",
+      timeoutMs: payload.timeoutMs,
+    });
+    return { audio: result.audio, format: result.format };
+  }
+
+  if (engine === "mimo") {
+    if (!payload.apiKey || !payload.voiceAudioPath) {
+      throw new Error("MiMo TTS 未配置 apiKey/克隆音频");
+    }
+    const result = await mimoSynthesize({
+      apiKey: payload.apiKey,
+      voiceAudioPath: payload.voiceAudioPath,
+      text: payload.text,
+      stylePrompt: payload.stylePrompt ?? payload.promptText,
+      model: "mimo-v2.5-tts-voiceclone",
     });
     return { audio: result.audio, format: result.format };
   }

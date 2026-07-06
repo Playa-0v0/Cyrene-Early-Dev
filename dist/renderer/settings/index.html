@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>昔涟 · 设置</title>
-  <script type="module" crossorigin src="../assets/settings-CHzjU5sF.js"></script>
+  <script type="module" crossorigin src="../assets/settings-14Y2Zm4j.js"></script>
   <link rel="modulepreload" crossorigin href="../assets/base-Cc1qE-wh.js">
   <link rel="modulepreload" crossorigin href="../assets/chat-ui-kPmAHPjl.js">
   <link rel="stylesheet" crossorigin href="../assets/base-4LTpmnF5.css">
@@ -1325,6 +1325,16 @@
                   <span class="tts-engine__name">GPT-SoVITS</span>
                   <span class="tts-engine__tag">本地</span>
                 </button>
+                <button type="button" class="tts-engine" data-engine="custom-cloud" role="radio" aria-checked="false">
+                  <span class="tts-engine__icon">☁️</span>
+                  <span class="tts-engine__name">自定义云端</span>
+                  <span class="tts-engine__tag">接口</span>
+                </button>
+                <button type="button" class="tts-engine" data-engine="mimo" role="radio" aria-checked="false">
+                  <span class="tts-engine__icon">🎧</span>
+                  <span class="tts-engine__name">小米 MiMo</span>
+                  <span class="tts-engine__tag">云端</span>
+                </button>
               </div>
             </div>
 
@@ -1406,7 +1416,55 @@
               <div class="tts-clone-status" id="tts-gptsovits-test-status"></div>
             </div>
 
-            <p class="tts-hint">💡 云端引擎需在 MiniMax 控制台用昔涟配音素材训练音色，拿到音色 ID 填入上方。本地引擎需自行启动 GPT-SoVITS 服务（api_v2 端点），并提供参考音频与文本。baseUrl 不含路径，路径硬编码 /api/tts。</p>
+            <div class="tts-config" id="tts-config-custom-cloud" hidden>
+              <h2 class="tts-section__title">☁️ 自定义云端配置</h2>
+              <div class="tts-field">
+                <label>Endpoint URL</label>
+                <input type="text" id="tts-custom-cloud-url" placeholder="https://example.com/tts" />
+              </div>
+              <div class="tts-field">
+                <label>API Key</label>
+                <input type="password" id="tts-custom-cloud-key" placeholder="可选；为空则不发送 Authorization" />
+              </div>
+              <div class="tts-field">
+                <label>音色 ID</label>
+                <input type="text" id="tts-custom-cloud-voice" placeholder="传给你的云端网关，如 cyrene-voice" />
+              </div>
+              <div class="tts-field">
+                <label>输出格式</label>
+                <select id="tts-custom-cloud-format">
+                  <option value="mp3">mp3</option>
+                  <option value="wav">wav</option>
+                </select>
+              </div>
+              <div class="tts-field">
+                <label>超时（毫秒）</label>
+                <input type="number" id="tts-custom-cloud-timeout" min="1000" max="120000" step="1000" value="30000" />
+              </div>
+              <button type="button" class="ghost-btn" id="tts-custom-cloud-test">🔊 测试发音</button>
+              <div class="tts-clone-status" id="tts-custom-cloud-test-status"></div>
+            </div>
+
+            <div class="tts-config" id="tts-config-mimo" hidden>
+              <h2 class="tts-section__title">🎧 小米 MiMo 配置</h2>
+              <div class="tts-field">
+                <label>API Key</label>
+                <input type="password" id="tts-mimo-key" placeholder="小米 MiMo API Key" />
+              </div>
+              <div class="tts-field">
+                <label>昔涟克隆音频</label>
+                <input type="text" id="tts-mimo-voice-audio" placeholder="选择昔涟参考音频（mp3/wav/m4a）" readonly />
+                <button type="button" class="ghost-btn tts-pick-btn" id="tts-mimo-voice-pick">选择</button>
+              </div>
+              <div class="tts-field">
+                <label>风格提示</label>
+                <input type="text" id="tts-mimo-style" placeholder="例：温柔、自然、略带亲近感" />
+              </div>
+              <button type="button" class="ghost-btn" id="tts-mimo-test">🔊 测试发音</button>
+              <div class="tts-clone-status" id="tts-mimo-test-status"></div>
+            </div>
+
+            <p class="tts-hint">💡 MiniMax 需在控制台训练音色并填写音色 ID。GPT-SoVITS 需自行启动本地服务并提供参考音频。自定义云端会 POST 固定 JSON 到你的 Endpoint。小米 MiMo 当前使用昔涟参考音频走 voiceclone 非流式 wav 合成。</p>
 
             <hr class="api-section-divider" />
             <div class="tts-section">

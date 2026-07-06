@@ -44,6 +44,9 @@ import { registerChatsIpc } from "./chats/chats-ipc";
 import { recordUsage, getUsage, flush as flushTokenUsage } from "./token-usage-store";
 import { uploadFile as ttsUploadFile, cloneVoice as ttsCloneVoice, synthesize as ttsSynthesize } from "./tts/minimax-engine";
 import { synthesize as gptsovitsSynthesize } from "./tts/gptsovits-engine";
+import { synthesize as customCloudSynthesize } from "./tts/custom-cloud-engine";
+import { synthesize as mimoSynthesize } from "./tts/mimo-engine";
+import { synthesizeByEngine } from "./tts/tts-dispatcher";
 import { startOpener, stopOpener, setLive2dWindow, reloadManifest, handleBubbleClick, handleChatWindowOpened, testFire } from "./opener/opener-runner";
 import { registerAgUiIpc, type AguiRunInput } from "./agui-bridge";
 import { setWeatherConfig, setSearchConfig, loadTodos, onTodosChange, setDelegateSettings } from "./orchestrator/built-in-tools";
@@ -64,6 +67,8 @@ import {
   type BuildOptionsDeps,
   type OnRunFinishedDeps,
 } from "./orchestrator/build-options";
+import { buildRelationshipContext, recordRelationshipTurn } from "./relationship/relationship-log";
+import { createFeelingScores, smoothFeeling } from "./orchestrator/runtime-state-smoother";
 import { getSchedulerStore } from "./scheduler/scheduler-store";
 import { SchedulerEngine } from "./scheduler/scheduler-engine";
 import { createSchedulerRunner } from "./scheduler/scheduler-runner";
@@ -113,12 +118,40 @@ function appendGptsovitsTtsLog(entry: Record<string, unknown>): void {
   }
 }
 
+function appendCustomCloudTtsLog(entry: Record<string, unknown>): void {
+  try {
+    const logDir = path.join(app.getPath("userData"), "logs");
+    fs.mkdirSync(logDir, { recursive: true });
+    const logFile = path.join(logDir, "custom-cloud-tts.log");
+    fs.appendFileSync(logFile, JSON.stringify(entry, null, 2) + "\n", "utf8");
+    if (entry.phase === "request.begin") {
+      console.log("[TTS CustomCloud] 诊断日志:", logFile);
+    }
+  } catch (err) {
+    console.warn("[TTS CustomCloud] 写诊断日志失败:", err);
+  }
+}
+
+function appendMimoTtsLog(entry: Record<string, unknown>): void {
+  try {
+    const logDir = path.join(app.getPath("userData"), "logs");
+    fs.mkdirSync(logDir, { recursive: true });
+    const logFile = path.join(logDir, "mimo-tts.log");
+    fs.appendFileSync(logFile, JSON.stringify(entry, null, 2) + "\n", "utf8");
+    if (entry.phase === "request.begin") {
+      console.log("[TTS MiMo] 诊断日志:", logFile);
+    }
+  } catch (err) {
+    console.warn("[TTS MiMo] 写诊断日志失败:", err);
+  }
+}
+
 function getTtsCacheDir(): string {
   return path.join(app.getPath("userData"), "cyrene-tts-cache");
 }
 
 function assertTtsCacheKey(cacheKey: string): string {
-  if (!/^(minimax|gptsovits)-[a-f0-9]{64}$/.test(cacheKey)) {
+  if (!/^(minimax|gptsovits|custom-cloud|mimo)-[a-f0-9]{64}$/.test(cacheKey)) {
     throw new Error("非法 TTS 缓存 key");
   }
   return cacheKey;
@@ -166,6 +199,44 @@ function buildGptsovitsCacheKey(payload: {
     text: payload.text,
   });
   return "gptsovits-" + createHash("sha256").update(source, "utf8").digest("hex");
+}
+
+function buildCustomCloudCacheKey(payload: {
+  endpointUrl: string;
+  voiceId?: string;
+  text: string;
+  speed?: number;
+  volume?: number;
+  format?: "wav" | "mp3";
+}): string {
+  const source = JSON.stringify({
+    version: 1,
+    engine: "custom-cloud",
+    endpointUrl: payload.endpointUrl,
+    voiceId: payload.voiceId ?? "",
+    speed: payload.speed ?? 1,
+    volume: payload.volume ?? 1,
+    format: payload.format ?? "mp3",
+    text: payload.text,
+  });
+  return "custom-cloud-" + createHash("sha256").update(source, "utf8").digest("hex");
+}
+
+function buildMimoCacheKey(payload: {
+  voiceAudioPath?: string;
+  text: string;
+  stylePrompt?: string;
+}): string {
+  const source = JSON.stringify({
+    version: 1,
+    engine: "mimo",
+    model: "mimo-v2.5-tts-voiceclone",
+    voiceAudioPath: payload.voiceAudioPath ?? "",
+    stylePrompt: payload.stylePrompt ?? "",
+    format: "wav",
+    text: payload.text,
+  });
+  return "mimo-" + createHash("sha256").update(source, "utf8").digest("hex");
 }
 
 function getTtsCachePath(cacheKey: string, format: "mp3" | "wav" | "pcm" = "mp3"): string {
@@ -291,7 +362,7 @@ interface GeneralSettings {
   launchAtLogin: boolean;
   language: "zh-CN";
   // TTS 配置
-  ttsEngine: "off" | "minimax" | "gptsovits";
+  ttsEngine: "off" | "minimax" | "gptsovits" | "custom-cloud" | "mimo";
   ttsAutoRead: boolean;
   ttsSpeed: number;
   ttsVolume: number;
@@ -307,6 +378,16 @@ interface GeneralSettings {
   ttsGptsovitsRefAudioPath: string;
   ttsGptsovitsPromptText: string;
   ttsGptsovitsFormat: "wav" | "mp3";
+  // 自定义云端 TTS
+  ttsCustomCloudEndpointUrl: string;
+  ttsCustomCloudApiKey: string;
+  ttsCustomCloudVoiceId: string;
+  ttsCustomCloudFormat: "wav" | "mp3";
+  ttsCustomCloudTimeoutMs: number;
+  // 小米 MiMo TTS
+  ttsMimoKey: string;
+  ttsMimoVoiceAudioPath: string;
+  ttsMimoStylePrompt: string;
   /** 天气源：open-meteo(免配置默认) | amap(高德,需填key) */
   weatherSource: "open-meteo" | "amap";
   /** 天气插件是否启用（开关） */
@@ -399,6 +480,7 @@ let runtimeState: RuntimeState = {
     expression: 0,
     updatedAt: Date.now(),
   };
+let feelingScores = createFeelingScores(runtimeState.feeling);
 let stickerEmbeddingIndex: StickerEmbeddingEntry[] | null = null;
 let sceneEmbeddingIndex: SceneIndex | null = null;
 const DEFAULT_MODEL_SETTINGS: ModelSettings = {
@@ -439,6 +521,14 @@ const DEFAULT_GENERAL_SETTINGS: GeneralSettings = {
   ttsGptsovitsRefAudioPath: "",
   ttsGptsovitsPromptText: "",
   ttsGptsovitsFormat: "wav",
+  ttsCustomCloudEndpointUrl: "",
+  ttsCustomCloudApiKey: "",
+  ttsCustomCloudVoiceId: "",
+  ttsCustomCloudFormat: "mp3",
+  ttsCustomCloudTimeoutMs: 30000,
+  ttsMimoKey: "",
+  ttsMimoVoiceAudioPath: "",
+  ttsMimoStylePrompt: "温柔、自然、略带亲近感，像在轻声陪用户聊天。",
   weatherSource: "open-meteo",
   weatherEnabled: false,
   amapKey: "",
@@ -784,6 +874,10 @@ function normalizeGeneralSettings(input: Partial<GeneralSettings> | null | undef
     const num = typeof value === "number" ? value : Number(value);
     return Number.isFinite(num) ? Math.max(1, Math.min(65535, Math.round(num))) : fallback;
   };
+  const clampMs = (value: unknown, fallback: number) => {
+    const num = typeof value === "number" ? value : Number(value);
+    return Number.isFinite(num) ? Math.max(1000, Math.min(120000, Math.round(num))) : fallback;
+  };
   return {
     musicEnabled: Boolean(input?.musicEnabled),
     musicVolume: clamp(input?.musicVolume, DEFAULT_GENERAL_SETTINGS.musicVolume),
@@ -795,7 +889,7 @@ function normalizeGeneralSettings(input: Partial<GeneralSettings> | null | undef
     launchAtLogin: Boolean(input?.launchAtLogin),
     language: "zh-CN",
     // TTS 配置
-    ttsEngine: (["off", "minimax", "gptsovits"].includes(input?.ttsEngine as string) ? input?.ttsEngine : "off") as GeneralSettings["ttsEngine"],
+    ttsEngine: (["off", "minimax", "gptsovits", "custom-cloud", "mimo"].includes(input?.ttsEngine as string) ? input?.ttsEngine : "off") as GeneralSettings["ttsEngine"],
     ttsAutoRead: input?.ttsAutoRead === undefined ? DEFAULT_GENERAL_SETTINGS.ttsAutoRead : Boolean(input.ttsAutoRead),
     ttsSpeed: typeof input?.ttsSpeed === "number" ? Math.max(0.5, Math.min(2, input.ttsSpeed)) : DEFAULT_GENERAL_SETTINGS.ttsSpeed,
     ttsVolume: typeof input?.ttsVolume === "number" ? Math.max(0, Math.min(1, input.ttsVolume)) : DEFAULT_GENERAL_SETTINGS.ttsVolume,
@@ -846,6 +940,14 @@ function normalizeGeneralSettings(input: Partial<GeneralSettings> | null | undef
     ttsGptsovitsRefAudioPath: typeof input?.ttsGptsovitsRefAudioPath === "string" ? input.ttsGptsovitsRefAudioPath : "",
     ttsGptsovitsPromptText: typeof input?.ttsGptsovitsPromptText === "string" ? input.ttsGptsovitsPromptText : "",
     ttsGptsovitsFormat: input?.ttsGptsovitsFormat === "mp3" ? "mp3" : "wav",
+    ttsCustomCloudEndpointUrl: typeof input?.ttsCustomCloudEndpointUrl === "string" ? input.ttsCustomCloudEndpointUrl : "",
+    ttsCustomCloudApiKey: typeof input?.ttsCustomCloudApiKey === "string" ? input.ttsCustomCloudApiKey : "",
+    ttsCustomCloudVoiceId: typeof input?.ttsCustomCloudVoiceId === "string" ? input.ttsCustomCloudVoiceId : "",
+    ttsCustomCloudFormat: input?.ttsCustomCloudFormat === "wav" ? "wav" : "mp3",
+    ttsCustomCloudTimeoutMs: clampMs(input?.ttsCustomCloudTimeoutMs, DEFAULT_GENERAL_SETTINGS.ttsCustomCloudTimeoutMs),
+    ttsMimoKey: typeof input?.ttsMimoKey === "string" ? input.ttsMimoKey : "",
+    ttsMimoVoiceAudioPath: typeof input?.ttsMimoVoiceAudioPath === "string" ? input.ttsMimoVoiceAudioPath : "",
+    ttsMimoStylePrompt: typeof input?.ttsMimoStylePrompt === "string" ? input.ttsMimoStylePrompt : DEFAULT_GENERAL_SETTINGS.ttsMimoStylePrompt,
   };
 }
 
@@ -1434,8 +1536,10 @@ async function observeRuntimeState(
     console.log(`[TIMING] 心情观察器 OK in ${Date.now() - _obsStart}ms raw=${observerContent?.slice(0, 100)}`);
     const feeling = parseObserverFeeling(observerContent);
     if (feeling) {
-      runtimeState.feeling = feeling as RuntimeFeeling;
-      runtimeState.expression = feelingToExpression[feeling] ?? 0;
+      const smoothed = smoothFeeling(feelingScores, feeling);
+      feelingScores = smoothed.scores;
+      runtimeState.feeling = smoothed.feeling as RuntimeFeeling;
+      runtimeState.expression = feelingToExpression[smoothed.feeling] ?? 0;
       runtimeState.updatedAt = Date.now();
       broadcastRuntimeStateChanged();
     }
@@ -1768,6 +1872,14 @@ function createWindow(): void {
         ttsGptsovitsRefAudioPath: s.ttsGptsovitsRefAudioPath,
         ttsGptsovitsPromptText: s.ttsGptsovitsPromptText,
         ttsGptsovitsFormat: s.ttsGptsovitsFormat,
+        ttsCustomCloudEndpointUrl: s.ttsCustomCloudEndpointUrl,
+        ttsCustomCloudApiKey: s.ttsCustomCloudApiKey,
+        ttsCustomCloudVoiceId: s.ttsCustomCloudVoiceId,
+        ttsCustomCloudFormat: s.ttsCustomCloudFormat,
+        ttsCustomCloudTimeoutMs: s.ttsCustomCloudTimeoutMs,
+        ttsMimoKey: s.ttsMimoKey,
+        ttsMimoVoiceAudioPath: s.ttsMimoVoiceAudioPath,
+        ttsMimoStylePrompt: s.ttsMimoStylePrompt,
       };
     },
     // 通话专用 system prompt 构建器（时间+常驻+记忆+phone人设+skill+语气，不要环境上下文）
@@ -3098,6 +3210,181 @@ app.whenReady().then(async () => {
     };
   });
 
+  // 自定义云端 TTS 合成 → base64 音频（测试发音用，不缓存）
+  ipcMain.handle(IPC.TTS_SYNTHESIZE_CUSTOM_CLOUD, async (_event, payload: {
+    endpointUrl: string; apiKey?: string; voiceId?: string; text: string;
+    speed?: number; volume?: number; format?: "wav" | "mp3"; timeoutMs?: number;
+  }) => {
+    if (!payload?.endpointUrl || !payload?.text) {
+      throw new Error("缺少必要参数（endpointUrl/text）");
+    }
+    const result = await customCloudSynthesize({
+      ...payload,
+      debugLog: appendCustomCloudTtsLog,
+    });
+    const cacheKey = buildCustomCloudCacheKey(payload);
+    return {
+      base64: result.audio.toString("base64"),
+      cacheKey,
+      cached: false,
+      format: result.format,
+    };
+  });
+
+  // 自定义云端 TTS 合成 + 本地缓存（聊天朗读用）
+  ipcMain.handle(IPC.TTS_SYNTHESIZE_CACHED_CUSTOM_CLOUD, async (_event, payload: {
+    endpointUrl: string; apiKey?: string; voiceId?: string; text: string;
+    speed?: number; volume?: number; format?: "wav" | "mp3"; timeoutMs?: number;
+    expectedCacheKey?: string;
+  }) => {
+    const format: "wav" | "mp3" = payload.format ?? "mp3";
+
+    let expectedPath: string | null = null;
+    if (payload.expectedCacheKey) {
+      try {
+        expectedPath = getTtsCachePath(payload.expectedCacheKey, format);
+      } catch { /* expectedCacheKey 格式非法，忽略 */ }
+    }
+    if (expectedPath && fs.existsSync(expectedPath)) {
+      const cachedBuffer = fs.readFileSync(expectedPath);
+      appendCustomCloudTtsLog({
+        requestId: `custom-cloud-cache-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        ts: new Date().toISOString(),
+        phase: "cache.hit",
+        cacheKey: payload.expectedCacheKey,
+        audioBytes: cachedBuffer.length,
+        textChars: Array.from(payload.text).length,
+      });
+      return {
+        base64: cachedBuffer.toString("base64"),
+        cacheKey: payload.expectedCacheKey,
+        cached: true,
+        format,
+      };
+    }
+
+    if (!payload?.endpointUrl || !payload?.text) {
+      throw new Error("缓存未命中且缺少必要参数（endpointUrl/text）");
+    }
+
+    const cacheKey = buildCustomCloudCacheKey(payload);
+    const audioPath = getTtsCachePath(cacheKey, format);
+    fs.mkdirSync(path.dirname(audioPath), { recursive: true });
+
+    const result = await customCloudSynthesize({
+      endpointUrl: payload.endpointUrl,
+      apiKey: payload.apiKey,
+      voiceId: payload.voiceId,
+      text: payload.text,
+      speed: payload.speed,
+      volume: payload.volume,
+      format,
+      timeoutMs: payload.timeoutMs,
+      debugLog: appendCustomCloudTtsLog,
+    });
+    fs.writeFileSync(audioPath, result.audio);
+    appendCustomCloudTtsLog({
+      requestId: `custom-cloud-cache-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      ts: new Date().toISOString(),
+      phase: "cache.write",
+      cacheKey,
+      audioBytes: result.audio.length,
+      textChars: Array.from(payload.text).length,
+    });
+    return {
+      base64: result.audio.toString("base64"),
+      cacheKey,
+      cached: false,
+      format: result.format,
+    };
+  });
+
+  // 小米 MiMo TTS 合成 → base64 音频（测试发音用，不缓存）
+  ipcMain.handle(IPC.TTS_SYNTHESIZE_MIMO, async (_event, payload: {
+    apiKey: string; voiceAudioPath?: string; text: string; stylePrompt?: string;
+  }) => {
+    if (!payload?.apiKey || !payload?.voiceAudioPath || !payload?.text) {
+      throw new Error("缺少必要参数（apiKey/voiceAudioPath/text）");
+    }
+    const result = await mimoSynthesize({
+      apiKey: payload.apiKey,
+      voiceAudioPath: payload.voiceAudioPath,
+      text: payload.text,
+      stylePrompt: payload.stylePrompt,
+      debugLog: appendMimoTtsLog,
+    });
+    const cacheKey = buildMimoCacheKey(payload);
+    return {
+      base64: result.audio.toString("base64"),
+      cacheKey,
+      cached: false,
+      format: result.format,
+    };
+  });
+
+  // 小米 MiMo TTS 合成 + 本地缓存（聊天朗读用）
+  ipcMain.handle(IPC.TTS_SYNTHESIZE_CACHED_MIMO, async (_event, payload: {
+    apiKey: string; voiceAudioPath?: string; text: string; stylePrompt?: string;
+    expectedCacheKey?: string;
+  }) => {
+    const format: "wav" = "wav";
+
+    let expectedPath: string | null = null;
+    if (payload.expectedCacheKey) {
+      try {
+        expectedPath = getTtsCachePath(payload.expectedCacheKey, format);
+      } catch { /* expectedCacheKey 格式非法，忽略 */ }
+    }
+    if (expectedPath && fs.existsSync(expectedPath)) {
+      const cachedBuffer = fs.readFileSync(expectedPath);
+      appendMimoTtsLog({
+        requestId: `mimo-cache-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        ts: new Date().toISOString(),
+        phase: "cache.hit",
+        cacheKey: payload.expectedCacheKey,
+        audioBytes: cachedBuffer.length,
+        textChars: Array.from(payload.text).length,
+      });
+      return {
+        base64: cachedBuffer.toString("base64"),
+        cacheKey: payload.expectedCacheKey,
+        cached: true,
+        format,
+      };
+    }
+
+    if (!payload?.apiKey || !payload?.voiceAudioPath || !payload?.text || payload.apiKey === "cache-only") {
+      throw new Error("缓存未命中且缺少必要参数（apiKey/voiceAudioPath/text）");
+    }
+
+    const cacheKey = buildMimoCacheKey(payload);
+    const audioPath = getTtsCachePath(cacheKey, format);
+    fs.mkdirSync(path.dirname(audioPath), { recursive: true });
+
+    const result = await mimoSynthesize({
+      apiKey: payload.apiKey,
+      voiceAudioPath: payload.voiceAudioPath,
+      text: payload.text,
+      stylePrompt: payload.stylePrompt,
+      debugLog: appendMimoTtsLog,
+    });
+    fs.writeFileSync(audioPath, result.audio);
+    appendMimoTtsLog({
+      requestId: `mimo-cache-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      ts: new Date().toISOString(),
+      phase: "cache.write",
+      cacheKey,
+      audioBytes: result.audio.length,
+      textChars: Array.from(payload.text).length,
+    });
+    return {
+      base64: result.audio.toString("base64"),
+      cacheKey,
+      cached: false,
+      format: result.format,
+    };
+  });
+
   // 聊天会话存储 IPC（chats-store.initialize 会建好 cyrene-chats 目录并加载 index）
   registerChatsIpc();
 
@@ -3169,6 +3456,7 @@ app.whenReady().then(async () => {
           name: a.filePath ?? a.url ?? "attachment",
           text: a.caption ?? "",
         })),
+        channel: msg.channel,
       },
       buildOptionsDeps,
     );
@@ -3197,19 +3485,42 @@ app.whenReady().then(async () => {
   setDispatcherSynthesizeTts(async (text: string) => {
     const cfg = loadGeneralSettings();
     if (cfg.ttsEngine === "off") return null;
-    if (!cfg.ttsMinimaxKey || !cfg.ttsMinimaxVoiceId) return null;
+    if (cfg.ttsEngine === "minimax" && (!cfg.ttsMinimaxKey || !cfg.ttsMinimaxVoiceId)) return null;
+    if (cfg.ttsEngine === "gptsovits" && (!cfg.ttsGptsovitsBaseUrl || !cfg.ttsGptsovitsRefAudioPath || !cfg.ttsGptsovitsPromptText)) return null;
+    if (cfg.ttsEngine === "custom-cloud" && !cfg.ttsCustomCloudEndpointUrl) return null;
+    if (cfg.ttsEngine === "mimo" && (!cfg.ttsMimoKey || !cfg.ttsMimoVoiceAudioPath)) return null;
     // 限制 TTS 文本长度（飞书 audio 100M 限制 + 用户体验，太长应截断）
     const ttsText = text.length > 1000 ? text.slice(0, 1000) + "…" : text;
     try {
-      const buf = await ttsSynthesize({
-        apiKey: cfg.ttsMinimaxKey,
-        voiceId: cfg.ttsMinimaxVoiceId,
+      const result = await synthesizeByEngine(cfg.ttsEngine, {
         text: ttsText,
         speed: cfg.ttsSpeed,
         volume: cfg.ttsVolume,
+        // minimax
+        apiKey: cfg.ttsEngine === "mimo"
+          ? cfg.ttsMimoKey
+          : cfg.ttsEngine === "custom-cloud"
+            ? cfg.ttsCustomCloudApiKey
+            : cfg.ttsMinimaxKey,
+        voiceId: cfg.ttsEngine === "mimo"
+          ? ""
+          : cfg.ttsEngine === "custom-cloud"
+            ? cfg.ttsCustomCloudVoiceId
+            : cfg.ttsMinimaxVoiceId,
+        model: cfg.ttsMinimaxModel,
+        // gptsovits
+        baseUrl: cfg.ttsGptsovitsBaseUrl,
+        refAudioPath: cfg.ttsGptsovitsRefAudioPath,
+        promptText: cfg.ttsGptsovitsPromptText,
+        // custom-cloud
+        endpointUrl: cfg.ttsCustomCloudEndpointUrl,
+        timeoutMs: cfg.ttsCustomCloudTimeoutMs,
+        // mimo
+        voiceAudioPath: cfg.ttsMimoVoiceAudioPath,
+        stylePrompt: cfg.ttsMimoStylePrompt,
         format: "mp3",
       });
-      return buf;
+      return result.audio;
     } catch (err) {
       console.warn("[Channels] TTS 合成失败:", err instanceof Error ? err.message : err);
       return null;
@@ -3320,6 +3631,7 @@ app.whenReady().then(async () => {
     getSceneEmbeddingProvider: () => getSceneEmbeddingProvider() as unknown,
     buildAlwaysOnContext: (async (userText, messages) =>
       buildAlwaysOnContext(userText, messages as any)) as BuildOptionsDeps["buildAlwaysOnContext"],
+    buildRelationshipContext,
     buildSystemPrompt,
     logWorldbookInjection,
     normalizeChatMessages: ((raw: ReadonlyArray<unknown>) =>
@@ -3336,9 +3648,13 @@ app.whenReady().then(async () => {
       if (next.status !== undefined) runtimeState.status = next.status as RuntimeStatus;
       if (next.expression !== undefined) runtimeState.expression = next.expression;
       if (next.updatedAt !== undefined) runtimeState.updatedAt = next.updatedAt;
-      if (next.feeling !== undefined) runtimeState.feeling = next.feeling as RuntimeFeeling;
+      if (next.feeling !== undefined) {
+        runtimeState.feeling = next.feeling as RuntimeFeeling;
+        feelingScores = createFeelingScores(runtimeState.feeling);
+      }
     },
     stickerEmbeddingIndex: stickerEmbeddingIndex as unknown,
+    getStickerEmbeddingIndex: () => stickerEmbeddingIndex as unknown,
     getEmbeddingProvider: () => getEmbeddingProvider() as unknown,
     matchSticker: (async (text, provider, index, threshold) =>
       matchSticker(text, provider as any, index as any, threshold) as Promise<{ id: string } | null | undefined>) as OnRunFinishedDeps["matchSticker"],
@@ -3346,6 +3662,7 @@ app.whenReady().then(async () => {
     broadcastRuntimeStateChanged,
     observeRuntimeState: (async (settings, history, userText, reply) =>
       observeRuntimeState(settings as any, history as any, userText, reply)) as OnRunFinishedDeps["observeRuntimeState"],
+    recordRelationshipTurn,
     getChatWindow: () => chatWindow,
   };
   registerAgUiIpc(
