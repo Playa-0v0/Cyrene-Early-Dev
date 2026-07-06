@@ -630,17 +630,18 @@ body {
 }
 
 /* model 消息朗读按钮 — 用 SVG 图标，主题色用 currentColor
-   默认保持可见（0.7 透明度），hover/active 加深。播放态由 .msg.is-speaking .msg__speak 控制。 */
+   默认保持可见（0.7 透明度），hover/active 加深。播放态由 .msg.is-speaking .msg__speak 控制。
+   形状：圆角正方形（不是圆），跟其他小图标按钮（attach / sticker-btn）视觉一致。 */
 .msg__speak {
   flex: 0 0 auto;
   width: 26px;
   height: 26px;
-  border-radius: var(--rb-radius-full);
+  border-radius: var(--rb-radius-md);
   background: transparent;
   border: 1px solid var(--rb-border-soft);
   color: var(--rb-text-muted);
   cursor: pointer;
-  opacity: 0.7;
+  opacity: 0.75;
   transition: opacity 0.18s, background 0.18s, border-color 0.18s, color 0.18s;
   display: grid;
   place-items: center;

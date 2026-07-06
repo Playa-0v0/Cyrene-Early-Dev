@@ -892,7 +892,9 @@ function render(): void {
       speakBtn.addEventListener("click", () => {
         console.log("[TTS] 喇叭点击, currentTtsAudio=", currentTtsAudio ? "有" : "无");
         if (currentSpeakingMsgId === m.id) {
+          // 当前消息正在播放 → 停止并复位 UI
           stopCurrentTts();
+          setSpeakingMsgId(null);
         } else {
           void speakMessage(m);
         }
@@ -1127,15 +1129,13 @@ function startTextModeMouth(): void {
   window.live2dSpeech?.startMouth(TEXT_MODE_MOUTH_DURATION_MS);
 }
 
-/** 停止当前正在播放的 TTS 音频（如果有）。 */
+/** 停止当前正在播放的 TTS 音频（如果有）。只停 audio，UI 复位由调用方决定。 */
 function stopCurrentTts(): void {
   if (currentTtsAudio) {
     currentTtsAudio.pause();
     currentTtsAudio.currentTime = 0;
     currentTtsAudio = null;
   }
-  // 复位喇叭 UI（无论是否有 audio，都清掉 is-speaking）
-  setSpeakingMsgId(null);
   stopLive2dMouth();
 }
 
@@ -1625,10 +1625,22 @@ async function speakMessage(message: Message): Promise<void> {
   ttsPlaybackSequence += 1;
   stopLive2dMouth();
   window.live2dSpeech?.prepare();
-  const cache = await synthesizeAndPlayCached(message.content, message, message.id);
-  if (cache) {
-    message.ttsCacheKey = cache.cacheKey;
-    void saveSession();
+  // 立即切 UI：不等合成，让用户能马上看到按钮进入播放态。
+  // playTtsBase64 真正开始播时会再次 setSpeakingMsgId（幂等）；如果合成失败下面 catch 里复位。
+  setSpeakingMsgId(message.id);
+  try {
+    const cache = await synthesizeAndPlayCached(message.content, message, message.id);
+    if (cache) {
+      message.ttsCacheKey = cache.cacheKey;
+      void saveSession();
+    } else if (currentSpeakingMsgId === message.id) {
+      // 合成失败（引擎关 / 配置缺失 / 网络报错）→ 复位 UI
+      console.warn("[TTS] 合成失败，复位喇叭按钮");
+      setSpeakingMsgId(null);
+    }
+  } catch (err) {
+    console.warn("[TTS] speakMessage 异常:", err);
+    if (currentSpeakingMsgId === message.id) setSpeakingMsgId(null);
   }
 }
 
