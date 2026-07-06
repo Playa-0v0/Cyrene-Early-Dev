@@ -85,11 +85,11 @@ body {
 
 .tasks__hint {
   font: var(--rb-text-micro);
-  color: var(--rb-text-default);
+  color: var(--rb-text-muted);
   padding: 3px 9px;
   border: 1px solid var(--rb-border-soft);
   border-radius: var(--rb-radius-full);
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--rb-bg-2);
   white-space: nowrap;
 }
 
@@ -228,7 +228,7 @@ body {
 .schedule-count__unit {
   font-size: 15px;
   font-weight: 700;
-  color: var(--rb-pink-200);
+  color: var(--rb-pink-600);
 }
 
 .schedule-date {
@@ -240,7 +240,7 @@ body {
   border-radius: var(--rb-radius-full);
   font: var(--rb-text-micro);
   color: var(--rb-text-default);
-  background: rgba(255, 255, 255, 0.07);
+  background: var(--rb-bg-2);
   border: 1px solid var(--rb-border-soft);
 }
 
@@ -251,9 +251,9 @@ body {
   padding: 11px 12px;
   margin-bottom: 16px;
   border-radius: 17px;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--rb-bg-1);
   border: 1px solid var(--rb-border-soft);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  box-shadow: none;
 }
 
 .task-section {
@@ -280,9 +280,9 @@ body {
   min-width: 0;
   padding: 8px 10px;
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.065);
+  background: var(--rb-bg-1);
   border: 1px solid var(--rb-border-soft);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.055);
+  box-shadow: none;
 }
 
 .task-time {
@@ -291,9 +291,9 @@ body {
   font-size: 10px;
   font-weight: 800;
   text-align: center;
-  color: var(--rb-pink-200);
-  background: var(--rb-glow-soft);
-  border: 1px solid var(--rb-border-soft);
+  color: var(--rb-pink-600);
+  background: var(--rb-pink-50);
+  border: 1px solid var(--rb-pink-200);
   white-space: nowrap;
 }
 
@@ -363,7 +363,7 @@ body {
 
 .schedule-footer__version {
   font: var(--rb-text-micro);
-  color: var(--rb-text-faint);
+  color: var(--rb-text-muted);
   text-align: center;
   letter-spacing: 0.4px;
   user-select: none;
