@@ -1,10 +1,56 @@
 ﻿node_modules/
+
+# Build outputs (Electron + Vite + tsc)
 dist/main/
 dist/preload/
+dist/renderer/assets
+dist/renderer/call/index.html
+dist/renderer/chat/index.html
+dist/renderer/settings/index.html
+dist/renderer/sidebar/index.html
+dist/renderer/sticker-manager/index.html
+dist/renderer/tasks/index.html
+dist/renderer/index.html
+dist/renderer/live2dcubismcore.min.js
+dist/sim/
 *.js.map
+*.tsbuildinfo
 
-# local debug/verification artifacts
+# NOTE: dist/renderer/audio, dist/renderer/avatars, dist/renderer/models,
+# dist/renderer/stickers are intentionally NOT ignored (product assets).
+# Lines above ignore Vite-bundled artifacts only.
+
+# Test & coverage
+coverage/
+
+# Local debug/verification artifacts
 verify-*.js
 verify-*.png
+verify-*.html
 
+# Debug previews / scratch files generated during UI work
+cyrene-*-preview.html
+tmp_*.txt
+tmp/
+tmpr-build.log
+tmprenderer-build.log
+
+# Playwright CLI scratch
+.playwright-cli/
+
+# Sim result dumps
+sim-result/
+
+# Windows quirk: 'nul' is a reserved device name, ignore if created by accident
 nul
+
+# Editor / OS noise
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Local env files (keep .env.example tracked)
+.env
+.env.*
+!.env.example
