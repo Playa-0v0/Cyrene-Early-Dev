@@ -50,6 +50,43 @@ body { overflow: hidden; }
 .call__status--error { color: #ff6b6b; }
 .call__status--thinking { color: var(--rb-violet-400); }
 
+/* 名字区：昔涟 + 在线指示点（紧贴标题栏下方） */
+.call__identity {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  margin-bottom: 4px;
+}
+.call__name {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: var(--rb-text-strong);
+}
+.call__presence {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.18);
+}
+
+/* 通话时长：MM:SS 大字，接通后显示，hangup 后隐藏 */
+.call__duration {
+  font-variant-numeric: tabular-nums;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  color: var(--rb-text-muted);
+  margin-bottom: 14px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--rb-border-faint);
+}
+.call__duration[hidden] { display: none; }
+
 /* 头像区域（和头像同尺寸，环和波形相对它定位） */
 .call__avatar-zone {
   position: relative; width: 150px; height: 150px;

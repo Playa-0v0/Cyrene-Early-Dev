@@ -22,6 +22,15 @@
       <!-- 状态文字 -->
       <div class="call__status" id="call-status">正在连接...</div>
 
+      <!-- 头衔区：昔涟名字 + 在线指示 -->
+      <div class="call__identity">
+        <span class="call__name">昔涟</span>
+        <span class="call__presence" aria-hidden="true"></span>
+      </div>
+
+      <!-- 通话时长（接通后开始计时，hangup 后停止；display 控制可见性） -->
+      <div class="call__duration" id="call-duration" hidden>00:00</div>
+
       <!-- 头像 + 电波环 + 音量波形（同一区域） -->
       <div class="call__avatar-zone" id="avatar-zone">
         <div class="call__avatar-ring" id="avatar-ring">

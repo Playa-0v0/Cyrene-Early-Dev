@@ -76,6 +76,47 @@ const micBars = micWaveEl ? Array.from(micWaveEl.querySelectorAll(".call__mic-wa
 const transcriptEl = document.getElementById("transcript") as HTMLElement;
 const hangupBtn = document.getElementById("hangup-btn") as HTMLButtonElement;
 const closeBtn = document.getElementById("close-btn") as HTMLButtonElement;
+const durationEl = document.getElementById("call-duration") as HTMLElement | null;
+
+// ── 通话时长计时（首次进入活动状态时启动，END 时停止） ──
+let callStartAt: number | null = null;
+let callTimer: number | null = null;
+
+/** 把毫秒数格式化为 MM:SS，超过 60 分钟进入 HH:MM:SS。 */
+function formatDuration(ms: number): string {
+  const totalSec = Math.floor(ms / 1000);
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = totalSec % 60;
+  const pad = (n: number) => n.toString().padStart(2, "0");
+  return h > 0 ? `${pad(h)}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
+}
+
+/** 启动 / 重置 计时器。第一次传 true 时记录起点并启动 1s interval。 */
+function startCallTimer(): void {
+  if (callStartAt !== null) return; // 已经启动过了，避免 LISTENING<->SPEAKING 时重置
+  callStartAt = performance.now();
+  if (durationEl) {
+    durationEl.textContent = "00:00";
+    durationEl.hidden = false;
+  }
+  const tick = () => {
+    if (callStartAt === null || !durationEl) return;
+    durationEl.textContent = formatDuration(performance.now() - callStartAt);
+  };
+  callTimer = window.setInterval(tick, 1000);
+  tick();
+}
+
+/** 停止计时并隐藏时长元素（用于 hangup / 通话已结束）。 */
+function stopCallTimer(): void {
+  if (callTimer !== null) {
+    window.clearInterval(callTimer);
+    callTimer = null;
+  }
+  callStartAt = null;
+  if (durationEl) durationEl.hidden = true;
+}
 
 // ── 状态管理 ──
 type CallState = "IDLE" | "LISTENING" | "THINKING" | "SPEAKING" | "ERROR" | "ENDED";
@@ -141,6 +182,13 @@ function updateUI(): void {
     mic.classList.remove("is-active");
     waveformMode = "idle";
     micMode = "idle";
+  }
+
+  // 通话时长：进入活动状态时启动计时，END 时停止（IDLE/ERROR/ENDED 均停）。
+  if (currentState === "LISTENING" || currentState === "THINKING" || currentState === "SPEAKING") {
+    startCallTimer();
+  } else if (currentState === "ENDED") {
+    stopCallTimer();
   }
 }
 
@@ -462,6 +510,7 @@ function hangup(): void {
   window.call?.stop();
   stopMicrophone();
   stopTts();
+  stopCallTimer();
   setState("ENDED");
   setTimeout(() => window.close(), 500);
 }
