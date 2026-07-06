@@ -147,6 +147,17 @@ const callApi = {
 };
 contextBridge.exposeInMainWorld("call", callApi);
 
+const cyreneThemeApi = {
+  get: () => ipcRenderer.invoke(IPC.UI_THEME_GET) as Promise<"classic" | "polished-pink" | "pearl-white">,
+  onChanged: (callback: (theme: "classic" | "polished-pink" | "pearl-white") => void) => {
+    const listener = (_e: unknown, theme: "classic" | "polished-pink" | "pearl-white") => callback(theme);
+    ipcRenderer.on(IPC.UI_THEME_CHANGED, listener);
+    return () => ipcRenderer.off(IPC.UI_THEME_CHANGED, listener);
+  },
+};
+
+contextBridge.exposeInMainWorld("cyreneTheme", cyreneThemeApi);
+
 const settingsApi = {
   minimize: () => ipcRenderer.send(IPC.SETTINGS_MINIMIZE),
   close: () => ipcRenderer.send(IPC.SETTINGS_CLOSE),

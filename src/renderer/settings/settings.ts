@@ -1,5 +1,6 @@
 import "../ui/base.css";
 import "./settings.css";
+import "../ui/theme";
 import {
   CHAT_DEFAULT_IDENTITY_LABEL,
   formatChatRelativeTime,
@@ -263,6 +264,7 @@ interface GeneralSettings {
   petZoom: number;
   launchAtLogin: boolean;
   language: "zh-CN";
+  uiTheme: "classic" | "polished-pink" | "pearl-white";
 }
 
 interface UserApi {
@@ -461,7 +463,7 @@ if (!window.settings) {
         stickerSize: "standard",
       }),
     saveConfig: (c) => Promise.resolve(c as ModelSettings),
-    getGeneral: () => Promise.resolve({ musicEnabled: false, musicVolume: 60, soundEnabled: true, soundVolume: 70, petAlwaysOnTop: true, petVisible: true, petZoom: 1, launchAtLogin: false, language: "zh-CN" }),
+    getGeneral: () => Promise.resolve({ musicEnabled: false, musicVolume: 60, soundEnabled: true, soundVolume: 70, petAlwaysOnTop: true, petVisible: true, petZoom: 1, launchAtLogin: false, language: "zh-CN", uiTheme: "classic" }),
     saveGeneral: (c) => Promise.resolve(c as GeneralSettings),
     openSidebar: () => {},
     closeSidebar: () => {},
@@ -591,6 +593,7 @@ const petVisibleInput = document.getElementById("pet-visible") as HTMLInputEleme
 const petZoomInput = document.getElementById("pet-zoom") as HTMLInputElement;
 const petZoomVal = document.getElementById("pet-zoom-val") as HTMLElement;
 const launchAtLoginInput = document.getElementById("launch-at-login") as HTMLInputElement;
+const uiThemeSelect = document.getElementById("ui-theme-select") as HTMLElement;
 const languageSelect = document.getElementById("language-select") as HTMLElement;
 const sidebarVisibleInput = document.getElementById("sidebar-visible") as HTMLInputElement;
 const tasksVisibleInput = document.getElementById("tasks-visible") as HTMLInputElement;
@@ -693,6 +696,25 @@ function applyLanguageSelection(language: "zh-CN"): void {
     button.classList.toggle("is-active", active);
     button.setAttribute("aria-pressed", String(active));
   });
+}
+
+function normalizeUiTheme(theme: unknown): GeneralSettings["uiTheme"] {
+  if (theme === "polished-pink" || theme === "pearl-white") return theme;
+  return "classic";
+}
+
+function getUiThemeValue(): GeneralSettings["uiTheme"] {
+  const value = uiThemeSelect.querySelector<HTMLButtonElement>(".option-block.is-active")?.dataset.theme;
+  return normalizeUiTheme(value);
+}
+
+function applyUiThemeSelection(theme: GeneralSettings["uiTheme"]): void {
+  uiThemeSelect.querySelectorAll<HTMLButtonElement>(".option-block").forEach((button) => {
+    const active = button.dataset.theme === theme;
+    button.classList.toggle("is-active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+  document.documentElement.dataset.uiTheme = theme;
 }
 
 function setGeneralSaveStatus(text: string, cls?: string): void {
@@ -900,6 +922,7 @@ async function loadGeneralSettings(): Promise<void> {
     petZoomInput.value = String(cfg.petZoom ?? 1);
     petZoomVal.textContent = Math.round((cfg.petZoom ?? 1) * 100) + "%";
     launchAtLoginInput.checked = cfg.launchAtLogin;
+    applyUiThemeSelection(normalizeUiTheme(cfg.uiTheme));
     applyLanguageSelection("zh-CN");
     setGeneralSaveStatus("等待保存");
   } catch {
@@ -963,6 +986,14 @@ petZoomInput.addEventListener("input", () => {
 });
 petZoomInput.addEventListener("change", () => {
   window.settings?.setPetZoom(Number(petZoomInput.value));
+});
+
+uiThemeSelect.querySelectorAll<HTMLButtonElement>(".option-block").forEach((button) => {
+  button.addEventListener("click", () => {
+    const theme = normalizeUiTheme(button.dataset.theme);
+    applyUiThemeSelection(theme);
+    setGeneralSaveStatus("有未保存的更改");
+  });
 });
 
 openStickerManagerBtn.addEventListener("click", async () => {
@@ -1753,6 +1784,7 @@ generalForm.addEventListener("submit", async (e) => {
       petZoom: Number(petZoomInput.value),
       launchAtLogin: launchAtLoginInput.checked,
       language: "zh-CN",
+      uiTheme: getUiThemeValue(),
     });
     setGeneralSaveStatus("已保存", "is-ok");
   } catch {

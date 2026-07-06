@@ -3,6 +3,7 @@
 // 状态：LISTENING（用户说话）→ THINKING（agent 思考）→ SPEAKING（昔涟说话）→ LISTENING
 // 用户说话时：柱状胶囊波形跳动 + 头像外圈音量波形
 // 昔涟说话时：电波环脉冲扩散 + 波形隐藏
+import "../ui/theme";
 
 // ── 粒子背景 ──
 const canvas = document.getElementById("particles") as HTMLCanvasElement | null;

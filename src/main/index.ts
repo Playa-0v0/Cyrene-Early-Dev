@@ -361,6 +361,7 @@ interface GeneralSettings {
   petZoom: number;
   launchAtLogin: boolean;
   language: "zh-CN";
+  uiTheme: "classic" | "polished-pink" | "pearl-white";
   // TTS 配置
   ttsEngine: "off" | "minimax" | "gptsovits" | "custom-cloud" | "mimo";
   ttsAutoRead: boolean;
@@ -509,6 +510,7 @@ const DEFAULT_GENERAL_SETTINGS: GeneralSettings = {
   petZoom: 1,
   launchAtLogin: false,
   language: "zh-CN",
+  uiTheme: "classic",
   ttsEngine: "off",
   ttsAutoRead: true,
   ttsSpeed: 1,
@@ -888,6 +890,7 @@ function normalizeGeneralSettings(input: Partial<GeneralSettings> | null | undef
     petZoom: typeof input?.petZoom === "number" ? Math.max(0.5, Math.min(2, input.petZoom)) : DEFAULT_GENERAL_SETTINGS.petZoom,
     launchAtLogin: Boolean(input?.launchAtLogin),
     language: "zh-CN",
+    uiTheme: input?.uiTheme === "pearl-white" ? "pearl-white" : input?.uiTheme === "polished-pink" ? "polished-pink" : "classic",
     // TTS 配置
     ttsEngine: (["off", "minimax", "gptsovits", "custom-cloud", "mimo"].includes(input?.ttsEngine as string) ? input?.ttsEngine : "off") as GeneralSettings["ttsEngine"],
     ttsAutoRead: input?.ttsAutoRead === undefined ? DEFAULT_GENERAL_SETTINGS.ttsAutoRead : Boolean(input.ttsAutoRead),
@@ -983,11 +986,15 @@ function applyPetZoom(zoom: number): void {
 }
 
 function saveGeneralSettings(settings: Partial<GeneralSettings>): GeneralSettings {
-  const normalized = normalizeGeneralSettings(settings);
+  const before = loadGeneralSettings();
+  const normalized = normalizeGeneralSettings({ ...before, ...settings });
   const filePath = getGeneralSettingsPath();
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, JSON.stringify(normalized, null, 2), "utf8");
   applyGeneralSettings(normalized);
+  if (before.uiTheme !== normalized.uiTheme) {
+    broadcastUiThemeChanged(normalized.uiTheme);
+  }
   return normalized;
 }
 
@@ -1720,6 +1727,14 @@ function broadcastToAuxWindows(channel: string, payload: unknown): void {
   for (const win of [chatWindow, sidebarWindow, tasksWindow, settingsWindow]) {
     if (win && !win.isDestroyed()) {
       win.webContents.send(channel, payload);
+    }
+  }
+}
+
+function broadcastUiThemeChanged(theme: GeneralSettings["uiTheme"]): void {
+  for (const win of [mainWindow, chatWindow, sidebarWindow, tasksWindow, settingsWindow, stickerManagerWindow, callWindow]) {
+    if (win && !win.isDestroyed()) {
+      win.webContents.send(IPC.UI_THEME_CHANGED, theme);
     }
   }
 }
@@ -2512,6 +2527,10 @@ ipcMain.handle(IPC.SETTINGS_GET_CONFIG, () => {
 
 ipcMain.handle(IPC.SETTINGS_GET_GENERAL, () => {
   return loadGeneralSettings();
+});
+
+ipcMain.handle(IPC.UI_THEME_GET, () => {
+  return loadGeneralSettings().uiTheme;
 });
 
 ipcMain.handle(IPC.SETTINGS_SAVE_GENERAL, (_event, settings: Partial<GeneralSettings>) => {

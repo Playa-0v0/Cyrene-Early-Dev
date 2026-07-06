@@ -1,4 +1,5 @@
 import { Live2DManager } from "./live2d/manager";
+import "./ui/theme";
 import { InteractionController } from "./live2d/interaction";
 import { MouseFocusController } from "./live2d/focus";
 import { ExpressionResetController } from "./live2d/expression-reset";

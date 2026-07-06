@@ -1,5 +1,6 @@
 import "../ui/base.css";
 import "./style.css";
+import "../ui/theme";
 
 type StickerItem = {
   id: string;

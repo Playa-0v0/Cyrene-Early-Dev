@@ -175,7 +175,7 @@ body {
   width: 30px;
   height: 30px;
   border-radius: var(--rb-radius-full);
-  color: rgba(235, 229, 245, 0.72);
+  color: var(--rb-text-muted);
   background: rgba(255, 255, 255, 0.07);
   border: 1px solid rgba(255, 182, 220, 0.16);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
@@ -263,7 +263,7 @@ body {
 .panel-heading p,
 .placeholder-card p {
   margin: 4px 0 0;
-  color: rgba(235, 229, 245, 0.62);
+  color: var(--rb-text-muted);
   font: var(--rb-text-small);
   line-height: 1.6;
 }
@@ -285,7 +285,7 @@ body {
 
 .field span {
   font: var(--rb-text-small-em);
-  color: rgba(235, 229, 245, 0.78);
+  color: var(--rb-text-default);
 }
 
 .field input,
@@ -332,7 +332,7 @@ body {
   margin: 16px 0 18px;
   padding: 12px 13px;
   border-radius: 16px;
-  color: rgba(235, 229, 245, 0.66);
+  color: var(--rb-text-muted);
   background: rgba(255, 255, 255, 0.055);
   border: 1px solid rgba(255, 182, 220, 0.13);
 }
@@ -422,7 +422,7 @@ body {
 .model-params-section h3 {
   font-size: 15px;
   font-weight: 700;
-  color: rgba(235, 229, 245, 0.9);
+  color: var(--rb-text-strong);
   margin-bottom: 14px;
 }
 
@@ -518,7 +518,7 @@ body {
 
 .setting-row span {
   display: block;
-  color: rgba(235, 229, 245, 0.58);
+  color: var(--rb-text-muted);
   font: var(--rb-text-small);
   line-height: 1.5;
 }
@@ -573,7 +573,7 @@ body {
 .option-block {
   padding: 9px 12px;
   border-radius: 14px;
-  color: rgba(235, 229, 245, 0.62);
+  color: var(--rb-text-muted);
   background: rgba(255, 255, 255, 0.055);
   border: 1px solid rgba(255, 182, 220, 0.14);
   font: var(--rb-text-small-em);
@@ -707,9 +707,18 @@ body {
 .disclaimer-content {
   display: grid;
   gap: 12px;
-  max-height: 430px;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
   overflow-y: auto;
   padding-right: 4px;
+}
+
+#disclaimer-panel:not(.is-hidden) {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 64px - 40px);
+  min-height: 0;
 }
 
 .disclaimer-section {
@@ -819,7 +828,7 @@ body {
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.055);
   border: 1px solid rgba(255, 182, 220, 0.10);
-  color: rgba(235, 229, 245, 0.76);
+  color: var(--rb-text-muted);
   font: var(--rb-text-small-em);
 }
 
@@ -889,7 +898,7 @@ body {
 }
 
 .agent-setting-subgroup > strong {
-  color: rgba(235, 229, 245, 0.82);
+  color: var(--rb-text-default);
   font: var(--rb-text-small-em);
 }
 
@@ -926,7 +935,7 @@ body {
   border-radius: 17px;
   border: 1px solid rgba(255, 182, 220, 0.13);
   background: rgba(255, 255, 255, 0.055);
-  color: rgba(235, 229, 245, 0.72);
+  color: var(--rb-text-muted);
   opacity: 1;
 }
 
@@ -942,7 +951,7 @@ body {
 }
 
 .rag-model-card__desc {
-  color: rgba(235, 229, 245, 0.58);
+  color: var(--rb-text-muted);
   font: var(--rb-text-small);
   line-height: 1.55;
 }
@@ -1051,7 +1060,7 @@ body {
 }
 .cy-modal__body {
   margin: 0 0 10px;
-  color: rgba(235, 229, 245, 0.76);
+  color: var(--rb-text-muted);
   font: 400 13px/1.45 var(--rb-font-sans);
   line-height: 1.4;
 }
@@ -1320,7 +1329,7 @@ body {
 }
 .plugin-panel-heading p {
   margin: 6px 0 0;
-  color: rgba(235, 229, 245, 0.55);
+  color: var(--rb-text-muted);
   font: var(--rb-text-small);
 }
 .plugin-add-btn {
@@ -1406,7 +1415,7 @@ body {
 .plugin-config .tts-field label {
   min-width: 64px;
   font-size: 12px;
-  color: rgba(235, 229, 245, 0.6);
+  color: var(--rb-text-muted);
 }
 .plugin-config .tts-field input {
   flex: 1;
@@ -1479,7 +1488,7 @@ body {
   padding: 6px 12px;
   border: none;
   background: transparent;
-  color: rgba(235, 229, 245, 0.6);
+  color: var(--rb-text-muted);
   font: var(--rb-text-small-em);
   cursor: pointer;
   transition: color 140ms ease, background 140ms ease, box-shadow 140ms ease;
@@ -1513,7 +1522,7 @@ body {
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.05);
-  color: rgba(235, 229, 245, 0.7);
+  color: var(--rb-text-muted);
   font-size: 14px;
   line-height: 1;
   cursor: pointer;
@@ -1586,7 +1595,7 @@ body {
 }
 .vision-sync-row .field-label {
   font: var(--rb-text-small-em);
-  color: rgba(235, 229, 245, 0.62);
+  color: var(--rb-text-muted);
   white-space: nowrap;
 }
 .vision-sync-row .option-blocks {
@@ -1619,7 +1628,7 @@ body {
   width: 36px;
   padding: 0;
   border-radius: 12px;
-  color: rgba(235, 229, 245, 0.72);
+  color: var(--rb-text-muted);
   background: rgba(255, 255, 255, 0.055);
   border: 1px solid rgba(255, 182, 220, 0.14);
   font-size: 16px;
@@ -1651,7 +1660,7 @@ body {
   width: 36px;
   padding: 0;
   border-radius: 12px;
-  color: rgba(235, 229, 245, 0.72);
+  color: var(--rb-text-muted);
   background: rgba(255, 255, 255, 0.055);
   border: 1px solid rgba(255, 182, 220, 0.14);
   font-size: 16px;
@@ -1926,7 +1935,7 @@ body {
   border-radius: var(--rb-radius-full);
   border: 1px solid rgba(255, 182, 220, 0.2);
   background: rgba(255, 255, 255, 0.05);
-  color: rgba(235, 229, 245, 0.65);
+  color: var(--rb-text-muted);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -1967,7 +1976,7 @@ body {
 .token-hero__label {
   font-size: 11px;
   font-weight: 600;
-  color: rgba(235, 229, 245, 0.6);
+  color: var(--rb-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -1997,7 +2006,7 @@ body {
 .token-hero__req-value {
   font-size: 15px;
   font-weight: 700;
-  color: rgba(235, 229, 245, 0.85);
+  color: var(--rb-text-default);
 }
 
 /* 三小框：输入/输出/命中 */
@@ -2025,7 +2034,7 @@ body {
 
 .token-stat__label {
   font-size: 11px;
-  color: rgba(235, 229, 245, 0.55);
+  color: var(--rb-text-muted);
 }
 
 .token-stat__value {
@@ -2140,7 +2149,7 @@ body {
 }
 
 .token-tooltip__row span:first-child {
-  color: rgba(235, 229, 245, 0.6);
+  color: var(--rb-text-muted);
 }
 
 .token-panel__hint {
@@ -2177,7 +2186,7 @@ body {
 .token-empty__text {
   font-size: 15px;
   font-weight: 600;
-  color: rgba(235, 229, 245, 0.7);
+  color: var(--rb-text-muted);
   margin: 0;
 }
 
@@ -2203,7 +2212,7 @@ body {
 .tts-section__title {
   font-size: 14px;
   font-weight: 600;
-  color: rgba(235, 229, 245, 0.8);
+  color: var(--rb-text-default);
   margin: 0 0 12px;
   padding-bottom: 8px;
   border-bottom: 1px solid rgba(255, 182, 220, 0.12);
@@ -2283,7 +2292,7 @@ body {
   flex: 0 0 100px;
   font-size: 13px;
   font-weight: 600;
-  color: rgba(235, 229, 245, 0.7);
+  color: var(--rb-text-muted);
 }
 
 .tts-field input {
@@ -2362,7 +2371,7 @@ body {
 .tts-clone-title {
   font-size: 14px;
   font-weight: 600;
-  color: rgba(235, 229, 245, 0.85);
+  color: var(--rb-text-default);
   margin: 0 0 6px;
 }
 
@@ -2388,7 +2397,7 @@ body {
 
 .tts-clone-status.is-ok { color: #4ade80; }
 .tts-clone-status.is-error { color: #f87171; }
-.tts-clone-status.is-loading { color: rgba(235, 229, 245, 0.6); }
+.tts-clone-status.is-loading { color: var(--rb-text-muted); }
 
 /* ── Skill 面板 ── */
 .skill-row {
@@ -2400,18 +2409,18 @@ body {
   gap: 12px;
 }
 .skill-row__info { flex: 1; min-width: 0; }
-.skill-row__title { font-weight: 600; color: rgba(235, 229, 245, 0.95); }
-.skill-row__desc { font-size: 12px; color: rgba(235, 229, 245, 0.55); margin-top: 2px; }
+.skill-row__title { font-weight: 600; color: var(--rb-text-strong); }
+.skill-row__desc { font-size: 12px; color: var(--rb-text-muted); margin-top: 2px; }
 .skill-toggle { width: 18px; height: 18px; cursor: pointer; accent-color: var(--rb-pink-400); flex-shrink: 0; }
 .skill-group { margin-top: 8px; border: 1px solid rgba(235, 229, 245, 0.15); border-radius: 8px; overflow: hidden; }
 .skill-group__header { display: flex; align-items: center; gap: 8px; padding: 10px 12px; cursor: pointer; user-select: none; background: rgba(235, 229, 245, 0.04); }
 .skill-group__header:hover { background: rgba(235, 229, 245, 0.08); }
 .skill-group__arrow { font-size: 10px; color: rgba(235, 229, 245, 0.5); flex-shrink: 0; }
-.skill-group__title { font-weight: 600; color: rgba(235, 229, 245, 0.9); font-size: 14px; }
+.skill-group__title { font-weight: 600; color: var(--rb-text-strong); font-size: 14px; }
 .skill-group__desc { font-size: 12px; color: rgba(235, 229, 245, 0.45); }
 .skill-group__body { display: none; }
 .skill-group__body.is-open { display: block; }
-.panel-hint { font-size: 13px; color: rgba(235, 229, 245, 0.6); margin: 4px 0 16px; }
+.panel-hint { font-size: 13px; color: var(--rb-text-muted); margin: 4px 0 16px; }
 .empty-hint { font-size: 13px; color: rgba(235, 229, 245, 0.5); padding: 24px 0; text-align: center; }
 
 
@@ -2446,7 +2455,7 @@ body {
 .scheduler-empty,
 .scheduler-card__meta,
 .scheduler-editor .setting-row span {
-  color: rgba(235, 229, 245, 0.56);
+  color: var(--rb-text-muted);
   font: var(--rb-text-micro);
 }
 
@@ -2605,7 +2614,7 @@ body {
   background: rgba(255, 255, 255, 0.050);
   border: 1px solid rgba(255, 182, 220, 0.10);
   font: var(--rb-text-small);
-  color: rgba(235, 229, 245, 0.78);
+  color: var(--rb-text-default);
   cursor: pointer;
   transition: background 120ms ease, border-color 120ms ease;
 }

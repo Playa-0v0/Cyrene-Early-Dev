@@ -1,5 +1,7 @@
 import "../ui/base.css";
 import "./tasks.css";
+import "../ui/theme";
+import { getSchedulePanelItems, type ScheduledTask } from "./task-filter";
 
 // ── 类型（后端契约） ──────────────────────────────────────────
 interface TokenDayData {
@@ -10,25 +12,6 @@ interface TokenDayData {
   hit: number;
   miss: number;
   requests: number;
-}
-
-interface ScheduleConfig {
-  kind: "once" | "daily" | "weekly" | "interval";
-  runAt?: string;
-  timeOfDay?: string;
-  dayOfWeek?: number;
-  every?: number;
-  unit?: "minutes" | "hours";
-}
-
-interface ScheduledTask {
-  id: string;
-  title: string;
-  prompt: string;
-  enabled: boolean;
-  schedule: ScheduleConfig;
-  nextFireAt: string | null;
-  lastFiredAt?: string;
 }
 
 // ── preload 桥接（全部由共享 preload 暴露） ─────────────────
@@ -195,37 +178,28 @@ function renderTasks(tasks: ScheduledTask[]): void {
   const countEl = $("schedule-count");
   if (!listEl) return;
 
-  const todayStr = new Date().toDateString();
-  const now = Date.now();
-  const todayRemaining = tasks
-    .filter(t => t.enabled && t.nextFireAt)
-    .filter(t => new Date(t.nextFireAt!).toDateString() === todayStr)
-    .filter(t => new Date(t.nextFireAt!).getTime() >= now);
-  const todayTasks = todayRemaining
-    .sort((a, b) => String(a.nextFireAt).localeCompare(String(b.nextFireAt)))
-    .slice(0, 3);
+  const panelItems = getSchedulePanelItems(tasks);
 
-  if (countEl) countEl.textContent = String(todayRemaining.length);
+  if (countEl) countEl.textContent = String(panelItems.totalCount);
 
   listEl.innerHTML = "";
-  if (todayTasks.length === 0) {
+  if (panelItems.items.length === 0) {
     const empty = document.createElement("div");
     empty.className = "task-empty";
-    empty.textContent = "今日暂无定时任务";
+    empty.textContent = "暂无已启用定时任务";
     listEl.appendChild(empty);
     return;
   }
 
-  for (const task of todayTasks) {
+  for (const task of panelItems.items) {
     const item = document.createElement("div");
     item.className = "task-item";
 
     const fire = new Date(task.nextFireAt!);
     const hh = String(fire.getHours()).padStart(2, "0");
     const mm = String(fire.getMinutes()).padStart(2, "0");
-    // 一次性任务带日期，周期任务只显示时间
-    const isOnce = task.schedule.kind === "once";
-    const timeText = isOnce
+    const showDate = panelItems.mode === "upcoming" || task.schedule.kind === "once";
+    const timeText = showDate
       ? `${String(fire.getMonth() + 1).padStart(2, "0")}-${String(fire.getDate()).padStart(2, "0")} ${hh}:${mm}`
       : `${hh}:${mm}`;
 

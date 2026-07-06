@@ -1,5 +1,6 @@
 import "../ui/base.css";
 import "./sidebar.css";
+import "../ui/theme";
 
 interface ModelConfig {
   mode: "auto" | "manual";
