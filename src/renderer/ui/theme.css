@@ -357,6 +357,30 @@
   color: var(--rb-text-faint);
 }
 
+/* Chat titlebar dropdowns (模式 / 风格 / 推理).
+   Dark themes rely on their glass surfaces; pearl-white needs more
+   contrast — bump label + arrow from --rb-text-faint to --rb-text-muted
+   and value from --rb-pink-100 to --rb-pink-600 so the selected value
+   actually reads on a light titlebar. */
+[data-ui-theme="pearl-white"] .dropdown-trigger {
+  background: var(--rb-bg-2);
+  border-color: var(--rb-border-soft);
+}
+[data-ui-theme="pearl-white"] .dropdown-trigger:hover {
+  background: var(--rb-hover-light);
+  border-color: var(--rb-border-strong);
+}
+[data-ui-theme="pearl-white"] .dt-label {
+  color: var(--rb-text-muted);
+}
+[data-ui-theme="pearl-white"] .dt-value {
+  color: var(--rb-pink-600);
+  font-weight: 600;
+}
+[data-ui-theme="pearl-white"] .dt-arrow {
+  border-top-color: var(--rb-text-muted);
+}
+
 [data-ui-theme="pearl-white"] .nav-item,
 [data-ui-theme="pearl-white"] .setting-row span,
 [data-ui-theme="pearl-white"] .panel-heading p,
