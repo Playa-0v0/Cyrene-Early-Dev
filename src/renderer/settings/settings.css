@@ -1286,7 +1286,7 @@ body {
 }
 .user-avatar-hint {
   margin: 0;
-  color: rgba(235, 229, 245, 0.35);
+  color: var(--rb-text-muted);
   font: var(--rb-text-small);
   font-size: 11px;
 }
@@ -1299,7 +1299,7 @@ body {
 }
 .user-field-hint {
   margin: 0;
-  color: rgba(235, 229, 245, 0.4);
+  color: var(--rb-text-muted);
   font-size: 11px;
   line-height: 1.5;
 }
