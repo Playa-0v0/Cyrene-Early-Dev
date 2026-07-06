@@ -547,14 +547,18 @@
   box-shadow: var(--rb-shadow-card);
 }
 
+/* Chat three-band layout — give each band a distinct surface in pearl-white
+   so the titlebar / messages / input regions read as separate layers.
+   Dark themes rely on their own gradients + glass highlights and stay
+   untouched. */
 [data-ui-theme="pearl-white"] .chat__main,
 [data-ui-theme="pearl-white"] .chat__messages {
-  background: var(--rb-bg-2);
+  background: var(--rb-card-bg);   /* pure white = main reading surface */
 }
 
 [data-ui-theme="pearl-white"] .chat__input,
 [data-ui-theme="pearl-white"] .chat__file-tags {
-  background: var(--rb-card-bg);
+  background: var(--rb-bg-2);      /* soft gray = anchors the composer below */
   border-top-color: var(--rb-border-soft);
 }
 
