@@ -1078,12 +1078,13 @@ body {
 
 /* 记忆面板 */
 .memory-card {
-  background: var(--rb-bg-1);
-  border: 1px solid var(--rb-border-soft);
+  background: var(--rb-card-bg);
+  border: 1px solid var(--rb-border-strong);
   border-radius: 16px;
   padding: 18px;
   display: grid;
   gap: 14px;
+  box-shadow: var(--rb-shadow-card);
 }
 .memory-card__head {
   display: flex;
@@ -1103,7 +1104,7 @@ body {
 }
 .memory-card__head p {
   margin: 3px 0 0;
-  color: var(--rb-text-muted);
+  color: var(--rb-text-default);
   font: var(--rb-text-small);
 }
 .memory-card__hint {
@@ -1142,8 +1143,8 @@ body {
 }
 .memory-field input,
 .memory-field textarea {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--rb-input-bg);
+  border: 1px solid var(--rb-input-border);
   border-radius: 10px;
   padding: 9px 12px;
   color: var(--rb-text-strong);
@@ -1152,18 +1153,18 @@ body {
 }
 .memory-field input:disabled,
 .memory-field textarea:disabled {
-  opacity: 0.6;
+  opacity: 0.7;
   cursor: not-allowed;
 }
 .memory-field input::placeholder,
 .memory-field textarea::placeholder {
-  color: rgba(235, 229, 245, 0.3);
+  color: var(--rb-input-placeholder);
 }
 .memory-search input {
   width: 100%;
   box-sizing: border-box;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--rb-input-bg);
+  border: 1px solid var(--rb-input-border);
   border-radius: 10px;
   padding: 9px 12px;
   color: var(--rb-text-strong);
@@ -1171,11 +1172,11 @@ body {
   outline: none;
 }
 .memory-search input:disabled {
-  opacity: 0.6;
+  opacity: 0.7;
   cursor: not-allowed;
 }
 .memory-search input::placeholder {
-  color: rgba(235, 229, 245, 0.3);
+  color: var(--rb-input-placeholder);
 }
 .memory-list {
   min-height: 80px;
@@ -1240,8 +1241,8 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  padding: 20px 0;
-  color: var(--rb-text-muted);
+  padding: 24px 0;
+  color: var(--rb-text-default);
 }
 .memory-list__empty > span {
   font-size: 28px;
@@ -1249,6 +1250,7 @@ body {
 .memory-list__empty p {
   margin: 0;
   font: var(--rb-text-small);
+  font-weight: 500;
 }
 .memory-list__hint {
   color: var(--rb-text-muted) !important;
