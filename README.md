@@ -218,28 +218,97 @@
 ### 前置条件
 - Node.js 18+
 - npm 9+
+- Windows 10/11（Electron + 飞书 / 微信 / nut-js 的键鼠自动化依赖 Win32 API）
+- macOS / Linux 理论上可运行，但 `nut-js` 与 Live2D 的桌面集成仅在 Windows 上完整测试过
 
-### 安装与构建
+### 1. 克隆仓库
+
+```bash
+git clone https://github.com/Playa-0v0/Cyrene-Agent.git
+cd Cyrene-Agent
+```
+
+### 2. 安装依赖
 
 ```bash
 npm install
+```
+
+首次安装会下载 Electron 二进制（约 100 MB）与 Pixi.js / Live2D 等渲染依赖，
+耗时 3–10 分钟，取决于网络。
+
+### 3. 构建
+
+```bash
 npm run build
+```
+
+依次编译主进程 (`build:main`) + preload (`build:preload`) + 渲染层
+(`build:renderer`)。构建产物输出到 `dist/`。
+
+### 4. 启动
+
+```bash
 npm start
 ```
 
-### 开发模式
+或一条龙命令（先 build 再启动）：
+
+```bash
+npm run build && npm start
+```
+
+### 5. 首次配置
+
+应用启动后，**点系统托盘图标 → 打开设置**，完成以下基础配置：
+
+1. **🔑 API 设置**：选择 LLM 厂商 preset，填写 API Key（必填，Agent 才能工作）。
+2. **🎙️ TTS 设置**：选一个语音合成引擎（默认 MiniMax，或换 GPT-SoVITS / 自定义云端 / MiMo）。
+3. **🎧 ASR 设置**：如需语音通话，填阿里云实时语音识别的 AppKey / AccessKey。
+4. **📱 连接手机**（可选）：要接入飞书 / 微信 iLink 时配置。
+
+配置保存在 `<userData>/settings.json`，无需重启应用。
+
+### 6. 开发模式
 
 ```bash
 npm run dev
 ```
 
-同时运行 `tsc`（主进程/preload）+ `vite` + Electron。
+同时运行 `tsc`（主进程 / preload）+ `vite` + Electron，主进程代码改动后
+会自动重启 Electron，渲染层代码改动由 Vite HMR 热更新。
 
-### 运行测试
+### 7. 运行测试
 
 ```bash
-npm test
+npm test                  # 跑一次
+npm run test:watch        # 监听模式
 ```
+
+### 8. 场景模拟
+
+```bash
+npm run sim               # 默认场景
+npm run sim:coffee        # 单场景调试
+npm run sim:mix           # 多场景混合
+npm run sim:sweep --rewardGain=3,5,7,10   # Worldbook 评分参数 sweep
+```
+
+模拟结果输出到 `sim-result/`。
+
+### 常用脚本一览
+
+| 脚本 | 说明 |
+|---|---|
+| `npm run build:main` | tsc 编译主进程 |
+| `npm run build:preload` | tsc 编译 preload |
+| `npm run build:renderer` | vite 构建渲染层 |
+| `npm run build` | 依次跑上面三个 |
+| `npm start` | 启动 Electron |
+| `npm run dev` | tsc + vite + Electron 并发（开发用） |
+| `npm test` | vitest 单测 |
+| `npm run build:sim` | tsc 编译场景模拟器 |
+| `npm run sim[:scenario]` | 跑场景模拟 |
 
 ---
 

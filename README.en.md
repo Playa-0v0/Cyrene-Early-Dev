@@ -258,28 +258,105 @@ See [`package.json`](./package.json) for the full dependency list.
 ### Prerequisites
 - Node.js 18+
 - npm 9+
+- Windows 10/11 (Electron + Feishu / WeChat / nut-js key-mouse automation
+  depend on Win32 APIs)
+- macOS / Linux may run, but `nut-js` and Live2D desktop integration are
+  only fully tested on Windows
 
-### Install & Build
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/Playa-0v0/Cyrene-Agent.git
+cd Cyrene-Agent
+```
+
+### 2. Install dependencies
 
 ```bash
 npm install
+```
+
+The first install downloads the Electron binary (~100 MB) along with
+Pixi.js / Live2D and other rendering deps; takes 3–10 minutes depending
+on network.
+
+### 3. Build
+
+```bash
 npm run build
+```
+
+Compiles main process (`build:main`) + preload (`build:preload`) +
+renderer (`build:renderer`) in sequence. Build outputs go to `dist/`.
+
+### 4. Start
+
+```bash
 npm start
 ```
 
-### Dev mode
+Or one-shot:
+
+```bash
+npm run build && npm start
+```
+
+### 5. First-time configuration
+
+After launch, **click the system tray icon → Open Settings** and complete
+the basics:
+
+1. **🔑 API Settings**: Pick an LLM vendor preset and fill in your API
+   Key (required — the agent won't work without it).
+2. **🎙️ TTS Settings**: Pick a TTS engine (default MiniMax, or switch to
+   GPT-SoVITS / Custom Cloud / MiMo).
+3. **🎧 ASR Settings**: If you need voice calls, fill in Aliyun realtime
+   ASR AppKey / AccessKey.
+4. **📱 Phone connection** (optional): For Lark / WeChat iLink integration.
+
+Settings are saved to `<userData>/settings.json` — no restart needed.
+
+### 6. Dev mode
 
 ```bash
 npm run dev
 ```
 
-This runs `tsc` for main/preload + `vite` + Electron concurrently.
+Runs `tsc` (main / preload) + `vite` + Electron concurrently. Main-process
+code changes auto-restart Electron; renderer changes are picked up via
+Vite HMR.
 
-### Run tests
+### 7. Run tests
 
 ```bash
-npm test
+npm test                  # one-shot
+npm run test:watch        # watch mode
 ```
+
+### 8. Scenario simulation
+
+```bash
+npm run sim               # default scenario
+npm run sim:coffee        # single-scenario debug
+npm run sim:mix           # mixed scenarios
+npm run sim:sweep --rewardGain=3,5,7,10   # Worldbook scoring parameter sweep
+```
+
+Simulation output goes to `sim-result/`.
+
+### Common scripts
+
+| Script | Description |
+|---|---|
+| `npm run build:main` | tsc compile main process |
+| `npm run build:preload` | tsc compile preload |
+| `npm run build:renderer` | vite build renderer |
+| `npm run build` | Run all three above in order |
+| `npm start` | Launch Electron |
+| `npm run dev` | tsc + vite + Electron concurrently (dev) |
+| `npm test` | vitest unit tests |
+| `npm run build:sim` | tsc compile scenario simulator |
+| `npm run sim[:scenario]` | Run scenario simulation |
 
 ---
 
