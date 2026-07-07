@@ -109,7 +109,7 @@
   --rb-divider-light:  rgba(0, 0, 0, 0.08);
   --rb-hover-light:    rgba(0, 0, 0, 0.04);
   --rb-active-light:   rgba(0, 0, 0, 0.08);
-  --rb-input-bg:       #ffffff;
+  --rb-input-bg:       rgba(255, 255, 255, 0.06);
   --rb-input-border:   rgba(236, 72, 153, 0.18);
   --rb-input-text:     #ebe5f5;
   --rb-input-placeholder: rgba(235, 229, 245, 0.48);
