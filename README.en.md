@@ -106,17 +106,48 @@ npm test
 
 ```
 src/
-├── main/         # Electron main process
-├── preload/      # Electron preload bridges
-├── renderer/     # Vite renderer (chat / call / settings / tasks / stickers)
-└── sim/          # Scenario simulation harness
+├── main/             # Electron main process
+│   ├── asr/          # Automatic speech recognition (Aliyun realtime ASR)
+│   ├── call/         # Voice call core logic
+│   ├── channels/     # External channel adapters (Lark / WeChat iLink / ...)
+│   ├── chats/        # Multi-chat history and persistence
+│   ├── game-bot/     # Game automation (driven by game-recipes)
+│   ├── memory/       # L0/L1/L2 memory engine + RAG
+│   ├── opener/       # Launcher / tray / single-instance
+│   ├── orchestrator/ # Agent main loop + tool dispatch
+│   ├── rag/          # Retrieval-augmented generation + worldbook injection
+│   ├── relationship/ # User relationship profile
+│   ├── scheduler/    # Scheduled tasks (reminders / agenda)
+│   ├── sim/          # Scenario simulation harness
+│   ├── skills/       # Agent skill system
+│   └── tts/          # Text-to-speech (multi-engine)
+├── preload/          # Electron preload bridges (IPC exposure)
+├── renderer/         # Vite renderer
+│   ├── call/         # Voice call window
+│   ├── chat/         # Main chat UI
+│   ├── live2d/       # Live2D model rendering logic
+│   ├── public/       # Static assets (audio / avatars / models / stickers)
+│   ├── settings/     # Settings center
+│   ├── sidebar/      # Sidebar
+│   ├── sticker-manager/ # Sticker manager
+│   ├── tasks/        # Task panel
+│   ├── types/        # Shared type definitions
+│   └── ui/           # Common UI components
+└── shared/           # Code shared between main and renderer
 
-dist/renderer/
-├── audio/        # Sound assets (BGM, SFX)
-├── avatars/      # Avatar images
-├── models/       # Live2D models — see MODEL_LICENSE.md
-│   └── cyrene/
-└── stickers/     # Sticker image assets
+dist/renderer/        # Vite build outputs (not tracked in git)
+├── assets/           # Bundled JS/CSS (hashed filenames)
+├── audio/            # Sound assets (BGM, SFX)
+├── avatars/          # Avatar images
+├── call/             # Call window HTML entry
+├── chat/             # Main chat HTML entry
+├── models/           # Live2D models — see MODEL_LICENSE.md
+│   └── cyrene/       # Cyrene model assets
+├── settings/         # Settings HTML entry
+├── sidebar/          # Sidebar HTML entry
+├── sticker-manager/  # Sticker manager HTML entry
+├── stickers/         # Sticker image assets
+└── tasks/            # Task panel HTML entry
 ```
 
 > **Note**: `dist/renderer/assets/`, `dist/renderer/*/index.html`,

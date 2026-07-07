@@ -99,17 +99,48 @@ npm test
 
 ```
 src/
-├── main/         # Electron 主进程
-├── preload/      # Electron preload 桥接
-├── renderer/     # Vite 渲染层（聊天 / 通话 / 设置 / 任务 / 贴纸）
-└── sim/          # 场景模拟工具
+├── main/             # Electron 主进程
+│   ├── asr/          # 语音识别（阿里云实时 ASR）
+│   ├── call/         # 语音通话核心逻辑
+│   ├── channels/     # 外部渠道适配层（飞书 / 微信 iLink / ...）
+│   ├── chats/        # 多会话历史与持久化
+│   ├── game-bot/     # 游戏自动化（game-recipes 驱动）
+│   ├── memory/       # L0/L1/L2 记忆引擎 + RAG
+│   ├── opener/       # 启动器 / 托盘 / 单实例
+│   ├── orchestrator/ # Agent 主循环 + 工具调度
+│   ├── rag/          # 检索增强生成 + worldbook 注入
+│   ├── relationship/ # 用户关系画像
+│   ├── scheduler/    # 定时任务（提醒 / 日程）
+│   ├── sim/          # 场景模拟工具（场景驱动）
+│   ├── skills/       # Agent skill 系统
+│   └── tts/          # 语音合成（多引擎）
+├── preload/          # Electron preload 桥接（IPC 暴露）
+├── renderer/         # Vite 渲染层
+│   ├── call/         # 语音通话窗口
+│   ├── chat/         # 主聊天界面
+│   ├── live2d/       # Live2D 模型渲染逻辑
+│   ├── public/       # 静态资源（音频 / 头像 / 模型 / 贴纸）
+│   ├── settings/     # 设置中心
+│   ├── sidebar/      # 侧边栏
+│   ├── sticker-manager/ # 贴纸管理
+│   ├── tasks/        # 任务面板
+│   ├── types/        # 共享类型定义
+│   └── ui/           # 通用 UI 组件
+└── shared/           # 主进程与渲染进程共享代码
 
-dist/renderer/
-├── audio/        # 音频资源（BGM、音效）
-├── avatars/      # 头像图片
-├── models/       # Live2D 模型 — 见 MODEL_LICENSE.md
-│   └── cyrene/
-└── stickers/     # 贴纸图片资源
+dist/renderer/        # Vite 构建产物（不在 git 跟踪范围内）
+├── assets/           # 打包后的 JS/CSS（hash 文件名）
+├── audio/            # 音频资源（BGM、音效）
+├── avatars/          # 头像图片
+├── call/             # 通话窗口 HTML 入口
+├── chat/             # 主聊天窗口 HTML 入口
+├── models/           # Live2D 模型 — 见 MODEL_LICENSE.md
+│   └── cyrene/       # 昔涟模型资源
+├── settings/         # 设置窗口 HTML 入口
+├── sidebar/          # 侧栏 HTML 入口
+├── sticker-manager/  # 贴纸管理 HTML 入口
+├── stickers/         # 贴纸图片资源
+└── tasks/            # 任务面板 HTML 入口
 ```
 
 > **注意**：`dist/renderer/assets/`、`dist/renderer/*/index.html`
