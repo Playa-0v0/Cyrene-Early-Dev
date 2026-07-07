@@ -2397,7 +2397,7 @@ async function loadChannelsPanel(): Promise<void> {
     }
   });
 
-  // ===== 微信交互（Phase 1：扫码登录走 openclaw CLI，重启走 channelsRestart） =====
+  // ===== 微信交互（扫码登录走 iLink HTTP API，详见 src/main/channels/adapters/wechat/） =====
 
   function setWechatFeedback(kind: "info" | "ok" | "err", msg: string): void {
     if (!channelsWechatFeedbackEl) return;
