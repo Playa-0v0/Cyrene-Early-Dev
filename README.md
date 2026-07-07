@@ -122,24 +122,6 @@ npm run dev
 3. **重新构建** —— `npm run clean && npm run build && npm start` 重新生成 dist。
 4. **检查 Vite 复制** —— `dist/renderer/public/models/cyrene/` 下的文件大小应与 `src/renderer/public/models/cyrene/` 一致。
 
-### Live2D 模型怎么换 / 怎么放？
-
-**⚠️ 模型路径当前是硬编码**（`src/renderer/main.ts:55` 里写死
-`/models/cyrene/Cyrene.model3.json`），**设置面板目前没有"换模型"的 UI**。
-所以换模型要走文件系统替换 + 重新构建。
-
-要换模型：
-1. 用你自己的 Live2D Cubism 4 模型替换 `src/renderer/public/models/cyrene/` 下整套文件：
-   - `Cyrene.model3.json`（必需，9 KB 左右）
-   - `model.moc3`（必需，模型骨架）
-   - `texture_0.png` 等纹理文件
-   - `expressions/` 表情目录
-   - `motions/` 动作目录
-2. 重新跑 `npm run build` 让 Vite 把它打包到 `dist/`。
-3. 重新启动应用。
-
-⚠️ 注意 MODEL_LICENSE.md 里写明的授权范围 —— 替换模型时**保留原作者署名**。
-
 ### 不用 ASR 能用语音通话吗？
 
 **不能。** 当前语音通话强依赖阿里云 ASR（无麦克风权限 = 无法进入 LISTENING 状态；ASR 未配置 = 直接进 ERROR）。

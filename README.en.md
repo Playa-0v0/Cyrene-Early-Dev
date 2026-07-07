@@ -142,27 +142,6 @@ Troubleshooting:
 4. **Verify Vite copied assets** — file sizes under `dist/renderer/public/models/cyrene/`
    should match `src/renderer/public/models/cyrene/`.
 
-### How to swap / add a Live2D model
-
-**⚠️ Model path is currently hardcoded** to
-`/models/cyrene/Cyrene.model3.json` (see `src/renderer/main.ts:55`),
-and **there's no "switch model" UI in the settings panel yet**. So
-swapping the model requires filesystem replacement + rebuild.
-
-To swap:
-1. Replace the entire `src/renderer/public/models/cyrene/` directory with
-   your own Cubism 4 model:
-   - `Cyrene.model3.json` (required)
-   - `model.moc3` (required, model skeleton)
-   - `texture_*.png` (textures)
-   - `expressions/` (expression files)
-   - `motions/` (motion files)
-2. Run `npm run build` to let Vite copy the assets into `dist/`.
-3. Restart the app.
-
-⚠️ Honor the license terms in `MODEL_LICENSE.md` — **retain attribution
-to the original creator** when swapping.
-
 ### Can I use voice call without ASR?
 
 **No.** The voice call hard-depends on Aliyun ASR (no mic permission =
