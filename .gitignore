@@ -41,6 +41,9 @@ tmprenderer-build.log
 # Sim result dumps
 sim-result/
 
+# Brainstorming visual companion mockups (local-only artifacts)
+.superpowers/
+
 # Windows quirk: 'nul' is a reserved device name, ignore if created by accident
 nul
 
