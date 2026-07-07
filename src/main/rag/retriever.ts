@@ -1,8 +1,10 @@
 import { JsonVectorStore, SearchResult } from "./vectorstore";
 import { EmbeddingProvider, getEmbeddingProvider } from "./embedding";
 
-// ── nodejieba 分词 ──
-import jieba from "nodejieba";
+// ── @node-rs/jieba 分词（Node 24 兼容；nodejieba 已弃用） ──
+import { Jieba } from "@node-rs/jieba";
+
+const jieba = new Jieba();
 
 interface TokenInfo {
   word: string;

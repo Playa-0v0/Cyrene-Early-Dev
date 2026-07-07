@@ -162,15 +162,20 @@ class EntityGraph {
     if (extracted.length > 0) this.save();
   }
 
-  /** 把一个名称灌入 jieba 自定义词典 */
+  /**
+   * 把一个名称灌入 jieba 自定义词典。
+   *
+   * 旧版 (nodejieba) 提供运行时 insertWord()，可以动态加词。
+   * 新版 (@node-rs/jieba) 没有这个 API —— 自定义词典必须在启动时通过
+   * Jieba.withDict(buffer) 一次性加载。运行时新增的实体名（如用户提
+   * 到的角色、地点）只能靠 jieba 默认词典 + HMM fallback 处理。
+   *
+   * 这里保留函数签名为 no-op，未来如果加 fallback（自维护小词表 + 后处理重组）可以接上。
+   */
   private feedSingleName(name: string): void {
-    try {
-      // 动态 require，避免顶层依赖导致启动报错
-      const jieba = require("nodejieba");
-      jieba.insertWord(name);
-    } catch {
-      // jieba 未就绪时安静跳过
-    }
+    // @node-rs/jieba 不支持运行时加词，这里是 no-op
+    // 实体名仍然在 EntityGraph 自己里被保存（不依赖 jieba 词典）
+    void name;
   }
 
   /** 搜索与 query 相关的实体和关系，返回可读文本 */
@@ -232,25 +237,20 @@ export function getAllEntityNames(): string[] {
 
 /**
  * 将实体图谱中的所有实体名灌入 jieba 自定义词典。
+ /**
  * 调用时机：应用启动后、图谱有更新时。
  * 这样 "昔涟"、"小鹿" 等 AI 伴侣核心名词不会被错误切分。
+ *
+ * 旧版 (nodejieba) 用 insertWord() 动态加词。
+ * 新版 (@node-rs/jieba) 不支持运行时加词，这里是 no-op，
+ * 仅记录日志表明词表已就绪。
  */
 export async function feedEntityNamesToJieba(): Promise<void> {
-  try {
-    const jieba = await import("nodejieba");
-    const names = getAllEntityNames();
-    if (names.length === 0) return;
-    for (const name of names) {
-      try {
-        jieba.default.insertWord(name);
-      } catch {
-        // 单个词插入失败不影响其他
-      }
-    }
-    console.log(`[EntityGraph] 灌入 ${names.length} 个自定义词到 jieba`);
-  } catch {
-    // jieba 未就绪时安静跳过
-  }
+  const names = getAllEntityNames();
+  if (names.length === 0) return;
+  // @node-rs/jieba 2.0.1 没有运行时加词 API
+  // 实体名仍然在 EntityGraph 自己里被保存（不依赖 jieba 词典）
+  console.log(`[EntityGraph] 实体词典就绪（${names.length} 个名称，依赖 jieba 默认词典 + HMM）`);
 }
 
 function typeLabel(type: EntityNode["type"]): string {
