@@ -1551,6 +1551,46 @@ pluginAddBtn?.addEventListener("click", async () => {
   }
 });
 
+// ── 🌐 内置 MCP 工具开关 ──────────────────────────────────────
+// Playwright MCP（浏览器自动化）和 Firecrawl hosted MCP（免 key 网页抓取）
+// 通过 settings 里的 playwrightMcpEnabled / firecrawlHostedMcpEnabled 控制，
+// main 端的 syncXxxMcp() 会监听这两个字段变化自动注册 / 移除 MCP server。
+const playwrightMcpCheckbox = document.getElementById("plugin-playwright-mcp-enabled") as HTMLInputElement | null;
+const firecrawlHostedMcpCheckbox = document.getElementById("plugin-firecrawl-hosted-mcp-enabled") as HTMLInputElement | null;
+
+async function saveBuiltinMcpField(field: string, value: unknown): Promise<void> {
+  if (!window.tts) return;
+  try {
+    await window.tts.saveSettings({ [field]: value });
+  } catch (err) {
+    console.warn(`[settings] 保存 ${field} 失败:`, err);
+  }
+}
+
+playwrightMcpCheckbox?.addEventListener("change", () => {
+  void saveBuiltinMcpField("playwrightMcpEnabled", playwrightMcpCheckbox.checked);
+});
+firecrawlHostedMcpCheckbox?.addEventListener("change", () => {
+  void saveBuiltinMcpField("firecrawlHostedMcpEnabled", firecrawlHostedMcpCheckbox.checked);
+});
+
+async function loadBuiltinMcpToggles(): Promise<void> {
+  try {
+    const cfg = await window.tts?.loadSettings();
+    if (cfg && playwrightMcpCheckbox) {
+      // 默认关闭 —— 启用会下载 Chromium，约 150MB
+      playwrightMcpCheckbox.checked = Boolean(cfg.playwrightMcpEnabled);
+    }
+    if (cfg && firecrawlHostedMcpCheckbox) {
+      // 默认开启 —— 免 key 的 hosted 端，限速但开箱即用
+      firecrawlHostedMcpCheckbox.checked = Boolean(cfg.firecrawlHostedMcpEnabled ?? true);
+    }
+  } catch (err) {
+    console.warn("[settings] 加载内置 MCP 开关失败:", err);
+  }
+}
+void loadBuiltinMcpToggles();
+
 clearChatHistoryBtn.addEventListener("click", async () => {
   if (!window.confirm("清空所有聊天会话？\n此操作会删除全部历史对话，无法恢复。")) return;
   try {
