@@ -13,5 +13,6 @@
     "declaration": false,
     "sourceMap": true
   },
-  "include": ["src/preload/**/*.ts", "src/shared/**/*.ts"]
+  "include": ["src/preload/**/*.ts", "src/shared/**/*.ts"],
+  "exclude": ["src/shared/renderer-base.ts"]
 }
