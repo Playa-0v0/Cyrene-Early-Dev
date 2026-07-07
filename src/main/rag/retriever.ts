@@ -45,6 +45,60 @@ const STOP_WEIGHT = 0.3;
 /** 名词加权系数 */
 const NOUN_WEIGHT = 1.3;
 
+// ── 自定义词表（entity-graph 维护） ──
+// @node-rs/jieba 没有运行时 insertWord()，改用「后处理重组」方案：
+// jieba 切完后，把被切散的自定义词（如"昔涟"→"昔","涟"）重新合并。
+const customWords = new Set<string>();
+
+/** 注册一个自定义词（让分词时不被切散） */
+export function registerJiebaCustomWord(word: string): void {
+  if (word.length >= 2) customWords.add(word);
+}
+
+/** 批量注册自定义词 */
+export function registerJiebaCustomWords(words: Iterable<string>): void {
+  for (const w of words) {
+    if (w.length >= 2) customWords.add(w);
+  }
+}
+
+/** 后处理：在 jieba.cut() 的结果里，把属于自定义词的连续 token 合并 */
+function mergeCustomWords(tokens: string[]): string[] {
+  if (customWords.size === 0 || tokens.length < 2) return tokens;
+
+  // 按长度倒序排序，优先匹配长词（避免"昔涟小助手"被错误合并成"昔涟小助手"）
+  const sortedWords = [...customWords].sort((a, b) => b.length - a.length);
+
+  // 用"窗口匹配"扫描：找到第一个能匹配的位置，合并若干个 token 为一个词
+  const result: string[] = [];
+  let i = 0;
+  while (i < tokens.length) {
+    let matched = false;
+    for (const word of sortedWords) {
+      const wordTokens = word.split(""); // 单字数组
+      // 检查从 i 开始的连续 token 是否能拼成 word
+      let ok = true;
+      for (let j = 0; j < wordTokens.length; j++) {
+        if (i + j >= tokens.length || tokens[i + j] !== wordTokens[j]) {
+          ok = false;
+          break;
+        }
+      }
+      if (ok) {
+        result.push(word);
+        i += wordTokens.length;
+        matched = true;
+        break;
+      }
+    }
+    if (!matched) {
+      result.push(tokens[i]);
+      i++;
+    }
+  }
+  return result;
+}
+
 function tokenize(text: string): TokenInfo[] {
   // 纯英文/数字文本走原来的空格分词逻辑（jieba 不适合纯英文）
   if (/^[a-zA-Z0-9\s]+$/.test(text)) {
@@ -57,13 +111,26 @@ function tokenize(text: string): TokenInfo[] {
   }
 
   try {
-    const tagged = jieba.tag(text);
-    return tagged.map(({ word, tag }) => ({
-      word: word.toLowerCase(),
-      tag,
-      isStop: STOP_WORDS.has(word) || STOP_TAGS.has(tag),
-      isNoun: NOUN_TAGS.has(tag),
-    }));
+    // 第二个参数 hmm=true 让 jieba 用 HMM 模型识别未登录词（如角色名"昔涟"）
+    // 默认词典不含"昔涟"等角色名，但 HMM 能根据上下文判断这是个整体
+    // 再叠加后处理：把 jieba 切散的自定义词重组
+    const rawCuts = jieba.cut(text, true);
+    const mergedCuts = mergeCustomWords(rawCuts);
+
+    // 用 jieba.tag 给重组后的词打标签（每个"词"独立 tag）
+    // 重组后词和原文本不对齐，所以对每个 merged token 单独 tag
+    const result: TokenInfo[] = [];
+    for (const word of mergedCuts) {
+      const tagged = jieba.tag(word, true);
+      const first = tagged[0] ?? { word, tag: "x" };
+      result.push({
+        word: word.toLowerCase(),
+        tag: first.tag,
+        isStop: STOP_WORDS.has(word) || STOP_TAGS.has(first.tag),
+        isNoun: NOUN_TAGS.has(first.tag),
+      });
+    }
+    return result;
   } catch {
     // jieba 失败时回退到单字切分
     const tokens: TokenInfo[] = [];
