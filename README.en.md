@@ -51,7 +51,7 @@ artwork, story content, and trademarks are the intellectual property of
 | 💬 WeChat iLink Bot | 🧪 Experimental |
 | 🤖 Game Bot automation | 🧪 Experimental |
 | 🔌 MCP (Model Context Protocol) ecosystem | 🧪 Experimental |
-| ✨ Skill system | 🧪 Experimental |
+| ✨ Skill system | ✅ Stable |
 | 📚 RAG document knowledge base (hybrid retrieval / reranker) | 🧪 Experimental |
 
 > ✅ Stable = usable for daily use; 🧪 Experimental = implemented but edge cases / compatibility / UX still being polished.
@@ -168,6 +168,8 @@ testing has only happened on Windows**.
 If you hit platform-specific issues on macOS/Linux, please open an issue.
 
 ### Is my API key safe?
+
+**⚠️ Short answer: do not run on shared or untrusted machines.**
 
 **Chat / Vision API keys, Aliyun ASR credentials, TTS engine keys are all
 stored in plain-text JSON** under `<userData>/`:
@@ -291,8 +293,8 @@ an issue with the snapshot attached.
 - **Lark / Feishu long-connection** — Official SDK + WebSocket (no public
   domain / intranet penetration needed); p2p chat, multi-modal text /
   image / audio / video / file / sticker.
-- **WeChat iLink Bot** — `@tencent-weixin/openclaw-weixin` + CLI, QR-code
-  login → long-poll 35 s `getUpdates` → auto `sendText`.
+- **WeChat iLink Bot** — iLink Bot HTTP / long-poll 35 s `getUpdates` →
+  auto `sendText`.
 
 #### 🤖 Game Bot Automation
 - `engine.ts` step interpreter supports `launch / wait / key / click /
