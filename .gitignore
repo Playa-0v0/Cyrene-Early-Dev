@@ -57,3 +57,5 @@ Thumbs.db
 .env
 .env.*
 !.env.example
+# Video/preview render projects (not source code)
+videos/
