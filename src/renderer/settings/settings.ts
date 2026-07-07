@@ -262,6 +262,8 @@ interface GeneralSettings {
   petAlwaysOnTop: boolean;
   petVisible: boolean;
   petZoom: number;
+  sidebarVisible: boolean;
+  tasksVisible: boolean;
   launchAtLogin: boolean;
   language: "zh-CN";
   uiTheme: "classic" | "polished-pink" | "pearl-white";
@@ -463,7 +465,7 @@ if (!window.settings) {
         stickerSize: "standard",
       }),
     saveConfig: (c) => Promise.resolve(c as ModelSettings),
-    getGeneral: () => Promise.resolve({ musicEnabled: false, musicVolume: 60, soundEnabled: true, soundVolume: 70, petAlwaysOnTop: true, petVisible: true, petZoom: 1, launchAtLogin: false, language: "zh-CN", uiTheme: "classic" }),
+    getGeneral: () => Promise.resolve({ musicEnabled: false, musicVolume: 60, soundEnabled: true, soundVolume: 70, petAlwaysOnTop: true, petVisible: true, petZoom: 1, sidebarVisible: true, tasksVisible: true, launchAtLogin: false, language: "zh-CN", uiTheme: "classic" }),
     saveGeneral: (c) => Promise.resolve(c as GeneralSettings),
     openSidebar: () => {},
     closeSidebar: () => {},
@@ -921,6 +923,8 @@ async function loadGeneralSettings(): Promise<void> {
     petVisibleInput.checked = cfg.petVisible;
     petZoomInput.value = String(cfg.petZoom ?? 1);
     petZoomVal.textContent = Math.round((cfg.petZoom ?? 1) * 100) + "%";
+    sidebarVisibleInput.checked = cfg.sidebarVisible ?? true;
+    tasksVisibleInput.checked = cfg.tasksVisible ?? true;
     launchAtLoginInput.checked = cfg.launchAtLogin;
     applyUiThemeSelection(normalizeUiTheme(cfg.uiTheme));
     applyLanguageSelection("zh-CN");
@@ -959,11 +963,13 @@ stickerThresholdInput.addEventListener("input", () => {
 sidebarVisibleInput.addEventListener("change", () => {
   if (sidebarVisibleInput.checked) window.settings?.openSidebar();
   else window.settings?.closeSidebar();
+  void window.settings?.saveGeneral({ sidebarVisible: sidebarVisibleInput.checked });
 });
 
 tasksVisibleInput.addEventListener("change", () => {
   if (tasksVisibleInput.checked) window.settings?.openTasks();
   else window.settings?.closeTasks();
+  void window.settings?.saveGeneral({ tasksVisible: tasksVisibleInput.checked });
 });
 
 musicEnabledInput.addEventListener("change", () => {
@@ -1782,6 +1788,8 @@ generalForm.addEventListener("submit", async (e) => {
       petAlwaysOnTop: petAlwaysOnTopInput.checked,
       petVisible: petVisibleInput.checked,
       petZoom: Number(petZoomInput.value),
+      sidebarVisible: sidebarVisibleInput.checked,
+      tasksVisible: tasksVisibleInput.checked,
       launchAtLogin: launchAtLoginInput.checked,
       language: "zh-CN",
       uiTheme: getUiThemeValue(),

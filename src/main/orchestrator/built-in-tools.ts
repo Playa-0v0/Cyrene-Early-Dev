@@ -371,6 +371,7 @@ const WEATHER_TIMEOUT_MS = 15_000;
 let weatherCityGetter: (() => string) | null = null;
 let weatherSourceGetter: (() => string) | null = null;
 let amapKeyGetter: (() => string) | null = null;
+let weatherEnabledGetter: (() => boolean) | null = null;
 
 /** 天气卡片数据回调：工具拿到结构化数据后调这个，由桥层发 Custom 事件给渲染端。 */
 let weatherCardCallback: ((card: WeatherCardData) => void) | null = null;
@@ -454,10 +455,12 @@ export function setWeatherConfig(
   sourceGetter: () => string,
   amapKeyFn: () => string,
   cardCb?: (card: WeatherCardData) => void,
+  enabledGetter?: () => boolean,
 ): void {
   weatherCityGetter = cityGetter;
   weatherSourceGetter = sourceGetter;
   amapKeyGetter = amapKeyFn;
+  weatherEnabledGetter = enabledGetter ?? null;
   if (cardCb) weatherCardCallback = cardCb;
 }
 
@@ -639,6 +642,10 @@ async function amapFetchWeather(city: string, key: string): Promise<string> {
 }
 
 async function executeWeather(args: Record<string, unknown>): Promise<string> {
+  if (weatherEnabledGetter && !weatherEnabledGetter()) {
+    return "[错误] 天气查询功能未启用，请在设置里开启";
+  }
+
   const source = weatherSourceGetter?.() ?? "open-meteo";
 
   // 城市：参数优先，没传读用户信息默认城市

@@ -35,7 +35,9 @@ import { buildStickerEmbeddingIndex, matchSticker } from "./sticker-embedder";
 import type { StickerEmbeddingEntry } from "./sticker-embedder";
 import { buildSceneIndex } from "./scene-embedder";
 import type { SceneIndex } from "./scene-embedder";
-import { loadUserStickerManifest, addUserSticker, deleteUserSticker, getAllStickerConfig, isStickerIdTaken, getUserStickerFilePath } from "./sticker-storage";
+import { loadUserStickerManifest, addUserSticker, deleteUserSticker, getAllStickerConfig, isStickerIdTaken, getStickersDir } from "./sticker-storage";
+import { parseLocalStickerFileFromUrl, resolveLocalStickerPath } from "./sticker-protocol";
+import { normalizeWindowVisibilitySettings } from "./window-visibility-settings";
 import type { StickerConfigItem } from "../shared/sticker-types";
 import { initReranker } from "./rag/reranker";
 import { memoryStore } from "./memory/memory-store"
@@ -359,6 +361,8 @@ interface GeneralSettings {
   petVisible: boolean;
   /** 桌宠缩放因子：1.0=默认，0.5~2.0，窗口与模型同步等比缩放。 */
   petZoom: number;
+  sidebarVisible: boolean;
+  tasksVisible: boolean;
   launchAtLogin: boolean;
   language: "zh-CN";
   uiTheme: "classic" | "polished-pink" | "pearl-white";
@@ -508,6 +512,8 @@ const DEFAULT_GENERAL_SETTINGS: GeneralSettings = {
   petAlwaysOnTop: true,
   petVisible: true,
   petZoom: 1,
+  sidebarVisible: true,
+  tasksVisible: true,
   launchAtLogin: false,
   language: "zh-CN",
   uiTheme: "classic",
@@ -868,6 +874,7 @@ function saveModelSettings(settings: Partial<ModelSettings>): ModelSettings {
 }
 
 function normalizeGeneralSettings(input: Partial<GeneralSettings> | null | undefined): GeneralSettings {
+  const windowVisibility = normalizeWindowVisibilitySettings(input);
   const clamp = (value: unknown, fallback: number) => {
     const num = typeof value === "number" ? value : Number(value);
     return Number.isFinite(num) ? Math.max(0, Math.min(100, Math.round(num))) : fallback;
@@ -888,6 +895,8 @@ function normalizeGeneralSettings(input: Partial<GeneralSettings> | null | undef
     petAlwaysOnTop: input?.petAlwaysOnTop === undefined ? DEFAULT_GENERAL_SETTINGS.petAlwaysOnTop : Boolean(input.petAlwaysOnTop),
     petVisible: input?.petVisible === undefined ? DEFAULT_GENERAL_SETTINGS.petVisible : Boolean(input.petVisible),
     petZoom: typeof input?.petZoom === "number" ? Math.max(0.5, Math.min(2, input.petZoom)) : DEFAULT_GENERAL_SETTINGS.petZoom,
+    sidebarVisible: windowVisibility.sidebarVisible,
+    tasksVisible: windowVisibility.tasksVisible,
     launchAtLogin: Boolean(input?.launchAtLogin),
     language: "zh-CN",
     uiTheme: input?.uiTheme === "pearl-white" ? "pearl-white" : input?.uiTheme === "polished-pink" ? "polished-pink" : "classic",
@@ -992,10 +1001,16 @@ function saveGeneralSettings(settings: Partial<GeneralSettings>): GeneralSetting
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, JSON.stringify(normalized, null, 2), "utf8");
   applyGeneralSettings(normalized);
+  syncBuiltInToolToggles(normalized);
   if (before.uiTheme !== normalized.uiTheme) {
     broadcastUiThemeChanged(normalized.uiTheme);
   }
   return normalized;
+}
+
+function syncBuiltInToolToggles(settings: GeneralSettings): void {
+  toolRegistry.setEnabled("weather", settings.weatherEnabled);
+  toolRegistry.setEnabled("plan_trip", settings.travelEnabled);
 }
 
 /** MiniMax 搜索 MCP Server 的固定 ID。 */
@@ -1829,6 +1844,7 @@ function createWindow(): void {
         });
       }
     },
+    () => loadGeneralSettings().weatherEnabled,
   );
 
   // 注入用户选择卡片回调：工具调 ask_user_choice 时发 Custom 事件给聊天窗口
@@ -1850,7 +1866,7 @@ function createWindow(): void {
   );
 
   // 注入出行工具 amapKey 获取器（复用 GeneralSettings 中的 amapKey）
-  setTravelConfig(() => loadGeneralSettings().amapKey);
+  setTravelConfig(() => loadGeneralSettings().amapKey, () => loadGeneralSettings().travelEnabled);
 
   // 注入邮件工具 SMTP 配置获取器（每次执行实时读 GeneralSettings）
   setEmailConfig(
@@ -2896,10 +2912,12 @@ protocol.registerSchemesAsPrivileged([
 app.whenReady().then(async () => {
   // 注册 local-sticker:// 协议处理器：将请求映射到 userData/stickers/ 下的文件
   protocol.handle("local-sticker", (request) => {
-    const url = new URL(request.url);
-    // url.pathname 形如 "/mycat.jpg" 或 "mycat.jpg"
-    const file = url.pathname.replace(/^\/+/, "");
-    const filePath = getUserStickerFilePath(file);
+    const file = parseLocalStickerFileFromUrl(request.url);
+    if (!file) return new Response("Invalid sticker URL", { status: 404 });
+
+    const filePath = resolveLocalStickerPath(getStickersDir(), file);
+    if (!filePath) return new Response("Invalid sticker path", { status: 403 });
+
     return net.fetch(pathToFileURL(filePath).toString());
   });
   // Token 用量查询 IPC
@@ -3426,6 +3444,7 @@ app.whenReady().then(async () => {
 
   // 邮件发送工具（SMTP 直发，需在设置里配置 SMTP 授权码）
   registerEmailTools();
+  syncBuiltInToolToggles(loadGeneralSettings());
 
   // Skill 系统：扫描双源 skills + 注册 meta-tool
   initSkills();
@@ -3706,10 +3725,11 @@ app.whenReady().then(async () => {
   });
   ipcMain.handle(IPC.CHATS_GET_ACTIVE_SESSION, () => activeChatSessionId);
 
+  const generalSettings = loadGeneralSettings();
   createWindow();
   createChatWindow();
-  createSidebarWindow();
-  createTasksWindow();
+  if (generalSettings.sidebarVisible) createSidebarWindow();
+  if (generalSettings.tasksVisible) createTasksWindow();
   createTray();
   // 权限模块初始化：必须在 createWindow 之后但任意工具调用之前
   initPermissionFromDisk();

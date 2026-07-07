@@ -9,10 +9,11 @@ import { app } from "electron";
 import { BUILT_IN_STICKER_FILES, BUILT_IN_STICKER_DESCRIPTIONS } from "./sticker-descriptions";
 import { BUILT_IN_STICKER_IDS } from "../shared/sticker-types";
 import type { UserStickerMeta, StickerConfigItem } from "../shared/sticker-types";
+import { buildLocalStickerUrl } from "./sticker-protocol";
 
 // ── 路径 ──
 
-function getStickersDir(): string {
+export function getStickersDir(): string {
   return path.join(app.getPath("userData"), "stickers");
 }
 
@@ -152,7 +153,7 @@ export function getAllStickerConfig(
 
 /** 获取用户 sticker 图片的本地协议 URL */
 export function getLocalStickerUrl(file: string): string {
-  return `local-sticker://${file}`;
+  return buildLocalStickerUrl(file);
 }
 
 /** 获取用户 sticker 文件的本地磁盘路径 */

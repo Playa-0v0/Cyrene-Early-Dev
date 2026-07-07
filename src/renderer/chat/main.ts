@@ -7,6 +7,7 @@ import {
   type ChatSessionMetaUI,
 } from "../../shared/chat-ui";
 import { canUseMinimaxStreamingEarly, extractEarlyTtsSegment } from "../../shared/tts-early-playback";
+import { getStickerSrcForId } from "./sticker-src";
 
 type Role = "user" | "model";
 
@@ -259,17 +260,7 @@ const BUILT_IN_STICKER_SRC: Record<string, string> = {
 };
 
 function getStickerSrc(id: string): string | undefined {
-  // 内置 sticker 用已知路径
-  if (id in BUILT_IN_STICKER_SRC) {
-    return BUILT_IN_STICKER_SRC[id];
-  }
-  // 用户自定义 sticker 用 local-sticker:// 协议
-  // 注意：只有用户添加的才走这里，已删除的旧内置 ID 会返回 undefined
-  if (id.includes(".")) {
-    return `local-sticker://${id}`;
-  }
-  // 无后缀的未知 ID（可能是已删除的旧内置 sticker），不渲染
-  return undefined;
+  return getStickerSrcForId(id, BUILT_IN_STICKER_SRC, enabledStickers);
 }
 
 // 多会话改造：messages 是当前活跃 session 的消息数组（启动时为空，由 bootstrap 填充）。
@@ -1870,7 +1861,7 @@ function insertSticker(id: string): void {
 function showStickerPicker(): void {
   stickerPicker.hidden = false;
   stickerPickerBtn.classList.add("is-active");
-  renderStickerPicker();
+  void loadEnabledStickers().then(renderStickerPicker);
 }
 
 function hideStickerPicker(): void {
@@ -2834,12 +2825,14 @@ if (particlesCtx) {
 
 
 // 启动：迁移老 localStorage → 选会话 → render
+// 先把用户贴纸目录拉到内存，再 bootstrap 渲染历史消息——否则首屏里
+// 纯贴纸消息（气泡已隐藏）会因 enabledStickers 还没加载而渲染成空白。
 void (async () => {
+  await loadEnabledStickers();
   await bootstrap();
   buildQuickPresets();
   installSchedulerEventListener();
   void initModelConfig();
-  void loadEnabledStickers();
 })();
 
 // main → renderer：设置面板点列表/新对话时，让窗口切到指定 session

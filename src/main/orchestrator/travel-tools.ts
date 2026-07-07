@@ -16,10 +16,12 @@ const TRAVEL_TIMEOUT_MS = 15000;
 // ══════════════════════════════════════════════════════════
 
 let amapKeyGetter: (() => string) | null = null;
+let travelEnabledGetter: (() => boolean) | null = null;
 
 /** index.ts 启动时注入 amapKey 获取器。 */
-export function setTravelConfig(amapKeyFn: () => string): void {
+export function setTravelConfig(amapKeyFn: () => string, enabledFn?: () => boolean): void {
   amapKeyGetter = amapKeyFn;
+  travelEnabledGetter = enabledFn ?? null;
 }
 
 // ══════════════════════════════════════════════════════════
@@ -199,6 +201,10 @@ async function planTransit(
 // ══════════════════════════════════════════════════════════
 
 async function executePlanTrip(args: Record<string, unknown>): Promise<string> {
+  if (travelEnabledGetter && !travelEnabledGetter()) {
+    return "[错误] 出行工具未启用，请在设置里开启";
+  }
+
   const amapKey = amapKeyGetter?.() ?? "";
   if (!amapKey) {
     return "[提示] 高德 API Key 未配置。可在 设置→插件 中找到 🚗出行工具，填入高德 Web 服务 API Key（注册地址：https://lbs.amap.com）。";
