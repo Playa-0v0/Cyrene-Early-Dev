@@ -71,7 +71,7 @@ export const LIVE2D_ACTIONS: readonly Live2DAction[] = [
     description: "眼睛变成弯弯的笑眼",
     target: { kind: "expression", name: "开心眼" },
   },
-] as const;
+];
 
 /**
  * Look up an action by its alias. Case-insensitive. Returns undefined for

@@ -69,6 +69,11 @@ describe("findAction", () => {
     expect(findAction("")).toBeUndefined();
   });
 
+  it("returns undefined for whitespace-only input", () => {
+    expect(findAction("   ")).toBeUndefined();
+    expect(findAction("\t\n")).toBeUndefined();
+  });
+
   it("every alias resolves via findAction", () => {
     for (const a of LIVE2D_ACTIONS) {
       expect(findAction(a.alias)?.alias).toBe(a.alias);
