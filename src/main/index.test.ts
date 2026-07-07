@@ -29,13 +29,13 @@ describe("syncPlaywrightMcp", () => {
   });
 
   it("does nothing when disabled and not connected", async () => {
-    await syncPlaywrightMcp({ playwrightMcpEnabled: false } as any);
+    await syncPlaywrightMcp({ playwrightMcpEnabled: false });
     expect(mockAdd).not.toHaveBeenCalled();
     expect(mockRemove).not.toHaveBeenCalled();
   });
 
   it("adds stdio server when enabled and not connected", async () => {
-    await syncPlaywrightMcp({ playwrightMcpEnabled: true } as any);
+    await syncPlaywrightMcp({ playwrightMcpEnabled: true });
     expect(mockAdd).toHaveBeenCalledWith(expect.objectContaining({
       id: "playwright-mcp",
       transport: "stdio",
@@ -46,13 +46,13 @@ describe("syncPlaywrightMcp", () => {
 
   it("removes when disabled and connected", async () => {
     mockList.mockReturnValue([{ id: "playwright-mcp", name: "x", connected: true, toolCount: 0, toolIds: [] }]);
-    await syncPlaywrightMcp({ playwrightMcpEnabled: false } as any);
+    await syncPlaywrightMcp({ playwrightMcpEnabled: false });
     expect(mockRemove).toHaveBeenCalledWith("playwright-mcp");
   });
 
   it("no-op when enabled and already connected", async () => {
     mockList.mockReturnValue([{ id: "playwright-mcp", name: "x", connected: true, toolCount: 0, toolIds: [] }]);
-    await syncPlaywrightMcp({ playwrightMcpEnabled: true } as any);
+    await syncPlaywrightMcp({ playwrightMcpEnabled: true });
     expect(mockAdd).not.toHaveBeenCalled();
     expect(mockRemove).not.toHaveBeenCalled();
   });
@@ -65,7 +65,7 @@ describe("syncFirecrawlHostedMcp", () => {
   });
 
   it("adds sse server when enabled and not connected", async () => {
-    await syncFirecrawlHostedMcp({ firecrawlHostedMcpEnabled: true } as any);
+    await syncFirecrawlHostedMcp({ firecrawlHostedMcpEnabled: true });
     expect(mockAdd).toHaveBeenCalledWith(expect.objectContaining({
       id: "firecrawl-hosted",
       transport: "sse",
@@ -75,7 +75,7 @@ describe("syncFirecrawlHostedMcp", () => {
 
   it("removes when disabled and connected", async () => {
     mockList.mockReturnValue([{ id: "firecrawl-hosted", name: "x", connected: true, toolCount: 0, toolIds: [] }]);
-    await syncFirecrawlHostedMcp({ firecrawlHostedMcpEnabled: false } as any);
+    await syncFirecrawlHostedMcp({ firecrawlHostedMcpEnabled: false });
     expect(mockRemove).toHaveBeenCalledWith("firecrawl-hosted");
   });
 });
