@@ -1,6 +1,7 @@
 // MCP Adapter — 将 MCP server 的工具发现和调用适配到 ToolRegistry
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
 import { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 import { ToolDefinition, toolRegistry } from "./tool-registry";
 
@@ -9,11 +10,12 @@ const LOG_PREFIX = "[MCP Adapter]";
 export interface McpServerConfig {
   id: string;              // 唯一标识
   name: string;            // 展示名
-  transport: "stdio";
-  command: string;         // 可执行文件路径
+  transport: "stdio" | "sse";
+  command?: string;         // stdio 必填,sse 不用
   args?: string[];         // 命令行参数
   env?: Record<string, string>;
   cwd?: string;
+  url?: string;            // sse 必填,stdio 不用
 }
 
 interface McpServerState {
@@ -31,12 +33,23 @@ interface McpServerState {
 export async function connectMcpServer(config: McpServerConfig): Promise<string[]> {
   console.log(LOG_PREFIX, "连接 MCP server:", config.name, "(" + config.id + ")");
 
-  const transport = new StdioClientTransport({
-    command: config.command,
-    args: config.args,
-    env: config.env,
-    cwd: config.cwd,
-  });
+  let transport: Transport;
+  if (config.transport === "sse") {
+    if (!config.url) {
+      throw new Error("sse transport requires url");
+    }
+    transport = new SSEClientTransport(new URL(config.url));
+  } else {
+    if (!config.command) {
+      throw new Error("stdio transport requires command");
+    }
+    transport = new StdioClientTransport({
+      command: config.command,
+      args: config.args,
+      env: config.env,
+      cwd: config.cwd,
+    });
+  }
 
   // 监听 transport 错误
   transport.onerror = (err: Error) => {
