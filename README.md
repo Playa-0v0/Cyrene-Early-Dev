@@ -6,21 +6,17 @@
 
 [English](./README.en.md) | **中文**
 
-> Live2D 桌面智能伴侣 (Electron + TS) — Cyrene from Honkai: Star Rail.
+</div>
 
-基于 Electron + TypeScript 开发的桌面端 Live2D 智能对话 Agent，
-搭载《崩坏：星穹铁道》昔涟（Cyrene）人设，支持日常聊天、情感交互
-与个性化记忆引擎。
+**Cyrene-Agent 是一个 Windows 桌面 Live2D AI 伴侣，支持聊天、记忆、语音、工具调用和多平台接入。**
+
+> 基于 Electron + TypeScript 开发的桌面端 Live2D 智能对话 Agent，
+> 搭载《崩坏：星穹铁道》昔涟（Cyrene）人设，支持日常聊天、情感交互
+> 与个性化记忆引擎。
 
 ---
 
-</div>
-
-<div align="center">
-
 ## ⚠️ 免责声明
-
-</div>
 
 本项目为**非官方粉丝同人作品**，与 HoYoverse / 米哈游**无任何关联、
 背书或赞助关系**。
@@ -28,188 +24,32 @@
 《崩坏：星穹铁道》、"昔涟"角色及其相关美术、世界观、商标等知识产权
 归 **HoYoverse / 米哈游**所有。
 
-本项目以 MIT 协议发布，**仅供个人非商用使用**。根据米哈游同人创作
-规范，任何商业用途均**严格禁止**。
+**关于授权范围的说明**：
+
+- **源代码**采用 [MIT License](./LICENSE)，仅约束本仓库的源代码。
+- **角色 IP、Live2D 模型、美术资产** 不属于 MIT 授权范围，分别遵循
+  [MODEL_LICENSE.md](./MODEL_LICENSE.md) 与米哈游同人创作规范处理。
+- 因底层角色 IP 涉及米哈游同人创作规范，**本项目及其衍生物严禁任何
+  商业用途**（售卖、付费社群、含广告变现、打包销售等）。
 
 ---
 
-## ✨ 功能
+## 📊 当前状态
 
-### 🪟 桌面伴侣
-- **Live2D 桌宠** — 基于 `pixi-live2d-display` + Cubism 引擎的置顶桌宠，
-  支持表情切换、嘴型同步、点击交互与自然待机动画。
-- **多窗口架构** — 7 个独立 BrowserWindow：主聊天、侧边栏、任务面板、
-  设置、贴纸管理、语音通话、桌宠本体，各窗口互不干扰。
-- **桌宠状态联动** — 桌宠显示「陪伴中/思考中/工作中/聆听中/提醒中」等
-  状态与「平静/开心/温柔/激动/撒娇」等情绪，跟着对话实时变化。
-- **窗口置顶 / 拖动 / 鼠标穿透** — 支持置顶 toggle、任意拖动、需要时
-  鼠标穿透到下层窗口（不影响桌宠存在）。
-- **托盘菜单** — 系统托盘右键快捷进入状态面板、设置、显示-隐藏桌宠、
-  退出。
-- **AG-UI 表情广播** — Agent 通过 `play_live2d_action` 工具把「表情 +
-  动作 + 气泡」事件推到桌宠窗口，让桌宠随对话情绪同步表演。
-- **一键缩放与可见性** — 设置面板可调桌宠大小、随时显示/隐藏，
-  配合开机启动。
+| 模块 | 状态 |
+| --- | --- |
+| 🪟 桌宠 / 多窗口 / 表情互动 | ✅ 可用 |
+| 💬 日常聊天 / 语音通话 / 多会话历史 / 贴纸 | ✅ 可用 |
+| 🧠 记忆系统（L0/L1/L2 + 自研 DMAE Worldbook 引擎） | ✅ 可用 |
+| 🔊 TTS / ASR / 文档生成 / 联网搜索 / 文件操作 | ✅ 可用 |
+| 💼 飞书 Lark 长连接 | 🧪 实验性 |
+| 💬 微信 iLink Bot | 🧪 实验性 |
+| 🤖 Game Bot 游戏自动化 | 🧪 实验性 |
+| 🔌 MCP（Model Context Protocol）生态 | 🧪 实验性 |
+| ✨ Skill 系统 | 🧪 实验性 |
+| 📚 RAG 文档知识库（含混合检索 / reranker） | 🧪 实验性 |
 
-### 💬 对话
-- **日常聊天** — 基于昔涟人设（system.md / identity.md / soul.md /
-  canon_quotes.md）的自然对话 Agent，支持桌面/手机/通话三种人格风格切换。
-- **AG-UI 事件流** — 标准化的 Agent 事件流（RUN_STARTED / TEXT_MESSAGE /
-  TOOL_CALL / RUN_FINISHED），逐字 delta 流式渲染，体感接近实时回复。
-- **多会话历史** — 每个会话独立 JSON 持久化（`<userData>/cyrene-chats/`），
-  自动派生标题、按 `updatedAt` 排序、双击重命名，告别 localStorage 时代。
-- **拖拽文件摄入** — 直接拖入 PDF/MD/TXT/DOCX/XLSX/PPTX/CSV/JSON 到聊天窗口，
-  自动切块注入 RAG 知识库，文档可追溯。
-- **TTS 朗读 + 一键复制** — 每条消息内嵌 SVG 图标，点击直接朗读或复制。
-- **会话侧栏** — 右侧 rail 列出所有会话（新建/列表/空态），按时间倒序，
-  30 s 轮询实时刷新。
-- **用户选择卡片** — Agent 遇到歧义问题时弹出选择卡片（`ask_user_choice`），
-  走 AGUI CUSTOM 事件，无需用户口述答案。
-- **表情贴纸** — 内置贴纸选择器（small/standard/large 三档大小），
-  AI 可自动按回复相似度匹配最合适的贴纸。
-- **TTS 早播优化** — 流式输出期间提前合成首段音频播放，减少首字延迟。
-- **语音通话** — 状态机 `IDLE → LISTENING → THINKING → SPEAKING → ENDED`，
-  24 轮滑动窗口上下文，VAD 静默触发自动回复。
-- **通话上下文持久** — 通话结束后 24 轮 × 2 条滑动窗口保留，下次重连可
-  接续上下文。
-
-### 🧠 记忆引擎
-- **L0 核心画像** — 昵称、称呼、职业、长期兴趣、常用语言、备注；
-  `isPinned` 字段锁定后 AI 不自动覆写。
-- **L1 近期状态** — `recentGoals` / `recentPreferences` / `currentProject`
-  短期画像，定期刷新。
-- **L2 长期记忆** — `weight` (0-100)、`accessCount`、`status`
-  (active/aging/archived/superseded/merged)、`conflictWith`、`evidenceIds`
-  完整证据链，可单条删除/置顶/批量归档。
-- **权重自动衰减** — 每轮 -1，平方加速 + `sqrt(intrinsicValue)` 阻力；
-  weight 阈值 60/30/10 自动切换 active/aging/archived。
-- **冲突检测与解决** — 本地词法候选 → RAG 召回 → 评分 → 队列 →
-  resolver 解决；状态机 `candidate → pending → confirmed/dismissed/resolved`，
-  解决类型覆盖「无关/语境差异/偏好演变/直接冲突/待确认」。
-- **个性化召回** — `recall_history` 工具 + 每次 L2 召回自动
-  `updateL2RecallStats(+1)`，`recent-injected-memory` 防重复注入。
-- **DMAE Worldbook 引擎** — Markdown 词条格式（触发词/常驻/优先级/
-  内在价值/连带触发词），`Ru = Bu × (1 + γ·ln(1+U_old))` 激活公式，
-  Active/Dormant/Archived 三态状态机。
-- **One-Shot 连带触发** — 1 层封顶 + userHit 拦截 + cascade 去重，
-  让相关条目按因果链自动激活。
-- **文档与知识导入 RAG** — 支持 txt/md/pdf/docx/xlsx/pptx/csv/json，
-  导入后 `source: imported_doc` 可追溯，整片删除一键清理。
-- **混合检索** — 向量 + BM25 + reranker 三档（light/standard/none），
-  embedding 走本地 `@xenova/transformers` 或云端 OpenAI 兼容。
-- **实体关系图谱** — jieba 词典注入防止「昔涟/小鹿」等被错误切分，
-  注入 `【人物关系】` 段强化角色间关系记忆。
-- **关系画像日志** — 每轮记录心情正则（疲惫/焦虑/低落/开心）+ `nextCareCue`
-  下一次关怀钩子；日摘要压缩 + 90 天滚动窗口。
-
-### 🛠 任务与工具
-- **任务面板** — 今日日期 + 当前 token 用量 + 7 日 token 柱状图
-  (Chart.js) + 今日定时任务列表，30 s 轮询 + scheduler 事件驱动刷新。
-- **定时任务调度** — 单 timer 调度最近触发（`maxTimerDelay = 1h`），
-  任务类型 `once` / `daily` / `weekly` / `interval`，错过重算
-  `normalizeOverdueNextFireAt`，触发时给 agent 注入「我是定时任务」元数据。
-- **文档生成工具** — `write_excel` (exceljs 多 sheet/公式/样式)、
-  `write_word` (docx 段落/表格/标题/列表/页眉页脚/目录)、
-  `write_pdf` (pdfkit 文本/表格/字体嵌入)、`write_markdown`。
-- **文件 / Shell 工具** — `read_file` / `list_dir` / `write_file` /
-  `read_image` (走 vision captioner 解析图片内容)。
-- **联网 / 网页** — `fetch_url` (turndown HTML→Markdown)、
-  `web_search` (搜索 + 抓取，playwright 兜底)。
-- **生活小工具** — `record_expense` / `query_expense` 记账 + 汇总、
-  `exchange_rate` 汇率、`translate` 翻译、`apply_patch` unified diff 应用、
-  `plan_trip` 多日行程规划。
-- **任务委派与询问** — `delegate_task` (sub-agent)、`todo_write`
-  任务清单 + 状态栏、`ask_user_choice` 用户选择卡片。
-- **Skill 系统** — 双源扫描（`prompts/skills/` 内置 + `<userData>/skills/`
-  用户覆盖，目录级整体覆盖），Meta 工具 `invoke_skill` /
-  `read_skill_reference`（含路径穿越防护 + 读重放拦截 + 大文本截断），
-  支持 `/skill_id ...` slash 命令。
-- **Game Bot 自动化** — `engine.ts` 步骤解释器支持 `launch / wait / key /
-  click / vlm_click / vlm_select / vlm_check / branch` 等指令，配合
-  GameRecipe 格式描述自动化流程，暴露为 `game_bot_start` 工具。
-- **权限分级** — `ToolRiskLevel` (safe/caution/dangerous) 三档审批，
-  危险操作弹窗确认。
-
-### 🎨 主题与界面
-- **多主题系统** — 珠光白、经典、季节限定多套主题，CSS variables 驱动，
-  文本可读性达 WCAG-AA 标准。
-- **侧边栏总览** — 📌 置顶 toggle、💬 打开聊天 / ⏰ 任务 / ⚙️ 设置 /
-  🔑 切换模型 / 📞 通话一键直达，实时显示在线/离线 + 状态 emoji +
-  情绪 emoji + 当前模型 displayName。
-- **聊天窗** — 消息流、附件气泡、sticker 嵌入、todo 状态条、weather 气泡、
-  ask_user_choice 卡片、AG-UI 流式 delta、复制/朗读 SVG、history rail、
-  sticker picker、min/max/close 完整生命周期。
-- **任务面板** — 含 Chart.js 7 日柱状图、日均/峰值、当前日期、当前 token。
-- **设置面板** — 14 个标签页：🧠 记忆 / 💬 聊天 / 👤 用户信息 / ⏰ 定时
-  任务 / 💼 职位 / ✨ 技能 / 🔌 插件 / 🌐 外部 MCP / ⚙️ 通用 / 🔑 API /
-  🌸 昔涟设置 / 📱 连接手机 / 🎙️ TTS / 🎧 ASR / 📊 Token 用量 / 📜 免责声明。
-- **贴纸管理** — 网格视图 + 启用开关 + 内置/自定义分类。
-- **Modal 组件** — 自实现通用确认弹窗（inline modal 避免 Vite tree-shaking），
-  自实现 input 弹窗（Electron 禁用 `window.prompt` 兜底）。
-- **图标 SVG 内联** — 不依赖 emoji 字体，颜色随主题（currentColor）。
-
-### 🔌 外部集成
-- **飞书 Lark 长连接** — 官方 SDK + WebSocket 长连接（无需公网/域名/
-  内网穿透），私聊 only，支持 text / image / audio / video / file / sticker
-  多模态，资源自动下载到本地缓存。
-- **微信 iLink Bot** — `@tencent-weixin/openclaw-weixin` + CLI，扫码登录 →
-  long-poll 35s 拉取 `getUpdates` → 主回复链 `dispatchInbound → sendText`，
-  `SessionExpiredError` 自动提示重新扫码。
-- **MCP（Model Context Protocol）** — 支持 stdio / SSE / HTTP 三种 transport，
-  内置 servers 自动同步，`install_mcp_server` 工具让 agent 自动安装新 server。
-- **多 LLM 厂商** — OpenAI / Anthropic 兼容适配，厂商能力表 + transport
-  启发式探测，per-provider 配置 + test connection。
-- **多模态 vision** — 设置页 vision 子配置 (`baseUrl / apiKey / model`)，
-  `SETTINGS_TEST_VISION` 一键测连通性。
-- **二维码生成 / 解析** — `qrcode` 生成 dataURL，`qr-image` 解析图片内
-  二维码，渠道配置扫码登录流程。
-
-### 🔊 语音
-- **多 TTS 引擎** — MiniMax / GPT-SoVITS / 自定义云端 / MiMo / off 五档
-  可切换，支持流式合成 + 音频缓存。
-- **多 ASR 引擎** — 阿里云实时语音识别，自动 token 获取 + JSON 协议 +
-  纯 PCM 音频流处理。
-- **VAD 静默检测** — 通话模式下检测用户停顿自动触发回复，无需手动按
-  结束键。
-- **语音通话音频链路** — 通话窗 `pcm-processor.js` 端处理音频流，
-  通话时长 + 头像状态实时同步。
-
-### 🧪 场景模拟与测试
-- **DMAE 场景模拟** — `npm run sim:coffee` / `sim:mix` / `sim:rescue` /
-  `sim:sweep --rewardGain=3,5,7,10` 跑 Worldbook 评分参数 sweep，
-  产物输出到 `sim-result/`。
-- **Vitest 单元测试** — `npm test` / `npm run test:watch`，覆盖 asr/tts/
-  channels/chats/game-bot/memory/opener/orchestrator/rag/scheduler/skills
-  等核心模块。
-- **构建脚本** — `build:main` (tsc) / `build:preload` / `build:renderer`
-  (vite) / `dev` (concurrently tsc + vite + electron with VITE_DEV=1)。
-- **记忆追踪日志** — `memory-trace.ts` 记录所有 L0/L1/L2/RAG/conflict
-  操作 (ok/error/skip)，方便调试与审计。
-
-### ⚙️ 开发者体验
-- **统一 IPC 总线** — `shared/ipc-channels.ts` 定义 90+ 通道常量，
-  所有主进程 ↔ 渲染进程通信统一走它，避免硬编码字符串散落。
-- **运行时状态 preview** — `SETTINGS_PREVIEW_RUNTIME_SYNC` (off/local/llm)
-  实时预览情绪/状态文案，无需完整运行流程。
-- **嵌入式模型热切换** — `EMBEDDING_SET_MODEL` IPC 触发后自动检测维度
-  不匹配并清空旧库，无需手动迁移。
-- **文件监视 / 重载** — 启动时遍历 `rag-data` / `memory.json` /
-  `worldbook` / `skills` 目录；运行时 `watchWorldbookFile` 等热更新。
-
----
-
-## 🧱 技术栈
-
-| 层 | 技术 |
-|---|---|
-| Shell | Electron 33 |
-| 渲染层 | Vite 5 + TypeScript 5 + Pixi.js 7 |
-| Live2D | `pixi-live2d-display` 0.5.0-beta + Cubism Core |
-| AI / MCP | `@modelcontextprotocol/sdk`, `@ag-ui/core`, `@ag-ui/client` |
-| 集成 | 飞书 OpenAPI, 微信 iLink, Nodemailer, PDFKit, docx |
-| 测试 | Vitest 4 |
-
-完整依赖列表见 [`package.json`](./package.json)。
+> ✅ 可用：日常使用体验稳定；🧪 实验性：功能已实现但边角 / 兼容性 / 用户体验仍在打磨。
 
 ---
 
@@ -218,8 +58,8 @@
 ### 前置条件
 - Node.js 18+
 - npm 9+
-- Windows 10/11（Electron + 飞书 / 微信 / nut-js 的键鼠自动化依赖 Win32 API）
-- macOS / Linux 理论上可运行，但 `nut-js` 与 Live2D 的桌面集成仅在 Windows 上完整测试过
+- Windows 10/11（飞书 / 微信 / nut-js 键鼠自动化依赖 Win32 API）
+- macOS / Linux 理论上可运行，但桌面集成仅在 Windows 上完整测试过
 
 ### 1. 克隆仓库
 
@@ -237,78 +77,169 @@ npm install
 首次安装会下载 Electron 二进制（约 100 MB）与 Pixi.js / Live2D 等渲染依赖，
 耗时 3–10 分钟，取决于网络。
 
-### 3. 构建
+### 3. 构建并启动
 
 ```bash
+npm install
 npm run build
-```
-
-依次编译主进程 (`build:main`) + preload (`build:preload`) + 渲染层
-(`build:renderer`)。构建产物输出到 `dist/`。
-
-### 4. 启动
-
-```bash
 npm start
 ```
 
-或一条龙命令（先 build 再启动）：
-
-```bash
-npm run build && npm start
-```
-
-### 5. 首次配置
-
-应用启动后，**点系统托盘图标 → 打开设置**，完成以下基础配置：
-
-1. **🔑 API 设置**：选择 LLM 厂商 preset，填写 API Key（必填，Agent 才能工作）。
-2. **🎙️ TTS 设置**：选一个语音合成引擎（默认 MiniMax，或换 GPT-SoVITS / 自定义云端 / MiMo）。
-3. **🎧 ASR 设置**：如需语音通话，填阿里云实时语音识别的 AppKey / AccessKey。
-4. **📱 连接手机**（可选）：要接入飞书 / 微信 iLink 时配置。
-
-配置保存在 `<userData>/settings.json`，无需重启应用。
-
-### 6. 开发模式
+或者直接开发模式：
 
 ```bash
 npm run dev
 ```
 
-同时运行 `tsc`（主进程 / preload）+ `vite` + Electron，主进程代码改动后
-会自动重启 Electron，渲染层代码改动由 Vite HMR 热更新。
+同时运行 `tsc`（主进程 / preload）+ `vite` + Electron，主进程改动自动
+重启 Electron，渲染层改动 Vite HMR 热更新。
 
-### 7. 运行测试
+---
 
-```bash
-npm test                  # 跑一次
-npm run test:watch        # 监听模式
-```
+## 🔑 配置 API Key
 
-### 8. 场景模拟
+应用启动后，**点系统托盘图标 → 打开设置**，完成以下基础配置：
 
-```bash
-npm run sim               # 默认场景
-npm run sim:coffee        # 单场景调试
-npm run sim:mix           # 多场景混合
-npm run sim:sweep --rewardGain=3,5,7,10   # Worldbook 评分参数 sweep
-```
+1. **🔑 API 设置**：选 LLM 厂商 preset（OpenAI / Anthropic / MiniMax / ...），
+   填写 API Key（**必填**，Agent 才能工作）。
+2. **🎙️ TTS 设置**：选语音合成引擎（默认 MiniMax，或 GPT-SoVITS /
+   自定义云端 / MiMo）。
+3. **🎧 ASR 设置**：如需语音通话，填阿里云实时 ASR 的 AppKey / AccessKey。
+4. **📱 连接手机**（可选）：要接入飞书 / 微信 iLink 时配置。
 
-模拟结果输出到 `sim-result/`。
+配置保存在 `<userData>/settings.json`，无需重启应用。
 
-### 常用脚本一览
+---
 
-| 脚本 | 说明 |
+## ❓ 常见问题
+
+<!-- TODO: 你之后在这里填入你想回答的常见问题 -->
+
+占位符：你准备的 FAQ 内容替换这里。建议覆盖：
+- 首次启动打不开 / 黑屏 / 没桌宠怎么办？
+- Live2D 模型怎么换 / 怎么放？
+- 不用 ASR 能用语音通话吗？
+- macOS / Linux 能不能跑？
+- API Key 安全吗？
+- 出现 OOM / 内存泄漏怎么办？
+
+---
+
+## ✨ 功能
+
+### 核心功能
+
+#### 🪟 桌面伴侣
+- **Live2D 桌宠** — 基于 `pixi-live2d-display` + Cubism 引擎的置顶桌宠，
+  表情切换、嘴型同步、点击交互、自然待机动画。
+- **多窗口架构** — 7 个独立 BrowserWindow：聊天、侧栏、任务、设置、
+  贴纸管理、通话、桌宠本体。
+- **AG-UI 表情广播** — Agent 调 `play_live2d_action` 工具把「表情 +
+  动作 + 气泡」推到桌宠，随对话情绪同步表演。
+
+#### 💬 对话
+- **日常聊天 + 语音通话** — 桌面 / 手机 / 通话三种人格风格切换，
+  状态机 `IDLE → LISTENING → THINKING → SPEAKING → ENDED`，
+  24 轮滑动窗口上下文。
+- **多会话历史** — 每会话独立 JSON 持久化，自动派生标题、`updatedAt`
+  排序、双击重命名。
+- **AG-UI 事件流** — 标准化事件（RUN_STARTED / TEXT_MESSAGE / TOOL_CALL /
+  RUN_FINISHED），逐字 delta 流式渲染。
+- **拖拽文件摄入** — 拖入 PDF/MD/DOCX/XLSX... 直接进 RAG 知识库。
+- **贴纸面板** — 内置贴纸选择器，AI 按相似度自动匹配最合适的贴纸。
+
+#### 🧠 记忆系统
+- **L0 核心画像 / L1 近期状态 / L2 长期记忆** — 完整证据链，
+  权重自动衰减（60/30/10 阈值 active/aging/archived）。
+- **冲突检测与解决** — 词法候选 → RAG 召回 → 评分 → resolver，
+  解决类型覆盖无关/语境差异/偏好演变/直接冲突。
+- **🧬 自研 DMAE Worldbook 引擎** — 词条格式（触发词/常驻/优先级/
+  内在价值/连带触发词），`Ru = Bu × (1 + γ·ln(1+U_old))` 激活公式，
+  Active / Dormant / Archived 三态状态机，One-Shot 连带触发。
+
+#### 🔊 语音
+- **多 TTS 引擎** — MiniMax / GPT-SoVITS / 自定义云端 / MiMo / off。
+- **多 ASR 引擎** — 阿里云实时语音识别，token 自动获取 + JSON 协议 +
+  纯 PCM。
+- **VAD 静默检测** — 通话期间检测用户停顿自动触发回复。
+
+#### 🛠 工具调用
+- **文档生成** — Excel (`exceljs`)、Word (`docx`)、PDF (`pdfkit`)、
+  Markdown。
+- **联网搜索 / 网页抓取** — `web_search` + `fetch_url`（turndown 转 Markdown）。
+- **文件操作** — `read_file` / `list_dir` / `write_file` / `read_image`。
+- **生活小工具** — 记账、汇率、翻译、行程规划、unified diff 应用。
+- **任务委派** — `delegate_task`（sub-agent）、`todo_write`（任务清单）、
+  `ask_user_choice`（用户选择卡片）。
+
+<details>
+<summary><b>🧩 高级功能</b>（点击展开）</summary>
+
+#### 📚 RAG 文档知识库
+- 支持 txt/md/pdf/docx/xlsx/pptx/csv/json 多格式导入，`source: imported_doc` 可追溯。
+- 混合检索：向量 + BM25 + reranker（light / standard / none 三档）。
+- 双 embedding 后端：本地 `@xenova/transformers` + 云端 OpenAI 兼容。
+- 实体关系图谱，jieba 词典注入防止"昔涟/小鹿"等被错误切分。
+
+#### 🔌 MCP（Model Context Protocol）
+- 支持 stdio / SSE / HTTP 三种 transport。
+- 内置 servers 自动同步，`install_mcp_server` 工具让 Agent 自动装新 server。
+- 自带 Playwright + Firecrawl hosted MCP 配置。
+
+#### 💬 外部渠道
+- **飞书 Lark 长连接** — 官方 SDK + WebSocket（无需公网 / 域名 / 内网穿透），
+  p2p 私聊，多模态 text / image / audio / video / file / sticker。
+- **微信 iLink Bot** — `@tencent-weixin/openclaw-weixin` + CLI，扫码登录 →
+  long-poll 35s 拉取 → 自动 sendText。
+
+#### 🤖 Game Bot 游戏自动化
+- `engine.ts` 步骤解释器：`launch / wait / key / click / vlm_click /
+  vlm_select / vlm_check / branch` 等指令。
+- 配合 GameRecipe 格式描述自动化流程，VLM 视觉定位 + nut-js 键鼠输入。
+- 暴露为 `game_bot_start` 工具，可被 Agent 调用。
+
+#### ✨ Skill 系统
+- 双源扫描：`prompts/skills/` 内置 + `<userData>/skills/` 用户覆盖，
+  目录级整体覆盖。
+- Meta 工具 `invoke_skill` / `read_skill_reference`，路径穿越防护 + 读
+  重放拦截 + 大文本截断。
+- 支持 `/skill_id ...` slash 命令。
+
+</details>
+
+<details>
+<summary><b>🔧 开发功能</b>（点击展开）</summary>
+
+#### 🧪 单元测试
+- Vitest 4 覆盖 asr / tts / channels / chats / game-bot / memory /
+  opener / orchestrator / rag / scheduler / skills 等核心模块。
+- `npm test` 一次性 / `npm run test:watch` 监听模式。
+
+#### 🎬 场景模拟
+- `npm run sim` 默认场景 / `sim:coffee` / `sim:mix` / `sim:rescue` 单场景调试。
+- `npm run sim:sweep --rewardGain=3,5,7,10` 跑 Worldbook 评分参数 sweep。
+- 产物输出到 `sim-result/`。
+
+#### 🔧 开发者体验
+- 统一 IPC 总线：`shared/ipc-channels.ts` 定义 90+ 通道常量。
+- 运行时状态 preview：设置面板实时预览情绪 / 状态文案。
+- Embedding 模型热切换：自动检测维度不匹配并清空旧库。
+- 文件监视 / 热更新：`watchWorldbookFile` 等运行时热加载。
+
+</details>
+
+---
+
+## 🧱 技术栈
+
+| 层 | 技术 |
 |---|---|
-| `npm run build:main` | tsc 编译主进程 |
-| `npm run build:preload` | tsc 编译 preload |
-| `npm run build:renderer` | vite 构建渲染层 |
-| `npm run build` | 依次跑上面三个 |
-| `npm start` | 启动 Electron |
-| `npm run dev` | tsc + vite + Electron 并发（开发用） |
-| `npm test` | vitest 单测 |
-| `npm run build:sim` | tsc 编译场景模拟器 |
-| `npm run sim[:scenario]` | 跑场景模拟 |
+| Shell | Electron 33 |
+| 渲染层 | Vite 5 + TypeScript 5 + Pixi.js 7 |
+| Live2D | `pixi-live2d-display` 0.5.0-beta + Cubism Core |
+| AI / MCP | `@modelcontextprotocol/sdk`, `@ag-ui/core`, `@ag-ui/client` |
+| 集成 | 飞书 OpenAPI、微信 iLink、Nodemailer、PDFKit、docx |
+| 测试 | Vitest 4 |
 
 ---
 
@@ -328,10 +259,10 @@ src/
 │   ├── rag/          # 检索增强生成 + worldbook 注入
 │   ├── relationship/ # 用户关系画像
 │   ├── scheduler/    # 定时任务（提醒 / 日程）
-│   ├── sim/          # 场景模拟工具（场景驱动）
+│   ├── sim/          # 场景模拟工具
 │   ├── skills/       # Agent skill 系统
 │   └── tts/          # 语音合成（多引擎）
-├── preload/          # Electron preload 桥接（IPC 暴露）
+├── preload/          # Electron preload 桥接
 ├── renderer/         # Vite 渲染层
 │   ├── call/         # 语音通话窗口
 │   ├── chat/         # 主聊天界面
@@ -346,33 +277,35 @@ src/
 └── shared/           # 主进程与渲染进程共享代码
 
 dist/renderer/        # Vite 构建产物（不在 git 跟踪范围内）
-├── assets/           # 打包后的 JS/CSS（hash 文件名）
-├── audio/            # 音频资源（BGM、音效）
+├── assets/           # 打包后的 JS/CSS
+├── audio/            # 音频资源
 ├── avatars/          # 头像图片
-├── call/             # 通话窗口 HTML 入口
-├── chat/             # 主聊天窗口 HTML 入口
-├── models/           # Live2D 模型 — 见 MODEL_LICENSE.md
-│   └── cyrene/       # 昔涟模型资源
-├── settings/         # 设置窗口 HTML 入口
-├── sidebar/          # 侧栏 HTML 入口
-├── sticker-manager/  # 贴纸管理 HTML 入口
-├── stickers/         # 贴纸图片资源
-└── tasks/            # 任务面板 HTML 入口
+├── call/ chat/ settings/ sidebar/ sticker-manager/ tasks/   # HTML 入口
+├── models/cyrene/    # Live2D 模型 — 见 MODEL_LICENSE.md
+└── stickers/         # 贴纸图片资源
 ```
 
-> **注意**：`dist/renderer/assets/`、`dist/renderer/*/index.html`
-> 等 Vite 构建产物不在 git 跟踪范围内（见 `.gitignore`）。
-> 运行 `npm run build:renderer` 重新生成。
+> **注意**：`dist/renderer/assets/`、`dist/renderer/*/index.html` 等
+> Vite 构建产物不在 git 跟踪范围内。运行 `npm run build:renderer`
+> 重新生成。
 
 ---
 
 ## 📄 许可证
 
-- **源代码**：[MIT](./LICENSE) — 版权归项目作者所有。
-- **Live2D 模型资源**：见 [MODEL_LICENSE.md](./MODEL_LICENSE.md) —
-  经 B 站创作者授权使用。角色 IP 归 HoYoverse / 米哈游所有。
+本仓库的**源代码**遵循 [MIT License](./LICENSE)，Copyright (c) 2026 Playa。
+MIT 仅约束本仓库的源代码，不适用于角色、Live2D 模型与美术资产。
 
-仅供个人非商用粉丝向使用。
+角色 IP（《崩坏：星穹铁道》"昔涟" 等）、Live2D 模型（`models/cyrene/`）、
+美术资产遵循各自对应的授权：
+
+- **Live2D 模型** — 详见 [MODEL_LICENSE.md](./MODEL_LICENSE.md)，
+  模型作者 [@是依七哒](https://space.bilibili.com/457683484) 授权使用、
+  修改、再分发。
+- **角色 IP / 美术** — 归 **HoYoverse / 米哈游**所有。
+
+因底层角色 IP 涉及米哈游同人创作规范，**本项目及其任何衍生物严禁任何
+商业用途**。
 
 ---
 
