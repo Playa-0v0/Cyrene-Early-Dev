@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="./preview.png" alt="Cyrene Agent" width="800">
+
 # Cyrene-Agent
 
 [English](./README.en.md) | **中文**
