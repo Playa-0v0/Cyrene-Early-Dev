@@ -401,6 +401,10 @@ interface GeneralSettings {
   amapKey: string;
   /** 🚗出行工具是否启用 */
   travelEnabled: boolean;
+  /** 🖥️ 浏览器自动化（Playwright MCP）是否启用。默认 false，需用户手动开启。 */
+  playwrightMcpEnabled: boolean;
+  /** 🔥 Firecrawl hosted MCP（免 key 网页抓取）是否启用。默认 true，用户可关。 */
+  firecrawlHostedMcpEnabled: boolean;
   // 联网搜索：选哪个搜索源 + 对应 key
   searchEngine: "off" | "bocha" | "tavily" | "minimax";
   searchBochaKey: string;
@@ -541,6 +545,8 @@ const DEFAULT_GENERAL_SETTINGS: GeneralSettings = {
   weatherEnabled: false,
   amapKey: "",
   travelEnabled: false,
+  playwrightMcpEnabled: false,
+  firecrawlHostedMcpEnabled: true,
   searchEngine: "off",
   searchBochaKey: "",
   searchTavilyKey: "",
@@ -915,6 +921,10 @@ function normalizeGeneralSettings(input: Partial<GeneralSettings> | null | undef
     weatherEnabled: Boolean(input?.weatherEnabled),
     amapKey: typeof input?.amapKey === "string" ? input.amapKey : "",
     travelEnabled: Boolean(input?.travelEnabled),
+    playwrightMcpEnabled: Boolean(input?.playwrightMcpEnabled),
+    firecrawlHostedMcpEnabled: input?.firecrawlHostedMcpEnabled === undefined
+      ? DEFAULT_GENERAL_SETTINGS.firecrawlHostedMcpEnabled
+      : Boolean(input.firecrawlHostedMcpEnabled),
     searchEngine: ["off", "bocha", "tavily", "minimax"].includes(String(input?.searchEngine))
       ? (input!.searchEngine as "off" | "bocha" | "tavily" | "minimax")
       : "off",
