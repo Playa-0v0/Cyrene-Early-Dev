@@ -113,15 +113,77 @@ npm run dev
 
 ## ❓ 常见问题
 
-<!-- TODO: 你之后在这里填入你想回答的常见问题 -->
+### 首次启动打不开 / 黑屏 / 没桌宠怎么办？
 
-占位符：你准备的 FAQ 内容替换这里。建议覆盖：
-- 首次启动打不开 / 黑屏 / 没桌宠怎么办？
-- Live2D 模型怎么换 / 怎么放？
-- 不用 ASR 能用语音通话吗？
-- macOS / Linux 能不能跑？
-- API Key 安全吗？
-- 出现 OOM / 内存泄漏怎么办？
+桌宠窗口**强依赖**打包内的 Live2D 模型文件。如果 `dist/renderer/public/models/cyrene/` 下的 `Cyrene.model3.json` / `model.moc3` / `texture_0.png` 任一缺失，桌宠会显示为透明白窗口（你看到的"黑屏"）。
+
+排查步骤：
+1. **看 DevTools 报错** —— dev 模式（`npm run dev`）会自动打开开发者工具，生产模式可手动按 `Ctrl+Shift+I`（Windows/Linux）或 `Cmd+Option+I`（macOS）。
+2. **关注控制台错误** —— 通常会看到 `[Cyrene] Failed to load model: ...`，说明 `/models/cyrene/Cyrene.model3.json` 资源没加载到。
+3. **重新构建** —— `npm run clean && npm run build && npm start` 重新生成 dist。
+4. **检查 Vite 复制** —— `dist/renderer/public/models/cyrene/` 下的文件大小应与 `src/renderer/public/models/cyrene/` 一致。
+
+### Live2D 模型怎么换 / 怎么放？
+
+**当前模型路径是硬编码**（`src/renderer/main.ts` 里写死 `/models/cyrene/Cyrene.model3.json`），**设置面板目前没有"换模型"的 UI**。
+
+要换模型：
+1. 用你自己的 Live2D Cubism 4 模型替换 `src/renderer/public/models/cyrene/` 下整套文件：
+   - `Cyrene.model3.json`（必需，9 KB 左右）
+   - `model.moc3`（必需，模型骨架）
+   - `texture_0.png` 等纹理文件
+   - `expressions/` 表情目录
+   - `motions/` 动作目录
+2. 重新跑 `npm run build` 让 Vite 把它打包到 `dist/`。
+3. 重新启动应用。
+
+⚠️ 注意 MODEL_LICENSE.md 里写明的授权范围 —— 替换模型时**保留原作者署名**。
+
+### 不用 ASR 能用语音通话吗？
+
+**不能。** 当前语音通话强依赖阿里云 ASR（无麦克风权限 = 无法进入 LISTENING 状态；ASR 未配置 = 直接进 ERROR）。
+
+call 窗口**没有文本输入框**或 PTT（Push-To-Talk）按钮，所有对话完全走麦克风 → ASR → LLM → TTS 的链路。如果你想纯文本聊天，**用聊天窗口**即可（不需要 ASR）。
+
+### macOS / Linux 能不能跑？
+
+**理论上可以启动，但未完整验证**。已知平台假设：
+
+| 平台 | 状态 | 备注 |
+|---|---|---|
+| Windows 10/11 | ✅ 完整测试 | 主要目标平台 |
+| macOS | 🧡 理论上可跑 | Electron 跨平台，但桌宠透明 + 鼠标穿透在 macOS 上有 Z-order 已知问题 |
+| Linux | 🧡 理论上可跑 | `safeStorage` 在 headless 环境下不可用，会回退到 XOR 混淆 |
+
+`game-bot` 模块的 `nut.js` 是原生模块，三平台都有预编译的二进制（`package-lock.json` 里 darwin/linux/win32 三种 `libnut` 子包），但**仅在 Windows 上做了端到端测试**。
+
+如果你在 macOS/Linux 上跑出兼容性问题，欢迎开 issue 反馈。
+
+### API Key 安全吗？
+
+**聊天/视觉模型 API Key、ASR 阿里云凭证、TTS 引擎 Key 等都明文存盘**到 `<userData>/`：
+
+- `<userData>/model-settings.json` —— LLM / Vision API Key
+- `<userData>/app-settings.json` —— ASR / TTS / 高德 / 搜索 / 邮件密码
+- `<userData>/weixin/credentials.json` —— 微信 iLink Bot 凭据
+
+**唯一加密的字段**：飞书渠道的 `appSecret`（用 `safeStorage` = Windows DPAPI / macOS Keychain / Linux libsecret；无密钥环时回退 XOR 混淆）。
+
+**防护依赖**：操作系统文件权限（`<userData>` 默认只有当前用户可读）。
+
+**⚠️ 不要把 settings 目录打包分享、也不要同步到云盘** —— API Key 会泄露。如需重置，删除 `<userData>/model-settings.json` 和 `<userData>/app-settings.json` 后重启即可。
+
+### 出现 OOM / 内存泄漏怎么办？
+
+**当前没有内置内存监控 / heap dump 工具**。如果遇到 OOM，最常见的优化路径：
+
+1. **关闭本地大模型** —— 设置 → 🧠 记忆 → Embedding 模型从 `bgem3`（~570 MB）切到 `minilm`（~23 MB），能省约 550 MB。
+2. **关闭 Reranker** —— 设置 → 🧠 记忆 → Reranker 模式设为 `none`，省 23–279 MB。
+3. **关闭外部 MCP** —— 设置 → 🔌 插件，关闭 `Playwright MCP` 和 `Firecrawl hosted MCP`，避免 Chromium 子进程吃几百 MB。
+4. **清理 RAG 文档** —— 设置 → 🧠 记忆 → 导入文档，删除大文件（embedding 后会驻留在 LanceDB 索引里）。
+5. **重启应用** —— L2 长期记忆、relationship log、conflict log 都是 push 数组，无 cap，长时间运行后**重启是必要的**。
+
+如果 OOM 频繁，**用 Chrome DevTools Memory profiler**（dev 模式自动开 DevTools）抓 heap snapshot 找根因，再开 issue 反馈。
 
 ---
 

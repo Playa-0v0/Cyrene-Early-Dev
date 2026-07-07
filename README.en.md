@@ -125,15 +125,110 @@ Settings are saved to `<userData>/settings.json` — no restart needed.
 
 ## ❓ FAQ
 
-<!-- TODO: replace this placeholder with your FAQ content -->
+### First-launch issues (black screen, no pet, won't start)
 
-Placeholder: replace this section with your FAQ. Suggested topics:
-- First-launch issues (black screen, no pet, won't start)
-- How to swap / add a Live2D model
-- Can I use voice call without ASR?
-- Will it run on macOS / Linux?
-- Is my API key safe?
-- OOM / memory leak troubleshooting
+The pet window **strongly depends** on the bundled Live2D model files.
+If any of `Cyrene.model3.json` / `model.moc3` / `texture_0.png` under
+`dist/renderer/public/models/cyrene/` is missing, the pet window will
+show as a transparent blank window (the "black screen").
+
+Troubleshooting:
+1. **Check DevTools errors** — dev mode (`npm run dev`) opens DevTools
+   automatically; in production press `Ctrl+Shift+I` (Win/Linux) or
+   `Cmd+Option+I` (macOS).
+2. **Look for the failure log** — `[Cyrene] Failed to load model: ...`
+   means `/models/cyrene/Cyrene.model3.json` wasn't bundled.
+3. **Rebuild** — `npm run clean && npm run build && npm start` to regenerate
+   `dist/`.
+4. **Verify Vite copied assets** — file sizes under `dist/renderer/public/models/cyrene/`
+   should match `src/renderer/public/models/cyrene/`.
+
+### How to swap / add a Live2D model
+
+**Model path is currently hardcoded** to `/models/cyrene/Cyrene.model3.json`
+in `src/renderer/main.ts`; **there's no "switch model" UI in the settings
+panel yet**.
+
+To swap:
+1. Replace the entire `src/renderer/public/models/cyrene/` directory with
+   your own Cubism 4 model:
+   - `Cyrene.model3.json` (required)
+   - `model.moc3` (required, model skeleton)
+   - `texture_*.png` (textures)
+   - `expressions/` (expression files)
+   - `motions/` (motion files)
+2. Run `npm run build` to let Vite copy the assets into `dist/`.
+3. Restart the app.
+
+⚠️ Honor the license terms in `MODEL_LICENSE.md` — **retain attribution
+to the original creator** when swapping.
+
+### Can I use voice call without ASR?
+
+**No.** The voice call hard-depends on Aliyun ASR (no mic permission =
+can't enter LISTENING; ASR not configured = goes straight to ERROR).
+
+The call window has **no text input** or PTT button. All conversation
+goes through mic → ASR → LLM → TTS. If you want pure text chat,
+**use the chat window** (no ASR needed).
+
+### Will it run on macOS / Linux?
+
+**Theoretically yes, but not fully verified.** Known platform assumptions:
+
+| Platform | Status | Notes |
+|---|---|---|
+| Windows 10/11 | ✅ Fully tested | Primary target |
+| macOS | 🧡 Theoretically works | Electron is cross-platform; pet transparency + click-through has known Z-order quirks on macOS |
+| Linux | 🧡 Theoretically works | `safeStorage` unavailable in headless; falls back to XOR obfuscation |
+
+`game-bot`'s `nut.js` ships prebuilt binaries for all three platforms
+(darwin/linux/win32 sub-packages in `package-lock.json`), but **end-to-end
+testing has only happened on Windows**.
+
+If you hit platform-specific issues on macOS/Linux, please open an issue.
+
+### Is my API key safe?
+
+**Chat / Vision API keys, Aliyun ASR credentials, TTS engine keys are all
+stored in plain-text JSON** under `<userData>/`:
+
+- `<userData>/model-settings.json` — LLM / Vision API key
+- `<userData>/app-settings.json` — ASR / TTS / Amap / search / email passwords
+- `<userData>/weixin/credentials.json` — WeChat iLink Bot credentials
+
+**The only encrypted field**: Lark / Feishu `appSecret` (via `safeStorage` =
+Windows DPAPI / macOS Keychain / Linux libsecret; falls back to XOR
+obfuscation when no keyring).
+
+**Protection relies on**: OS file permissions (`<userData>` is
+current-user-only by default).
+
+**⚠️ Don't zip / sync / share your settings directory** — your keys will
+leak. To reset, delete `<userData>/model-settings.json` and
+`<userData>/app-settings.json` then restart.
+
+### OOM / memory leak troubleshooting
+
+**No built-in memory monitoring / heap dump tools.** Common mitigations:
+
+1. **Switch to smaller embedding model** — Settings → 🧠 Memory →
+   Embedding model from `bgem3` (~570 MB) to `minilm` (~23 MB),
+   saves ~550 MB.
+2. **Disable reranker** — Settings → 🧠 Memory → Reranker mode = `none`,
+   saves 23–279 MB.
+3. **Disable external MCPs** — Settings → 🔌 Plugins, turn off
+   `Playwright MCP` and `Firecrawl hosted MCP` to avoid Chromium child
+   processes eating hundreds of MB.
+4. **Clean up RAG documents** — Settings → 🧠 Memory → Imported docs,
+   delete large files (embeddings stay in LanceDB index).
+5. **Restart the app periodically** — L2 long-term memory, relationship
+   log, and conflict log are push arrays with no cap; long-running
+   sessions **must be restarted**.
+
+For deep diagnostics, use Chrome DevTools Memory profiler (DevTools
+opens automatically in dev mode) to grab a heap snapshot, then file
+an issue with the snapshot attached.
 
 ---
 
