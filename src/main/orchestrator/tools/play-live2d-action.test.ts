@@ -15,7 +15,7 @@ describe("play-live2d-action handler", () => {
     const handler = createPlayLive2DActionHandler(deps);
     const result = await handler({ name: "眨眨眼" }, undefined);
 
-    expect(result).toMatchObject({ ok: true });
+    expect(JSON.parse(result)).toMatchObject({ ok: true });
     expect(deps.sendToLive2DWindow).toHaveBeenCalledTimes(1);
     const [channel, payload] = deps.sendToLive2DWindow.mock.calls[0];
     expect(channel).toBe(IPC.LIVE2D_PLAY_ACTION);
@@ -31,7 +31,7 @@ describe("play-live2d-action handler", () => {
     const handler = createPlayLive2DActionHandler(deps);
     const result = await handler({ name: "戴墨镜" }, undefined);
 
-    expect(result).toMatchObject({ ok: true });
+    expect(JSON.parse(result)).toMatchObject({ ok: true });
     expect(deps.sendToLive2DWindow.mock.calls[0][1]).toEqual({
       kind: "expression",
       name: "墨镜",
@@ -43,9 +43,9 @@ describe("play-live2d-action handler", () => {
     const handler = createPlayLive2DActionHandler(deps);
     const result = await handler({ name: "挥手" }, undefined);
 
-    expect(result).toMatchObject({ ok: false, error: "unknown_action" });
-    expect(Array.isArray((result as { available: string[] }).available)).toBe(true);
-    expect((result as { available: string[] }).available.length).toBe(LIVE2D_ACTIONS.length);
+    expect(JSON.parse(result)).toMatchObject({ ok: false, error: "unknown_action" });
+    expect(Array.isArray((JSON.parse(result) as { available: string[] }).available)).toBe(true);
+    expect((JSON.parse(result) as { available: string[] }).available.length).toBe(LIVE2D_ACTIONS.length);
     expect(deps.sendToLive2DWindow).not.toHaveBeenCalled();
   });
 
@@ -53,9 +53,9 @@ describe("play-live2d-action handler", () => {
     const deps = makeDeps();
     const handler = createPlayLive2DActionHandler(deps);
 
-    expect((await handler({}, undefined))).toMatchObject({ ok: false, error: "unknown_action" });
-    expect((await handler({ name: "" }, undefined))).toMatchObject({ ok: false, error: "unknown_action" });
-    expect((await handler({ name: 123 }, undefined))).toMatchObject({ ok: false, error: "unknown_action" });
+    expect(JSON.parse(await handler({}, undefined))).toMatchObject({ ok: false, error: "unknown_action" });
+    expect(JSON.parse(await handler({ name: "" }, undefined))).toMatchObject({ ok: false, error: "unknown_action" });
+    expect(JSON.parse(await handler({ name: 123 }, undefined))).toMatchObject({ ok: false, error: "unknown_action" });
     expect(deps.sendToLive2DWindow).not.toHaveBeenCalled();
   });
 
@@ -64,13 +64,13 @@ describe("play-live2d-action handler", () => {
     const handler = createPlayLive2DActionHandler(deps);
     const result = await handler({ name: "笑一笑" }, undefined);
 
-    expect(result).toMatchObject({ ok: false, error: "ipc_failed" });
+    expect(JSON.parse(result)).toMatchObject({ ok: false, error: "ipc_failed" });
   });
 
   it("available list matches the catalog aliases", async () => {
     const deps = makeDeps();
     const handler = createPlayLive2DActionHandler(deps);
-    const result = (await handler({ name: "挥手" }, undefined)) as { available: string[] };
+    const result = JSON.parse(await handler({ name: "挥手" }, undefined)) as { available: string[] };
     for (const a of LIVE2D_ACTIONS) {
       expect(result.available).toContain(a.alias);
     }

@@ -20,37 +20,42 @@ export type PlayLive2DActionResult =
   | { ok: false; error: "unknown_action"; available: string[] }
   | { ok: false; error: "ipc_failed" };
 
+/** Serialize a structured result to the JSON string the tool contract requires. */
+function toJsonResult(r: PlayLive2DActionResult): string {
+  return JSON.stringify(r);
+}
+
 /**
  * Build the handler. Returns a function compatible with
- * `ToolDefinition.execute`.
+ * `ToolDefinition.execute` (Promise<string>).
  */
 export function createPlayLive2DActionHandler(deps: PlayLive2DActionDeps) {
   return async (
     args: Record<string, unknown>,
     _ctx?: unknown,
-  ): Promise<PlayLive2DActionResult> => {
+  ): Promise<string> => {
     const raw = args?.name;
     if (typeof raw !== "string" || raw.length === 0) {
-      return {
+      return toJsonResult({
         ok: false,
         error: "unknown_action",
         available: LIVE2D_ACTIONS.map((a) => a.alias),
-      };
+      });
     }
     const action = findAction(raw);
     if (!action) {
-      return {
+      return toJsonResult({
         ok: false,
         error: "unknown_action",
         available: LIVE2D_ACTIONS.map((a) => a.alias),
-      };
+      });
     }
     try {
       deps.sendToLive2DWindow(IPC.LIVE2D_PLAY_ACTION, action.target satisfies Live2DTarget);
-      return { ok: true };
+      return toJsonResult({ ok: true });
     } catch (err) {
       console.warn("[play-live2d-action] IPC failed:", err);
-      return { ok: false, error: "ipc_failed" };
+      return toJsonResult({ ok: false, error: "ipc_failed" });
     }
   };
 }
@@ -87,6 +92,6 @@ export function createPlayLive2DActionTool(deps: PlayLive2DActionDeps): ToolDefi
       },
       required: ["name"],
     },
-    execute: createPlayLive2DActionHandler(deps) as unknown as ToolDefinition["execute"],
+    execute: createPlayLive2DActionHandler(deps),
   };
 }
