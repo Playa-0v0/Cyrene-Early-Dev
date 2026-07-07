@@ -7,6 +7,7 @@ import { MouthSyncController } from "./live2d/mouth-sync";
 import { SpeakingMotionController } from "./live2d/speaking-motion";
 import { OpenerBubbleController } from "./live2d/opener-bubble";
 import { ClickThroughController } from "./live2d/click-through";
+import { resolveAsset } from "../shared/renderer-base";
 
 const canvas = document.getElementById("live2d-canvas") as HTMLCanvasElement;
 if (!canvas) throw new Error("Canvas #live2d-canvas not found");
@@ -52,7 +53,7 @@ const manager = new Live2DManager({
   canvas,
   width: window.innerWidth,
   height: window.innerHeight,
-  modelPath: "/models/cyrene/Cyrene.model3.json",
+  modelPath: resolveAsset("models/cyrene/Cyrene.model3.json"),
   onLoad: () => {
     console.log("[Cyrene] Model loaded");
     const model = manager.getModel();

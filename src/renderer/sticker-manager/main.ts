@@ -1,6 +1,7 @@
 import "../ui/base.css";
 import "./style.css";
 import "../ui/theme";
+import { resolveAsset } from "../../shared/renderer-base";
 
 type StickerItem = {
   id: string;
@@ -36,7 +37,7 @@ function render(items: StickerItem[]): void {
     card.classList.toggle("is-disabled", !item.enabled);
 
     const img = document.createElement("img");
-    img.src = item.src;
+    img.src = item.src.startsWith("/stickers/") ? resolveAsset(item.src) : item.src;
     img.alt = item.description || "";
     img.draggable = false;
 

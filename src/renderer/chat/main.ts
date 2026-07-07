@@ -8,6 +8,7 @@ import {
 } from "../../shared/chat-ui";
 import { canUseMinimaxStreamingEarly, extractEarlyTtsSegment } from "../../shared/tts-early-playback";
 import { getStickerSrcForId } from "./sticker-src";
+import { resolveAsset } from "../../shared/renderer-base";
 
 type Role = "user" | "model";
 
@@ -260,7 +261,14 @@ const BUILT_IN_STICKER_SRC: Record<string, string> = {
 };
 
 function getStickerSrc(id: string): string | undefined {
-  return getStickerSrcForId(id, BUILT_IN_STICKER_SRC, enabledStickers);
+  const raw = getStickerSrcForId(id, BUILT_IN_STICKER_SRC, enabledStickers);
+  if (!raw) return undefined;
+  // 内置贴纸路径以 /stickers/ 开头（绝对路径），在 file:// 协议下会解析到磁盘根
+  // 用 resolveAsset() 转成正确的 file:// 或 http:// URL
+  if (raw.startsWith("/stickers/")) {
+    return resolveAsset(raw);
+  }
+  return raw;
 }
 
 // 多会话改造：messages 是当前活跃 session 的消息数组（启动时为空，由 bootstrap 填充）。
