@@ -59,3 +59,8 @@ Thumbs.db
 !.env.example
 # Video/preview render projects (not source code)
 videos/
+
+# Private design docs — not published
+docs/
+PRODUCT.md
+sticker-descriptions/
