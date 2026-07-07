@@ -241,6 +241,17 @@ const settingsApi = {
   // 权限档位
   getPermissionLevel: () => ipcRenderer.invoke(IPC.PERMISSION_GET_LEVEL),
   setPermissionLevel: (level: string) => ipcRenderer.invoke(IPC.PERMISSION_SET_LEVEL, level),
+
+  // 审批弹窗：主进程在 per-action 档位下推过来的请求（每 60 秒超时自动拒绝）
+  onPermissionApprovalRequest: (
+    cb: (req: { id: string; toolId: string; toolName: string; toolDescription: string; args: Record<string, unknown>; risk: string }) => void
+  ): (() => void) => {
+    const listener = (_e: Electron.IpcRendererEvent, req: Parameters<typeof cb>[0]) => cb(req);
+    ipcRenderer.on(IPC.PERMISSION_APPROVAL_REQUEST, listener);
+    return () => ipcRenderer.removeListener(IPC.PERMISSION_APPROVAL_REQUEST, listener);
+  },
+  resolvePermissionApproval: (id: string, allowed: boolean): Promise<{ ok: boolean }> =>
+    ipcRenderer.invoke(IPC.PERMISSION_APPROVAL_RESOLVE, { id, allowed }),
 };
 
 contextBridge.exposeInMainWorld("settings", settingsApi);

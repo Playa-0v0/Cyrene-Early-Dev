@@ -1684,3 +1684,262 @@ body {
 .choice-card--resolved {
   opacity: 0.6;
 }
+
+/* ============================================================
+   权限审批卡片（per-action 档位下，工具调用前弹出让用户确认）
+   默认（经典 + 抛光粉共享暗色） + 珠光白主题特殊样式
+   ============================================================ */
+@keyframes approval-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.approval-card {
+  margin: 4px 0 8px 46px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  max-width: 440px;
+  width: fit-content;
+  min-width: 300px;
+  align-self: flex-start;
+  flex-shrink: 0;
+  animation: approval-fade-in 0.3s ease-out;
+  backdrop-filter: blur(10px);
+  font-family: inherit;
+}
+
+.approval-card__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.95);
+  margin-bottom: 8px;
+}
+
+.approval-card__tool {
+  flex: 1 1 auto;
+}
+
+.approval-card__risk {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 10px;
+  letter-spacing: 0.5px;
+  background: rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.85);
+}
+.approval-card__risk--fs-read { background: rgba(120,180,255,0.25); color: #b8dcff; }
+.approval-card__risk--fs-write { background: rgba(255,170,90,0.28); color: #ffd49a; }
+.approval-card__risk--shell { background: rgba(255,90,120,0.32); color: #ffb0bf; }
+.approval-card__risk--network { background: rgba(170,120,255,0.28); color: #d8c0ff; }
+.approval-card__risk--input-control { background: rgba(255,200,90,0.28); color: #ffe6a0; }
+.approval-card__risk--safe { background: rgba(120,220,160,0.22); color: #b8f0c8; }
+
+.approval-card__desc {
+  font-size: 12px;
+  line-height: 1.5;
+  color: rgba(255,255,255,0.72);
+  margin-bottom: 10px;
+}
+
+.approval-card__args {
+  background: rgba(0,0,0,0.22);
+  border-radius: 10px;
+  padding: 8px 10px;
+  margin-bottom: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11px;
+  line-height: 1.5;
+  max-height: 140px;
+  overflow-y: auto;
+}
+
+.approval-card__args-row {
+  display: flex;
+  gap: 6px;
+  word-break: break-all;
+}
+
+.approval-card__args-key {
+  color: rgba(180,220,255,0.85);
+  flex-shrink: 0;
+}
+
+.approval-card__args-val {
+  color: rgba(255,255,255,0.78);
+}
+
+.approval-card__args-more {
+  color: rgba(255,255,255,0.5);
+  margin-top: 4px;
+  font-style: italic;
+}
+
+.approval-card__actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.approval-card__btn {
+  flex: 1 1 0;
+  padding: 8px 14px;
+  border-radius: 12px;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform 0.12s ease, opacity 0.12s ease;
+}
+.approval-card__btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+.approval-card__btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+.approval-card__btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.approval-card__btn--deny {
+  background: rgba(255,255,255,0.10);
+  color: rgba(255,255,255,0.85);
+  border: 1px solid rgba(255,255,255,0.18);
+}
+.approval-card__btn--deny:hover:not(:disabled) {
+  background: rgba(255,90,120,0.32);
+}
+
+.approval-card__btn--allow {
+  background: linear-gradient(135deg, #ff7eb8 0%, #ff5fa2 100%);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(255,95,162,0.34);
+}
+.approval-card__btn--allow:hover:not(:disabled) {
+  box-shadow: 0 6px 18px rgba(255,95,162,0.46);
+}
+
+.approval-card__note {
+  font-size: 10px;
+  color: rgba(255,255,255,0.45);
+  text-align: center;
+}
+
+.approval-card--allowed {
+  opacity: 0.7;
+  border-color: rgba(120,220,160,0.4);
+}
+
+.approval-card--denied {
+  opacity: 0.55;
+  border-color: rgba(255,90,120,0.32);
+}
+
+/* ── 珠光白主题（白底粉/黑 accent）── */
+[data-ui-theme="pearl-white"] .approval-card {
+  background: rgba(255,255,255,0.86);
+  border: 1.5px solid rgba(255,143,184,0.32);
+  box-shadow: 0 6px 22px rgba(255,143,184,0.16), 0 1px 3px rgba(0,0,0,0.06);
+  backdrop-filter: blur(14px);
+}
+
+[data-ui-theme="pearl-white"] .approval-card__title {
+  color: #2a2030;
+}
+
+[data-ui-theme="pearl-white"] .approval-card__risk {
+  background: rgba(255,143,184,0.18);
+  color: #c2346a;
+  border: 1px solid rgba(255,143,184,0.32);
+}
+[data-ui-theme="pearl-white"] .approval-card__risk--fs-read {
+  background: rgba(80,140,220,0.16);
+  color: #2a5fb8;
+  border-color: rgba(80,140,220,0.32);
+}
+[data-ui-theme="pearl-white"] .approval-card__risk--fs-write {
+  background: rgba(220,120,40,0.16);
+  color: #b85910;
+  border-color: rgba(220,120,40,0.32);
+}
+[data-ui-theme="pearl-white"] .approval-card__risk--shell {
+  background: rgba(220,40,80,0.16);
+  color: #b8204a;
+  border-color: rgba(220,40,80,0.32);
+}
+[data-ui-theme="pearl-white"] .approval-card__risk--network {
+  background: rgba(140,80,220,0.16);
+  color: #6a30b8;
+  border-color: rgba(140,80,220,0.32);
+}
+[data-ui-theme="pearl-white"] .approval-card__risk--input-control {
+  background: rgba(220,180,40,0.18);
+  color: #8a6810;
+  border-color: rgba(220,180,40,0.32);
+}
+[data-ui-theme="pearl-white"] .approval-card__risk--safe {
+  background: rgba(40,180,100,0.16);
+  color: #1a8050;
+  border-color: rgba(40,180,100,0.32);
+}
+
+[data-ui-theme="pearl-white"] .approval-card__desc {
+  color: #4a3a50;
+}
+
+[data-ui-theme="pearl-white"] .approval-card__args {
+  background: rgba(255,240,248,0.7);
+  border: 1px solid rgba(255,143,184,0.18);
+}
+
+[data-ui-theme="pearl-white"] .approval-card__args-key {
+  color: #c2346a;
+}
+
+[data-ui-theme="pearl-white"] .approval-card__args-val {
+  color: #2a2030;
+}
+
+[data-ui-theme="pearl-white"] .approval-card__args-more {
+  color: #8a7080;
+}
+
+[data-ui-theme="pearl-white"] .approval-card__btn--deny {
+  background: rgba(255,255,255,0.6);
+  color: #4a3a50;
+  border: 1px solid rgba(180,160,170,0.42);
+}
+[data-ui-theme="pearl-white"] .approval-card__btn--deny:hover:not(:disabled) {
+  background: rgba(220,40,80,0.10);
+  border-color: rgba(220,40,80,0.32);
+  color: #b8204a;
+}
+
+[data-ui-theme="pearl-white"] .approval-card__btn--allow {
+  background: linear-gradient(135deg, #ff8fb8 0%, #ff6098 100%);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(255,96,152,0.36);
+}
+[data-ui-theme="pearl-white"] .approval-card__btn--allow:hover:not(:disabled) {
+  box-shadow: 0 6px 18px rgba(255,96,152,0.48);
+}
+
+[data-ui-theme="pearl-white"] .approval-card__note {
+  color: #8a7080;
+}
+
+[data-ui-theme="pearl-white"] .approval-card--allowed {
+  border-color: rgba(40,180,100,0.45);
+}
+
+[data-ui-theme="pearl-white"] .approval-card--denied {
+  border-color: rgba(220,40,80,0.36);
+}

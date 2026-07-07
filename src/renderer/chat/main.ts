@@ -718,6 +718,117 @@ function buildChoiceCardEl(data: {
   return card;
 }
 
+/** 构建权限审批卡片 DOM 元素（per-action 档位下工具调用前弹出）。 */
+function buildApprovalCardEl(req: {
+  id: string;
+  toolId: string;
+  toolName: string;
+  toolDescription: string;
+  args: Record<string, unknown>;
+  risk: string;
+}): HTMLElement {
+  const card = document.createElement("div");
+  card.className = "approval-card";
+  card.dataset.approvalId = req.id;
+
+  // 标题（带工具名 + 风险标签）
+  const title = document.createElement("div");
+  title.className = "approval-card__title";
+  const toolSpan = document.createElement("span");
+  toolSpan.className = "approval-card__tool";
+  toolSpan.textContent = req.toolName || req.toolId;
+  const riskBadge = document.createElement("span");
+  riskBadge.className = `approval-card__risk approval-card__risk--${req.risk}`;
+  riskBadge.textContent = req.risk;
+  title.appendChild(toolSpan);
+  title.appendChild(riskBadge);
+  card.appendChild(title);
+
+  // 描述
+  if (req.toolDescription) {
+    const desc = document.createElement("div");
+    desc.className = "approval-card__desc";
+    desc.textContent = req.toolDescription;
+    card.appendChild(desc);
+  }
+
+  // 参数摘要（key: value，每行一个，限 5 行防爆窗）
+  const argsEntries = Object.entries(req.args || {});
+  if (argsEntries.length > 0) {
+    const argsBlock = document.createElement("div");
+    argsBlock.className = "approval-card__args";
+    const visible = argsEntries.slice(0, 5);
+    for (const [k, v] of visible) {
+      const row = document.createElement("div");
+      row.className = "approval-card__args-row";
+      const keySpan = document.createElement("span");
+      keySpan.className = "approval-card__args-key";
+      keySpan.textContent = k + ":";
+      const valSpan = document.createElement("span");
+      valSpan.className = "approval-card__args-val";
+      valSpan.textContent = JSON.stringify(v);
+      row.appendChild(keySpan);
+      row.appendChild(valSpan);
+      argsBlock.appendChild(row);
+    }
+    if (argsEntries.length > 5) {
+      const more = document.createElement("div");
+      more.className = "approval-card__args-more";
+      more.textContent = `…还有 ${argsEntries.length - 5} 个参数`;
+      argsBlock.appendChild(more);
+    }
+    card.appendChild(argsBlock);
+  }
+
+  // 按钮行
+  const actions = document.createElement("div");
+  actions.className = "approval-card__actions";
+  const denyBtn = document.createElement("button");
+  denyBtn.type = "button";
+  denyBtn.className = "approval-card__btn approval-card__btn--deny";
+  denyBtn.textContent = "拒绝";
+  const allowBtn = document.createElement("button");
+  allowBtn.type = "button";
+  allowBtn.className = "approval-card__btn approval-card__btn--allow";
+  allowBtn.textContent = "允许";
+  actions.appendChild(denyBtn);
+  actions.appendChild(allowBtn);
+  card.appendChild(actions);
+
+  // 提示行（60 秒超时）
+  const note = document.createElement("div");
+  note.className = "approval-card__note";
+  note.textContent = "60 秒未操作自动拒绝";
+  card.appendChild(note);
+
+  // 倒计时更新（每秒刷新）
+  let remaining = 60;
+  const tick = setInterval(() => {
+    remaining -= 1;
+    if (remaining <= 0) {
+      note.textContent = "已超时，自动拒绝";
+      clearInterval(tick);
+      return;
+    }
+    note.textContent = `${remaining} 秒后自动拒绝`;
+  }, 1000);
+
+  const resolve = (allowed: boolean) => {
+    clearInterval(tick);
+    if (!card.isConnected) return;
+    card.classList.add(allowed ? "approval-card--allowed" : "approval-card--denied");
+    denyBtn.disabled = true;
+    allowBtn.disabled = true;
+    note.textContent = allowed ? "已允许" : "已拒绝";
+    void window.settings?.resolvePermissionApproval?.(req.id, allowed);
+  };
+
+  denyBtn.addEventListener("click", () => resolve(false));
+  allowBtn.addEventListener("click", () => resolve(true));
+
+  return card;
+}
+
 /** 构建天气卡片 DOM 元素（不插入，由调用方决定位置）。 */
 function buildWeatherCardEl(data: Record<string, unknown>): HTMLElement {
   const card = document.createElement("div");
@@ -2834,6 +2945,16 @@ void (async () => {
   installSchedulerEventListener();
   void initModelConfig();
 })();
+
+// main → renderer：权限审批请求（per-action 档位下工具调用前）
+// 插入一张审批卡片到聊天流；用户点同意/拒绝后回传给主进程。
+window.settings?.onPermissionApprovalRequest?.((req) => {
+  console.log("[Cyrene/Chat] permission approval request:", req.id, req.toolId);
+  const card = buildApprovalCardEl(req);
+  messagesEl.appendChild(card);
+  // 滚动到底部让用户看到
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+});
 
 // main → renderer：设置面板点列表/新对话时，让窗口切到指定 session
 window.chatStore?.onSwitchSession(async (sessionId) => {
