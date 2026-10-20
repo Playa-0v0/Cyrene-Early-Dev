@@ -1,3 +1,8 @@
+> [!NOTE]
+> **这是 Cyrene-Agent 早期阶段（2026-06-11 ~ 2026-07-08，版本 0.1.0）的历史快照，只读不再更新。**
+> 当时的提交全部在本地完成，作者身份是占位符 `cyrene@local`，2026-10-20 已统一重写归属到 GitHub 账号 `Playa-0v0`。
+> 快照说明见 [MEMORIAL.md](./MEMORIAL.md)，当前进展请前往 [Playa-Cyrene/Cyrene-Agent](https://github.com/Playa-Cyrene/Cyrene-Agent)。
+
 <div align="center">
 
 <img src="./preview.png" alt="Cyrene Agent" width="800">
